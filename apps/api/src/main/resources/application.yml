@@ -5,9 +5,9 @@ spring:
   application:
     name: vsp-api
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vhgp}
-    username: ${POSTGRES_USER:vhgp}
-    password: ${POSTGRES_PASSWORD:vhgp}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vsp}
+    username: ${POSTGRES_USER:vsp}
+    password: ${POSTGRES_PASSWORD:vsp_dev_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000

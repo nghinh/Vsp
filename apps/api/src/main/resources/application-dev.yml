@@ -5,9 +5,9 @@ spring:
   application:
     name: vsp-api-dev
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vhgp}
-    username: ${POSTGRES_USER:vhgp}
-    password: ${POSTGRES_PASSWORD:vhgp}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vsp}
+    username: ${POSTGRES_USER:vsp}
+    password: ${POSTGRES_PASSWORD:vsp_dev_password}
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000
@@ -59,3 +59,11 @@ management:
   tracing:
     sampling:
       probability: 1.0
+
+# Dev-only JWT signing key (>= 256 bits for HS256). Staging/prod MUST supply
+# JWT_SECRET via environment — this default is intentionally insecure and local-only.
+security:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-insecure-signing-key-do-not-use-in-prod-0123456789}
+    access-token-expiration-ms: 3600000
+    refresh-token-expiration-ms: 604800000
