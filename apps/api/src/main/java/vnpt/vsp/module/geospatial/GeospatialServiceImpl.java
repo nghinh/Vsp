@@ -102,7 +102,7 @@ public class GeospatialServiceImpl implements GeospatialService {
                 sql = "SELECT ST_Distance(ST_SetSRID(:g1, :srid), ST_SetSRID(:g2, :srid))";
             } else {
                 // Use geography cast for meter-based distance on WGS84
-                sql = "SELECT ST_Distance(ST_SetSRID(:g1, :srid)::geography, ST_SetSRID(:g2, :srid)::geography)";
+                sql = "SELECT ST_Distance(CAST(ST_SetSRID(:g1, :srid) AS geography), CAST(ST_SetSRID(:g2, :srid) AS geography))";
             }
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter("g1", g1);
@@ -143,9 +143,9 @@ public class GeospatialServiceImpl implements GeospatialService {
         ensureSRID(point);
         try {
             String sql = String.format("""
-                SELECT id, ST_Distance(%s::geography, ST_SetSRID(:point, :srid)::geography) AS distance
+                SELECT id, ST_Distance(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography)) AS distance
                 FROM %s
-                WHERE ST_DWithin(%s::geography, ST_SetSRID(:point, :srid)::geography, :radius)
+                WHERE ST_DWithin(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography), :radius)
                 ORDER BY distance ASC
                 """, geometryColumn, featureType, geometryColumn);
 
@@ -245,7 +245,7 @@ public class GeospatialServiceImpl implements GeospatialService {
                 SELECT id, dist.distance
                 FROM %s
                 CROSS JOIN LATERAL (
-                    SELECT ST_Distance(%s::geography, ST_SetSRID(:point, :srid)::geography) AS distance
+                    SELECT ST_Distance(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography)) AS distance
                 ) AS dist
                 ORDER BY dist.distance ASC
                 LIMIT 1

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Central {@link RestControllerAdvice} that converts all API exceptions into
@@ -171,6 +172,22 @@ public class GlobalExceptionHandler {
         ErrorResponse body = ErrorResponse.builder()
                 .code(VspErrorCode.INTERNAL_001.getCode())
                 .message("No endpoint found for " + ex.getHttpMethod() + " " + ex.getRequestURL())
+                .correlationId(correlationId())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    // Spring 6.1+ raises NoResourceFoundException (not NoHandlerFoundException) when a
+    // request path matches no controller and falls through to static-resource handling.
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponse> handleNoResourceFound(
+            NoResourceFoundException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse body = ErrorResponse.builder()
+                .code(VspErrorCode.INTERNAL_001.getCode())
+                .message("No endpoint found for " + request.getMethod() + " " + request.getRequestURI())
                 .correlationId(correlationId())
                 .build();
 

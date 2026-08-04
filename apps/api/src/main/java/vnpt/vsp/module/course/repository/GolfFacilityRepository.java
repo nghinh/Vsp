@@ -25,13 +25,13 @@ public interface GolfFacilityRepository extends JpaRepository<GolfFacility, Long
      * Extract longitude from POINT geometry column using PostGIS ST_X.
      * Returns null if location is null.
      */
-    @Query(value = "SELECT ST_X(f.location::geometry) FROM golf_facilities f WHERE f.id = :facilityId", nativeQuery = true)
+    @Query(value = "SELECT ST_X(CAST(f.location AS geometry)) FROM golf_facilities f WHERE f.id = :facilityId", nativeQuery = true)
     Double findLongitudeByFacilityId(@Param("facilityId") Long facilityId);
 
     /**
      * Extract latitude from POINT geometry column using PostGIS ST_Y.
      * Returns null if location is null.
      */
-    @Query(value = "SELECT ST_Y(f.location::geometry) FROM golf_facilities f WHERE f.id = :facilityId", nativeQuery = true)
+    @Query(value = "SELECT ST_Y(CAST(f.location AS geometry)) FROM golf_facilities f WHERE f.id = :facilityId", nativeQuery = true)
     Double findLatitudeByFacilityId(@Param("facilityId") Long facilityId);
 }

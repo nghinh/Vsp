@@ -184,9 +184,9 @@ public class ValidationServiceImpl implements ValidationService {
 
         try {
             String sql = String.format("""
-                SELECT id, hole_id, ST_IsValidReason(%s::geometry)
+                SELECT id, hole_id, ST_IsValidReason(CAST(%s AS geometry))
                 FROM %s
-                WHERE hole_id IN (:holeIds) AND NOT ST_IsValid(%s::geometry)
+                WHERE hole_id IN (:holeIds) AND NOT ST_IsValid(CAST(%s AS geometry))
                 """, geometryColumn, tableName, geometryColumn);
 
             Query query = entityManager.createNativeQuery(sql);

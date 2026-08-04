@@ -45,7 +45,7 @@ public class BagServiceImpl implements BagService {
     // ─── Bag operations ──────────────────────────────────────────────────────
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<GolfBagResponse> getBags(Long golferAccountId) {
         log.debug("Getting bags for golferAccountId={}", golferAccountId);
         List<GolfBag> bags = bagRepository.findByGolferAccountId(golferAccountId);

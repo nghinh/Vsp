@@ -50,14 +50,14 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
     @Query(value = """
         SELECT c.id AS course_id,
                ST_Distance(
-                   f.location::geometry,
-                   ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+                   CAST(f.location AS geography),
+                   CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography)
                ) AS distance_meters
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
         WHERE ST_DWithin(
-            f.location::geometry,
-            ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+            CAST(f.location AS geography),
+            CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
             :radiusMeters
         )
         ORDER BY distance_meters ASC
@@ -80,14 +80,14 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
     @Query(value = """
         SELECT c.id AS course_id,
                ST_Distance(
-                   f.location::geometry,
-                   ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography
+                   CAST(f.location AS geography),
+                   CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography)
                ) AS distance_meters
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
         WHERE ST_DWithin(
-            f.location::geometry,
-            ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
+            CAST(f.location AS geography),
+            CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
             :radiusMeters
         )
         AND (

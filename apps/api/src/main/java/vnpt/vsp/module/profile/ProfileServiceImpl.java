@@ -33,7 +33,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public GolferProfileResponse getProfile(Long golferAccountId) {
         log.debug("Getting profile for golferAccountId={}", golferAccountId);
         GolferProfile profile = profileRepository.findByGolferAccountId(golferAccountId)
