@@ -1,19 +1,34 @@
 @import url("https://fonts.googleapis.com/css2?family=Fira+Code:wght@500;700&family=Fira+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap");
 
 * {
   box-sizing: border-box;
 }
+/* Dark "operations" theme per docs/mockup (DESIGN.md Material-3 dark palette). */
 :root {
   font-family: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #dae2fd;
+  background: #0b1326;
   font-synthesis: none;
-  --primary: #ea580c;
-  --primary-hover: #c2410c;
-  --sidebar: #0f172a;
-  --surface: #ffffff;
-  --muted: #64748b;
-  --border: rgba(15, 23, 42, 0.1);
+  --primary: #f66018;
+  --primary-hover: #ec6a06;
+  --sidebar: #060e20;
+  --surface: #171f33;
+  --surface-high: #222a3d;
+  --muted: #97a2c0;
+  --accent: #68dba9;
+  --border: rgba(255, 255, 255, 0.08);
+}
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  direction: ltr;
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 body {
   margin: 0;
@@ -177,7 +192,7 @@ nav .material-symbols-outlined {
   justify-content: space-between;
   min-height: 88px;
   padding: 16px 32px;
-  background: rgba(255, 255, 255, 0.96);
+  background: rgba(11, 19, 38, 0.92);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(10px);
 }
@@ -208,7 +223,7 @@ nav .material-symbols-outlined {
   place-items: center;
   width: 44px;
   height: 44px;
-  color: #475569;
+  color: #97a2c0;
   background: transparent;
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -216,7 +231,7 @@ nav .material-symbols-outlined {
 }
 .icon-button:hover {
   color: var(--primary);
-  background: #fff7ed;
+  background: rgba(246, 96, 24, 0.12);
 }
 .has-dot::after {
   position: absolute;
@@ -226,7 +241,7 @@ nav .material-symbols-outlined {
   height: 7px;
   content: "";
   background: var(--primary);
-  border: 2px solid white;
+  border: 2px solid var(--sidebar);
   border-radius: 50%;
 }
 .sync-pill {
@@ -235,9 +250,9 @@ nav .material-symbols-outlined {
   gap: 8px;
   min-height: 36px;
   padding: 0 12px;
-  color: #166534;
-  background: #f0fdf4;
-  border: 1px solid #bbf7d0;
+  color: #85f8c4;
+  background: rgba(37, 164, 117, 0.16);
+  border: 1px solid rgba(104, 219, 169, 0.3);
   border-radius: 999px;
   font-size: 12px;
   font-weight: 700;
@@ -245,7 +260,7 @@ nav .material-symbols-outlined {
 .sync-pill span {
   width: 7px;
   height: 7px;
-  background: #22c55e;
+  background: var(--accent);
   border-radius: 50%;
 }
 .content {
@@ -279,7 +294,7 @@ nav .material-symbols-outlined {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
 }
 .placeholder-card .material-symbols-outlined {
   color: var(--primary);

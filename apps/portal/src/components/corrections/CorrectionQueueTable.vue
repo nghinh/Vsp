@@ -135,7 +135,7 @@ function formatDate(iso: string): string {
 .skeleton-row {
   height: 3.5rem;
   border-radius: 6px;
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -152,13 +152,13 @@ function formatDate(iso: string): string {
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: #97a2c0;
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #9ca3af; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
 .retry-btn {
   margin-top: 0.5rem;
   padding: 0.5rem 1.25rem;
@@ -179,8 +179,8 @@ function formatDate(iso: string): string {
 }
 
 .data-table thead {
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background: #171f33;
+  border-bottom: 1px solid #2d3449;
 }
 
 .data-table th {
@@ -188,7 +188,7 @@ function formatDate(iso: string): string {
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #97a2c0;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -196,8 +196,8 @@ function formatDate(iso: string): string {
 
 .data-table td {
   padding: 0.75rem 0.75rem;
-  border-bottom: 1px solid #f3f4f6;
-  color: #111827;
+  border-bottom: 1px solid #222a3d;
+  color: #dae2fd;
   vertical-align: middle;
 }
 
@@ -205,8 +205,8 @@ function formatDate(iso: string): string {
   cursor: pointer;
   transition: background 0.15s;
 }
-.data-row:hover { background: #f9fafb; }
-.row-selected { background: #eff6ff !important; }
+.data-row:hover { background: #171f33; }
+.row-selected { background: #222a3d !important; }
 
 .cell-course .course-name {
   font-weight: 500;
@@ -221,14 +221,14 @@ function formatDate(iso: string): string {
   font-family: monospace;
   font-weight: 600;
   font-size: 0.75rem;
-  background: #f3f4f6;
+  background: #222a3d;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
 }
 
 .no-hole,
 .no-confidence {
-  color: #9ca3af;
+  color: #97a2c0;
 }
 
 .cell-confidence .confidence-value {
@@ -236,14 +236,14 @@ function formatDate(iso: string): string {
 }
 
 .cell-date {
-  color: #6b7280;
+  color: #97a2c0;
   font-size: 0.75rem;
   white-space: nowrap;
 }
 
 .cell-reporter {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -254,16 +254,16 @@ function formatDate(iso: string): string {
 .view-btn {
   padding: 0.3rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: white;
-  color: #1d4ed8;
+  border: 1px solid #2d3449;
+  background: #171f33;
+  color: #ec6a06;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   min-height: 32px;
   transition: background 0.15s;
 }
-.view-btn:hover { background: #eff6ff; border-color: #bfdbfe; }
+.view-btn:hover { background: #222a3d; border-color: #2d3449; }
 
 .sr-only {
   position: absolute;

@@ -188,13 +188,13 @@ function handleDiscard() {
 .dialog-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0 0 0.5rem;
 }
 
 .dialog-description {
   font-size: 0.875rem;
-  color: #4b5563;
+  color: #c5cde8;
   margin: 0 0 1.5rem;
   line-height: 1.5;
 }
@@ -226,13 +226,13 @@ function handleDiscard() {
 
 .dialog-btn-cancel {
   background: #ffffff;
-  color: #374151;
-  border-color: #d1d5db;
+  color: #c5cde8;
+  border-color: #2d3449;
 }
 
 .dialog-btn-cancel:hover {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #171f33;
+  border-color: #97a2c0;
 }
 
 .dialog-btn-discard {
@@ -246,13 +246,13 @@ function handleDiscard() {
 }
 
 .dialog-btn-primary {
-  background: #1d4ed8;
+  background: #ec6a06;
   color: #ffffff;
-  border-color: #1d4ed8;
+  border-color: #ec6a06;
 }
 
 .dialog-btn-primary:hover {
-  background: #1e40af;
+  background: #ec6a06;
 }
 
 .dialog-btn-danger {

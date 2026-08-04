@@ -325,8 +325,8 @@ watch(() => props.currentJobId, async (newId) => {
   font-family: system-ui, -apple-system, sans-serif;
   padding: 1rem;
   border-radius: 8px;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #171f33;
+  border: 1px solid #2d3449;
   min-width: 280px;
 }
 
@@ -340,7 +340,7 @@ watch(() => props.currentJobId, async (newId) => {
 .skeleton-meta {
   height: 1.25rem;
   border-radius: 4px;
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -356,11 +356,11 @@ watch(() => props.currentJobId, async (newId) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: #97a2c0;
   font-size: 0.875rem;
 }
 .status-error { color: #dc2626; }
-.hint { color: #9ca3af; font-size: 0.75rem; }
+.hint { color: #97a2c0; font-size: 0.75rem; }
 .error-icon { font-size: 1rem; }
 .retry-btn {
   margin-left: auto;
@@ -398,9 +398,9 @@ watch(() => props.currentJobId, async (newId) => {
 }
 .badge-success  { color: #15803d; background: #dcfce7; }
 .badge-error    { color: #b91c1c; background: #fee2e2; }
-.badge-queued   { color: #1d4ed8; background: #dbeafe; }
+.badge-queued   { color: #ec6a06; background: #2d3449; }
 .badge-in-progress { color: #92400e; background: #fef3c7; }
-.badge-unknown  { color: #6b7280; background: #f3f4f6; }
+.badge-unknown  { color: #97a2c0; background: #222a3d; }
 
 .badge-icon { font-size: 0.875rem; }
 
@@ -409,11 +409,11 @@ watch(() => props.currentJobId, async (newId) => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
 }
 .manifest-version {
   font-family: monospace;
-  background: #f3f4f6;
+  background: #222a3d;
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
 }
@@ -422,7 +422,7 @@ watch(() => props.currentJobId, async (newId) => {
 .progress-container {
   height: 6px;
   border-radius: 3px;
-  background: #e5e7eb;
+  background: #2d3449;
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -444,7 +444,7 @@ watch(() => props.currentJobId, async (newId) => {
   flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
   margin-bottom: 0.5rem;
 }
 .timing-item {
@@ -455,9 +455,9 @@ watch(() => props.currentJobId, async (newId) => {
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #9ca3af;
+  color: #97a2c0;
 }
-.timing-value { color: #374151; }
+.timing-value { color: #c5cde8; }
 
 /* Error panel */
 .error-panel {
@@ -502,7 +502,7 @@ watch(() => props.currentJobId, async (newId) => {
   align-items: center;
   gap: 0.25rem;
   font-size: 0.875rem;
-  color: #1d4ed8;
+  color: #ec6a06;
   text-decoration: underline;
   min-height: 44px; /* Touch target */
 }
@@ -526,15 +526,15 @@ watch(() => props.currentJobId, async (newId) => {
   min-width: 44px;
 }
 .retry-action {
-  color: #1d4ed8;
-  background: #eff6ff;
+  color: #ec6a06;
+  background: #222a3d;
 }
-.retry-action:hover:not(:disabled) { background: #dbeafe; }
+.retry-action:hover:not(:disabled) { background: #2d3449; }
 .retry-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .polling-indicator {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #97a2c0;
   margin-left: auto;
 }
 </style>

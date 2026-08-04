@@ -220,18 +220,18 @@ onUnmounted(() => {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
 }
 
 .map-wrapper {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  background: #f3f4f6;
+  border: 1px solid #2d3449;
+  background: #222a3d;
 }
 
 .map-canvas {
@@ -251,7 +251,7 @@ onUnmounted(() => {
 .map-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid #2d3449;
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -266,11 +266,11 @@ onUnmounted(() => {
   bottom: 0.5rem;
   left: 0.5rem;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -279,9 +279,9 @@ onUnmounted(() => {
 
 /* GPS info */
 .gps-info {
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -295,12 +295,12 @@ onUnmounted(() => {
 }
 
 .gps-label {
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 500;
 }
 
 .gps-value {
-  color: #111827;
+  color: #dae2fd;
   font-weight: 600;
   font-family: monospace;
   font-size: 0.75rem;
@@ -308,7 +308,7 @@ onUnmounted(() => {
 
 .no-location {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: #97a2c0;
   font-style: italic;
   margin: 0;
 }

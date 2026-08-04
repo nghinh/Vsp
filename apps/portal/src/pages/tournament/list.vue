@@ -173,18 +173,18 @@ onMounted(() => loadTournaments());
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
   padding-bottom: 1rem;
 }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
 }
 .page-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #97a2c0;
   margin: 0.25rem 0 0;
 }
 
@@ -197,12 +197,12 @@ onMounted(() => loadTournaments());
 }
 .filter-select {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   font-size: 0.875rem;
   min-height: 44px;
-  background: white;
-  color: #111827;
+  background: #171f33;
+  color: #dae2fd;
 }
 
 /* Buttons */
@@ -217,18 +217,18 @@ onMounted(() => loadTournaments());
   transition: background 0.15s;
 }
 .btn-primary {
-  background: #2563eb;
+  background: #f66018;
   color: white;
-  border-color: #2563eb;
+  border-color: #f66018;
 }
-.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.btn-primary:hover:not(:disabled) { background: #ec6a06; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary {
-  background: white;
-  color: #374151;
-  border-color: #d1d5db;
+  background: #171f33;
+  color: #c5cde8;
+  border-color: #2d3449;
 }
-.btn-secondary:hover:not(:disabled) { background: #f9fafb; }
+.btn-secondary:hover:not(:disabled) { background: #171f33; }
 .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Loading */
@@ -236,7 +236,7 @@ onMounted(() => loadTournaments());
 .skeleton-card {
   height: 6rem;
   border-radius: 10px;
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -253,27 +253,27 @@ onMounted(() => loadTournaments());
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: #97a2c0;
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #9ca3af; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
 
 /* Tournament list */
 .tournament-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .tournament-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   border-radius: 10px;
   padding: 1rem;
-  background: white;
+  background: #171f33;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .tournament-card:hover {
-  background: #f9fafb;
-  border-color: #2563eb;
+  background: #171f33;
+  border-color: #f66018;
 }
 
 .card-header { margin-bottom: 0.5rem; }
@@ -287,7 +287,7 @@ onMounted(() => loadTournaments());
 .tournament-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: #dae2fd;
 }
 .status-badge {
   font-size: 0.6875rem;
@@ -296,8 +296,8 @@ onMounted(() => loadTournaments());
   border-radius: 9999px;
   white-space: nowrap;
 }
-.badge-draft { background: #f3f4f6; color: #6b7280; }
-.badge-open { background: #dbeafe; color: #1e40af; }
+.badge-draft { background: #222a3d; color: #97a2c0; }
+.badge-open { background: #2d3449; color: #ec6a06; }
 .badge-active { background: #d1fae5; color: #065f46; }
 .badge-done { background: #dcfce7; color: #15803d; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; }
@@ -307,13 +307,13 @@ onMounted(() => loadTournaments());
   align-items: center;
   gap: 0.25rem;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #97a2c0;
 }
-.meta-sep { color: #d1d5db; }
+.meta-sep { color: #2d3449; }
 
 .card-course {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #97a2c0;
   margin-bottom: 0.5rem;
 }
 
@@ -321,6 +321,6 @@ onMounted(() => loadTournaments());
   display: flex;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #97a2c0;
 }
 </style>

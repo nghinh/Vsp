@@ -149,8 +149,8 @@ function handleKeydown(event: KeyboardEvent) {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem 0.5rem;
-  background: #f9fafb;
-  border-right: 1px solid #e5e7eb;
+  background: #171f33;
+  border-right: 1px solid #2d3449;
   width: 5.5rem;
   align-items: center;
   flex-shrink: 0;
@@ -168,7 +168,7 @@ function handleKeydown(event: KeyboardEvent) {
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #9ca3af;
+  color: #97a2c0;
   font-weight: 600;
   align-self: flex-start;
   padding-left: 0.25rem;
@@ -177,7 +177,7 @@ function handleKeydown(event: KeyboardEvent) {
 .palette-divider {
   width: 80%;
   height: 1px;
-  background: #e5e7eb;
+  background: #2d3449;
   margin: 0.25rem 0;
 }
 
@@ -190,11 +190,11 @@ function handleKeydown(event: KeyboardEvent) {
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 8px;
-  border: 1.5px solid #d1d5db;
+  border: 1.5px solid #2d3449;
   background: #ffffff;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
-  color: #374151;
+  color: #c5cde8;
   font-size: 0.6875rem;
   font-weight: 500;
   /* Accessibility: visible focus ring */
@@ -207,18 +207,18 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 .tool-btn:hover:not(:disabled) {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: #222a3d;
+  border-color: #97a2c0;
 }
 
 .tool-btn:active:not(:disabled) {
-  background: #e5e7eb;
+  background: #2d3449;
 }
 
 .tool-btn.active {
-  background: #eff6ff;
+  background: #222a3d;
   border-color: #3b82f6;
-  color: #1d4ed8;
+  color: #ec6a06;
 }
 
 .tool-btn:disabled {
@@ -241,9 +241,9 @@ function handleKeydown(event: KeyboardEvent) {
 .active-layer-badge {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #1d4ed8;
-  background: #dbeafe;
-  border: 1px solid #bfdbfe;
+  color: #ec6a06;
+  background: #2d3449;
+  border: 1px solid #2d3449;
   border-radius: 4px;
   padding: 0.2rem 0.4rem;
   text-align: center;

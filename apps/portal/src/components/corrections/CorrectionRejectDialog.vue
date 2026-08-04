@@ -103,7 +103,7 @@ function confirm() {
 }
 
 .dialog-panel {
-  background: white;
+  background: #171f33;
   border-radius: 12px;
   max-width: 480px;
   width: 100%;
@@ -116,16 +116,16 @@ function confirm() {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-bottom: 1px solid #2d3449;
+  background: #171f33;
 }
-.dialog-title { font-size: 1.0625rem; font-weight: 700; color: #111827; margin: 0; }
+.dialog-title { font-size: 1.0625rem; font-weight: 700; color: #dae2fd; margin: 0; }
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: #97a2c0;
   min-height: 44px;
   min-width: 44px;
   display: flex;
@@ -133,7 +133,7 @@ function confirm() {
   justify-content: center;
   border-radius: 6px;
 }
-.close-btn:hover { background: #f3f4f6; }
+.close-btn:hover { background: #222a3d; }
 
 .dialog-body {
   padding: 1.25rem;
@@ -144,7 +144,7 @@ function confirm() {
 
 .dialog-message {
   font-size: 0.875rem;
-  color: #374151;
+  color: #c5cde8;
   margin: 0;
   line-height: 1.5;
 }
@@ -157,13 +157,13 @@ function confirm() {
 .field-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: #c5cde8;
 }
 .required { color: #dc2626; }
-.optional { font-weight: 400; color: #9ca3af; }
+.optional { font-weight: 400; color: #97a2c0; }
 .field-input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
@@ -178,7 +178,7 @@ function confirm() {
 }
 .field-input[aria-invalid="true"] { border-color: #dc2626; }
 .field-error { font-size: 0.75rem; color: #dc2626; }
-.field-hint { font-size: 0.75rem; color: #9ca3af; text-align: right; }
+.field-hint { font-size: 0.75rem; color: #97a2c0; text-align: right; }
 
 .dialog-footer {
   display: flex;
@@ -186,8 +186,8 @@ function confirm() {
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid #2d3449;
+  background: #171f33;
 }
 
 .action-btn {
@@ -202,11 +202,11 @@ function confirm() {
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cancel-btn {
-  background: white;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  background: #171f33;
+  border: 1px solid #2d3449;
+  color: #c5cde8;
 }
-.cancel-btn:hover:not(:disabled) { background: #f3f4f6; }
+.cancel-btn:hover:not(:disabled) { background: #222a3d; }
 
 .confirm-btn {
   background: #b91c1c;

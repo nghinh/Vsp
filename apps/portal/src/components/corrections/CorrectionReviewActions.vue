@@ -172,10 +172,10 @@ function handleConvertToDraft(note: string) {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
 }
 
 /* Current status */
@@ -184,14 +184,14 @@ function handleConvertToDraft(note: string) {
   align-items: center;
   gap: 0.75rem;
   padding: 0.625rem 0.875rem;
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
 }
 
 .status-label {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 500;
 }
 

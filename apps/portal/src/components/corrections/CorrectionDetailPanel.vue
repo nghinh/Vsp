@@ -104,9 +104,9 @@ function formatDate(iso: string | null): string {
   display: flex;
   gap: 1.5rem;
   padding: 0.875rem 1rem;
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   flex-wrap: wrap;
 }
 
@@ -119,7 +119,7 @@ function formatDate(iso: string | null): string {
 .summary-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #9ca3af;
+  color: #97a2c0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -127,7 +127,7 @@ function formatDate(iso: string | null): string {
 .summary-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #111827;
+  color: #dae2fd;
 }
 
 .confidence-val {
@@ -140,10 +140,10 @@ function formatDate(iso: string | null): string {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
 }
 
 /* Review history */
@@ -154,9 +154,9 @@ function formatDate(iso: string | null): string {
 }
 
 .review-body {
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -172,13 +172,13 @@ function formatDate(iso: string | null): string {
 }
 
 .review-label {
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 500;
   flex-shrink: 0;
 }
 
 .review-value {
-  color: #111827;
+  color: #dae2fd;
   font-weight: 600;
   text-align: right;
 }
@@ -190,7 +190,7 @@ function formatDate(iso: string | null): string {
 
 .review-note {
   font-size: 0.8125rem;
-  color: #374151;
+  color: #c5cde8;
   margin: 0;
   line-height: 1.5;
   white-space: pre-wrap;

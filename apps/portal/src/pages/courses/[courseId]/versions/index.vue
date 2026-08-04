@@ -461,18 +461,18 @@ onMounted(() => loadVersions(0));
 
 .page-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
   padding-bottom: 1rem;
 }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
 }
 .course-id-label {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #97a2c0;
   margin: 0.25rem 0 0;
 }
 
@@ -481,7 +481,7 @@ onMounted(() => loadVersions(0));
 .skeleton-row {
   height: 3.5rem;
   border-radius: 6px;
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -498,13 +498,13 @@ onMounted(() => loadVersions(0));
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: #97a2c0;
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #9ca3af; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
 .retry-btn {
   margin-top: 0.5rem;
   padding: 0.5rem 1.25rem;
@@ -527,11 +527,11 @@ onMounted(() => loadVersions(0));
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: white;
+  border: 1px solid #2d3449;
+  background: #171f33;
   transition: background 0.15s;
 }
-.version-row:hover { background: #f9fafb; }
+.version-row:hover { background: #171f33; }
 
 /* Status badge — icon + text, not color alone */
 .version-status-badge {
@@ -546,35 +546,35 @@ onMounted(() => loadVersions(0));
   white-space: nowrap;
 }
 .badge-published { color: #15803d; background: #dcfce7; }
-.badge-archived  { color: #1e40af; background: #dbeafe; }
+.badge-archived  { color: #ec6a06; background: #2d3449; }
 .badge-draft     { color: #92400e; background: #fef3c7; }
-.badge-unknown   { color: #6b7280; background: #f3f4f6; }
+.badge-unknown   { color: #97a2c0; background: #222a3d; }
 
 .version-number .version-badge {
   font-family: monospace;
   font-size: 0.8125rem;
   font-weight: 600;
-  background: #f3f4f6;
+  background: #222a3d;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
 }
 
 .version-published-by {
   font-size: 0.875rem;
-  color: #374151;
+  color: #c5cde8;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.version-published-by .no-actor { color: #9ca3af; }
+.version-published-by .no-actor { color: #97a2c0; }
 
 .version-published-at {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
   white-space: nowrap;
 }
-.version-published-at .no-date { color: #9ca3af; }
+.version-published-at .no-date { color: #97a2c0; }
 
 .rollback-note {
   font-size: 0.75rem;
@@ -599,28 +599,28 @@ onMounted(() => loadVersions(0));
 .action-btn {
   padding: 0.4rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid #2d3449;
+  background: #171f33;
   cursor: pointer;
   font-size: 0.8125rem;
   font-weight: 500;
   min-height: 36px;
   transition: background 0.15s;
 }
-.action-btn:hover:not(:disabled) { background: #f3f4f6; }
+.action-btn:hover:not(:disabled) { background: #222a3d; }
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .impact-btn {
-  color: #1d4ed8;
-  border-color: #bfdbfe;
-  background: #eff6ff;
+  color: #ec6a06;
+  border-color: #2d3449;
+  background: #222a3d;
 }
-.impact-btn:hover:not(:disabled) { background: #dbeafe; }
+.impact-btn:hover:not(:disabled) { background: #2d3449; }
 
 .rollback-btn {
   color: #b45309;
   border-color: #fde68a;
-  background: #fffbeb;
+  background: #171f33eb;
 }
 .rollback-btn:hover:not(:disabled) { background: #fef3c7; }
 
@@ -630,11 +630,11 @@ onMounted(() => loadVersions(0));
   border-color: #b45309;
 }
 .confirm-rollback-btn:hover:not(:disabled) { background: #92400e; }
-.confirm-rollback-btn:disabled { background: #d1d5db; border-color: #d1d5db; cursor: not-allowed; }
+.confirm-rollback-btn:disabled { background: #2d3449; border-color: #2d3449; cursor: not-allowed; }
 
 .cancel-btn {
-  color: #374151;
-  border-color: #d1d5db;
+  color: #c5cde8;
+  border-color: #2d3449;
 }
 
 /* Pagination */
@@ -648,15 +648,15 @@ onMounted(() => loadVersions(0));
 .page-btn {
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
-  background: white;
+  border: 1px solid #2d3449;
+  background: #171f33;
   cursor: pointer;
   font-size: 0.875rem;
   min-height: 44px;
 }
-.page-btn:hover:not(:disabled) { background: #f3f4f6; }
+.page-btn:hover:not(:disabled) { background: #222a3d; }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.page-info { font-size: 0.875rem; color: #6b7280; }
+.page-info { font-size: 0.875rem; color: #97a2c0; }
 
 /* ─── Modals ──────────────────────────────────────────────────────────────── */
 .modal-overlay {
@@ -671,7 +671,7 @@ onMounted(() => loadVersions(0));
 }
 
 .modal-panel {
-  background: white;
+  background: #171f33;
   border-radius: 12px;
   max-width: 520px;
   width: 100%;
@@ -684,16 +684,16 @@ onMounted(() => loadVersions(0));
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-bottom: 1px solid #2d3449;
+  background: #171f33;
 }
-.modal-title { font-size: 1.0625rem; font-weight: 700; color: #111827; margin: 0; }
+.modal-title { font-size: 1.0625rem; font-weight: 700; color: #dae2fd; margin: 0; }
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: #97a2c0;
   min-height: 44px;
   min-width: 44px;
   display: flex;
@@ -701,7 +701,7 @@ onMounted(() => loadVersions(0));
   justify-content: center;
   border-radius: 6px;
 }
-.close-btn:hover { background: #f3f4f6; }
+.close-btn:hover { background: #222a3d; }
 
 .modal-footer {
   display: flex;
@@ -709,8 +709,8 @@ onMounted(() => loadVersions(0));
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border-top: 1px solid #2d3449;
+  background: #171f33;
 }
 
 .modal-loading,
@@ -720,7 +720,7 @@ onMounted(() => loadVersions(0));
   gap: 0.5rem;
   padding: 1.5rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #97a2c0;
 }
 .modal-error { color: #dc2626; }
 
@@ -750,26 +750,26 @@ onMounted(() => loadVersions(0));
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 600;
 }
 .impact-version {
   font-family: monospace;
   font-weight: 600;
-  color: #111827;
+  color: #dae2fd;
 }
 .impact-meta {
   grid-column: 1 / -1;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: #97a2c0;
 }
 
 .impact-summary {
-  background: #f3f4f6;
+  background: #222a3d;
   border-radius: 6px;
   padding: 0.75rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: #c5cde8;
 }
 .impact-summary p { margin: 0; }
 
@@ -783,7 +783,7 @@ onMounted(() => loadVersions(0));
 
 .rollback-warning {
   font-size: 0.875rem;
-  color: #374151;
+  color: #c5cde8;
   margin: 0;
   padding: 0.75rem;
   background: #fef3c7;
@@ -799,12 +799,12 @@ onMounted(() => loadVersions(0));
 .field-label {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: #c5cde8;
 }
 .required { color: #dc2626; }
 .field-input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
@@ -819,7 +819,7 @@ onMounted(() => loadVersions(0));
 }
 .field-input[aria-invalid="true"] { border-color: #dc2626; }
 .field-error { font-size: 0.75rem; color: #dc2626; }
-.field-hint { font-size: 0.75rem; color: #9ca3af; }
+.field-hint { font-size: 0.75rem; color: #97a2c0; }
 
 /* ─── Toast ──────────────────────────────────────────────────────────────── */
 .toast {
@@ -851,7 +851,7 @@ onMounted(() => loadVersions(0));
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  color: #6b7280;
+  color: #97a2c0;
   min-height: 44px;
   min-width: 44px;
   display: flex;

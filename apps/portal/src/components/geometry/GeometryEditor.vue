@@ -224,7 +224,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: #f9fafb;
+  background: #171f33;
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -237,7 +237,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   gap: 1rem;
   padding: 0.625rem 1rem;
   background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
   flex-shrink: 0;
   min-height: 3.25rem;
 }
@@ -251,7 +251,7 @@ function handleFeatureClick(feature: GeometryFeature) {
 .course-id-label {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
 }
 
 .state-badge {
@@ -312,13 +312,13 @@ function handleFeatureClick(feature: GeometryFeature) {
 }
 
 .save-btn {
-  background: #1d4ed8;
+  background: #ec6a06;
   color: #ffffff;
-  border-color: #1d4ed8;
+  border-color: #ec6a06;
 }
 
 .save-btn:hover:not(:disabled) {
-  background: #1e40af;
+  background: #ec6a06;
 }
 
 .save-btn:disabled {
@@ -328,13 +328,13 @@ function handleFeatureClick(feature: GeometryFeature) {
 
 .validate-btn {
   background: #ffffff;
-  color: #374151;
-  border-color: #d1d5db;
+  color: #c5cde8;
+  border-color: #2d3449;
 }
 
 .validate-btn:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: #171f33;
+  border-color: #97a2c0;
 }
 
 .validate-btn:disabled {
@@ -382,13 +382,13 @@ function handleFeatureClick(feature: GeometryFeature) {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  color: #6b7280;
+  color: #97a2c0;
 }
 
 .loading-spinner {
   width: 2rem;
   height: 2rem;
-  border: 3px solid #e5e7eb;
+  border: 3px solid #2d3449;
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -411,7 +411,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: #6b7280;
+  color: #97a2c0;
   text-align: center;
   padding: 2rem;
 }
@@ -421,13 +421,13 @@ function handleFeatureClick(feature: GeometryFeature) {
 .empty-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #374151;
+  color: #c5cde8;
   margin: 0;
 }
 
 .empty-subtitle {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: #97a2c0;
   margin: 0;
 }
 

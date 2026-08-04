@@ -134,7 +134,7 @@ function geometryTypeLabel(type: LayerType): string {
   width: 11rem;
   flex-shrink: 0;
   background: #ffffff;
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid #2d3449;
   overflow-y: auto;
 }
 
@@ -143,19 +143,19 @@ function geometryTypeLabel(type: LayerType): string {
   align-items: baseline;
   justify-content: space-between;
   padding: 0.75rem 0.75rem 0.5rem;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid #222a3d;
 }
 
 .panel-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
 }
 
 .feature-count {
   font-size: 0.6875rem;
-  color: #9ca3af;
+  color: #97a2c0;
 }
 
 .layer-list {
@@ -177,11 +177,11 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .layer-item:hover {
-  background: #f9fafb;
+  background: #171f33;
 }
 
 .layer-item.active {
-  background: #eff6ff;
+  background: #222a3d;
 }
 
 .layer-item.hidden {
@@ -209,7 +209,7 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .visibility-btn:hover {
-  background: #f3f4f6;
+  background: #222a3d;
 }
 
 .visibility-icon {
@@ -239,19 +239,19 @@ function geometryTypeLabel(type: LayerType): string {
 
 .layer-label {
   font-size: 0.8125rem;
-  color: #374151;
+  color: #c5cde8;
   font-weight: 500;
 }
 
 .layer-item.active .layer-label {
-  color: #1d4ed8;
+  color: #ec6a06;
   font-weight: 600;
 }
 
 .layer-count {
   font-size: 0.6875rem;
-  color: #9ca3af;
-  background: #f3f4f6;
+  color: #97a2c0;
+  background: #222a3d;
   border-radius: 9999px;
   padding: 0.1rem 0.4rem;
   min-width: 1.25rem;
@@ -260,13 +260,13 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .layer-item.active .layer-count {
-  background: #dbeafe;
-  color: #1d4ed8;
+  background: #2d3449;
+  color: #ec6a06;
 }
 
 .geometry-type-badge {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: #97a2c0;
   flex-shrink: 0;
   width: 1rem;
   text-align: center;

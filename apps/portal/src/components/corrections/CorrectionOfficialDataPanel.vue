@@ -118,10 +118,10 @@ function formatDate(iso: string | null): string {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
 }
 
 .official-data-body {
@@ -139,12 +139,12 @@ function formatDate(iso: string | null): string {
 }
 
 .data-label {
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 500;
 }
 
 .data-value {
-  color: #111827;
+  color: #dae2fd;
   font-weight: 600;
   text-align: right;
   max-width: 60%;
@@ -164,16 +164,16 @@ function formatDate(iso: string | null): string {
 .hole-badge {
   font-family: monospace;
   font-size: 0.75rem;
-  background: #f3f4f6;
+  background: #222a3d;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
 }
 
 .data-quality-section {
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
   padding: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -182,15 +182,15 @@ function formatDate(iso: string | null): string {
 .subsection-title {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: #97a2c0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 0 0 0.25rem;
 }
 
 .accuracy-badge {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #2d3449;
+  color: #ec6a06;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
   font-size: 0.75rem;
@@ -208,7 +208,7 @@ function formatDate(iso: string | null): string {
 .version-badge {
   font-family: monospace;
   font-size: 0.75rem;
-  background: #f3f4f6;
+  background: #222a3d;
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
 }

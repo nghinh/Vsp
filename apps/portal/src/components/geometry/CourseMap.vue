@@ -606,7 +606,7 @@ defineExpose({
   gap: 0.375rem;
   padding: 0.4rem 0.75rem;
   background: rgba(13, 17, 23, 0.85);
-  color: #d1d5db;
+  color: #2d3449;
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   cursor: pointer;

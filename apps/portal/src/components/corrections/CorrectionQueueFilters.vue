@@ -189,8 +189,8 @@ function clearFilters() {
 
 <style scoped>
 .correction-queue-filters {
-  background: white;
-  border-right: 1px solid #e5e7eb;
+  background: #171f33;
+  border-right: 1px solid #2d3449;
   padding: 1.25rem 1rem;
   min-width: 220px;
   max-width: 260px;
@@ -209,7 +209,7 @@ function clearFilters() {
 .filters-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
 }
 
@@ -223,8 +223,8 @@ function clearFilters() {
   border-radius: 4px;
   min-height: 32px;
 }
-.clear-btn:hover:not(:disabled) { background: #eff6ff; }
-.clear-btn:disabled { color: #9ca3af; cursor: not-allowed; }
+.clear-btn:hover:not(:disabled) { background: #222a3d; }
+.clear-btn:disabled { color: #97a2c0; cursor: not-allowed; }
 
 .filters-form {
   display: flex;
@@ -247,17 +247,17 @@ function clearFilters() {
 .field-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: #c5cde8;
 }
 
 .field-input {
   padding: 0.375rem 0.625rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   font-size: 0.8125rem;
   font-family: inherit;
-  color: #111827;
-  background: white;
+  color: #dae2fd;
+  background: #171f33;
   min-height: 36px;
   transition: border-color 0.15s;
 }
@@ -284,11 +284,11 @@ function clearFilters() {
 
 .range-label {
   font-size: 0.6875rem;
-  color: #9ca3af;
+  color: #97a2c0;
 }
 
 .range-sep {
-  color: #9ca3af;
+  color: #97a2c0;
   padding-top: 1.2rem;
   flex-shrink: 0;
 }
@@ -306,5 +306,5 @@ function clearFilters() {
   min-height: 40px;
   transition: background 0.15s;
 }
-.apply-btn:hover { background: #2563eb; }
+.apply-btn:hover { background: #f66018; }
 </style>

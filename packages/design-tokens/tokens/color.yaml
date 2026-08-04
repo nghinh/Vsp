@@ -47,7 +47,7 @@ color:
     onPrimary:      "#0F172A"
     secondary:       "#FBBF24"  # Amber — warning-adjacent highlights on dark
     onSecondary:    "#0F172A"
-    accent:          "#34D399"  # Emerald-400 — safe/ready on dark
+    accent:          "#68DBA9"  # Emerald-400 — safe/ready on dark
     onAccent:       "#052E16"
 
     # Destructive
@@ -55,10 +55,10 @@ color:
     onDestructive:  "#450A0A"
 
     # Backgrounds
-    background:      "#0F172A"  # Outdoor dark base, map overlays, night/dim mode
-    onBackground:    "#FFFFFF"
-    surface:         "#1E293B"  # Card/modal surface on dark
-    onSurface:       "#F1F5F9"
+    background:      "#0B1326"  # Outdoor dark base, map overlays, night/dim mode
+    onBackground:    "#DAE2FD"
+    surface:         "#171F33"  # Card/modal surface on dark
+    onSurface:       "#DAE2FD"
     muted:           "#201C27"  # Secondary surfaces
     onMuted:         "#94A3B8"
 

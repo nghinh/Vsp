@@ -69,18 +69,18 @@ function formatDate(iso: string): string {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
 }
 
 /* Photo */
 .evidence-photo {
   border-radius: 8px;
   overflow: hidden;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #171f33;
+  border: 1px solid #2d3449;
 }
 
 .no-photo {
@@ -88,7 +88,7 @@ function formatDate(iso: string): string {
   align-items: center;
   gap: 0.5rem;
   padding: 1.5rem;
-  color: #9ca3af;
+  color: #97a2c0;
   font-size: 0.875rem;
   justify-content: center;
 }
@@ -106,20 +106,20 @@ function formatDate(iso: string): string {
 
 .photo-caption {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #97a2c0;
   padding: 0.5rem 0.75rem;
-  background: #f9fafb;
-  border-top: 1px solid #e5e7eb;
+  background: #171f33;
+  border-top: 1px solid #2d3449;
   margin: 0;
 }
 
 /* Note */
 .note-text {
   font-size: 0.875rem;
-  color: #374151;
+  color: #c5cde8;
   margin: 0;
   padding: 0.75rem;
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -127,7 +127,7 @@ function formatDate(iso: string): string {
 
 .no-note {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: #97a2c0;
   font-style: italic;
   margin: 0;
 }
@@ -138,9 +138,9 @@ function formatDate(iso: string): string {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #f9fafb;
+  background: #171f33;
   border-radius: 6px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
 }
 
 .meta-row {
@@ -151,12 +151,12 @@ function formatDate(iso: string): string {
 }
 
 .meta-label {
-  color: #6b7280;
+  color: #97a2c0;
   font-weight: 500;
 }
 
 .meta-value {
-  color: #111827;
+  color: #dae2fd;
   font-weight: 600;
 }
 

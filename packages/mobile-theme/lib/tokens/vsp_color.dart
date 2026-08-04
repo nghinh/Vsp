@@ -57,7 +57,7 @@ abstract final class VspColorDark {
   static const Color onPrimary = Color(0xFF0F172A);
   static const Color secondary = Color(0xFFFBBF24); // Amber — warning on dark
   static const Color onSecondary = Color(0xFF0F172A);
-  static const Color accent = Color(0xFF34D399); // Emerald-400 — safe on dark
+  static const Color accent = Color(0xFF68DBA9); // Emerald-400 — safe on dark
   static const Color onAccent = Color(0xFF052E16);
 
   // Destructive
@@ -65,10 +65,10 @@ abstract final class VspColorDark {
   static const Color onDestructive = Color(0xFF450A0A);
 
   // Backgrounds
-  static const Color background = Color(0xFF0F172A); // Outdoor dark base
-  static const Color onBackground = Color(0xFFFFFFFF);
-  static const Color surface = Color(0xFF1E293B); // Card/modal on dark
-  static const Color onSurface = Color(0xFFF1F5F9);
+  static const Color background = Color(0xFF0B1326); // Outdoor dark base
+  static const Color onBackground = Color(0xFFDAE2FD);
+  static const Color surface = Color(0xFF171F33); // Card/modal on dark
+  static const Color onSurface = Color(0xFFDAE2FD);
   static const Color muted = Color(0xFF201C27); // Secondary surfaces
   static const Color onMuted = Color(0xFF94A3B8);
 

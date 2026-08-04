@@ -240,19 +240,19 @@ onMounted(() => loadCourses());
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #2d3449;
   padding-bottom: 1rem;
 }
 .back-btn { align-self: center; }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #111827;
+  color: #dae2fd;
   margin: 0;
 }
 .page-subtitle {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: #97a2c0;
   margin: 0.25rem 0 0;
 }
 
@@ -267,22 +267,22 @@ onMounted(() => loadCourses());
   transition: background 0.15s;
 }
 .btn-primary {
-  background: #2563eb;
+  background: #f66018;
   color: white;
-  border-color: #2563eb;
+  border-color: #f66018;
 }
-.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.btn-primary:hover:not(:disabled) { background: #ec6a06; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary {
-  background: white;
-  color: #374151;
-  border-color: #d1d5db;
+  background: #171f33;
+  color: #c5cde8;
+  border-color: #2d3449;
 }
-.btn-secondary:hover { background: #f9fafb; }
+.btn-secondary:hover { background: #171f33; }
 
 .create-form-panel {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: #171f33;
+  border: 1px solid #2d3449;
   border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -290,7 +290,7 @@ onMounted(() => loadCourses());
 .form-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: #dae2fd;
   margin: 0 0 1rem;
 }
 .form-grid {
@@ -307,22 +307,22 @@ onMounted(() => loadCourses());
 .form-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #374151;
+  color: #c5cde8;
 }
 .required { color: #dc2626; }
 .form-input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid #2d3449;
   border-radius: 6px;
   font-size: 0.875rem;
   min-height: 44px;
-  background: white;
-  color: #111827;
+  background: #171f33;
+  color: #dae2fd;
 }
 .form-input:focus {
   outline: none;
-  border-color: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #f66018;
+  box-shadow: 0 0 0 3px rgba(246, 96, 24, 0.1);
 }
 .field-error {
   font-size: 0.75rem;
@@ -345,7 +345,7 @@ onMounted(() => loadCourses());
 .skeleton-card {
   height: 5rem;
   border-radius: 8px;
-  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -361,26 +361,26 @@ onMounted(() => loadCourses());
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #6b7280;
+  color: #97a2c0;
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #9ca3af; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
 
 .course-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .course-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid #2d3449;
   border-radius: 10px;
   padding: 1rem;
-  background: white;
+  background: #171f33;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .course-card:hover {
-  background: #f9fafb;
-  border-color: #2563eb;
+  background: #171f33;
+  border-color: #f66018;
 }
 .course-header {
   display: flex;
@@ -392,7 +392,7 @@ onMounted(() => loadCourses());
 .course-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #111827;
+  color: #dae2fd;
 }
 .quality-badge {
   font-size: 0.6875rem;
@@ -403,7 +403,7 @@ onMounted(() => loadCourses());
 }
 .badge-verified { color: #15803d; background: #dcfce7; }
 .badge-pending  { color: #92400e; background: #fef3c7; }
-.badge-unverified { color: #9ca3af; background: #f3f4f6; }
+.badge-unverified { color: #97a2c0; background: #222a3d; }
 
 .course-details {
   display: flex;
@@ -416,13 +416,13 @@ onMounted(() => loadCourses());
   font-weight: 600;
   padding: 0.15rem 0.5rem;
   border-radius: 9999px;
-  background: #e5e7eb;
-  color: #374151;
+  background: #2d3449;
+  color: #c5cde8;
 }
 .course-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: #97a2c0;
 }
 </style>
