@@ -1,0 +1,17 @@
+name: mobile_theme
+description: Vietnam Smart Golf Platform — Flutter Mobile Theme and Seed Components
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

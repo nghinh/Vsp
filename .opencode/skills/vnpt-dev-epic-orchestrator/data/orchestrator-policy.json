@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "ownership": "Skill-layer (LLM agent facing). NOT consumed by vnpt-go-runtime.",
+    "decoupling": "Per SKILL.md Runtime non-coupling.",
+    "purpose": "Authoritative source for the LLM agent driving the BMAD epic workflow. Pins epic lifecycle states, phase lifecycle states, and failure reason classes used by steps-c/ scripts to classify story failures.",
+    "see_also": "references/state-machine.md (story-level workflow) and data/orchestrator-rules.md (workflow hard stops)."
+  },
+  "blockingSeverity": [
+    "critical"
+  ],
+  "doneValues": [
+    "done"
+  ],
+  "inProgressValues": [
+    "in-progress",
+    "in_progress",
+    "review",
+    "ready-for-dev"
+  ],
+  "sourceOrder": [
+    "sprint-status.yaml",
+    "story-file",
+    "epic-state.json"
+  ],
+  "syncSprintStatus": true,
+  "epicStatusValues": {
+    "pending": "pending",
+    "in_progress": "in_progress",
+    "review_gate": "review_gate",
+    "done": "done",
+    "failed": "failed",
+    "stalled_partial": "stalled_partial"
+  },
+  "phaseStatusValues": {
+    "preflight": "preflight",
+    "planning": "planning",
+    "executing": "executing",
+    "validating": "validating",
+    "review_gate": "review_gate",
+    "done": "done",
+    "failed": "failed"
+  },
+  "failureReasonClasses": [
+    "missing_prd_context_evidence",
+    "missing_context_evidence",
+    "missing_ux_context_evidence",
+    "technical_debt_policy_violation",
+    "story_status_not_progressed",
+    "story_status_invalid_done",
+    "duplicate_detection_failed"
+  ]
+}

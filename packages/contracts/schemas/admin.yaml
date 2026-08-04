@@ -1,0 +1,500 @@
+# Admin schemas for the Vietnam Smart Golf Platform API
+
+PublishRequest:
+  type: object
+  required:
+    - courseId
+    - version
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    version:
+      type: string
+      description: Version to publish
+      example: "abc123def456"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When the publish becomes effective
+      example: "2026-09-01T00:00:00Z"
+    notes:
+      type: string
+      description: Release notes
+      example: "Updated hole 5 pin positions"
+
+PublishResponse:
+  type: object
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    previousVersion:
+      type: string
+      description: Previous active version
+      example: "xyz789"
+    newVersion:
+      type: string
+      description: Newly published version
+      example: "abc123def456"
+    publishedAt:
+      type: string
+      format: date-time
+      description: When the version was published
+      example: "2026-08-01T12:00:00Z"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When the version becomes active
+      example: "2026-09-01T00:00:00Z"
+    auditEntry:
+      $ref: '#/AuditEntry'
+
+RollbackRequest:
+  type: object
+  required:
+    - courseId
+    - targetVersion
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    targetVersion:
+      type: string
+      description: Version to rollback to
+      example: "xyz789"
+    reason:
+      type: string
+      description: Reason for rollback
+      example: "Critical error discovered in new version"
+
+RollbackResponse:
+  type: object
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    rolledBackFrom:
+      type: string
+      description: Version that was active
+      example: "abc123def456"
+    rolledBackTo:
+      type: string
+      description: Version restored
+      example: "xyz789"
+    rolledBackAt:
+      type: string
+      format: date-time
+      description: When the rollback occurred
+      example: "2026-08-01T14:00:00Z"
+    auditEntry:
+      $ref: '#/AuditEntry'
+
+AuditEntry:
+  type: object
+  required:
+    - id
+    - timestamp
+    - action
+    - performedBy
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Audit entry identifier
+      example: 110e8400-e29b-41d4-a716-446655440005
+    timestamp:
+      type: string
+      format: date-time
+      description: When the action occurred
+      example: "2026-08-01T12:00:00Z"
+    action:
+      type: string
+      enum: [publish, rollback, create, update, delete, approve, reject, login, logout, Other]
+      description: Action performed
+      example: publish
+    entityType:
+      type: string
+      description: Type of entity affected
+      example: CourseVersion
+    entityId:
+      type: string
+      format: uuid
+      description: Identifier of the entity affected
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier (for course-related actions)
+    performedBy:
+      type: string
+      format: uuid
+      description: User who performed the action
+      example: 220e8400-e29b-41d4-a716-446655440006
+    performedByName:
+      type: string
+      description: User display name
+      example: Admin User
+    ipAddress:
+      type: string
+      description: IP address of the request
+      example: "192.168.1.100"
+    details:
+      type: object
+      additionalProperties: true
+      description: Additional action-specific details
+    previousState:
+      type: string
+      description: JSON string of previous state (for updates)
+    newState:
+      type: string
+      description: JSON string of new state
+
+AuditLogResponse:
+  type: object
+  properties:
+    entries:
+      type: array
+      items:
+        $ref: '#/AuditEntry'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+CourseManagementSummary:
+  type: object
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    courseName:
+      type: string
+      description: Course name
+      example: Saigon Golf Club
+    currentVersion:
+      type: string
+      description: Currently active version
+      example: "abc123def456"
+    lastPublishedAt:
+      type: string
+      format: date-time
+      description: When the course was last published
+      example: "2026-07-15T10:00:00Z"
+    pendingCorrections:
+      type: integer
+      description: Number of pending corrections
+      example: 3
+    recentChanges:
+      type: array
+      items:
+        type: string
+      description: Recent change descriptions
+    status:
+      type: string
+      enum: [active, draft, archived, under_maintenance]
+      description: Course status
+
+# ─── Operations Portal DTOs (Story 8.5) ──────────────────────────────────────
+
+PinPositionDto:
+  type: object
+  description: Pin position with scheduling for portal operations (Story 8.5 AC-1)
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Pin position unique identifier
+      example: 1
+    holeNumber:
+      type: integer
+      description: Hole number (1-18+)
+      example: 5
+    position:
+      $ref: './common.yaml#/GeoJsonPoint'
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this pin position becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this pin position expires (null = never)
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who published this pin position
+      example: "greenkeeper@saigon-golf.com"
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1
+      description: Confidence score for this pin position
+      example: 0.95
+    dataQuality:
+      $ref: './course.yaml#/DataQualityDto'
+
+CreatePinPositionRequest:
+  type: object
+  required:
+    - holeNumber
+    - position
+    - effectiveFrom
+    - expiresAt
+  properties:
+    holeNumber:
+      type: integer
+      description: Hole number (1-18+)
+      example: 5
+    position:
+      $ref: './common.yaml#/GeoJsonPoint'
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this pin position becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this pin position expires
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who is scheduling this pin position
+      example: "greenkeeper@saigon-golf.com"
+
+UpdatePinPositionRequest:
+  type: object
+  properties:
+    position:
+      $ref: './common.yaml#/GeoJsonPoint'
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this pin position becomes active
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this pin position expires (null = never)
+
+GreenSpeedDto:
+  type: object
+  description: Green speed/condition reading for portal operations (Story 8.5 AC-2)
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Green condition unique identifier
+      example: 1
+    holeNumber:
+      type: integer
+      description: Hole number (1-18+)
+      example: 5
+    stimpmeterReading:
+      type: number
+      format: double
+      minimum: 6
+      maximum: 14
+      description: Stimpmeter reading in feet
+      example: 10.5
+    firmness:
+      type: string
+      enum: [SOFT, MEDIUM, FIRM, HARD]
+      description: Green firmness
+      example: "FIRM"
+    moisture:
+      type: string
+      enum: [DRY, NORMAL, WET, SATURATED]
+      description: Green moisture level
+      example: "NORMAL"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires (null = never)
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who published this condition
+      example: "greenkeeper@saigon-golf.com"
+    dataQuality:
+      $ref: './course.yaml#/DataQualityDto'
+
+CreateGreenConditionRequest:
+  type: object
+  required:
+    - holeNumber
+    - stimpmeterReading
+    - firmness
+    - moisture
+    - effectiveFrom
+    - expiresAt
+  properties:
+    holeNumber:
+      type: integer
+      description: Hole number (1-18+)
+      example: 5
+    stimpmeterReading:
+      type: number
+      format: double
+      minimum: 6
+      maximum: 14
+      description: Stimpmeter reading in feet (range 6-14 per AC)
+      example: 10.5
+    firmness:
+      type: string
+      enum: [SOFT, MEDIUM, FIRM, HARD]
+      description: Green firmness
+      example: "FIRM"
+    moisture:
+      type: string
+      enum: [DRY, NORMAL, WET, SATURATED]
+      description: Green moisture level
+      example: "NORMAL"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who is recording this condition
+      example: "greenkeeper@saigon-golf.com"
+
+UpdateGreenConditionRequest:
+  type: object
+  properties:
+    stimpmeterReading:
+      type: number
+      format: double
+      minimum: 6
+      maximum: 14
+      description: Stimpmeter reading in feet
+    firmness:
+      type: string
+      enum: [SOFT, MEDIUM, FIRM, HARD]
+      description: Green firmness
+    moisture:
+      type: string
+      enum: [DRY, NORMAL, WET, SATURATED]
+      description: Green moisture level
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires (null = never)
+
+CourseConditionItemDto:
+  type: object
+  description: Course condition item for portal operations (Story 8.5 AC-2)
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Condition unique identifier
+      example: 1
+    conditionType:
+      type: string
+      enum: [GREEN_SPEED, GREEN_FIRMNESS, FAIRWAY_FIRMNESS, ROUGH_DENSITY, BUNKER_CONDITION, COURSE_MOISTURE, COURSE_OVERALL, WEATHER_IMPACT, OTHER]
+      description: Type of condition
+      example: "COURSE_OVERALL"
+    severity:
+      type: string
+      enum: [LOW, MODERATE, HIGH, CRITICAL]
+      description: Condition severity
+      example: "MODERATE"
+    description:
+      type: string
+      description: Human-readable condition description
+      example: "Greens are running fast at 11 on the stimpmeter"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires (null = never)
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who published this condition
+      example: "greenkeeper@saigon-golf.com"
+    dataQuality:
+      $ref: './course.yaml#/DataQualityDto'
+
+CreateCourseConditionRequest:
+  type: object
+  required:
+    - conditionType
+    - severity
+    - effectiveFrom
+    - expiresAt
+  properties:
+    conditionType:
+      type: string
+      enum: [GREEN_SPEED, GREEN_FIRMNESS, FAIRWAY_FIRMNESS, ROUGH_DENSITY, BUNKER_CONDITION, COURSE_MOISTURE, COURSE_OVERALL, WEATHER_IMPACT, OTHER]
+      description: Type of condition
+      example: "COURSE_OVERALL"
+    severity:
+      type: string
+      enum: [LOW, MODERATE, HIGH, CRITICAL]
+      description: Condition severity
+      example: "MODERATE"
+    description:
+      type: string
+      description: Human-readable condition description
+      example: "Greens are running fast at 11 on the stimpmeter"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+      example: "2026-08-01T06:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires
+      example: "2026-08-01T18:00:00Z"
+    publishedBy:
+      type: string
+      description: User who is recording this condition
+      example: "greenkeeper@saigon-golf.com"
+
+UpdateCourseConditionRequest:
+  type: object
+  properties:
+    conditionType:
+      type: string
+      enum: [GREEN_SPEED, GREEN_FIRMNESS, FAIRWAY_FIRMNESS, ROUGH_DENSITY, BUNKER_CONDITION, COURSE_MOISTURE, COURSE_OVERALL, WEATHER_IMPACT, OTHER]
+      description: Type of condition
+    severity:
+      type: string
+      enum: [LOW, MODERATE, HIGH, CRITICAL]
+      description: Condition severity
+    description:
+      type: string
+      description: Human-readable condition description
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this condition becomes active
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this condition expires (null = never)

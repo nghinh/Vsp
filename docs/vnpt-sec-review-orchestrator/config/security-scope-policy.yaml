@@ -1,0 +1,15 @@
+scope_id_rules:
+  diff_default: security-session
+  repo_root: security-baseline
+  path_prefix: security-path
+  handoff_declared_scope_id: use_declared
+  normalization:
+    lower_case: true
+    replace_non_alnum_with_dash: true
+    collapse_duplicate_dash: true
+fallback_when_no_story_or_security_context: security-session
+fallback_when_scope_is_repo_root: security-baseline
+excluded_path_globs:
+  - .opencode/**
+  - "**/.opencode/**"
+  - "**/vnpt-ai-driven-platform/**"

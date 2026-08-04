@@ -1,0 +1,195 @@
+<template>
+  <div class="dialog-overlay" role="dialog" aria-modal="true" :aria-labelledby="titleId">
+    <div class="dialog-panel">
+      <div class="dialog-header">
+        <h2 :id="titleId" class="dialog-title">{{ title }}</h2>
+        <button class="close-btn" @click="$emit('cancel')" aria-label="Close dialog">×</button>
+      </div>
+
+      <div class="dialog-body">
+        <p class="dialog-message">{{ message }}</p>
+
+        <div class="form-field">
+          <label :for="noteId" class="field-label">
+            Note <span class="optional">(optional)</span>
+          </label>
+          <textarea
+            :id="noteId"
+            v-model="note"
+            class="field-input"
+            rows="3"
+            :placeholder="placeholder"
+            maxlength="500"
+          ></textarea>
+          <span class="field-hint">{{ note.length }}/500 characters</span>
+        </div>
+      </div>
+
+      <div class="dialog-footer">
+        <button class="action-btn cancel-btn" @click="$emit('cancel')" :disabled="loading">
+          Cancel
+        </button>
+        <button
+          class="action-btn confirm-btn"
+          :disabled="loading"
+          @click="confirm"
+        >
+          {{ loading ? 'Processing…' : confirmLabel }}
+        </button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue';
+
+withDefaults(defineProps<{
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  placeholder?: string;
+  loading?: boolean;
+}>(), {
+  confirmLabel: 'Confirm',
+  placeholder: 'Add an optional note…',
+  loading: false,
+});
+
+const emit = defineEmits<{
+  (e: 'confirm', note: string): void;
+  (e: 'cancel'): void;
+}>();
+
+const note = ref('');
+
+const noteId = computed(() => `dialog-note-${Math.random().toString(36).slice(2)}`);
+const titleId = computed(() => `dialog-title-${Math.random().toString(36).slice(2)}`);
+
+function confirm() {
+  emit('confirm', note.value.trim());
+}
+</script>
+
+<style scoped>
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1rem;
+}
+
+.dialog-panel {
+  background: white;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.dialog-title { font-size: 1.0625rem; font-weight: 700; color: #111827; margin: 0; }
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+.close-btn:hover { background: #f3f4f6; }
+
+.dialog-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dialog-message {
+  font-size: 0.875rem;
+  color: #374151;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+.optional { font-weight: 400; color: #9ca3af; }
+.field-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: border-color 0.15s;
+}
+.field-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+.field-hint { font-size: 0.75rem; color: #9ca3af; text-align: right; }
+
+.dialog-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.action-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.cancel-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+.cancel-btn:hover:not(:disabled) { background: #f3f4f6; }
+
+.confirm-btn {
+  background: #15803d;
+  border: 1px solid #15803d;
+  color: white;
+}
+.confirm-btn:hover:not(:disabled) { background: #166534; }
+</style>

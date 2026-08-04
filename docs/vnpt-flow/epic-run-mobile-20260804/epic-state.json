@@ -1,0 +1,12 @@
+{
+  "producer": "vnpt-dev-epic-orchestrator",
+  "run_id": "mobile-20260804",
+  "status": "in_progress",
+  "phase": "preflight",
+  "scope": "mobile",
+  "current_epic": null,
+  "completed_epics": [],
+  "failed_epics": [],
+  "non_progress_streak": 0,
+  "resume_pointer": "step-03-discover"
+}

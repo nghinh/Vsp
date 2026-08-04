@@ -1,0 +1,155 @@
+/**
+ * VSP Button — vsp-button.css
+ * Variants: primary | secondary | destructive
+ * States: default | hover | focus | disabled | loading
+ * Touch target: 44px minimum height
+ *
+ * No emoji icons. Use vector icons only.
+ */
+
+.vsp-button {
+  /* ─── Base ──────────────────────────────────────────────────────────────── */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vsp-space-1-5);
+
+  /* Typography */
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-sm);
+  font-weight: var(--vsp-font-weight-medium);
+  letter-spacing: var(--vsp-letter-spacing-wide);
+  line-height: var(--vsp-line-height-snug);
+
+  /* Layout */
+  min-height: var(--vsp-touch-target-min);
+  padding: var(--vsp-space-2) var(--vsp-space-4);
+
+  /* Appearance */
+  border: 1px solid transparent;
+  border-radius: var(--vsp-radius-md);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+
+  /* Motion */
+  transition:
+    background-color var(--vsp-duration-press) var(--vsp-easing-deceleration),
+    border-color var(--vsp-duration-press) var(--vsp-easing-deceleration),
+    color var(--vsp-duration-press) var(--vsp-easing-deceleration),
+    box-shadow var(--vsp-duration-press) var(--vsp-easing-deceleration),
+    opacity var(--vsp-duration-press) var(--vsp-easing-deceleration);
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ─── Focus Visible ─────────────────────────────────────────────────────────── */
+
+.vsp-button:focus-visible {
+  box-shadow: var(--vsp-focus-ring);
+}
+
+/* ─── Variants ──────────────────────────────────────────────────────────────── */
+
+/* Primary */
+.vsp-button--primary {
+  background-color: var(--vsp-color-primary);
+  border-color: var(--vsp-color-primary);
+  color: var(--vsp-color-on-primary);
+}
+
+.vsp-button--primary:hover:not(:disabled):not(.vsp-button--loading) {
+  background-color: color-mix(in srgb, var(--vsp-color-primary) 88%, black);
+  border-color: color-mix(in srgb, var(--vsp-color-primary) 88%, black);
+}
+
+.vsp-button--primary:active:not(:disabled):not(.vsp-button--loading) {
+  background-color: color-mix(in srgb, var(--vsp-color-primary) 80%, black);
+  border-color: color-mix(in srgb, var(--vsp-color-primary) 80%, black);
+}
+
+/* Secondary */
+.vsp-button--secondary {
+  background-color: transparent;
+  border-color: var(--vsp-color-border-strong);
+  color: var(--vsp-color-text-primary);
+}
+
+.vsp-button--secondary:hover:not(:disabled):not(.vsp-button--loading) {
+  background-color: var(--vsp-color-muted);
+  border-color: var(--vsp-color-border-strong);
+}
+
+.vsp-button--secondary:active:not(:disabled):not(.vsp-button--loading) {
+  background-color: var(--vsp-color-border);
+}
+
+/* Destructive */
+.vsp-button--destructive {
+  background-color: var(--vsp-color-destructive);
+  border-color: var(--vsp-color-destructive);
+  color: var(--vsp-color-on-destructive);
+}
+
+.vsp-button--destructive:hover:not(:disabled):not(.vsp-button--loading) {
+  background-color: color-mix(in srgb, var(--vsp-color-destructive) 88%, black);
+  border-color: color-mix(in srgb, var(--vsp-color-destructive) 88%, black);
+}
+
+.vsp-button--destructive:active:not(:disabled):not(.vsp-button--loading) {
+  background-color: color-mix(in srgb, var(--vsp-color-destructive) 80%, black);
+  border-color: color-mix(in srgb, var(--vsp-color-destructive) 80%, black);
+}
+
+/* ─── States ───────────────────────────────────────────────────────────────── */
+
+/* Disabled */
+.vsp-button:disabled,
+.vsp-button--disabled {
+  opacity: var(--vsp-opacity-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Loading */
+.vsp-button--loading {
+  position: relative;
+  opacity: var(--vsp-opacity-disabled);
+  cursor: wait;
+  pointer-events: none;
+}
+
+/* Loading indicator — replace spinner SVG src with actual icon */
+.vsp-button--loading::after {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: var(--vsp-radius-full);
+  animation: vsp-button-spin var(--vsp-duration-normal) var(--vsp-easing-linear) infinite;
+  flex-shrink: 0;
+}
+
+@keyframes vsp-button-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Icon-only Button ──────────────────────────────────────────────────────── */
+
+.vsp-button--icon-only {
+  padding: var(--vsp-space-2);
+  min-width: var(--vsp-touch-target-min);
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsp-button,
+  .vsp-button--loading::after {
+    transition-duration: var(--vsp-duration-instant);
+    animation-duration: 0.01ms !important;
+  }
+}

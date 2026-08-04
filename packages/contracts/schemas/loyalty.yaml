@@ -1,0 +1,85 @@
+# Loyalty schemas for the Vietnam Smart Golf Platform API
+
+LoyaltyAccount:
+  type: object
+  properties:
+    accountId:
+      type: string
+      description: Account unique identifier
+    userId:
+      type: string
+      format: uuid
+      description: User identifier
+    pointsBalance:
+      type: integer
+      description: Current redeemable points balance
+      example: 2500
+    lifetimePoints:
+      type: integer
+      description: Total points ever earned (for tier calculation)
+      example: 15000
+    tier:
+      type: string
+      description: Loyalty tier
+      example: silver
+
+LoyaltyTransaction:
+  type: object
+  properties:
+    transactionId:
+      type: string
+      description: Transaction unique identifier
+    accountId:
+      type: string
+      description: Account this transaction belongs to
+    points:
+      type: integer
+      description: Points amount (positive for earn, negative for redeem)
+      example: 500
+    type:
+      type: string
+      enum: [earn, redeem, expire, adjust]
+      description: Transaction type
+      example: earn
+    source:
+      type: string
+      description: Source of points (e.g., booking, purchase, bonus)
+      example: booking
+    timestamp:
+      type: string
+      format: date-time
+      description: When the transaction occurred
+
+LoyaltyEarnRequest:
+  type: object
+  required:
+    - points
+    - source
+  properties:
+    points:
+      type: integer
+      description: Points to earn
+    source:
+      type: string
+      description: Source of points
+
+LoyaltyRedeemRequest:
+  type: object
+  required:
+    - points
+    - rewardId
+  properties:
+    points:
+      type: integer
+      description: Points to redeem
+    rewardId:
+      type: string
+      description: Reward identifier
+
+TransactionListResponse:
+  type: object
+  properties:
+    transactions:
+      type: array
+      items:
+        $ref: '#/LoyaltyTransaction'

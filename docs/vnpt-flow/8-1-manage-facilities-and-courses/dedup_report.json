@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "8-1-manage-facilities-and-courses",
+  "reports": [
+    {
+      "slice_id": "gap-fill",
+      "symbol": "TeeSetAdminController",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/admin/TeeSetAdminController.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "gap-fill",
+      "symbol": "CourseService",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/CourseService.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "gap-fill",
+      "symbol": "CourseAdminService",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/CourseAdminService.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "gap-fill",
+      "symbol": "CourseAdminServiceImpl",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/CourseAdminServiceImpl.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    }
+  ]
+}

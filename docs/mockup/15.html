@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>15 — Tổng kết vòng đấu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Shared Style Guidance Tokens applied via Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "surface-bright": "#31394d",
+                "background": "#0b1326",
+                "on-secondary-fixed": "#341100",
+                "tertiary-fixed": "#85f8c4",
+                "surface-variant": "#2d3449",
+                "surface-container-highest": "#2d3449",
+                "primary-container": "#f66018",
+                "on-error": "#690005",
+                "secondary": "#ffb690",
+                "on-background": "#dae2fd",
+                "inverse-primary": "#a73a00",
+                "error-container": "#93000a",
+                "surface-tint": "#ffb599",
+                "tertiary-fixed-dim": "#68dba9",
+                "surface-container-high": "#222a3d",
+                "on-tertiary-fixed": "#002114",
+                "on-tertiary": "#003825",
+                "outline": "#a98a7e",
+                "surface-container-lowest": "#060e20",
+                "on-primary": "#5a1c00",
+                "on-secondary": "#552100",
+                "inverse-on-surface": "#283044",
+                "on-tertiary-container": "#00311f",
+                "on-surface-variant": "#e2bfb2",
+                "tertiary": "#68dba9",
+                "surface-container": "#171f33",
+                "on-primary-fixed-variant": "#7f2b00",
+                "tertiary-container": "#25a475",
+                "primary-fixed": "#ffdbce",
+                "primary": "#ffb599",
+                "secondary-fixed": "#ffdbca",
+                "surface-container-low": "#131b2e",
+                "error": "#ffb4ab",
+                "inverse-surface": "#dae2fd",
+                "on-error-container": "#ffdad6",
+                "secondary-container": "#ec6a06",
+                "on-secondary-fixed-variant": "#783200",
+                "on-primary-fixed": "#370e00",
+                "outline-variant": "#5a4138",
+                "secondary-fixed-dim": "#ffb690",
+                "on-tertiary-fixed-variant": "#005137",
+                "on-surface": "#dae2fd",
+                "surface": "#0b1326",
+                "on-primary-container": "#4f1700",
+                "on-secondary-container": "#4a1c00",
+                "primary-fixed-dim": "#ffb599",
+                "surface-dim": "#0b1326"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "margin-mobile": "16px",
+                "gutter": "16px",
+                "unit": "8px",
+                "touch-target": "44px",
+                "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                "label-caps": ["Fira Sans"],
+                "headline-lg": ["Fira Sans"],
+                "body-md": ["Fira Sans"],
+                "metric-sm": ["Fira Code"],
+                "headline-md": ["Fira Sans"],
+                "display-metrics": ["Fira Code"],
+                "body-lg": ["Fira Sans"]
+            },
+            "fontSize": {
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .score-circle { border: 1.5px solid currentColor; border-radius: 50%; }
+        .score-square { border: 1.5px solid currentColor; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="font-body-md text-body-md overflow-x-hidden">
+<!-- Top AppBar -->
+<header class="bg-surface-container-lowest dark:bg-surface-container-lowest text-primary dark:text-primary w-full top-0 border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between px-margin-mobile h-touch-target w-full z-50 sticky">
+<div class="flex items-center gap-3">
+<button class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Tổng kết vòng đấu</h1>
+</div>
+<button class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined">share</span>
+</button>
+</header>
+<main class="pb-32">
+<!-- Header Info & Sync Status -->
+<section class="px-margin-mobile pt-6 pb-4">
+<div class="flex justify-between items-start mb-2">
+<div>
+<h2 class="font-body-lg text-body-lg font-bold text-on-surface">BRG Legend Hill Golf Resort</h2>
+<p class="text-on-surface-variant font-label-caps text-label-caps opacity-80 uppercase">Aug 1, 2026</p>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1 bg-tertiary-container/20 text-tertiary rounded-full border border-tertiary/30">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-caps text-[10px]">Đã đồng bộ</span>
+</div>
+</div>
+<div class="flex gap-2 mt-3">
+<span class="bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded font-label-caps text-[11px]">18 Holes</span>
+<span class="bg-primary/20 text-primary px-2 py-0.5 rounded font-label-caps text-[11px] border border-primary/20">Blue Tee</span>
+<span class="bg-surface-container-highest text-on-surface-variant px-2 py-0.5 rounded font-label-caps text-[11px]">Casual Mode</span>
+</div>
+</section>
+<!-- Hero Score Section -->
+<section class="px-margin-mobile mb-8">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-high p-6 flex flex-col items-center justify-center border border-[rgba(255,255,255,0.08)]">
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 blur-[60px] rounded-full"></div>
+<div class="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/5 blur-[60px] rounded-full"></div>
+<div class="text-center z-10">
+<span class="font-label-caps text-label-caps text-on-surface-variant tracking-widest uppercase">Total Score</span>
+<div class="font-display-metrics text-display-metrics text-primary leading-tight mt-1">94</div>
+<div class="font-headline-md text-headline-md text-secondary mt-[-4px]">+22 <span class="text-body-md opacity-60">over par</span></div>
+<div class="flex items-center gap-3 mt-6 bg-background/40 backdrop-blur-md px-4 py-2 rounded-full border border-[rgba(255,255,255,0.05)]">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-bright">
+<img class="w-full h-full object-cover" data-alt="A professional close-up headshot of a smiling Vietnamese male golfer in his late 20s, wearing a crisp white performance polo shirt with a subtle orange trim. The lighting is soft and high-contrast, typical of a professional sports portrait. The background is a blurred lush green golf course under a clear morning sky, maintaining a premium and focused athletic aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJfpC2glgByspFiZwCNUWKQOhFmmjMz5Zz-wfeHH58x_yI_lggzw52kUI9Xa85FV_2-kfdGN7ZrMs9O1r4mbZu7YhTchuB9DHxNw0x1OvTWdLdibHIs94H8xZL5LasLGveHpn0bWcnC5WxSx0BvKb39HBbUI8Fxq3xQX3S9zFoFQZiHjLxvpHgQ74D23SW9cNJ-VoHk615istQldFlQkrZb8hO1IUeLoTys04tJgH1PxSGIWWSvLQtVg"/>
+</div>
+<div class="text-left">
+<div class="font-label-caps text-[13px] text-on-surface font-bold leading-none">Nghi</div>
+<div class="font-metric-sm text-[11px] text-on-surface-variant">HCP 22.9</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Score Grid -->
+<section class="px-margin-mobile mb-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4 flex items-center justify-between">
+<span>Scorecard Detail</span>
+<span class="text-[10px] opacity-60">Fira Code Metrics</span>
+</h3>
+<div class="bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+<!-- OUT Holes -->
+<div class="overflow-x-auto no-scrollbar border-b border-[rgba(255,255,255,0.05)]">
+<table class="w-full text-center border-collapse">
+<tbody><tr class="bg-surface-container/50">
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-low z-20">HOLE</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">1</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">2</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">3</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">4</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">5</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">6</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">7</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">8</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">9</td>
+<td class="p-2 min-w-[44px] font-metric-sm text-metric-sm bg-surface-bright/20">OUT</td>
+</tr>
+<tr>
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-low z-20">PAR</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">3</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">5</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">3</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">5</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-surface-bright/10 opacity-60">36</td>
+</tr>
+<tr class="bg-surface-container-high/30">
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-high z-20">SCORE</td>
+<td class="p-2"><div class="font-metric-sm text-metric-sm w-7 h-7 flex items-center justify-center mx-auto text-tertiary score-circle border-tertiary">3</div></td>
+<td class="p-2 font-metric-sm text-metric-sm">3</td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2"><div class="font-metric-sm text-metric-sm w-7 h-7 flex items-center justify-center mx-auto text-on-surface-variant score-square border-on-surface-variant">5</div></td>
+<td class="p-2 font-metric-sm text-metric-sm">4</td>
+<td class="p-2"><div class="font-metric-sm text-metric-sm w-7 h-7 flex items-center justify-center mx-auto text-secondary score-square border-secondary border-double">6</div></td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2 font-metric-sm text-metric-sm">4</td>
+<td class="p-2 font-metric-sm text-metric-sm">4</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-surface-bright/20 font-bold">46</td>
+</tr>
+</tbody></table>
+</div>
+<!-- IN Holes -->
+<div class="overflow-x-auto no-scrollbar">
+<table class="w-full text-center border-collapse">
+<tbody><tr class="bg-surface-container/50">
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-low z-20">HOLE</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">10</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">11</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">12</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">13</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">14</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">15</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">16</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">17</td>
+<td class="p-2 min-w-[36px] font-metric-sm text-metric-sm">18</td>
+<td class="p-2 min-w-[44px] font-metric-sm text-metric-sm bg-surface-bright/20">IN</td>
+<td class="p-2 min-w-[44px] font-metric-sm text-metric-sm bg-primary/10 text-primary">TOT</td>
+</tr>
+<tr>
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-low z-20">PAR</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">5</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">3</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">3</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">5</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm opacity-60">4</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-surface-bright/10 opacity-60">36</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-primary/5 opacity-60">72</td>
+</tr>
+<tr class="bg-surface-container-high/30">
+<td class="p-2 border-r border-[rgba(255,255,255,0.05)] font-label-caps text-[10px] opacity-50 sticky left-0 bg-surface-container-high z-20">SCORE</td>
+<td class="p-2 font-metric-sm text-metric-sm">4</td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2"><div class="font-metric-sm text-metric-sm w-7 h-7 flex items-center justify-center mx-auto text-error score-square border-error bg-error/10">8</div></td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2 font-metric-sm text-metric-sm">4</td>
+<td class="p-2 font-metric-sm text-metric-sm">3</td>
+<td class="p-2 font-metric-sm text-metric-sm">6</td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2 font-metric-sm text-metric-sm">5</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-surface-bright/20 font-bold">48</td>
+<td class="p-2 font-metric-sm text-metric-sm bg-primary text-on-primary font-bold">94</td>
+</tr>
+</tbody></table>
+</div>
+</div>
+<div class="flex gap-4 mt-3 justify-center">
+<div class="flex items-center gap-1.5 opacity-70">
+<div class="w-3 h-3 score-circle border-tertiary"></div>
+<span class="font-label-caps text-[10px]">Birdie</span>
+</div>
+<div class="flex items-center gap-1.5 opacity-70">
+<div class="w-3 h-3 score-square border-on-surface-variant"></div>
+<span class="font-label-caps text-[10px]">Bogey</span>
+</div>
+<div class="flex items-center gap-1.5 opacity-70">
+<div class="w-3 h-3 score-square border-secondary border-double"></div>
+<span class="font-label-caps text-[10px]">DBL Bogey+</span>
+</div>
+</div>
+</section>
+<!-- Stats Grid -->
+<section class="px-margin-mobile mb-8">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-4">Round Statistics</h3>
+<div class="grid grid-cols-2 gap-3">
+<!-- Fairways -->
+<div class="bg-surface-container-high/40 p-4 rounded-xl border border-[rgba(255,255,255,0.05)]">
+<div class="text-on-surface-variant font-label-caps text-[11px] mb-1">FAIRWAYS</div>
+<div class="font-display-metrics text-[32px] text-on-surface">43<span class="text-body-md opacity-50">%</span></div>
+<div class="mt-2 h-1 bg-surface-bright rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 43%"></div>
+</div>
+</div>
+<!-- GIR -->
+<div class="bg-surface-container-high/40 p-4 rounded-xl border border-[rgba(255,255,255,0.05)]">
+<div class="text-on-surface-variant font-label-caps text-[11px] mb-1">GIR</div>
+<div class="font-display-metrics text-[32px] text-on-surface">28<span class="text-body-md opacity-50">%</span></div>
+<div class="mt-2 h-1 bg-surface-bright rounded-full overflow-hidden">
+<div class="h-full bg-tertiary" style="width: 28%"></div>
+</div>
+</div>
+<!-- Putts -->
+<div class="bg-surface-container-high/40 p-4 rounded-xl border border-[rgba(255,255,255,0.05)] flex flex-col justify-between">
+<div>
+<div class="text-on-surface-variant font-label-caps text-[11px] mb-1">TOTAL PUTTS</div>
+<div class="font-display-metrics text-[32px] text-on-surface">34</div>
+</div>
+<div class="mt-3 flex items-center gap-1.5 text-secondary text-[10px] font-label-caps bg-secondary/10 px-2 py-0.5 rounded-full w-fit">
+<span class="material-symbols-outlined text-[12px]">info</span>
+                        Dữ liệu chưa đủ
+                    </div>
+</div>
+<!-- Penalties -->
+<div class="bg-surface-container-high/40 p-4 rounded-xl border border-[rgba(255,255,255,0.05)]">
+<div class="text-on-surface-variant font-label-caps text-[11px] mb-1 text-error">PENALTIES</div>
+<div class="font-display-metrics text-[32px] text-error">3</div>
+<div class="mt-3 flex items-center gap-1 opacity-40 font-label-caps text-[10px]">
+<span class="material-symbols-outlined text-[14px]">water_drop</span>
+<span class="material-symbols-outlined text-[14px]">golf_course</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Review & Anomalies -->
+<section class="px-margin-mobile mb-8">
+<div class="bg-error/5 border border-error/20 rounded-xl overflow-hidden">
+<button class="w-full flex items-center justify-between p-4 active:bg-error/10 transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<span class="font-body-md font-bold text-error">Điểm cần xem lại (1)</span>
+</div>
+<span class="material-symbols-outlined text-error/60">expand_more</span>
+</button>
+<div class="p-4 pt-0 border-t border-error/10">
+<div class="flex items-start gap-4 bg-background/50 p-3 rounded-lg border border-error/10 mt-1">
+<div class="font-metric-sm text-metric-sm bg-error text-on-error px-2 py-1 rounded">Hole 12</div>
+<div>
+<p class="font-label-caps text-[12px] text-on-surface">Phát hiện bất thường</p>
+<p class="text-[11px] text-on-surface-variant mt-1">Điểm số (8) cao bất thường so với dữ liệu GPS. Vui lòng kiểm tra lại số gậy phạt.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Actions -->
+<section class="px-margin-mobile flex flex-col gap-3">
+<button class="w-full py-4 border-2 border-outline/30 rounded-xl font-label-caps text-on-surface uppercase tracking-widest active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+                Chỉnh sửa vòng đấu
+            </button>
+<button class="w-full py-4 bg-primary text-on-primary rounded-xl font-headline-md text-headline-md font-bold active:scale-[0.98] transition-all shadow-lg shadow-primary/20">
+                Lưu &amp; hoàn tất
+            </button>
+</section>
+</main>
+<!-- Bottom Navigation (Simulated shell visibility) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 z-50 border-t border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-caps text-label-caps text-[10px] mt-0.5">Sân golf</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-label-caps text-[10px] mt-0.5">Bản đồ</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">markdown_copy</span>
+<span class="font-label-caps text-label-caps text-[10px] mt-0.5">Bảng điểm</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps text-[10px] mt-0.5">Cá nhân</span>
+</div>
+</nav>
+<script>
+        // Simple micro-interaction for the "Save" button pulse
+        document.querySelector('.bg-primary').addEventListener('click', function() {
+            this.textContent = "Đang lưu...";
+            this.classList.add('opacity-80');
+            setTimeout(() => {
+                this.textContent = "Hoàn tất!";
+                this.classList.replace('bg-primary', 'bg-tertiary');
+                this.classList.replace('text-on-primary', 'text-on-tertiary');
+            }, 1000);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,282 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "9-3",
+  "reports": [
+    {
+      "slice_id": "wave1",
+      "symbol": "Correction",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/entity/Correction.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:10:15.725789+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T11:12:02.951257+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "CorrectionResolutionRequest",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/dto/CorrectionResolutionRequest.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:10:23.684329+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T11:12:05.845927+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "CorrectionResolutionResponse",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/dto/CorrectionResolutionResponse.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:10:25.129543+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T11:12:06.256943+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "CorrectionStatus",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/entity/CorrectionStatus.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:10:26.592358+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T11:12:03.802503+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "CorrectionType",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/entity/CorrectionType.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:10:28.019853+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T11:12:04.833172+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "CourseCorrection",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/correction/entity/CourseCorrection.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:20:28.815922+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave1",
+      "symbol": "AuditAction",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/audit/AuditAction.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T11:20:30.388311+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

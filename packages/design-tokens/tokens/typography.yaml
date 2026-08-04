@@ -1,0 +1,128 @@
+# Design Tokens — Typography
+# Source: UX Spec §4.3 — Vietnam Smart Golf Platform
+# Platform-agnostic semantic typography tokens.
+
+typography:
+  # ─── Font Families ─────────────────────────────────────────────────────────
+
+  fontFamily:
+    display:   "Fira Sans"
+    body:      "Fira Sans"
+    mono:      "Fira Code"
+
+  # ─── Base Sizes ────────────────────────────────────────────────────────────
+
+  fontSize:
+    base:        16   # px equivalent — minimum body text per UX spec
+    xs:          12
+    sm:          14
+    base_:       16
+    lg:          18
+    xl:          20
+    "2xl":       24
+    "3xl":       30
+    "4xl":       36
+    "5xl":       48
+    "6xl":       60
+    "7xl":       72
+
+  # ─── Line Heights ──────────────────────────────────────────────────────────
+
+  lineHeight:
+    tight:      1.2   # For large numeric distance panels
+    snug:       1.375
+    normal:     1.5   # Body text per UX spec
+    relaxed:    1.625
+    loose:      2.0
+
+  # ─── Letter Spacing ────────────────────────────────────────────────────────
+
+  letterSpacing:
+    tighter:    -0.8
+    tight:      -0.4
+    normal:      0.0
+    wide:        0.4
+    wider:       0.8
+    widest:      1.6
+
+  # ─── Font Weights ─────────────────────────────────────────────────────────
+
+  fontWeight:
+    thin:       100
+    extralight: 200
+    light:      300
+    regular:    400
+    medium:     500
+    semibold:   600
+    bold:       700
+    extrabold:  800
+    black:      900
+
+  # ─── Scale Ratios (Large Text Support) ────────────────────────────────────
+  # Applied as multipliers to fontSize.base for Dynamic Type / large text modes.
+  # UX spec: scale ratios 1.25 / 1.5 / 2.0
+
+  scaleRatio:
+    small:      1.25   # Accessibility: small increase
+    medium:     1.5    # Default large-text scaling
+    large:      2.0    # Maximum supported scaling
+
+  # ─── Text Tiers ────────────────────────────────────────────────────────────
+
+  textTier:
+    display:
+      fontFamily: "{typography.fontFamily.display}"
+      fontSize:   "{typography.fontSize.5xl}"
+      lineHeight: "{typography.lineHeight.tight}"
+      fontWeight: "{typography.fontWeight.bold}"
+      # Use case: primary on-course distance numbers (sunlight readability)
+
+    heading:
+      fontFamily: "{typography.fontFamily.display}"
+      fontSize:   "{typography.fontSize.3xl}"
+      lineHeight: "{typography.lineHeight.tight}"
+      fontWeight: "{typography.fontWeight.semibold}"
+      # Use case: screen titles, section headers
+
+    title:
+      fontFamily: "{typography.fontFamily.display}"
+      fontSize:   "{typography.fontSize.xl}"
+      lineHeight: "{typography.lineHeight.snug}"
+      fontWeight: "{typography.fontWeight.semibold}"
+      # Use case: card titles, nav items
+
+    body:
+      fontFamily: "{typography.fontFamily.body}"
+      fontSize:   "{typography.fontSize.base_}"
+      lineHeight: "{typography.lineHeight.normal}"
+      fontWeight: "{typography.fontWeight.regular}"
+      # Use case: standard body text — minimum 4.5:1 contrast
+
+    bodySmall:
+      fontFamily: "{typography.fontFamily.body}"
+      fontSize:   "{typography.fontSize.sm}"
+      lineHeight: "{typography.lineHeight.normal}"
+      fontWeight: "{typography.fontWeight.regular}"
+
+    label:
+      fontFamily: "{typography.fontFamily.body}"
+      fontSize:   "{typography.fontSize.sm}"
+      lineHeight: "{typography.lineHeight.snug}"
+      fontWeight: "{typography.fontWeight.medium}"
+      letterSpacing: "{typography.letterSpacing.wide}"
+      # Use case: form labels, button text
+
+    caption:
+      fontFamily: "{typography.fontFamily.body}"
+      fontSize:   "{typography.fontSize.xs}"
+      lineHeight: "{typography.lineHeight.normal}"
+      fontWeight: "{typography.fontWeight.regular}"
+      # Use case: helper text, timestamps — must meet 3:1 contrast
+
+    mono:
+      fontFamily: "{typography.fontFamily.mono}"
+      fontSize:   "{typography.fontSize.base_}"
+      lineHeight: "{typography.lineHeight.normal}"
+      fontWeight: "{typography.fontWeight.regular}"
+      # Use case: distances, coordinates, technical metrics
+      # Tabular figures enabled for numeric precision

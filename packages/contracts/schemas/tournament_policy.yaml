@@ -1,0 +1,193 @@
+# Tournament Policy schemas for the Vietnam Smart Golf Platform API
+#
+# Per PRD §8.12: "Tournament Mode may lock after round start."
+# Per Architecture §14 QG-8: "Basic Tournament Mode restrictions are
+# represented in config and UI."
+
+TournamentPolicy:
+  type: object
+  required:
+    - id
+    - name
+    - createdAt
+    - createdBy
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique policy identifier
+    name:
+      type: string
+      description: Human-readable policy name
+      example: "Pro Tournament 2026"
+    windAdjustmentEnabled:
+      type: boolean
+      description: Wind adjustment toggle enabled
+      default: true
+    playsLikeEnabled:
+      type: boolean
+      description: Plays-like distance enabled
+      default: true
+    elevationEnabled:
+      type: boolean
+      description: Elevation data enabled
+      default: true
+    clubRecommendationEnabled:
+      type: boolean
+      description: AI club recommendation enabled
+      default: true
+    contoursEnabled:
+      type: boolean
+      description: Green contour overlay enabled
+      default: true
+    puttingHelpEnabled:
+      type: boolean
+      description: Putting help display enabled
+      default: true
+    aiFeaturesEnabled:
+      type: boolean
+      description: AI features (Smart Target) enabled
+      default: true
+    isLocked:
+      type: boolean
+      description: Policy is locked — feature flags cannot be changed without TournamentDirector role
+      default: false
+    createdAt:
+      type: string
+      format: date-time
+      description: When this policy was created
+    createdBy:
+      type: string
+      format: uuid
+      description: ID of the actor who created the policy
+    version:
+      type: integer
+      description: Optimistic lock version
+      default: 1
+
+TournamentPolicyCreate:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      description: Human-readable policy name
+    windAdjustmentEnabled:
+      type: boolean
+      default: true
+    playsLikeEnabled:
+      type: boolean
+      default: true
+    elevationEnabled:
+      type: boolean
+      default: true
+    clubRecommendationEnabled:
+      type: boolean
+      default: true
+    contoursEnabled:
+      type: boolean
+      default: true
+    puttingHelpEnabled:
+      type: boolean
+      default: true
+    aiFeaturesEnabled:
+      type: boolean
+      default: true
+
+TournamentPolicyUpdate:
+  type: object
+  properties:
+    name:
+      type: string
+    windAdjustmentEnabled:
+      type: boolean
+    playsLikeEnabled:
+      type: boolean
+    elevationEnabled:
+      type: boolean
+    clubRecommendationEnabled:
+      type: boolean
+    contoursEnabled:
+      type: boolean
+    puttingHelpEnabled:
+      type: boolean
+    aiFeaturesEnabled:
+      type: boolean
+
+TournamentPolicyChange:
+  type: object
+  required:
+    - id
+    - policyId
+    - changedBy
+    - changedAt
+    - afterJson
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Audit record identifier
+    policyId:
+      type: string
+      format: uuid
+      description: Policy this change applies to
+    changedBy:
+      type: string
+      format: uuid
+      description: Actor who made the change
+    changedAt:
+      type: string
+      format: date-time
+      description: When the change occurred
+    beforeJson:
+      $ref: '#/TournamentPolicy'
+      description: Policy state before this change (null for creation)
+    afterJson:
+      $ref: '#/TournamentPolicy'
+      description: Policy state after this change
+    reason:
+      type: string
+      description: Optional reason for the change
+      example: "Round started — policy locked"
+
+TournamentPolicyListResponse:
+  type: object
+  properties:
+    policies:
+      type: array
+      items:
+        $ref: '#/TournamentPolicy'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+TournamentPolicyChangeListResponse:
+  type: object
+  properties:
+    changes:
+      type: array
+      items:
+        $ref: '#/TournamentPolicyChange'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+# Error response for feature restriction violations
+FeatureRestrictedError:
+  type: object
+  required:
+    - code
+    - feature
+    - message
+  properties:
+    code:
+      type: string
+      enum: [FEATURE_RESTRICTED, POLICY_LOCKED]
+      description: Stable error code
+    feature:
+      type: string
+      description: The restricted feature flag name
+      example: windAdjustmentEnabled
+    message:
+      type: string
+      description: Human-readable explanation
+      example: "Wind adjustment is disabled in tournament mode"

@@ -1,0 +1,31 @@
+{
+  "story": "1.4",
+  "epic": "1",
+  "phase": "re-review",
+  "fixes_verified": [
+    {
+      "issue": "DS-2 HIGH: VspColorSemantic hardcodes light palette for dark mode",
+      "verified": true,
+      "evidence": "vsp_color.dart:113-162 — VspColorSemantic.of(Brightness, _SemanticToken) resolves dark palette variants: Brightness.dark → VspColorDark.accent (#34D399), VspColorDark.secondary (#FBBF24), VspColorDark.muted (#201C27), VspColorDark.destructive (#F87171), VspColorDark.textTertiary (#64748B). All semantic tokens covered including gpsReady, online, syncFailed, estimated, stale, courseNotDownloaded, etc."
+    },
+    {
+      "issue": "DS-2 MED: VspButton._FocusRingWrapper hardcodes colorScheme.primary",
+      "verified": true,
+      "evidence": "vsp_button.dart:299 — replaced with VspFocusRing.colorOf(Theme.of(context).brightness). vsp_focus.dart:20-22 — colorOf(Brightness) returns VspColorDark.ring (#FB923C) for dark, VspColorLight.ring (#EA580C) for light. Matches focus.yaml platform.ringColor: {color.ring}."
+    },
+    {
+      "issue": "DS-3 MED: CSS --vsp-color-ring #FDBA74 doesn't match color.yaml #FB923C",
+      "verified": true,
+      "evidence": "tokens.css:214 — [data-theme=\"dark\"] --vsp-color-ring: #FB923C. tokens.css:215 — [data-theme=\"dark\"] --vsp-focus-ring: 0 0 0 2px #FB923C. Matches color.yaml:70 dark.ring: #FB923C. Contrast 4.5:1 against #0F172A confirmed."
+    },
+    {
+      "issue": "DS-2 LOW: VspScaleRatio.large unused due to Flutter MediaQuery.boldTextOf binary limitation",
+      "verified": true,
+      "evidence": "vsp_typography.dart:182-199 — _scaled() comment (lines 182-189) explicitly documents: Flutter's MediaQuery.boldTextOf is binary, does not expose granular scale factor, so VspScaleRatio.large (2.0x) is reserved for future use when Flutter supports it. boldText=true → VspScaleRatio.medium (1.5x)."
+    }
+  ],
+  "new_issues": [],
+  "overall_result": "pass",
+  "next_action": "proceed_to_done",
+  "summary": "All 4 repairs verified. No new issues introduced. DS-2 HIGH resolved by adding VspColorSemantic.of(). DS-2 MED resolved by using VspFocusRing.colorOf(Brightness). DS-3 MED resolved by aligning CSS --vsp-color-ring to #FB923C. DS-2 LOW resolved by documenting Flutter boldTextOf binary limitation. Story 1.4 passes re-review gate."
+}

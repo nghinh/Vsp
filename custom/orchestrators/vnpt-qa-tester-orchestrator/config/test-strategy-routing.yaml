@@ -1,0 +1,48 @@
+routing:
+  example_based:
+    use_when:
+      - acceptance criteria are explicit
+      - representative happy/negative/boundary cases are needed
+    tools: [native test framework]
+  combinatorial:
+    use_when:
+      - multiple independent parameters interact
+      - status x input x environment combinations may hide defects
+    tools: [PICT, ACTS]
+  state_machine:
+    use_when:
+      - feature has workflow lifecycle or state transitions
+      - cancel/retry/timeout/duplicate behavior exists
+    tools: [Hypothesis stateful, fast-check model, Playwright scenario]
+  property_based:
+    use_when:
+      - input domain is large
+      - invariants must always hold
+      - sorting, pagination, validation, idempotency, date/time logic exists
+    tools: [Hypothesis, fast-check, jqwik, FsCheck]
+  api_schema_fuzz:
+    use_when:
+      - OpenAPI or GraphQL schema exists
+      - API validation or response schema matters
+    tools: [Schemathesis]
+  e2e:
+    use_when:
+      - user journey is business critical
+      - UI state and cross-component behavior matter
+    tools: [Playwright]
+  mutation:
+    use_when:
+      - critical logic has tests but confidence is low
+      - coverage is high but assertions may be weak
+    tools: [StrykerJS, PIT, Stryker.NET, mutmut, cosmic-ray]
+  exploratory:
+    use_when:
+      - requirements are ambiguous
+      - UX/human workflow matters
+      - automation cannot cover all risks
+    tools: [manual charter]
+  regression:
+    use_when:
+      - known bug exists
+      - recently changed area is risky
+    tools: [native test framework]

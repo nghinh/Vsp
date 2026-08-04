@@ -1,0 +1,119 @@
+{
+  "_meta": {
+    "ownership": "Skill-layer (LLM agent facing). NOT consumed by any runtime service.",
+    "purpose": "Authoritative source for the LLM agent driving the BMAD review workflow. Pins review lifecycle states, finding severity classes, finding status values, backlog state values, and run status values used by steps/ scripts to classify findings and track run progress.",
+    "see_also": "references/state-machine.md (review-level workflow) and data/orchestrator-rules.md (workflow hard stops)."
+  },
+  "reviewStatusValues": {
+    "pending": "pending",
+    "in_progress": "in_progress",
+    "stalled": "stalled",
+    "complete": "complete",
+    "failed": "failed"
+  },
+  "findingSeverityValues": {
+    "info": "info",
+    "low": "low",
+    "medium": "medium",
+    "high": "high",
+    "critical": "critical"
+  },
+  "findingStatusValues": {
+    "open": "open",
+    "in_progress": "in_progress",
+    "stalled": "stalled",
+    "fixed": "fixed",
+    "closed": "closed",
+    "waived": "waived",
+    "deferred": "deferred"
+  },
+  "backlogStateValues": {
+    "open": "open",
+    "in_progress": "in_progress",
+    "stalled": "stalled",
+    "fixed": "fixed",
+    "closed": "closed",
+    "waived": "waived",
+    "deferred": "deferred"
+  },
+  "runStatusValues": {
+    "pending": "pending",
+    "in_progress": "in_progress",
+    "stalled": "stalled",
+    "complete": "complete",
+    "failed": "failed"
+  },
+  "modeValues": {
+    "diff": "diff",
+    "full": "full",
+    "path_arg": "path-arg",
+    "handoff": "handoff",
+    "manual": "manual"
+  },
+  "scopeSourceValues": {
+    "workspace_diff": "workspace-diff",
+    "path_arg": "path-arg",
+    "review_handoff": "review-handoff",
+    "manual": "manual",
+    "agent": "agent"
+  },
+  "categoryValues": [
+    "workflow/review",
+    "workflow/fix",
+    "code/style",
+    "code/logic",
+    "code/security",
+    "code/performance",
+    "config/build",
+    "config/ci",
+    "docs/missing",
+    "test/coverage",
+    "test/quality"
+  ],
+  "blockingSeverity": [
+    "critical",
+    "high"
+  ],
+  "doneValues": [
+    "fixed",
+    "closed",
+    "waived",
+    "deferred"
+  ],
+  "techLaneValues": [
+    "architecture",
+    "docs",
+    "frontend-react",
+    "frontend-vue",
+    "frontend-angular",
+    "backend-node",
+    "backend-python",
+    "backend-java",
+    "backend-dotnet",
+    "backend-go",
+    "backend-php",
+    "backend-c-cpp",
+    "mobile-flutter",
+    "mobile-react",
+    "infra-devops"
+  ],
+  "validationRouteByLane": {
+    "frontend-react": ["lint", "typecheck", "unit", "build"],
+    "frontend-vue": ["lint", "typecheck", "unit", "build"],
+    "frontend-angular": ["lint", "typecheck", "unit", "build"],
+    "backend-node": ["lint", "unit", "integration", "build"],
+    "backend-python": ["lint", "unit", "typecheck"],
+    "backend-java": ["compile", "unit", "integration"],
+    "backend-dotnet": ["build", "test"],
+    "backend-go": ["build", "test", "lint"],
+    "backend-php": ["lint", "unit"],
+    "backend-c-cpp": ["compile", "lint", "test"],
+    "mobile-flutter": ["analyze", "test", "build"],
+    "mobile-react": ["lint", "test", "build"],
+    "infra-devops": ["validate", "lint", "dry-run"],
+    "architecture": ["review", "validate"],
+    "docs": ["link-check", "prose-lint"]
+  },
+  "stallThreshold": 2,
+  "minPassCountForCompletion": 2
+}

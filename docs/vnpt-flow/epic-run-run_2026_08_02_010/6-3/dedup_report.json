@@ -1,0 +1,266 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "6.3",
+  "reports": [
+    {
+      "slice_id": "slice-1",
+      "symbol": "HoleMapBloc",
+      "file": "apps/mobile/lib/features/hole_map/presentation/hole_map_bloc.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:10.421327+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T08:57:06.068847+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-1",
+      "symbol": "HoleMapScreen",
+      "file": "apps/mobile/lib/features/hole_map/presentation/hole_map_screen.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:13.193204+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-2",
+      "symbol": "LocalCoursePackageRepository",
+      "file": "packages/course-package/lib/src/course_package_repository.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:14.565193+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T08:57:07.801006+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-2",
+      "symbol": "CoursePackageManifest",
+      "file": "packages/course-package/lib/src/manifest.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:16.422661+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-2",
+      "symbol": "HoleGeometry",
+      "file": "packages/course-package/lib/src/hole_geometry.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:17.286938+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-3",
+      "symbol": "HoleMapEntity",
+      "file": "apps/mobile/lib/features/hole_map/domain/hole_map_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:18.904726+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T08:57:08.848864+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "slice-3",
+      "symbol": "PinEntity",
+      "file": "apps/mobile/lib/features/hole_map/domain/pin_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T08:52:19.980431+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T08:57:09.780253+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

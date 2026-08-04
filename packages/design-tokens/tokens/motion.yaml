@@ -1,0 +1,156 @@
+# Design Tokens — Motion
+# Source: UX Spec §11 — Vietnam Smart Golf Platform
+# Motion tier: subtle. Motion must clarify state, not decorate.
+# Allowed: pressed feedback 80–150ms, transitions 150–300ms.
+# Avoid: decorative infinite animations, >500ms, motion during active round.
+
+motion:
+  # ─── Duration Scale ─────────────────────────────────────────────────────────
+  # UX spec §11: pressed feedback 80–150ms; transitions 150–300ms.
+
+  duration:
+    # Instant — no perceptible animation
+    instant:   0ms
+
+    # Fast — pressed feedback (UX spec §11: 80–150ms)
+    press:     80ms    # Minimum for pressed feedback
+    pressMax:  150ms   # Maximum for pressed feedback
+
+    # Standard — screen transitions, state changes (UX spec §11: 150–300ms)
+    fast:      150ms
+    normal:    200ms
+    slow:      300ms   # Maximum recommended for non-critical UI
+
+    # Deliberate — non-critical reveals only
+    reveal:    400ms
+    max:       500ms   # Absolute maximum — avoid exceeding
+
+  # ─── Easing Curves ─────────────────────────────────────────────────────────
+
+  easing:
+    # Standard material easing
+    standard:         "cubic-bezier(0.4, 0.0, 0.2, 1)"    # deceleration — most transitions
+    deceleration:     "cubic-bezier(0.0, 0.0, 0.2, 1)"    # enter: element appears
+    acceleration:     "cubic-bezier(0.4, 0.0, 1.0, 1)"    # exit: element disappears
+
+    # Spring / bounce (use sparingly)
+    spring:           "cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+    springFast:      "cubic-bezier(0.43, 0.195, 0.22, 1.4)"
+
+    # Overshoot
+    overshoot:        "cubic-bezier(0.34, 1.56, 0.64, 1)"
+
+    # Linear — use only for opacity fade (never for movement)
+    linear:           "linear"
+
+  # ─── Motion Types ───────────────────────────────────────────────────────────
+
+  type:
+    press:
+      duration:   "{motion.duration.press}"
+      easing:      "{motion.easing.deceleration}"
+      description: "Button press / tap feedback — immediate confirmation"
+
+    transition:
+      duration:   "{motion.duration.normal}"
+      easing:      "{motion.easing.standard}"
+      description: "State changes, panel slides, tab switches"
+
+    reveal:
+      duration:   "{motion.duration.slow}"
+      easing:      "{motion.easing.deceleration}"
+      description: "New content appearing (list items, modals)"
+
+    skeleton:
+      duration:   "{motion.duration.reveal}"
+      easing:      "{motion.easing.linear}"
+      description: "Loading skeleton shimmer"
+
+    spinner:
+      duration:   "{motion.duration.instant}"
+      easing:      "{motion.easing.linear}"
+      description: "Indeterminate spinner — one full rotation per iteration"
+      repeat:      infinite
+
+    pageTransition:
+      duration:   "{motion.duration.slow}"
+      easing:      "{motion.easing.deceleration}"
+      description: "Full page enter — 150–300ms per UX spec §11"
+
+  # ─── Reduced Motion ─────────────────────────────────────────────────────────
+  # UX spec §10 & §11: reduced motion must be respected.
+  # When user enables reduced motion, suppress all motion and use instant transitions.
+
+  reducedMotion:
+    # When system/platform reduced-motion preference is on:
+    # - Replace all durations with instant (0ms)
+    # - Replace all easing with linear
+    # - Suppress spinner/shimmer animations
+    # - Use fade instead of slide for reveals
+
+    suppress:
+      press:      "{motion.duration.instant}"
+      transition:  "{motion.duration.instant}"
+      reveal:      "{motion.duration.instant}"
+      skeleton:    "opacity-fade"  # Show/hide instead of shimmer
+      spinner:     "static-icon"   # Static icon instead of rotation
+      pageTransition: "{motion.duration.instant}"
+
+    easing:       "{motion.easing.linear}"
+
+    # Flutter: MediaQuery.disableAnimationsOf(context)
+    # Web: @media (prefers-reduced-motion: reduce)
+
+  # ─── Active Round Motion Constraints ────────────────────────────────────────
+  # UX spec §11: no motion during active round that distracts from play.
+
+  activeRound:
+    # During an active golf round (tee-to-green), all non-essential motion
+    # must be suppressed. Only press feedback (80ms) is allowed.
+
+    allowed:
+      - "{motion.type.press}"   # Immediate tap feedback only
+
+    suppressed:
+      - "skeleton-shimmer"
+      - "spinner-rotation"
+      - "page-transition-slide"
+      - "decorative-animation"
+      - "any-motion-over-150ms"
+
+    constraint: "no-distracting-motion-during-play"
+
+  # ─── Animation Properties ───────────────────────────────────────────────────
+  # Which CSS/animation properties are safe to animate (performant).
+
+  animatableProperties:
+    - "opacity"
+    - "transform"
+    - "filter"
+    - "clip-path"
+
+  # Avoid animating (causes layout thrash):
+  nonAnimatableProperties:
+    - "width"
+    - "height"
+    - "margin"
+    - "padding"
+    - "top"
+    - "left"
+    - "border-width"
+
+  # ─── Usage Rules ─────────────────────────────────────────────────────────────
+
+  rules:
+    - label: "duration-limit"
+      description: "No motion may exceed 500ms. Preferred: ≤300ms."
+    - label: "press-feedback"
+      description: "Every tappable control must have press feedback within 80–150ms."
+    - label: "reduced-motion"
+      description: "Respect platform reduced-motion setting. Instant transitions."
+    - label: "no-decorative"
+      description: "No decorative infinite animations."
+    - label: "no-layout-thrash"
+      description: "Do not animate width/height/margin/padding."
+    - label: "active-round-suppress"
+      description: "Suppress non-essential motion during active play."

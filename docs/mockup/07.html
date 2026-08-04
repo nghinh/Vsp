@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-font-smoothing: antialiased;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #a98a7e;
+            border-radius: 10px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface-variant": "#e2bfb2",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#f66018",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "on-tertiary": "#003825",
+                        "secondary-fixed": "#ffdbca",
+                        "outline": "#a98a7e",
+                        "surface-container-highest": "#2d3449",
+                        "on-secondary": "#552100",
+                        "on-primary-container": "#4f1700",
+                        "surface-tint": "#ffb599",
+                        "surface-bright": "#31394d",
+                        "primary-fixed-dim": "#ffb599",
+                        "surface-dim": "#0b1326",
+                        "inverse-on-surface": "#283044",
+                        "secondary": "#ffb690",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "tertiary": "#68dba9",
+                        "on-surface": "#dae2fd",
+                        "on-tertiary-fixed": "#002114",
+                        "on-primary-fixed": "#370e00",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-container-lowest": "#060e20",
+                        "inverse-primary": "#a73a00",
+                        "on-secondary-fixed": "#341100",
+                        "surface-container-low": "#131b2e",
+                        "on-background": "#dae2fd",
+                        "on-primary": "#5a1c00",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#ffb690",
+                        "on-error": "#690005",
+                        "primary": "#ffb599",
+                        "tertiary-fixed": "#85f8c4",
+                        "surface": "#0b1326",
+                        "secondary-container": "#ec6a06",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#4a1c00",
+                        "on-tertiary-container": "#00311f",
+                        "inverse-surface": "#dae2fd",
+                        "surface-variant": "#2d3449",
+                        "primary-fixed": "#ffdbce",
+                        "background": "#0b1326",
+                        "error": "#ffb4ab",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-container": "#25a475",
+                        "on-secondary-fixed-variant": "#783200",
+                        "outline-variant": "#5a4138"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "display-metrics": ["Fira Code"],
+                        "headline-md": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "headline-lg": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface flex flex-col min-h-screen">
+<!-- TopAppBar -->
+<header class="bg-surface-container-lowest text-primary flex items-center justify-between px-margin-mobile h-touch-target w-full top-0 border-b border-[rgba(255,255,255,0.08)] z-50 sticky">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform p-1">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary truncate">Gói sân ngoại tuyến</h1>
+</div>
+<div class="flex items-center">
+<button class="active:scale-95 transition-transform p-1">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto pb-24 custom-scrollbar">
+<!-- Section 1: Detailed Package Card (Main State) -->
+<div class="px-margin-mobile pt-6 pb-4">
+<div class="bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden shadow-lg">
+<div class="relative h-40">
+<div class="w-full h-full bg-cover bg-center" data-alt="A wide cinematic aerial shot of the lush green fairways and white sand bunkers of BRG Legend Hill Golf Resort during golden hour. The landscape is pristine with rolling hills and elegant water hazards under a clear twilight sky. The overall tone is professional, high-end, and sophisticated, reflecting a premium sports brand aesthetic with deep contrast and vibrant greens." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWPkyTc41tC3s9k24VgFrbrI__iHuAKJiif3-VE2AgNb5IPVg3zsgMfsyCHXsPUKFFjnt5WZtD1wbydDozuqMC0ivyGe1j8ejm7sPgt37B_KKMrnjXpB3xzsTsCIoeg2qDlHlqmEo5wa01AFoQEo9vmdtQqiClf1Hwf4lfmLYPNvVHsY4qP_c96ZDNHZHJzYyDe6w6NOCRFuLGutJXMx09H2Aif8_-GcfHdw_3FLkdrlGoUU2v58RUmQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">BRG Legend Hill Golf Resort</h2>
+<p class="font-metric-sm text-metric-sm text-on-surface-variant">v2026.07.31 | 48 MB</p>
+</div>
+</div>
+</div>
+<div class="p-4 space-y-4">
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center px-2 py-1 rounded bg-tertiary text-on-tertiary font-label-caps text-label-caps uppercase">Chính thức</span>
+<span class="inline-flex items-center px-2 py-1 rounded border border-outline text-outline font-label-caps text-label-caps uppercase">Vector-ready</span>
+</div>
+<div class="space-y-2">
+<p class="font-label-caps text-label-caps text-on-surface-variant uppercase border-b border-[rgba(255,255,255,0.08)] pb-1">Dữ liệu bao gồm</p>
+<div class="grid grid-cols-2 gap-x-4 gap-y-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">architecture</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Geometry</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">map</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Vector Map</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">markdown_copy</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Scorecard</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">golf_course</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Tee sets</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">gavel</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Local Rules</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">location_on</span>
+<span class="font-body-md text-body-md text-on-surface-variant">Official Pins</span>
+</div>
+</div>
+</div>
+<div class="pt-2 flex items-center justify-between border-t border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">Chỉ tải qua Wi-Fi</span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">Bộ nhớ khả dụng: 12.4 GB</span>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-[18px] py-3 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined">download</span>
+                        Tải xuống gói dữ liệu
+                    </button>
+</div>
+</div>
+</div>
+<!-- Section 2: Component States (Variants) -->
+<div class="px-margin-mobile space-y-4">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest px-1">Trạng thái xử lý</h3>
+<!-- Downloading State -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-md text-body-md text-on-surface flex items-center gap-2">
+<span class="animate-pulse w-2 h-2 bg-primary rounded-full"></span>
+                        Đang tải...
+                    </span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">32.6 / 48 MB</span>
+</div>
+<div class="w-full bg-surface-container-lowest rounded-full h-1.5 mb-4">
+<div class="bg-primary h-1.5 rounded-full" style="width: 68%"></div>
+</div>
+<div class="flex justify-end gap-4">
+<button class="text-on-surface-variant hover:text-on-surface flex items-center gap-1 font-label-caps text-label-caps uppercase">
+<span class="material-symbols-outlined text-[20px]">pause</span> Tạm dừng
+                    </button>
+<button class="text-error hover:text-error-container flex items-center gap-1 font-label-caps text-label-caps uppercase">
+<span class="material-symbols-outlined text-[20px]">close</span> Hủy
+                    </button>
+</div>
+</div>
+<!-- Success State -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-tertiary-container/30 flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-2">
+<h4 class="font-headline-md text-[16px] text-on-surface">Tải thành công</h4>
+<span class="bg-tertiary text-on-tertiary text-[10px] px-1.5 rounded font-bold uppercase">Sẵn sàng</span>
+</div>
+<button class="mt-2 text-primary font-label-caps text-label-caps uppercase flex items-center gap-1">
+                        Bắt đầu vòng đấu <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Failure State -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-error-container/30">
+<div class="flex items-start gap-3 mb-4">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">error</span>
+<div>
+<h4 class="font-headline-md text-[16px] text-on-surface">Lỗi tải xuống</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-tight">Lỗi kiểm tra tệp tin (Checksum error)</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 bg-primary text-on-primary-fixed py-2 rounded-lg font-label-caps text-label-caps uppercase active:scale-95 transition-transform">Thử lại</button>
+<button class="flex-1 border border-outline text-outline py-2 rounded-lg font-label-caps text-label-caps uppercase active:scale-95 transition-transform text-center text-[11px] leading-tight flex items-center justify-center">Giữ phiên bản cũ</button>
+</div>
+</div>
+</div>
+<!-- Section 3: Management Section -->
+<div class="px-margin-mobile mt-8 space-y-4">
+<h3 class="font-headline-md text-[20px] text-on-surface border-b border-[rgba(255,255,255,0.08)] pb-2">Sân đã tải (3)</h3>
+<div class="space-y-3">
+<!-- Van Tri Golf -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">golf_course</span>
+</div>
+<div>
+<h5 class="font-body-md font-bold text-on-surface">Van Tri Golf Club</h5>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">32 MB • Cập nhật mới</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-primary hover:bg-surface-bright rounded-full transition-colors" title="Cập nhật">
+<span class="material-symbols-outlined">update</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-error rounded-full transition-colors" title="Xóa">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+<!-- Phoenix Golf -->
+<div class="flex items-center justify-between p-3 bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">golf_course</span>
+</div>
+<div>
+<h5 class="font-body-md font-bold text-on-surface">Phoenix Golf Resort</h5>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">54 MB • Đã ổn định</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-error rounded-full transition-colors" title="Xóa">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Deletion Note -->
+<div class="p-4 bg-surface-container-lowest/50 rounded-xl border border-dashed border-outline/20">
+<p class="font-body-md text-[13px] text-on-surface-variant flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">info</span>
+<span>Lưu ý: Xóa gói ngoại tuyến sẽ không ảnh hưởng đến lịch sử vòng chơi và điểm số của bạn. Dữ liệu sẽ được tải lại khi bạn mở sân này lúc có mạng.</span>
+</p>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 z-50 border-t border-[rgba(255,255,255,0.08)]">
+<!-- Destination: Sân golf (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary-container text-on-secondary-container dark:text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-label-caps text-label-caps mt-0.5">Sân golf</span>
+</a>
+<!-- Destination: Bản đồ -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant p-2 rounded-xl transition-all duration-150" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-label-caps mt-0.5">Bản đồ</span>
+</a>
+<!-- Destination: Bảng điểm -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant p-2 rounded-xl transition-all duration-150" href="#">
+<span class="material-symbols-outlined">markdown_copy</span>
+<span class="font-label-caps text-label-caps mt-0.5">Bảng điểm</span>
+</a>
+<!-- Destination: Cá nhân -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant hover:bg-surface-variant p-2 rounded-xl transition-all duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-label-caps mt-0.5">Cá nhân</span>
+</a>
+</nav>
+<script>
+        // Micro-interaction for toggle
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                this.parentElement.classList.toggle('opacity-80');
+            });
+        });
+
+        // Simple button interaction feedback
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.classList.add('absolute', 'bg-white/20', 'rounded-full', 'animate-ping');
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                ripple.style.left = e.clientX - this.getBoundingClientRect().left - 10 + 'px';
+                ripple.style.top = e.clientY - this.getBoundingClientRect().top - 10 + 'px';
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 500);
+            });
+        });
+    </script>
+</body></html>

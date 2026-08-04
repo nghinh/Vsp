@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>23 — Bảng xếp hạng giải đấu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#31394d",
+                    "outline": "#a98a7e",
+                    "on-error-container": "#ffdad6",
+                    "surface-dim": "#0b1326",
+                    "on-tertiary-fixed": "#002114",
+                    "surface-container-lowest": "#060e20",
+                    "primary-fixed": "#ffdbce",
+                    "on-background": "#dae2fd",
+                    "secondary": "#ffb690",
+                    "on-primary": "#5a1c00",
+                    "tertiary-container": "#25a475",
+                    "on-secondary-container": "#4a1c00",
+                    "primary-container": "#f66018",
+                    "tertiary-fixed": "#85f8c4",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "inverse-on-surface": "#283044",
+                    "on-surface": "#dae2fd",
+                    "surface-container-high": "#222a3d",
+                    "primary-fixed-dim": "#ffb599",
+                    "on-primary-container": "#4f1700",
+                    "on-error": "#690005",
+                    "secondary-fixed-dim": "#ffb690",
+                    "on-tertiary-container": "#00311f",
+                    "primary": "#ffb599",
+                    "surface-tint": "#ffb599",
+                    "outline-variant": "#5a4138",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "error-container": "#93000a",
+                    "surface-container-highest": "#2d3449",
+                    "surface-variant": "#2d3449",
+                    "on-secondary-fixed-variant": "#783200",
+                    "surface-container-low": "#131b2e",
+                    "error": "#ffb4ab",
+                    "background": "#0b1326",
+                    "inverse-surface": "#dae2fd",
+                    "on-primary-fixed": "#370e00",
+                    "secondary-fixed": "#ffdbca",
+                    "on-surface-variant": "#e2bfb2",
+                    "on-tertiary": "#003825",
+                    "inverse-primary": "#a73a00",
+                    "tertiary": "#68dba9",
+                    "surface": "#0b1326",
+                    "secondary-container": "#ec6a06",
+                    "on-secondary": "#552100",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "surface-container": "#171f33",
+                    "on-secondary-fixed": "#341100"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "touch-target": "44px",
+                    "unit": "8px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Fira Sans"],
+                    "headline-lg": ["Fira Sans"],
+                    "body-lg": ["Fira Sans"],
+                    "display-metrics": ["Fira Code"],
+                    "label-caps": ["Fira Sans"],
+                    "headline-md": ["Fira Sans"],
+                    "metric-sm": ["Fira Code"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .active-tab-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background-color: #ec6a06;
+            transition: all 0.3s ease;
+        }
+        .user-row-highlight {
+            background: linear-gradient(90deg, rgba(236, 106, 6, 0.15) 0%, rgba(236, 106, 6, 0.05) 100%);
+            border-left: 4px solid #ec6a06;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- Top App Bar -->
+<header class="fixed top-0 left-0 w-full bg-surface-container-lowest z-[100] border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col px-margin-mobile pt-3 pb-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">menu</span>
+<h1 class="font-headline-md text-[18px] font-bold text-primary tracking-tight">Vietnam Smart Golf</h1>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">cloud_done</span>
+<span class="material-symbols-outlined text-on-surface-variant">account_circle</span>
+</div>
+</div>
+<div class="mt-4 flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-tertiary-container/20 text-tertiary px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-label-caps text-[10px] uppercase">Trực Tiếp</span>
+</span>
+<h2 class="font-headline-md text-headline-md text-on-surface truncate">VNPT Golf Championship 2026</h2>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-body-md text-[14px]">BRG Legend Hill</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="font-body-md text-[14px] bg-surface-container-high px-2 rounded">Vòng 2</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="relative flex border-t border-[rgba(255,255,255,0.08)] mt-2">
+<button class="tab-btn flex-1 py-3 text-center transition-colors font-label-caps text-primary" id="tab-btn-0" onclick="switchTab('leaderboard', 0)">Bảng xếp hạng</button>
+<button class="tab-btn flex-1 py-3 text-center transition-colors font-label-caps text-on-surface-variant" id="tab-btn-1" onclick="switchTab('myflight', 1)">Flight của tôi</button>
+<button class="tab-btn flex-1 py-3 text-center transition-colors font-label-caps text-on-surface-variant" id="tab-btn-2" onclick="switchTab('rules', 2)">Quy định</button>
+<div class="active-tab-indicator w-1/3" id="tab-indicator"></div>
+</nav>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-[160px] pb-[120px] px-0 min-h-screen">
+<!-- Tab 1: Leaderboard -->
+<section class="tab-content block" id="tab-leaderboard">
+<div class="w-full overflow-x-auto hide-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low sticky top-[160px] z-10">
+<tr class="font-label-caps text-[11px] text-on-surface-variant uppercase tracking-wider">
+<th class="py-3 px-4 w-12 text-center">Pos</th>
+<th class="py-3 px-2">Player</th>
+<th class="py-3 px-2 text-center">Thru</th>
+<th class="py-3 px-2 text-center">Today</th>
+<th class="py-3 px-2 text-center">Total</th>
+<th class="py-3 px-4 text-center">Mvmt</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[rgba(255,255,255,0.05)]">
+<!-- Rank 1 -->
+<tr class="bg-surface-container/30">
+<td class="py-4 px-4 text-center font-metric-sm text-tertiary">1</td>
+<td class="py-4 px-2 font-body-md font-medium">Trần Văn Hoàng</td>
+<td class="py-4 px-2 text-center font-metric-sm">F</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary">-5</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-9</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-tertiary text-[18px]">keyboard_double_arrow_up</span>
+</td>
+</tr>
+<!-- Rank 2 -->
+<tr>
+<td class="py-4 px-4 text-center font-metric-sm">2</td>
+<td class="py-4 px-2 font-body-md">Lee Myung-bak</td>
+<td class="py-4 px-2 text-center font-metric-sm">16</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary">-3</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-7</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">horizontal_rule</span>
+</td>
+</tr>
+<!-- Rank 3 -->
+<tr>
+<td class="py-4 px-4 text-center font-metric-sm">3</td>
+<td class="py-4 px-2 font-body-md">Phạm Minh Chính</td>
+<td class="py-4 px-2 text-center font-metric-sm">14</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary">-2</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-6</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-error text-[18px]">keyboard_arrow_down</span>
+</td>
+</tr>
+<!-- Rank 4 -->
+<tr>
+<td class="py-4 px-4 text-center font-metric-sm">4</td>
+<td class="py-4 px-2 font-body-md">David Nguyen</td>
+<td class="py-4 px-2 text-center font-metric-sm">12</td>
+<td class="py-4 px-2 text-center font-metric-sm">E</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-4</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-tertiary text-[18px]">keyboard_arrow_up</span>
+</td>
+</tr>
+<!-- More rows to enable scrolling -->
+<tr class="opacity-80">
+<td class="py-4 px-4 text-center font-metric-sm">5</td>
+<td class="py-4 px-2 font-body-md">Ngô Thế Dân</td>
+<td class="py-4 px-2 text-center font-metric-sm">15</td>
+<td class="py-4 px-2 text-center font-metric-sm text-error">+1</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-3</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-error text-[18px]">keyboard_double_arrow_down</span>
+</td>
+</tr>
+<tr>
+<td class="py-4 px-4 text-center font-metric-sm">6</td>
+<td class="py-4 px-2 font-body-md">Vương Đình Huệ</td>
+<td class="py-4 px-2 text-center font-metric-sm">F</td>
+<td class="py-4 px-2 text-center font-metric-sm">E</td>
+<td class="py-4 px-2 text-center font-metric-sm text-tertiary font-bold">-2</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">horizontal_rule</span>
+</td>
+</tr>
+<tr>
+<td class="py-4 px-4 text-center font-metric-sm">7</td>
+<td class="py-4 px-2 font-body-md">Koji Sato</td>
+<td class="py-4 px-2 text-center font-metric-sm">9</td>
+<td class="py-4 px-2 text-center font-metric-sm text-error">+2</td>
+<td class="py-4 px-2 text-center font-metric-sm font-bold">E</td>
+<td class="py-4 px-4 text-center">
+<span class="material-symbols-outlined text-error text-[18px]">keyboard_arrow_down</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Tab 2: My Flight -->
+<section class="tab-content hidden px-margin-mobile pt-4" id="tab-myflight">
+<div class="bg-surface-bright rounded-xl p-4 mb-6 flex flex-col gap-4 border border-[rgba(255,255,255,0.05)] shadow-xl">
+<div class="flex items-center justify-between border-b border-[rgba(255,255,255,0.08)] pb-3">
+<div class="flex flex-col">
+<span class="font-label-caps text-on-surface-variant text-[10px]">TEE TIME</span>
+<span class="font-metric-sm text-[20px] font-bold text-primary tracking-tight">08:30 AM</span>
+</div>
+<div class="text-right flex flex-col">
+<span class="font-label-caps text-on-surface-variant text-[10px]">STARTING</span>
+<span class="font-headline-md text-[18px] font-semibold text-on-surface">Hố 1</span>
+</div>
+</div>
+<div class="space-y-3">
+<!-- Player 1 (User) -->
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg border-l-4 border-secondary-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center text-primary font-bold">NH</div>
+<div>
+<h4 class="font-body-md font-bold text-on-surface leading-tight">Nguyễn Hồng Nghi</h4>
+<span class="text-[12px] text-tertiary font-medium">Bạn</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-metric-sm text-[18px] text-tertiary">-5</span>
+<div class="mt-1">
+<span class="bg-tertiary/20 text-tertiary text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-tertiary/30">Xác nhận</span>
+</div>
+</div>
+</div>
+<!-- Player 2 -->
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-bold">LĐ</div>
+<div>
+<h4 class="font-body-md font-medium text-on-surface-variant leading-tight">Lê Đức Anh</h4>
+<span class="text-[12px] text-on-surface-variant/60">HCP: 14.2</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-metric-sm text-[18px]">+2</span>
+<div class="mt-1">
+<span class="bg-surface-variant text-on-surface-variant text-[10px] font-bold px-2 py-0.5 rounded uppercase">Chờ xác nhận</span>
+</div>
+</div>
+</div>
+<!-- Player 3 -->
+<div class="flex items-center justify-between p-3 bg-surface-container rounded-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant font-bold">PT</div>
+<div>
+<h4 class="font-body-md font-medium text-on-surface-variant leading-tight">Phan Thanh Bình</h4>
+<span class="text-[12px] text-on-surface-variant/60">HCP: 10.5</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-metric-sm text-[18px]">E</span>
+<div class="mt-1">
+<span class="bg-tertiary/20 text-tertiary text-[10px] font-bold px-2 py-0.5 rounded uppercase border border-tertiary/30">Xác nhận</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-dashed border-outline-variant text-center">
+<span class="material-symbols-outlined text-outline-variant mb-2">qr_code_scanner</span>
+<p class="text-[12px] text-on-surface-variant">Quét mã QR của đồng đội để bắt đầu xác nhận chéo điểm số.</p>
+</div>
+</section>
+<!-- Tab 3: Rules -->
+<section class="tab-content hidden px-margin-mobile pt-4" id="tab-rules">
+<div class="bg-error-container/10 border border-error/20 rounded-xl p-4 mb-6 flex items-center gap-4">
+<span class="material-symbols-outlined text-error text-[32px]" style="font-variation-settings: 'FILL' 1;">lock</span>
+<div>
+<h3 class="font-label-caps text-error text-[13px]">Chế độ Giải đấu: ĐÃ KHÓA</h3>
+<p class="text-[12px] text-on-error-container/80 leading-relaxed">Thiết bị đang tuân thủ quy tắc USGA & R&A. Một số tính năng hỗ trợ kỹ thuật đã bị vô hiệu hóa.</p>
+</div>
+</div>
+<div class="space-y-6">
+<!-- Allowed Features -->
+<div>
+<div class="flex items-center gap-2 mb-3 border-b border-[rgba(255,255,255,0.08)] pb-2">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<h4 class="font-label-caps text-on-surface tracking-widest text-[11px]">TÍNH NĂNG ĐƯỢC PHÉP</h4>
+</div>
+<div class="grid grid-cols-1 gap-3">
+<div class="flex items-center justify-between bg-surface-container px-4 py-3 rounded-lg">
+<span class="font-body-md text-on-surface">GPS Distances (Khoảng cách GPS)</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container px-4 py-3 rounded-lg">
+<span class="font-body-md text-on-surface">Official Pin Position (Vị trí cờ)</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container px-4 py-3 rounded-lg">
+<span class="font-body-md text-on-surface">Digital Scorecard (Bảng điểm số)</span>
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+</div>
+</div>
+</div>
+<!-- Banned Features -->
+<div>
+<div class="flex items-center gap-2 mb-3 border-b border-[rgba(255,255,255,0.08)] pb-2">
+<span class="material-symbols-outlined text-error">cancel</span>
+<h4 class="font-label-caps text-on-surface tracking-widest text-[11px]">TÍNH NĂNG BỊ CẤM</h4>
+</div>
+<div class="grid grid-cols-1 gap-2">
+<div class="flex items-center justify-between bg-surface-container-high/50 px-4 py-3 rounded-lg opacity-60">
+<span class="font-body-md text-on-surface-variant">Smart Target (Mục tiêu thông minh)</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">block</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container-high/50 px-4 py-3 rounded-lg opacity-60">
+<span class="font-body-md text-on-surface-variant">Plays-like Distance (Độ dốc)</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">block</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container-high/50 px-4 py-3 rounded-lg opacity-60">
+<span class="font-body-md text-on-surface-variant">Wind Adjustment (Bù gió)</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">block</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container-high/50 px-4 py-3 rounded-lg opacity-60">
+<span class="font-body-md text-on-surface-variant">AI Caddie Advice</span>
+<span class="material-symbols-outlined text-outline-variant text-[18px]">block</span>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-8 mb-4 text-center">
+<p class="font-body-md text-[13px] text-on-surface-variant italic opacity-70">Quy định tuân thủ điều lệ giải đấu VNPT 2026 và quyết định của Hội đồng trọng tài.</p>
+</footer>
+</section>
+</main>
+<!-- Sticky User Rank (Only for Leaderboard) -->
+<div class="fixed bottom-[64px] left-0 w-full z-40 bg-surface-container-low/95 backdrop-blur-md border-t border-secondary-container/30 shadow-[0_-10px_20px_rgba(0,0,0,0.4)]" id="sticky-user-rank">
+<div class="flex items-center user-row-highlight py-4 px-margin-mobile">
+<div class="flex-none w-10 text-center font-metric-sm text-[18px] text-secondary-container font-bold">18</div>
+<div class="flex-1 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[12px]">NH</div>
+<div class="font-body-md font-bold text-on-surface">Nguyễn Hồng Nghi</div>
+</div>
+<div class="flex-none w-12 text-center font-metric-sm text-[16px]">14</div>
+<div class="flex-none w-14 text-center font-metric-sm text-tertiary font-bold">-2</div>
+<div class="flex-none w-14 text-center font-metric-sm text-tertiary font-bold">-5</div>
+<div class="flex-none w-10 text-center">
+<span class="material-symbols-outlined text-tertiary text-[18px]">keyboard_arrow_up</span>
+</div>
+</div>
+<!-- Offline Sync Footer -->
+<div class="bg-surface-container-highest flex items-center justify-between px-margin-mobile py-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-secondary">cloud_upload</span>
+<span class="text-[11px] text-on-surface-variant">Điểm của bạn đã lưu, chờ gửi.</span>
+</div>
+<span class="text-[11px] text-on-surface-variant opacity-60">Cập nhật: 14:32</span>
+</div>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 z-50 border-t border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-caps text-[10px] mt-1">Sân golf</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-[10px] mt-1">Bản đồ</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all shadow-lg">
+<span class="material-symbols-outlined">markdown_copy</span>
+<span class="font-label-caps text-[10px] mt-0.5">Bảng điểm</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-[10px] mt-1">Cá nhân</span>
+</div>
+</nav>
+<script>
+        function switchTab(tabId, index) {
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('block');
+            });
+
+            // Show selected content
+            const activeTab = document.getElementById('tab-' + tabId);
+            activeTab.classList.remove('hidden');
+            activeTab.classList.add('block');
+
+            // Update Tab Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-primary');
+                btn.classList.add('text-on-surface-variant');
+            });
+            document.getElementById('tab-btn-' + index).classList.add('text-primary');
+            document.getElementById('tab-btn-' + index).classList.remove('text-on-surface-variant');
+
+            // Move Indicator
+            const indicator = document.getElementById('tab-indicator');
+            indicator.style.transform = `translateX(${index * 100}%)`;
+
+            // Toggle Sticky Rank visibility
+            const stickyRank = document.getElementById('sticky-user-rank');
+            if (tabId === 'leaderboard') {
+                stickyRank.classList.remove('hidden');
+            } else {
+                stickyRank.classList.add('hidden');
+            }
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Initialize view
+        document.addEventListener('DOMContentLoaded', () => {
+            switchTab('leaderboard', 0);
+        });
+    </script>
+</body></html>

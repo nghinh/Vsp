@@ -1,0 +1,86 @@
+{
+  "story_id": "1-5",
+  "slice_id": "OBS-1",
+  "status": "clean",
+  "symbols": [
+    {
+      "symbol": "OtelConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/OtelConfig.java",
+      "intent": "OpenTelemetry bean auto-configuration for distributed tracing",
+      "phase": "pre",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 1
+    },
+    {
+      "symbol": "OtelConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/OtelConfig.java",
+      "intent": "OpenTelemetry bean auto-configuration for distributed tracing",
+      "phase": "post",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 1
+    },
+    {
+      "symbol": "MetricsConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/MetricsConfig.java",
+      "intent": "Micrometer custom meters for sync.queue.depth, api.latency, gps.quality, package.download.count",
+      "phase": "pre",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 1
+    },
+    {
+      "symbol": "MetricsConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/MetricsConfig.java",
+      "intent": "Micrometer custom meters for sync.queue.depth, api.latency, gps.quality, package.download.count",
+      "phase": "post",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 2
+    },
+    {
+      "symbol": "AlertRules",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/AlertRules.java",
+      "intent": "Env-specific alert thresholds loaded from configuration",
+      "phase": "pre",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 1
+    },
+    {
+      "symbol": "AlertRules",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/AlertRules.java",
+      "intent": "Env-specific alert thresholds loaded from configuration",
+      "phase": "post",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "attempt": 1
+    }
+  ],
+  "precheck_results": [
+    {
+      "symbol": "OtelConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/OtelConfig.java",
+      "new_duplicate_likely": false,
+      "exact_match": false
+    },
+    {
+      "symbol": "MetricsConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/MetricsConfig.java",
+      "new_duplicate_likely": false,
+      "exact_match": false
+    },
+    {
+      "symbol": "AlertRules",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/observability/AlertRules.java",
+      "new_duplicate_likely": false,
+      "exact_match": false
+    }
+  ],
+  "reindex": {
+    "ok": false,
+    "error": "gitnexus FTS index corruption (pre-existing, unrelated to this slice)"
+  },
+  "duplicate_detection_outcome": "clean"
+}

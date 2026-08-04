@@ -1,0 +1,174 @@
+# =============================================================================
+# Quality Gates Configuration for vnpt-qa-tester-orchestrator
+# Version: 2.0.0
+# =============================================================================
+
+score_weights:
+  risk_coverage: 20
+  requirement_coverage: 15
+  negative_boundary_coverage: 15
+  state_transition_coverage: 15
+  property_invariant_coverage: 10
+  api_contract_fuzz_coverage: 10
+  e2e_critical_path_coverage: 10
+  mutation_quality: 5
+
+thresholds:
+  pass: 85
+  conditional_pass: 70
+  fail_below: 70
+
+# =============================================================================
+# Hard Fail Conditions
+# =============================================================================
+
+hard_fails:
+  - P0 risk has no executable test or justified exception
+  - P1 business-critical state transition has no executable test
+  - test oracle is missing or incomplete
+  - failed tests are not triaged
+  - critical module has only shallow smoke/render/status-200 tests
+  - no negative or boundary tests for critical area
+  - mutation score below threshold for critical module when mutation testing is feasible
+  # v2.0: Traceability enforcement
+  - P0/P1 risk lacks risk_id-to-test_id-to-oracle_id traceability
+
+# =============================================================================
+# Coverage Targets
+# =============================================================================
+
+coverage_targets:
+  default_branch_coverage: 70
+  critical_branch_coverage: 85
+  default_requirement_coverage: 80
+  critical_requirement_coverage: 100
+  p0_risk_coverage: 100
+  p1_risk_coverage: 100
+
+mutation_targets:
+  default_mutation_score: 60
+  critical_mutation_score: 75
+
+# =============================================================================
+# Anti-Gaming Rules (v2.0)
+# =============================================================================
+
+anti_gaming_rules:
+  # Detects tests that should not count toward coverage
+  shallow_test_detection:
+    enabled: true
+    patterns_that_do_not_count:
+      - only_checks_page_renders
+      - only_checks_status_code_200
+      - only_checks_snapshot_without_business_assertion
+      - only_mocks_core_logic_without_behavior_verification
+      - only_verifies_implementation_details_unrelated_to_behavior
+      - tests_duplicate_existing_tests_with_renamed_titles
+      - tests_happy_path_only
+      - no_negative_boundary_cases
+      - no_state_side_effect_verification
+      - render-only
+      - status-200-only
+      - snapshot-only
+    enforcement: deduct_from_score
+    penalty: -15 per detected pattern
+    minimum_evidence_required:
+      - business_assertion
+      - domain_state_change
+      - api_response_semantics
+      - ui_visible_state
+
+  # Detects artificial coverage inflation
+  coverage_inflation_detection:
+    enabled: true
+    metrics:
+      tests_per_risk_ratio: true
+      assertions_per_test_ratio: true
+      unique_assertions_vs_total_assertions: true
+    thresholds:
+      assertions_per_test_min: 2
+      unique_assertions_ratio_min: 0.3
+      tests_per_risk_max: 50
+    enforcement: flag_for_review
+    warning_threshold: 30  # Flag when > 30 tests per risk
+
+  # Detects duplicate or near-duplicate tests
+  duplicate_detection:
+    enabled: true
+    similarity_threshold: 0.85
+    check_methods:
+      - input_data_similarity
+      - expected_result_similarity
+      - assertion_pattern_similarity
+    enforcement: flag_and_deduct
+    penalty_per_duplicate: 5
+    max_similarity_for_auto_pass: 0.7
+
+  # Detects invalid justifications
+  justification_gaming:
+    enabled: true
+    check: JUSTIFIED_EXCEPTION used without concrete_reason
+    required_fields_for_justification:
+      - concrete_reason
+      - fallback_approach
+      - approval_status
+    penalty_per_invalid_justification: -10
+
+# =============================================================================
+# Score Adjustments
+# =============================================================================
+
+score_adjustments:
+  shallow_tests_detected:
+    penalty: -15 per detected pattern
+    floor: 50  # Cannot go below 50 even with many shallow tests
+  duplicate_tests_detected:
+    penalty: -5 per duplicate pair
+  justification_gaming:
+    penalty: -10 per invalid_justification
+
+# =============================================================================
+# Strict Medium Model Hard Fails
+# =============================================================================
+
+strict_medium_model_hard_fails:
+  - Any P0/P1 risk lacks risk_id-to-test_id-to-oracle_id traceability
+  - Any executable test lacks expected_result or assertions
+  - Any critical workflow lacks forbidden-transition coverage
+  - Any validation-heavy feature lacks boundary/invalid/null-empty tests
+  - API schema exists but no API fuzz plan or justified exception exists
+  - UI critical path exists but no E2E plan or justified exception exists
+  - Test suite contains only mocks/snapshots/render/status-200 checks for critical behavior
+  - Final report does not include self-review checklist
+
+# =============================================================================
+# Per-Risk Minimum Coverage Requirements (v2.0)
+# =============================================================================
+
+minimum_coverage_per_p0_risk:
+  happy_path: 1
+  negative_tests: 2
+  boundary_or_edge_tests: 2
+  recovery_or_error_tests: 1
+  state_machine_tests_when_applicable: 1
+  property_tests_when_applicable: 1
+  api_or_e2e_tests_when_visible: 1
+
+minimum_coverage_per_p1_risk:
+  main_path_tests: 1
+  negative_tests: 1
+  boundary_or_edge_tests: 1
+  state_property_api_or_e2e_when_applicable: 1
+
+# =============================================================================
+# Deprecation Notice
+# =============================================================================
+
+deprecated_versions:
+  - "1.0.0"
+  migration_notes: |
+    Version 2.0.0 added:
+    - anti_gaming_rules section
+    - minimum_coverage_per_p0/p1_risk sections
+    - extended quality_gates.yaml coverage
+    Please update references if consuming this config programmatically.

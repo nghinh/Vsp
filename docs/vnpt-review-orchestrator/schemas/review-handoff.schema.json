@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReviewHandoff",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "scope_id",
+    "scope_source",
+    "mode",
+    "declared_scope",
+    "changed_files",
+    "validated_commands",
+    "known_risks"
+  ],
+  "properties": {
+    "scope_id": { "type": "string", "minLength": 1 },
+    "scope_source": {
+      "type": "string",
+      "enum": ["workspace-diff", "path-arg", "review-handoff", "manual", "agent"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["diff", "full", "path-arg", "handoff", "manual"]
+    },
+    "declared_scope": { "type": "string", "minLength": 1 },
+    "changed_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "validated_commands": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_risks": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "residual_gaps": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

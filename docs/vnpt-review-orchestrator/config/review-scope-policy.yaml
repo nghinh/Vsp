@@ -1,0 +1,23 @@
+scope_policy: review-first
+default_scope_sources:
+  - git_diff
+  - explicit_path
+  - review_handoff_json
+  - review_handoff_md
+  - repo_root_baseline
+fallback_scope_id: review-session
+artifact_root_template: docs/vnpt-flow/{scope_id}/review
+accept_scope_mode:
+  - diff
+  - path
+  - subtree
+  - baseline
+hard_requirements:
+  - source_first
+  - docs_inventory_when_docs_exist
+  - validation_before_completion
+  - confirmation_review_required
+excluded_path_globs:
+  - .opencode/**
+  - "**/.opencode/**"
+  - "**/vnpt-ai-driven-platform/**"

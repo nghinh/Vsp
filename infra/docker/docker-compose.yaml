@@ -1,0 +1,103 @@
+name: vsp
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: vsp_postgres
+    environment:
+      POSTGRES_DB: vsp
+      POSTGRES_USER: vsp
+      POSTGRES_PASSWORD: vsp_dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vsp -d vsp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: vsp_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  # Optional OpenTelemetry Collector — receives OTLP spans + metrics from the API
+  # and forwards to configured backends (Jaeger, Tempo, Prometheus, etc.).
+  # Disabled by default; enable with: docker compose --profile observability up
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.102.0
+    container_name: vsp_otel_collector
+    profiles:
+      - observability
+    command:
+      - "--config=/etc/otelcol-contrib/config.yaml"
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC receiver
+      - "4318:4318"   # OTLP HTTP receiver
+      - "8888:8888"   # Prometheus metrics exposed by collector
+      - "8889:8889"   # Collector health check
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  # Automated PostgreSQL backup service.
+  # Runs pg_dump via cron, encrypts output, and uploads to S3.
+  # Requires AWS credentials via environment variables (VSP_BACKUP_S3_BUCKET, AWS_*).
+  # Enable with: docker compose --profile backup up
+  # Skip S3 upload in dev by leaving VSP_BACKUP_S3_BUCKET empty.
+  backup-cron:
+    image: postgres:16-alpine
+    container_name: vsp_backup_cron
+    profiles:
+      - backup
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:ro
+      - ./backup-cron:/etc/crontab.d:ro
+      - backup_output:/backup
+      - ./infra/scripts/backup.sh:/usr/local/bin/backup.sh:ro
+    environment:
+      - PGPASSWORD=${POSTGRES_PASSWORD:-vsp_dev_password}
+      - PGHOST=postgres
+      - PGPORT=5432
+      - PGDATABASE=${POSTGRES_DB:-vsp}
+      - PGUSER=${POSTGRES_USER:-vsp}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-ap-southeast-1}
+      - VSP_BACKUP_S3_BUCKET=${VSP_BACKUP_S3_BUCKET:-}
+      - VSP_BACKUP_S3_PREFIX=${VSP_BACKUP_S3_PREFIX:-prod/backups}
+      - VSP_BACKUP_ENCRYPTION_KEY_ID=${VSP_BACKUP_ENCRYPTION_KEY_ID:-}
+      - VSP_BACKUP_RETENTION_DAYS=${VSP_BACKUP_RETENTION_DAYS:-30}
+      - VSP_BACKUP_RETENTION_WEEKS=${VSP_BACKUP_RETENTION_WEEKS:-12}
+    entrypoint: ["cron", "-f", "-L", "2"]
+    command: []
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    name: vsp_postgres_data
+  redis_data:
+    name: vsp_redis_data
+  backup_output:
+    name: vsp_backup_output

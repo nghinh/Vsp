@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>33 — Vị trí cờ &amp; Điều kiện sân</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#a98a7e",
+                        "surface-container-lowest": "#060e20",
+                        "secondary-fixed": "#ffdbca",
+                        "secondary": "#ffb690",
+                        "on-tertiary-fixed": "#002114",
+                        "on-background": "#dae2fd",
+                        "on-secondary-fixed-variant": "#783200",
+                        "surface-dim": "#0b1326",
+                        "secondary-container": "#ec6a06",
+                        "surface-variant": "#2d3449",
+                        "error": "#ffb4ab",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-surface-variant": "#e2bfb2",
+                        "surface-bright": "#31394d",
+                        "on-error": "#690005",
+                        "surface-container-high": "#222a3d",
+                        "tertiary": "#68dba9",
+                        "on-surface": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "on-tertiary-container": "#00311f",
+                        "inverse-primary": "#a73a00",
+                        "tertiary-container": "#25a475",
+                        "on-secondary": "#552100",
+                        "primary-fixed": "#ffdbce",
+                        "on-secondary-container": "#4a1c00",
+                        "primary-container": "#f66018",
+                        "on-primary": "#5a1c00",
+                        "on-tertiary": "#003825",
+                        "on-primary-fixed": "#370e00",
+                        "on-secondary-fixed": "#341100",
+                        "surface": "#0b1326",
+                        "on-error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ffb690",
+                        "surface-tint": "#ffb599",
+                        "inverse-surface": "#dae2fd",
+                        "inverse-on-surface": "#283044",
+                        "tertiary-fixed": "#85f8c4",
+                        "primary": "#ffb599",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "background": "#0b1326",
+                        "outline-variant": "#5a4138",
+                        "surface-container": "#171f33",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-primary-container": "#4f1700",
+                        "surface-container-low": "#131b2e",
+                        "error-container": "#93000a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "metric-sm": ["Fira Code"],
+                        "headline-md": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { background-color: #0b1326; color: #dae2fd; font-family: 'Fira Sans', sans-serif; }
+        .fira-code { font-family: 'Fira Code', monospace; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #131b2e; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
+        .pin-shadow { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .green-overlay { pointer-events: none; }
+        .grid-dots { background-image: radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px); background-size: 20px 20px; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+<!-- Navigation Drawer (Shared Anchor) -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col w-[280px] bg-surface-container-high shadow-lg">
+<div class="p-6">
+<h1 class="font-headline-lg text-headline-lg text-primary">Vietnam Smart Golf</h1>
+</div>
+<div class="flex items-center gap-4 px-6 py-4 mb-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional profile portrait of a Vietnamese golf course manager in a dark navy polo shirt, set against a blurred background of a luxury clubhouse. The lighting is soft and corporate, matching the deep navy and orange brand palette. High-end professional photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwgaxxGQHVjWQEOYIS-JddvudETHOUL4RaYUvrfUxRd3KisOb_Dp-e54XdvFdLosakaqQABQ3un5NtqeHIia7xsk76iXP9JSK5iYgc3e4rekJdH_pNeaFXZq5QmrhPcusmZv8n749SJsAsGtjKoxKU2igcwlN2cNr_cRQvbxfxc3HyReMSaZ2BTYo1YgItEUTUnWdQLAFTFWFWykeT2kSDO89ZjWoXTTFsmYmrttB4_5x1v_lysBaVLw"/>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-bold">Nguyễn Văn A</p>
+<p class="text-[12px] text-on-surface-variant uppercase tracking-wider">Premium Member • HCP 12.4</p>
+</div>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md text-body-md">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Lịch sử vòng chơi</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-body-md text-body-md">Quản lý sân</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Hỗ trợ</span>
+</a>
+</nav>
+<div class="p-4 bg-surface-container-low/50 mt-auto m-4 rounded-xl border border-outline-variant/20">
+<p class="text-[11px] text-on-surface-variant uppercase mb-2">Hệ thống vận hành</p>
+<div class="flex items-center gap-2 text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+<span class="font-metric-sm text-metric-sm">GPS Confidence: High</span>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col h-screen relative">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-margin-desktop h-[72px] bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col">
+<nav class="flex items-center gap-2 text-[12px] text-on-surface-variant mb-0.5">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>BRG Legend Hill</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">Pin &amp; Conditions</span>
+</nav>
+<h2 class="font-headline-md text-headline-md text-on-surface">Vị trí cờ &amp; Điều kiện sân</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex bg-surface-container-low rounded-lg p-1">
+<button class="px-4 py-1.5 text-label-caps font-label-caps bg-secondary-container text-on-secondary-container rounded-md">TODAY</button>
+<button class="px-4 py-1.5 text-label-caps font-label-caps text-on-surface-variant hover:text-on-surface">CALENDAR</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/30"></div>
+<button class="flex items-center gap-2 bg-primary-container text-on-primary-container px-6 h-10 rounded-full font-label-caps text-label-caps active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-[20px]">publish</span>
+                    PUBLISH OPERATIONS
+                </button>
+</div>
+</header>
+<!-- Content Layout -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Hole Grid (Center) -->
+<section class="flex-1 overflow-y-auto p-margin-desktop custom-scrollbar bg-background">
+<div class="grid grid-cols-3 xl:grid-cols-6 gap-4">
+<!-- Generating 18 Hole Cards -->
+<script>
+                        const holes = Array.from({length: 18}, (_, i) => ({
+                            num: i + 1,
+                            par: [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5][i],
+                            status: i === 6 ? 'Selected' : (i < 5 ? 'Official' : (i % 3 === 0 ? 'Scheduled' : 'Expired'))
+                        }));
+                        
+                        document.write(holes.map(hole => `
+                            <div class="group relative bg-surface-container rounded-xl border ${hole.num === 7 ? 'border-primary ring-1 ring-primary' : 'border-outline-variant/20'} p-4 hover:border-primary/50 transition-all cursor-pointer">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div class="flex flex-col">
+                                        <span class="font-display-metrics text-[24px] leading-tight text-on-surface">#${hole.num}</span>
+                                        <span class="text-[12px] text-on-surface-variant uppercase">Par ${hole.par}</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                        hole.status === 'Official' ? 'bg-tertiary/20 text-tertiary' : 
+                                        hole.status === 'Scheduled' ? 'bg-primary/20 text-primary' : 
+                                        hole.status === 'Selected' ? 'bg-secondary-container text-on-secondary-container' : 'bg-error/20 text-error'
+                                    }">
+                                        ${hole.status}
+                                    </span>
+                                </div>
+                                <div class="aspect-square bg-surface-dim rounded-lg border border-outline-variant/10 overflow-hidden relative mb-2">
+                                    <div class="absolute inset-0 grid-dots opacity-30"></div>
+                                    <div class="absolute inset-4 rounded-full border-2 border-dashed border-tertiary/20 bg-tertiary/5 flex items-center justify-center">
+                                        <div class="w-2 h-2 bg-primary rounded-full pin-shadow animate-bounce"></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center text-metric-sm font-metric-sm text-on-surface-variant">
+                                    <span>Zone: Center</span>
+                                    <span>248 Yds</span>
+                                </div>
+                            </div>
+                        `).join(''));
+                    </script>
+</div>
+<!-- Footer Summary/Action -->
+<div class="mt-8 bg-surface-container-high border border-outline-variant/30 rounded-2xl p-6 flex items-center justify-between">
+<div class="flex gap-8">
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1 uppercase">Changes Detected</p>
+<p class="font-display-metrics text-headline-md text-primary">04 Holes</p>
+</div>
+<div class="w-[1px] h-12 bg-outline-variant/20"></div>
+<div>
+<p class="text-label-caps font-label-caps text-on-surface-variant mb-1 uppercase">Stale Pins</p>
+<p class="font-display-metrics text-headline-md text-error">02 Holes</p>
+</div>
+</div>
+<div class="flex gap-4">
+<button class="h-12 px-6 rounded-xl border border-outline-variant text-on-surface font-label-caps text-label-caps hover:bg-surface-variant transition-colors">DISCARD ALL</button>
+<button class="h-12 px-8 rounded-xl bg-primary-container text-on-primary-container font-label-caps text-label-caps hover:brightness-110 active:scale-95 transition-all">REVIEW &amp; PUBLISH</button>
+</div>
+</div>
+</section>
+<!-- Conditions & Detail Panel (Right Side-over style) -->
+<aside class="w-[480px] bg-surface-container-low border-l border-[rgba(255,255,255,0.08)] overflow-y-auto custom-scrollbar">
+<!-- Hole 7 Detail Section -->
+<div class="p-6 border-b border-outline-variant/20">
+<div class="flex items-center justify-between mb-6">
+<h3 class="font-headline-md text-headline-md flex items-center gap-2">
+<span class="text-primary">Hole 7</span>
+<span class="text-on-surface-variant text-body-md font-normal">• Par 3</span>
+</h3>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-variant rounded-lg text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">content_copy</span></button>
+<button class="p-2 bg-surface-variant rounded-lg text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">delete</span></button>
+</div>
+</div>
+<!-- Green Map Editor -->
+<div class="relative aspect-square bg-surface-container-lowest rounded-2xl border border-outline-variant/30 mb-6 group cursor-crosshair overflow-hidden">
+<div class="absolute inset-0 grid-dots opacity-40"></div>
+<!-- Zone Overlay Visual -->
+<div class="absolute inset-0 flex flex-col pointer-events-none">
+<div class="flex-1 border-b border-dashed border-primary/20 flex items-center justify-center text-[10px] uppercase text-primary/30 font-bold">Front</div>
+<div class="flex-1 border-b border-dashed border-primary/20 flex items-center justify-center text-[10px] uppercase text-primary/30 font-bold">Center</div>
+<div class="flex-1 flex items-center justify-center text-[10px] uppercase text-primary/30 font-bold">Back</div>
+</div>
+<!-- Vector Green Placeholder -->
+<div class="absolute inset-8 rounded-full border-4 border-tertiary/30 bg-tertiary/5 backdrop-blur-[2px] shadow-inner flex items-center justify-center">
+<div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2">
+<div class="w-6 h-6 bg-primary rounded-full pin-shadow flex items-center justify-center ring-4 ring-primary/20">
+<span class="material-symbols-outlined text-white text-[16px]">location_on</span>
+</div>
+<div class="mt-2 bg-surface-container-highest/90 px-2 py-1 rounded text-metric-sm font-metric-sm text-white whitespace-nowrap">
+                                    21.0285° N, 105.8542° E
+                                </div>
+</div>
+</div>
+<!-- Stale Warning Overlay -->
+<div class="absolute top-4 left-4 bg-error/90 text-on-error px-3 py-1 rounded-full text-[10px] font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                            PIN EXPIRED — UNOFFICIAL
+                        </div>
+</div>
+<!-- Scheduling Controls -->
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">Effective Time</label>
+<input class="w-full bg-surface-variant border-none rounded-lg text-on-surface fira-code text-sm focus:ring-2 focus:ring-primary" type="datetime-local" value="2023-10-27T06:00"/>
+</div>
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">Expiry Time</label>
+<input class="w-full bg-surface-variant border-none rounded-lg text-on-surface fira-code text-sm focus:ring-2 focus:ring-primary" type="datetime-local" value="2023-10-27T18:00"/>
+</div>
+</div>
+<button class="w-full h-12 bg-surface-variant border border-primary/30 text-primary rounded-xl font-label-caps text-label-caps flex items-center justify-center gap-2 hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined">auto_fix_high</span>
+                        APPLY ZONE TEMPLATE
+                    </button>
+</div>
+<!-- Global Conditions Section -->
+<div class="p-6 space-y-8">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-widest border-b border-outline-variant/10 pb-2">Course Global Conditions</h4>
+<div class="grid grid-cols-2 gap-6">
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-3 uppercase">Green Speed</label>
+<div class="flex items-center gap-3">
+<input class="w-20 bg-surface-variant border-none rounded-lg text-display-metrics text-[24px] text-on-surface focus:ring-2 focus:ring-primary p-2" step="0.1" type="number" value="9.5"/>
+<span class="fira-code text-on-surface-variant">ft (Stimpmeter)</span>
+</div>
+</div>
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-3 uppercase">Maintenance</label>
+<select class="w-full bg-surface-variant border-none rounded-lg text-on-surface font-body-md focus:ring-2 focus:ring-primary">
+<option>Normal Operations</option>
+<option>Aeration (Active)</option>
+<option>Top Dressing</option>
+</select>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<div class="flex justify-between mb-2">
+<label class="text-label-caps font-label-caps text-on-surface-variant uppercase">Green Firmness</label>
+<span class="text-primary font-metric-sm">7.2 / 10</span>
+</div>
+<input class="w-full accent-primary bg-surface-variant rounded-lg h-2" max="10" min="0" step="0.1" type="range" value="7.2"/>
+</div>
+<div>
+<div class="flex justify-between mb-2">
+<label class="text-label-caps font-label-caps text-on-surface-variant uppercase">Moisture Content</label>
+<span class="text-primary font-metric-sm">24%</span>
+</div>
+<input class="w-full accent-primary bg-surface-variant rounded-lg h-2" max="100" min="0" step="1" type="range" value="24"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">Cart Path Status</label>
+<select class="w-full bg-surface-variant border-none rounded-lg text-on-surface font-body-md focus:ring-2 focus:ring-primary">
+<option>90 Degrees</option>
+<option>Cart Path Only</option>
+<option>Freely Allowed</option>
+</select>
+</div>
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">Course Status</label>
+<select class="w-full bg-surface-variant border-none rounded-lg text-on-surface font-body-md focus:ring-2 focus:ring-primary">
+<option>Open</option>
+<option>Delayed (Frost)</option>
+<option>Closed</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-label-caps font-label-caps text-on-surface-variant mb-2 uppercase">Operational Notes</label>
+<textarea class="w-full bg-surface-variant border-none rounded-lg text-on-surface font-body-md focus:ring-2 focus:ring-primary" placeholder="Add course-wide alerts here..." rows="3"></textarea>
+</div>
+<!-- Mobile Preview Component -->
+<div class="mt-10 bg-surface-container-highest rounded-2xl p-4 border border-outline-variant/30">
+<div class="flex items-center justify-between mb-4">
+<p class="text-label-caps font-label-caps text-primary uppercase">Mobile Preview</p>
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">smartphone</span>
+</div>
+<div class="bg-surface-dim rounded-xl p-4 border border-outline-variant/20 flex gap-4 items-center">
+<div class="w-16 h-16 bg-surface-bright rounded-lg flex flex-col items-center justify-center border border-primary/20">
+<span class="font-display-metrics text-[24px] text-white">7</span>
+<span class="text-[10px] text-on-surface-variant">PAR 3</span>
+</div>
+<div class="flex-1">
+<div class="flex items-baseline gap-2">
+<span class="font-display-metrics text-[32px] text-white">165</span>
+<span class="text-metric-sm text-on-surface-variant uppercase">Yds</span>
+</div>
+<div class="flex items-center gap-2 text-[10px] text-tertiary font-bold uppercase">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    CHÍNH THỨC
+                                </div>
+</div>
+</div>
+</div>
+<div class="pt-6">
+<button class="w-full h-14 bg-primary-container text-on-primary-container rounded-xl font-headline-md text-[18px] flex items-center justify-center gap-3 shadow-lg hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined">check_circle</span>
+                            SAVE &amp; PUBLISH UPDATES
+                        </button>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- Contextual FAB Suppression: Not rendering FAB as this is a Management Portal screen -->
+<script>
+        // Micro-interactions for grid items
+        document.querySelectorAll('.group').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.group').forEach(i => i.classList.remove('border-primary', 'ring-1', 'ring-primary'));
+                item.classList.add('border-primary', 'ring-1', 'ring-primary');
+            });
+        });
+    </script>
+</body></html>

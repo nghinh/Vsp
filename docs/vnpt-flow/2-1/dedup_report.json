@@ -1,0 +1,94 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "2-1",
+  "reports": [
+    {
+      "slice_id": "2.1-A",
+      "symbol": "main",
+      "file": "apps/mobile/test/app_startup_test.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-04T04:11:26.192324+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-04T04:12:09.697453+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "2.1-A",
+      "symbol": "AuthStartupGate",
+      "file": "apps/mobile/lib/app.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-04T04:12:52.186092+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-04T04:32:44.947760+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

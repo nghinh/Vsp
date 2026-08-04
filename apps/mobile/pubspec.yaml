@@ -1,0 +1,67 @@
+name: vsp_mobile
+description: Vietnam Smart Golf Platform — Mobile App
+
+publish_to: none
+
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.10.0"
+
+dependencies:
+  mobile_theme:
+    path: ../../packages/mobile-theme
+  # State management
+  flutter_bloc: ^8.1.6
+  equatable: ^2.0.5
+  # HTTP client
+  http: ^1.2.2
+  # Secure storage for tokens
+  flutter_secure_storage: ^9.2.2
+  # Google Sign-In
+  google_sign_in: ^6.2.2
+  # Apple Sign-In
+  sign_in_with_apple: ^8.1.0
+  # URL launcher for auth redirects
+  url_launcher: ^6.3.1
+  # JSON serialization
+  json_annotation: ^4.9.0
+  # SQLite for offline sync queue
+  sqflite: ^2.3.3
+  # UUID for idempotency keys
+  uuid: ^4.5.1
+  # Connectivity monitoring for flush-on-reconnect
+  connectivity_plus: ^6.0.5
+  # HTTP client with cancel token support for file downloads
+  dio: ^5.4.0
+  # File system paths for course package storage
+  path_provider: ^2.1.2
+  # SHA-256 checksum for package validation
+  crypto: ^3.0.3
+  # Persistent key-value storage for download preferences
+  shared_preferences: ^2.2.2
+  # Map rendering with vector layers and offline support
+  maplibre_gl: ^0.26.2
+  # GPS location with battery-aware sampling (Story 6.1)
+  geolocator: ^13.0.2
+  # Charts — accessible bar/pie charts (Story 11.2)
+  fl_chart: ^0.69.0
+  # Date/time formatting for filter ranges (Story 11.2)
+  intl: ^0.19.0
+  # Course package geometry and manifest reader
+  course_package:
+    path: ../../packages/course-package
+  watch_connectivity: ^0.2.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
+  # BLoC testing utilities (Story 11.2)
+  bloc_test: ^9.1.7
+  sqflite_common_ffi: ^2.3.3
+
+flutter:
+  uses-material-design: true

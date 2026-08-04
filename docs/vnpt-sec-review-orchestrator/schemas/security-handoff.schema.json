@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SecurityHandoff",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "scope_id",
+    "scope_source",
+    "mode",
+    "touched_scope",
+    "changed_files",
+    "validations_run",
+    "known_risks",
+    "stack_hints",
+    "residual_security_concerns",
+    "declared_fields"
+  ],
+  "properties": {
+    "scope_id": { "type": "string", "minLength": 1 },
+    "scope_source": { "type": "string", "minLength": 1 },
+    "mode": { "type": "string", "minLength": 1 },
+    "touched_scope": { "type": "string", "minLength": 1 },
+    "changed_files": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "validations_run": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "known_risks": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "stack_hints": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "residual_security_concerns": {
+      "type": "array",
+      "minItems": 0,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "declared_fields": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["scope_id", "scope_source", "mode"],
+      "properties": {
+        "scope_id": { "type": "string", "minLength": 1 },
+        "scope_source": { "type": "string", "minLength": 1 },
+        "mode": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

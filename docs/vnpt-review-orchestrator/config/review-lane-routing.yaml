@@ -1,0 +1,64 @@
+lanes:
+  - name: architecture
+    match:
+      - architecture
+      - adr
+      - design
+  - name: docs
+    match:
+      - docs
+      - markdown
+      - runbook
+  - name: frontend-react
+    match:
+      - react
+      - jsx
+      - tsx
+  - name: frontend-vue
+    match:
+      - vue
+      - vue3
+  - name: frontend-angular
+    match:
+      - angular
+  - name: backend-node
+    match:
+      - node
+      - typescript
+      - javascript
+  - name: backend-python
+    match:
+      - python
+  - name: backend-java
+    match:
+      - java
+      - spring
+  - name: backend-dotnet
+    match:
+      - dotnet
+      - csharp
+  - name: backend-go
+    match:
+      - go
+  - name: backend-php
+    match:
+      - php
+  - name: backend-c-cpp
+    match:
+      - c
+      - cpp
+  - name: mobile-flutter
+    match:
+      - flutter
+      - dart
+  - name: mobile-react
+    match:
+      - react-native
+  - name: infra-devops
+    match:
+      - docker
+      - kubernetes
+      - terraform
+      - helm
+      - ci
+      - devops

@@ -1,0 +1,29 @@
+{
+  "runId": "run_2026_08_02_008",
+  "epicId": "epic-04",
+  "epicTitle": "Offline Course Packages",
+  "manifestHash": "c02ccd5a3ad69a0024ba3dd8f833145802dfa02525bf57bb9c1d8b37cde21122",
+  "stories": [
+    {
+      "storyId": "4-1",
+      "storyTitle": "Define Course Package Contract",
+      "sourcePath": "docs/implementation-artifacts/epic-04/4-1-define-course-package-contract.md"
+    },
+    {
+      "storyId": "4-2",
+      "storyTitle": "Generate and Publish Course Packages",
+      "sourcePath": "docs/implementation-artifacts/epic-04/4-2-generate-and-publish-course-packages.md"
+    },
+    {
+      "storyId": "4-3",
+      "storyTitle": "Download and Manage Offline Courses",
+      "sourcePath": "docs/implementation-artifacts/epic-04/4-3-download-and-manage-offline-courses.md"
+    },
+    {
+      "storyId": "4-4",
+      "storyTitle": "Incrementally Update Course Data",
+      "sourcePath": "docs/implementation-artifacts/epic-04/4-4-incrementally-update-course-data.md"
+    }
+  ],
+  "createdAt": "2026-08-02T10:28:40+07:00"
+}

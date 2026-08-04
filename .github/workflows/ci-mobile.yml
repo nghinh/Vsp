@@ -1,0 +1,83 @@
+name: Mobile CI
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/ci-mobile.yml"
+  pull_request:
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/ci-mobile.yml"
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  flutter-ci:
+    name: Flutter CI (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@5c5ed9d4bfc2b4e52b1e4ee47f141435d7747e75  # v2.22.1
+        with:
+          flutter-version: ">=3.10.0"
+          channel: stable
+          cache: true
+          cache-key: flutter-${{ runner.os }}-${{ hashFiles('apps/mobile/pubspec.lock') }}
+
+      - name: Install dependencies
+        run: flutter pub get
+        working-directory: apps/mobile
+
+      - name: Format
+        run: flutter format --set-exit-if-changed .
+        working-directory: apps/mobile
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+        working-directory: apps/mobile
+
+      - name: Test
+        run: flutter test
+        working-directory: apps/mobile
+
+      - name: Build (debug APK)
+        run: flutter build apk --debug
+        working-directory: apps/mobile
+
+      - name: Upload APK artifact
+        if: runner.os == 'Linux'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
+        with:
+          name: flutter-debug-apk-${{ matrix.os }}
+          path: apps/mobile/build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 5
+
+  flutter-secrets:
+    name: Mobile Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run git-secrets
+        uses: zricethezav/gitleaks-action@92c118b9a6c8eadb70b18c3a8d0f3d1a9b3a9f7c  # v2.3.2
+        with:
+          scan-commit: ${{ github.event.pull_request.base.sha || github.sha }}
+          scan-commits-files: ${{ github.event.pull_request.head.sha || github.sha }}
+          baseline-path: .gitleaks-baseline.json
+        env:
+          GITLEAKS_ENABLE_COMMENTS: false
+          GITLEAKS_ENABLE_UNSTAGED: true

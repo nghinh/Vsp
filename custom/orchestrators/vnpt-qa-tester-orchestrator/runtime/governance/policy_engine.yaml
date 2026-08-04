@@ -1,0 +1,120 @@
+policies:
+  - name: no_shallow_tests_count
+    description: Shallow tests do not count toward coverage metrics
+    enforcement: quality_gate
+    check:
+      patterns_that_do_not_count:
+        - only_checks_page_renders
+        - only_checks_status_code_200
+        - only_checks_snapshot_without_business_assertion
+        - only_mocks_core_logic_without_behavior_verification
+        - only_verifies_implementation_details_unrelated_to_behavior
+        - tests_duplicate_existing_tests_with_renamed_titles
+        - tests_happy_path_only
+        - no_negative_boundary_cases
+        - no_state_side_effect_verification
+        - render-only
+        - status-200-only
+        - snapshot-only
+    exceptions: []
+    severity: hard_fail
+
+  - name: traceable_test_coverage
+    description: Every test must trace to at least one risk AND one oracle
+    enforcement: validator
+    check:
+      required_traceability:
+        - test_id → risk_id
+        - test_id → oracle_id
+    exceptions:
+      - type: SOURCE_DERIVED_TEST
+        requires_documentation: true
+        requires_approval: false
+    severity: hard_fail
+
+  - name: p0_risk_minimum_coverage
+    description: P0 risks require minimum test coverage per category
+    enforcement: validator
+    check:
+      per_p0_risk:
+        happy_path: 1
+        negative_tests: 2
+        boundary_or_edge_tests: 2
+        recovery_or_error_tests: 1
+        state_machine_tests_when_applicable: 1
+        property_tests_when_applicable: 1
+        api_or_e2e_tests_when_visible: 1
+    exceptions:
+      - type: JUSTIFIED_EXCEPTION
+        requires_concrete_reason: true
+        requires_approval: true
+        approver_role: qa_lead
+    severity: hard_fail
+
+  - name: p1_risk_minimum_coverage
+    description: P1 risks require minimum test coverage
+    enforcement: validator
+    check:
+      per_p1_risk:
+        main_path_tests: 1
+        negative_tests: 1
+        boundary_or_edge_tests: 1
+        state_property_api_or_e2e_when_applicable: 1
+    exceptions:
+      - type: JUSTIFIED_EXCEPTION
+        requires_concrete_reason: true
+        requires_approval: false
+    severity: warn
+
+  - name: coverage_inflation_detection
+    description: Detect artificial coverage inflation via test duplication
+    enforcement: quality_gate
+    check:
+      metrics:
+        - tests_per_risk_ratio
+        - assertions_per_test_ratio
+        - unique_assertions_vs_total_assertions
+      thresholds:
+        assertions_per_test_min: 2
+        unique_assertions_ratio_min: 0.3
+        tests_per_risk_max: 50
+    enforcement_action: flag_for_review
+    severity: warn
+
+  - name: duplicate_test_detection
+    description: Detect duplicate or near-duplicate test cases
+    enforcement: quality_gate
+    check:
+      similarity_threshold: 0.85
+      check_methods:
+        - input_data_similarity
+        - expected_result_similarity
+        - assertion_pattern_similarity
+    enforcement_action: flag_and_deduct
+    penalty_per_duplicate: 5
+    severity: warn
+
+  - name: oracle_before_automation
+    description: No executable test generated before oracle exists
+    enforcement: checkpoint
+    checkpoint_id: CP-03
+    severity: hard_fail
+
+  - name: context_before_risk
+    description: No risk modeling before BMAD docs read from 0-EOF
+    enforcement: checkpoint
+    checkpoint_id: CP-01
+    severity: hard_fail
+
+anti_gaming_rules:
+  score_adjustments:
+    shallow_tests_detected:
+      penalty: -15 per detected pattern
+      floor: 50
+    duplicate_tests_detected:
+      penalty: -5 per duplicate pair
+    justification_gaming:
+      check: JUSTIFIED_EXCEPTION used without concrete_reason
+      penalty: -10 per invalid_justification
+
+version: "1.0.0"

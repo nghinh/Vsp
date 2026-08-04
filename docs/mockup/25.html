@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>25 — Portal Login &amp; MFA | Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&amp;family=Fira+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#4f1700",
+                        "primary-container": "#f66018",
+                        "inverse-surface": "#dae2fd",
+                        "on-secondary-fixed-variant": "#783200",
+                        "on-surface-variant": "#e2bfb2",
+                        "error-container": "#93000a",
+                        "secondary-fixed-dim": "#ffb690",
+                        "outline-variant": "#5a4138",
+                        "on-primary": "#5a1c00",
+                        "on-tertiary-fixed": "#002114",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary": "#003825",
+                        "secondary": "#ffb690",
+                        "secondary-fixed": "#ffdbca",
+                        "surface-container": "#171f33",
+                        "on-secondary": "#552100",
+                        "surface-variant": "#2d3449",
+                        "on-surface": "#dae2fd",
+                        "on-error-container": "#ffdad6",
+                        "tertiary-container": "#25a475",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "secondary-container": "#ec6a06",
+                        "inverse-primary": "#a73a00",
+                        "on-error": "#690005",
+                        "inverse-on-surface": "#283044",
+                        "on-tertiary-container": "#00311f",
+                        "on-secondary-container": "#4a1c00",
+                        "surface-bright": "#31394d",
+                        "on-secondary-fixed": "#341100",
+                        "surface": "#0b1326",
+                        "surface-container-low": "#131b2e",
+                        "on-background": "#dae2fd",
+                        "surface-dim": "#0b1326",
+                        "surface-container-high": "#222a3d",
+                        "on-primary-fixed": "#370e00",
+                        "primary-fixed-dim": "#ffb599",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "outline": "#a98a7e",
+                        "error": "#ffb4ab",
+                        "surface-tint": "#ffb599",
+                        "primary-fixed": "#ffdbce",
+                        "tertiary": "#68dba9",
+                        "primary": "#ffb599",
+                        "background": "#0b1326",
+                        "surface-container-highest": "#2d3449"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "touch-target": "44px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "display-metrics": ["Fira Code"],
+                        "body-lg": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "body-md": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        input:focus {
+            outline: 2px solid #f66018;
+            outline-offset: 1px;
+        }
+        .mfa-input:focus {
+            border-color: #f66018 !important;
+            box-shadow: 0 0 0 4px rgba(246, 96, 24, 0.2);
+        }
+        /* Custom scrollbar for data-heavy feel */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #060e20; }
+        ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 3px; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-hidden h-screen">
+<main class="flex h-full w-full">
+<!-- Left: Login Panel -->
+<section class="w-full lg:w-[480px] xl:w-[560px] bg-surface-container-lowest flex flex-col justify-center px-12 xl:px-20 z-10 shadow-2xl relative">
+<!-- Branding Anchor -->
+<div class="absolute top-12 left-12 xl:left-20 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">sports_golf</span>
+</div>
+<span class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Vietnam Smart Golf</span>
+</div>
+<!-- Content Switcher Wrapper -->
+<div class="w-full max-w-sm mx-auto">
+<!-- State 1: Primary Login -->
+<div class="transition-all duration-500 ease-in-out opacity-100 translate-x-0" id="login-state">
+<h1 class="font-headline-lg text-headline-lg mb-2 text-on-surface">Đăng nhập Cổng vận hành sân golf</h1>
+<p class="text-on-surface-variant font-body-md mb-8">Vui lòng nhập thông tin quản trị viên để tiếp tục.</p>
+<!-- Error State (Hidden by default) -->
+<div class="hidden mb-6 p-4 bg-error-container/20 border border-error-container rounded-lg flex items-start gap-3" id="error-box">
+<span class="material-symbols-outlined text-error text-[20px]">error</span>
+<span class="text-on-error-container font-body-md">Thông tin đăng nhập không chính xác. Vui lòng thử lại.</span>
+</div>
+<form class="space-y-6" onsubmit="event.preventDefault(); showMFA();">
+<div>
+<label class="block font-label-caps text-label-caps text-primary mb-2 uppercase tracking-widest">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">mail</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-xl py-3 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant focus:border-primary-container transition-colors" placeholder="admin@vnsmartgolf.vn" required="" type="email"/>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-primary mb-2 uppercase tracking-widest">Mật khẩu</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">lock</span>
+<input class="w-full bg-surface-container border border-outline-variant rounded-xl py-3 pl-12 pr-4 text-on-surface placeholder:text-on-surface-variant focus:border-primary-container transition-colors" placeholder="••••••••" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary transition-colors" type="button">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="relative">
+<input class="peer sr-only" type="checkbox"/>
+<div class="w-5 h-5 bg-surface-container border border-outline-variant rounded peer-checked:bg-primary-container peer-checked:border-primary-container transition-all"></div>
+<span class="material-symbols-outlined absolute inset-0 text-[16px] text-on-primary-container hidden peer-checked:block text-center pt-[2px]">check</span>
+</div>
+<span class="font-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Ghi nhớ thiết bị</span>
+</label>
+<a class="text-primary hover:text-secondary-fixed transition-colors font-body-md font-medium" href="#">Quên mật khẩu?</a>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-[18px] py-4 rounded-xl font-bold shadow-lg shadow-primary-container/20 active:scale-[0.98] transition-all hover:bg-secondary-container" type="submit">
+                            Đăng nhập
+                        </button>
+</form>
+</div>
+<!-- State 2: MFA (Hidden initially) -->
+<div class="hidden transition-all duration-500 ease-in-out opacity-0 translate-x-12" id="mfa-state">
+<button class="group flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors mb-8" onclick="backToLogin()">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span class="font-label-caps text-label-caps">QUAY LẠI</span>
+</button>
+<h1 class="font-headline-lg text-headline-lg mb-2 text-on-surface">Xác thực 2 lớp (MFA)</h1>
+<p class="text-on-surface-variant font-body-md mb-8">Yêu cầu bảo mật cao cho tài khoản quản trị. Vui lòng nhập mã 6 chữ số từ ứng dụng xác thực của bạn.</p>
+<form class="space-y-8">
+<div class="flex justify-between gap-2">
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+<input class="mfa-input w-12 h-14 bg-surface-container border border-outline-variant rounded-xl text-center text-headline-md font-display-metrics focus:outline-none transition-all" maxlength="1" type="text"/>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-headline-md text-[18px] py-4 rounded-xl font-bold shadow-lg shadow-primary-container/20 active:scale-[0.98] transition-all hover:bg-secondary-container" type="button">
+                            Xác thực thiết bị
+                        </button>
+<div class="text-center">
+<button class="text-primary hover:text-secondary-fixed transition-colors font-body-md font-medium" type="button">Sử dụng mã khôi phục</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Footer Meta -->
+<div class="absolute bottom-12 left-12 xl:left-20 text-on-surface-variant font-label-caps text-label-caps opacity-60">
+                © 2024 Vietnam Smart Golf Portal. Version 4.2.0-stable.
+            </div>
+</section>
+<!-- Right: Imagery -->
+<section class="hidden lg:block flex-1 relative overflow-hidden bg-surface-container-lowest">
+<!-- Background Map Imagery -->
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover" data-alt="A cinematic, high-resolution aerial view of a prestigious golf course at sunset. The landscape features rolling green fairways with long, soft shadows cast by towering palm trees. In the distance, a small yellow flag marks a green. The lighting is warm and golden, creating a sense of luxury and calm focus. The overall aesthetic is professional, sophisticated, and clean, perfectly capturing the high-end operational nature of the golf portal." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWWtWQk4DOXBuyVJNe13rvUvL8vSLTMW2NNU0A2uiSF7nHOtuqiZaECRgfs6twH-L6ro80rrEkfDrbutk_lKfYIl2FeeJL_P9wZBBxOBU3jlcZDZTUChf1Tjqpjq9YqVyUX5StIn31AK_Y0n8QtmNqIAH5XrgPIfqKtUXJtmJ7fvqEdvY1WO_1xegIM6A-9wRSxMu0yvTnAHt6NSNVKZ1BMqswVM31akJWqWV8hJCpmPsr47-b5sHxgg"/>
+<!-- Tonal Overlay for branding cohesion -->
+<div class="absolute inset-0 bg-gradient-to-r from-surface-container-lowest via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 bg-surface-container-lowest/10"></div>
+</div>
+<!-- Atmospheric Overlay Elements -->
+<div class="absolute inset-0 z-10 flex flex-col justify-end p-20 pointer-events-none">
+<div class="max-w-xl">
+<div class="flex items-center gap-2 mb-4 bg-primary-container/20 backdrop-blur-md border border-primary-container/30 w-fit px-4 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-primary font-label-caps text-[11px] tracking-widest uppercase">Hệ thống quản trị hợp nhất</span>
+</div>
+<h2 class="font-headline-lg text-[40px] leading-tight text-white mb-6 font-extrabold">Dữ liệu chính xác.<br/>Vận hành thông minh.</h2>
+<div class="grid grid-cols-2 gap-6 border-t border-white/10 pt-8">
+<div>
+<div class="font-display-metrics text-white text-[24px]">150+</div>
+<div class="text-on-surface-variant font-label-caps text-[12px] opacity-70">SÂN GOLF TOÀN QUỐC</div>
+</div>
+<div>
+<div class="font-display-metrics text-white text-[24px]">实时</div>
+<div class="text-on-surface-variant font-label-caps text-[12px] opacity-70">DỮ LIỆU GPS THỜI GIAN THỰC</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Subtle Shader background for texture -->
+
+</section>
+</main>
+<script>
+        function showMFA() {
+            const loginState = document.getElementById('login-state');
+            const mfaState = document.getElementById('mfa-state');
+            
+            loginState.classList.add('opacity-0', '-translate-x-12');
+            setTimeout(() => {
+                loginState.classList.add('hidden');
+                mfaState.classList.remove('hidden');
+                setTimeout(() => {
+                    mfaState.classList.remove('opacity-0', 'translate-x-12');
+                    mfaState.classList.add('opacity-100', 'translate-x-0');
+                    // Focus first MFA input
+                    document.querySelector('.mfa-input').focus();
+                }, 50);
+            }, 300);
+        }
+
+        function backToLogin() {
+            const loginState = document.getElementById('login-state');
+            const mfaState = document.getElementById('mfa-state');
+            
+            mfaState.classList.add('opacity-0', 'translate-x-12');
+            setTimeout(() => {
+                mfaState.classList.add('hidden');
+                loginState.classList.remove('hidden');
+                setTimeout(() => {
+                    loginState.classList.remove('opacity-0', '-translate-x-12');
+                    loginState.classList.add('opacity-100', 'translate-x-0');
+                }, 50);
+            }, 300);
+        }
+
+        // MFA Input Auto-Focus Logic
+        const mfaInputs = document.querySelectorAll('.mfa-input');
+        mfaInputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value.length === 1 && index < mfaInputs.length - 1) {
+                    mfaInputs[index + 1].focus();
+                }
+            });
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    mfaInputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Trigger dummy error on specific keyboard shortcut (Ctrl+E) for demo
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'e') {
+                document.getElementById('error-box').classList.toggle('hidden');
+            }
+        });
+    </script>
+</body></html>

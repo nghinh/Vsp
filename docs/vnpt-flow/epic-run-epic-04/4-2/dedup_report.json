@@ -1,0 +1,382 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "4-2",
+  "reports": [
+    {
+      "slice_id": "PKG-PUBLISH-1",
+      "symbol": "PackageBuildJob",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/entity/PackageBuildJob.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:19:56.104594+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-1",
+      "symbol": "PackageBuildStatus",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/entity/PackageBuildStatus.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:19:56.819979+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-1",
+      "symbol": "PackageBuildJobRepository",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/repository/PackageBuildJobRepository.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:19:57.368781+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-2",
+      "symbol": "PackageGenerationService",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/PackageGenerationService.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:20:12.211917+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:21:17.737677+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-2",
+      "symbol": "ObjectStorageService",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/storage/ObjectStorageService.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:20:13.467405+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:21:18.270922+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-2",
+      "symbol": "PackageModuleConfig",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/PackageModuleConfig.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:21:19.182774+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-3",
+      "symbol": "PackageBuildJobDto",
+      "file": "packages/contracts/schemas/course.yaml",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:21:32.020113+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:22:47.992244+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-3",
+      "symbol": "PackageBuildController",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/package/PackageBuildController.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:21:32.784132+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:22:48.237831+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-4",
+      "symbol": "BuildStatusPanel",
+      "file": "apps/portal/src/components/package/BuildStatusPanel.vue",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:23:16.441907+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:25:21.553741+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "PKG-PUBLISH-4",
+      "symbol": "PackageHistoryPage",
+      "file": "apps/portal/src/pages/courses/[courseId]/packages/index.vue",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T04:23:17.609210+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T04:25:21.898665+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

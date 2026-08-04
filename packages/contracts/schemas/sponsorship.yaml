@@ -1,0 +1,45 @@
+# Sponsorship schemas for the Vietnam Smart Golf Platform API
+
+Sponsorship:
+  type: object
+  properties:
+    sponsorshipId:
+      type: string
+      description: Sponsorship unique identifier
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    sponsorName:
+      type: string
+      description: Name of the sponsor
+      example: Acme Golf Supplies
+    logoUrl:
+      type: string
+      format: uri
+      description: URL of the sponsor logo
+    targetSlots:
+      type: array
+      items:
+        type: string
+      description: Booking slots targeted by this sponsorship
+    consentGiven:
+      type: boolean
+      description: Whether user consent was given for sponsor communications
+
+SponsorshipListResponse:
+  type: object
+  properties:
+    sponsorships:
+      type: array
+      items:
+        $ref: '#/Sponsorship'
+
+ConsentRequest:
+  type: object
+  required:
+    - consentGiven
+  properties:
+    consentGiven:
+      type: boolean
+      description: Whether consent is given

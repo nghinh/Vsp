@@ -1,0 +1,53 @@
+{
+  "run_id": "run_2026_08_02_008",
+  "epic_count": 12,
+  "current_epic_index": 3,
+  "status": "in_progress",
+  "created_at": "2026-08-02T10:28:40+07:00",
+  "updated_at": "2026-08-02T13:00:00+07:00",
+  "epics": [
+    {
+      "epic_id": "epic-04",
+      "epic_name": "Offline Course Packages",
+      "status": "in_progress",
+      "story_count": 4,
+      "completed_stories": 1,
+      "failed_stories": 0
+    }
+  ],
+  "stories": [
+    {
+      "story_id": "4-1",
+      "bmad_status": "done",
+      "routing_decision": "completed",
+      "context_read": true,
+      "contract_read": true
+    },
+    {
+      "story_id": "4-2",
+      "bmad_status": "done",
+      "routing_decision": "completed",
+      "context_read": true,
+      "contract_read": true
+    },
+    {
+      "story_id": "4-3",
+      "bmad_status": "in-progress",
+      "routing_decision": "planning",
+      "context_read": true,
+      "contract_read": true
+    },
+    {
+      "story_id": "4-4",
+      "bmad_status": "ready-for-dev",
+      "routing_decision": "planning",
+      "context_read": true,
+      "contract_read": true
+    }
+  ],
+  "phase": "planning_artifacts_ready",
+  "review_pass_count": 0,
+  "last_review_actionable_issues": 0,
+  "non_progress_streak": 0,
+  "resume_pointer": null
+}

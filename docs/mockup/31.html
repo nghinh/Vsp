@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vietnam Smart Golf - Validate & Publish</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed": "#ffdbce",
+                    "inverse-on-surface": "#283044",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "on-tertiary-fixed": "#002114",
+                    "on-primary-fixed": "#370e00",
+                    "surface-tint": "#ffb599",
+                    "surface-container-low": "#131b2e",
+                    "on-secondary-fixed-variant": "#783200",
+                    "outline-variant": "#5a4138",
+                    "outline": "#a98a7e",
+                    "tertiary": "#68dba9",
+                    "surface-container-lowest": "#060e20",
+                    "surface-container": "#171f33",
+                    "surface-container-high": "#222a3d",
+                    "primary": "#ffb599",
+                    "primary-container": "#f66018",
+                    "surface-container-highest": "#2d3449",
+                    "inverse-primary": "#a73a00",
+                    "on-surface-variant": "#e2bfb2",
+                    "error-container": "#93000a",
+                    "inverse-surface": "#dae2fd",
+                    "on-tertiary": "#003825",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "error": "#ffb4ab",
+                    "surface-dim": "#0b1326",
+                    "secondary-container": "#ec6a06",
+                    "surface-bright": "#31394d",
+                    "secondary-fixed": "#ffdbca",
+                    "on-secondary-fixed": "#341100",
+                    "on-secondary-container": "#4a1c00",
+                    "on-background": "#dae2fd",
+                    "background": "#0b1326",
+                    "on-error-container": "#ffdad6",
+                    "surface": "#0b1326",
+                    "on-error": "#690005",
+                    "secondary": "#ffb690",
+                    "on-primary": "#5a1c00",
+                    "surface-variant": "#2d3449",
+                    "on-secondary": "#552100",
+                    "on-primary-container": "#4f1700",
+                    "primary-fixed-dim": "#ffb599",
+                    "secondary-fixed-dim": "#ffb690",
+                    "on-tertiary-container": "#00311f",
+                    "tertiary-container": "#25a475",
+                    "on-surface": "#dae2fd",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "tertiary-fixed": "#85f8c4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "8px",
+                    "margin-desktop": "32px",
+                    "touch-target": "44px",
+                    "margin-mobile": "16px",
+                    "gutter": "16px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Fira Sans"],
+                    "label-caps": ["Fira Sans"],
+                    "display-metrics": ["Fira Code"],
+                    "headline-lg": ["Fira Sans"],
+                    "body-lg": ["Fira Sans"],
+                    "body-md": ["Fira Sans"],
+                    "metric-sm": ["Fira Code"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .dashed-path { stroke-dasharray: 4; }
+        .pipeline-gradient {
+            background: linear-gradient(90deg, rgba(236,106,6,1) 0%, rgba(246,96,24,1) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary selection:text-on-primary overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Sidebar Navigation -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col h-full w-[280px] bg-surface-container-high shadow-lg border-r border-[rgba(255,255,255,0.08)]">
+<div class="p-6 flex flex-col gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">Vietnam Smart Golf</span>
+<div class="flex items-center gap-4 mt-6 p-4 rounded-xl bg-surface-container">
+<img class="w-12 h-12 rounded-full border-2 border-primary" data-alt="A professional headshot of a middle-aged Asian man with a friendly expression, wearing a premium golf polo shirt. The lighting is soft and studio-quality, emphasizing a professional yet approachable corporate look. The background is a blurred high-end golf clubhouse interior with warm wooden textures and trophy cases. The overall aesthetic is clean, authoritative, and sophisticated, matching a premium membership profile." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC446Kx63j9UdLsYQNbJyZ87ZVNIFwNKHKRXPLuFCRmg5T-l3lJZXy5pvHL6XdUUZW5Xp2xvtUUpTVvPpTUuATal47YsZumP-kgWHC2z53zfJsqfSNh1HHN3ZfzOqtiYRL-lUvjo8pnSfNb4kiv-ryABoc9UnjV0TRvrBwKyLbna80IJlqV726B1JhkRpnjiroc4LV7ozOXjG04qKXv3kaD7HeHCDi4BMPXAwWBbFNIvD1X_CIlsFTdiQ"/>
+<div>
+<p class="font-body-md font-bold text-on-surface">Nguyễn Văn A</p>
+<p class="font-label-caps text-on-surface-variant">HCP: 12.4 • <span class="text-primary">Admin</span></p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-1">
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-body-md">Quản lý sân</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md">Lịch sử vòng chơi</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant rounded-r-full transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md">Hỗ trợ</span>
+</a>
+</nav>
+<div class="p-6 border-t border-[rgba(255,255,255,0.08)]">
+<div class="p-4 bg-surface-container-highest rounded-xl">
+<p class="font-label-caps text-on-surface-variant mb-2">Build Pipeline</p>
+<div class="flex items-center justify-between mb-2">
+<span class="font-metric-sm text-primary">Building (45%)</span>
+<span class="material-symbols-outlined text-primary animate-spin text-[16px]">sync</span>
+</div>
+<div class="w-full bg-surface-container-low h-1.5 rounded-full overflow-hidden">
+<div class="h-full pipeline-gradient w-[45%]"></div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col h-full bg-background relative overflow-y-auto">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-margin-desktop h-touch-target w-full sticky top-0 z-50 bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-6">
+<span class="font-headline-md text-headline-md font-bold text-primary">BRG Legend Hill</span>
+<nav class="flex items-center gap-2 text-on-surface-variant font-label-caps opacity-60">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Courses</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>BRG Legend Hill</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface opacity-100">Validate & Publish</span>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-bright rounded-full transition-transform active:scale-95">notifications</button>
+<button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-bright rounded-full transition-transform active:scale-95">account_circle</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-margin-desktop space-y-8 max-w-[1400px] mx-auto w-full">
+<!-- Workflow Stepper -->
+<div class="flex items-center justify-between gap-4 px-12">
+<div class="flex flex-col items-center gap-3 relative z-10">
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold">1</div>
+<span class="font-label-caps text-primary">Validate</span>
+</div>
+<div class="h-[2px] flex-1 bg-surface-container-highest relative -mt-6">
+<div class="absolute h-full bg-primary w-[50%]"></div>
+</div>
+<div class="flex flex-col items-center gap-3 relative z-10 opacity-50">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface flex items-center justify-center font-bold border border-outline-variant">2</div>
+<span class="font-label-caps">Review Changes</span>
+</div>
+<div class="h-[2px] flex-1 bg-surface-container-highest relative -mt-6"></div>
+<div class="flex flex-col items-center gap-3 relative z-10 opacity-50">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest text-on-surface flex items-center justify-center font-bold border border-outline-variant">3</div>
+<span class="font-label-caps">Publish</span>
+</div>
+</div>
+<!-- Main Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column: Validation & Diff -->
+<div class="col-span-8 space-y-gutter">
+<!-- Step 1: Validation Checklist -->
+<section class="bg-surface-container p-6 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-on-surface">1. Validation Checklist</h2>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-[12px] font-bold">1 Blocking Error</span>
+</div>
+<div class="space-y-4">
+<div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-lg border-l-4 border-error">
+<span class="material-symbols-outlined text-error mt-1">error</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-body-md font-bold text-on-surface">Missing Green Coordinates (Hole 7)</span>
+<code class="font-metric-sm text-error bg-error/10 px-2 rounded">GEOM-ERR-07</code>
+</div>
+<p class="text-on-surface-variant text-sm">Hole 7 green boundary exists but center point coordinates (Lat/Long) are not defined. Mandatory for GPS navigation.</p>
+<button class="mt-2 text-primary font-label-caps hover:underline">Fix in Editor</button>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 bg-surface-container-low rounded-lg border-l-4 border-[#F97316]">
+<span class="material-symbols-outlined text-[#F97316] mt-1">warning</span>
+<div class="flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-body-md font-bold text-on-surface">Cart Path Geometry Missing</span>
+<code class="font-metric-sm text-[#F97316] bg-[#F97316]/10 px-2 rounded">DATA-WARN-102</code>
+</div>
+<p class="text-on-surface-variant text-sm">Cart paths for the back nine are partially mapped. This will not block publication but may degrade user experience.</p>
+</div>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<span class="font-body-md text-on-surface">Geometry: Topology & Self-Intersections</span>
+</div>
+<span class="font-metric-sm text-tertiary">Valid</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-lg">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-tertiary">check_circle</span>
+<span class="font-body-md text-on-surface">Required Metadata: Par, Index, Tee Coordinates</span>
+</div>
+<span class="font-metric-sm text-tertiary">Valid</span>
+</div>
+</div>
+</section>
+<!-- Step 2: Before/After Diff -->
+<section class="bg-surface-container p-6 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<h2 class="font-headline-md text-on-surface mb-6">2. Review Changes</h2>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant">
+<p class="font-label-caps text-on-surface-variant mb-1">Current</p>
+<div class="flex items-center gap-2">
+<span class="font-headline-md font-bold text-on-surface opacity-50">v27</span>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">PUBLISHED</span>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-primary/30">
+<p class="font-label-caps text-on-surface-variant mb-1">New</p>
+<div class="flex items-center gap-2">
+<span class="font-headline-md font-bold text-primary">v28</span>
+<span class="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-[10px] font-bold">DRAFT</span>
+</div>
+</div>
+</div>
+<!-- Diff Summary Cards -->
+<div class="grid grid-cols-3 gap-4 mb-8">
+<div class="p-4 bg-tertiary-container/10 border border-tertiary/20 rounded-xl text-center">
+<p class="font-display-metrics text-headline-lg text-tertiary">+12</p>
+<p class="font-label-caps text-tertiary">Added</p>
+</div>
+<div class="p-4 bg-secondary-container/10 border border-secondary/20 rounded-xl text-center">
+<p class="font-display-metrics text-headline-lg text-secondary">4</p>
+<p class="font-label-caps text-secondary">Modified</p>
+</div>
+<div class="p-4 bg-error-container/10 border border-error/20 rounded-xl text-center">
+<p class="font-display-metrics text-headline-lg text-error">-1</p>
+<p class="font-label-caps text-error">Deleted</p>
+</div>
+</div>
+<!-- Map Comparison Panel -->
+<div class="relative h-[320px] rounded-xl overflow-hidden border border-outline-variant group">
+<div class="absolute inset-0 grid grid-cols-2">
+<!-- Left side: Before -->
+<div class="relative bg-surface-container-low border-r border-outline border-dashed">
+<img class="w-full h-full object-cover opacity-50 grayscale" data-alt="A detailed overhead satellite view of a golf course hole (specifically Hole 7) with old green boundaries. The rendering style is technical, with faint blueprint lines and low-contrast colors representing the 'current' published state. The lighting is neutral, and the landscape appears slightly more rustic or aged compared to the updated version. High-precision vector lines delineate the fairway and rough in a professional dark-mode cartography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwbPPHuozQKVT6Am_W5VjoQqF2noJ4qxAGMbzDXnbQrdSUrebDfq-yo6ny8m4H0Q9F5vUnuAnfvhrSVAFDPd5JeNGSQHH63MRZIL9qCdGNR6wgLP1N4dcUWmbG5PalPMmWuI0erLq48I72069g2H8EUhATfyOyMXVeW0pcFc_NXOxQv8gsd0hTEeujNgJ_HPrYrKfS4eQpOmu1VEaHP9It5pJrqsKi1wYPujDUOwejRfbzsMmm3_DLcg"/>
+<div class="absolute top-4 left-4 bg-background/80 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold border border-white/10 uppercase">Old: Green Bounds</div>
+</div>
+<!-- Right side: After -->
+<div class="relative bg-surface-container-low">
+<img class="w-full h-full object-cover" data-alt="A highly detailed, modern satellite view of the same golf hole (Hole 7) showing updated green boundaries with vibrant green colors and sharp, neon-orange vector overlays highlighting the new bunker additions. The map looks high-resolution and clean, reflecting a professional GIS platform. Subtle pulses on the map indicate areas of active change. The visual style is high-contrast, premium, and authoritative." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBHwTNH2nQJjs71EHw8V9S3AttuhtTf6ZKVpfmJgqV9Fvf3CG9nIqb4FubPrDG2sLfFFvy3W33XxUiHoCnJktHLduPoz6k98siUFW52VX71tShO6VcVkLVWcw_d3y24K_7VJ2P-yeqh-MI-8X3zuxYuj4XfKOCrY8xs_5QozWpiR7LHh6cTtiAaSn-Zj3_Ib169Sxa8WcM_syCqdkS0UvW9Zx59suiIOyB0RVhPsI2nJDhV4xKMEM0Ydw"/>
+<div class="absolute top-4 right-4 bg-primary/90 text-on-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase shadow-lg">New: Bunker Geometry</div>
+</div>
+</div>
+<div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-surface-container-highest px-4 py-2 rounded-lg border border-outline-variant shadow-2xl flex items-center gap-4">
+<span class="font-label-caps text-on-surface">Primary Areas: <span class="text-primary">Hole 7, Hole 12</span></span>
+<div class="h-4 w-[1px] bg-outline-variant"></div>
+<button class="flex items-center gap-1 text-primary font-label-caps hover:bg-primary/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[16px]">map</span> View Full Diff
+                                    </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Publish Config & Actions -->
+<div class="col-span-4 space-y-gutter">
+<!-- Step 3: Publish Config -->
+<section class="bg-surface-container p-6 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<h2 class="font-headline-md text-on-surface mb-6">3. Publish Configuration</h2>
+<form class="space-y-5">
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-2">Publish Note</label>
+<textarea class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="e.g., Updated bunker geometry and green speed for Q3 tournament" rows="3"></textarea>
+</div>
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-2">Effective Time</label>
+<select class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-3 text-on-surface focus:border-primary outline-none appearance-none">
+<option>Immediate (Right after build)</option>
+<option>Scheduled... (Pick a date)</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-2">Reviewer</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-3 text-on-surface-variant font-medium cursor-not-allowed" readonly="" type="text" value="Nguyễn Văn A"/>
+</div>
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-2">Build Env</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg p-3 text-on-surface-variant font-medium cursor-not-allowed" readonly="" type="text" value="Production"/>
+</div>
+</div>
+<div class="flex items-center gap-3 p-4 bg-primary-container/10 border border-primary/20 rounded-lg">
+<input class="w-5 h-5 rounded border-outline-variant bg-surface-container-low text-primary focus:ring-primary" id="auth_check" type="checkbox"/>
+<label class="text-sm text-on-surface" for="auth_check">I confirm I have authority to publish these changes to the live production server.</label>
+</div>
+</form>
+</section>
+<!-- Pipeline Info -->
+<section class="bg-surface-container-high p-6 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<h3 class="font-headline-md text-on-surface mb-4">Post-Publish Pipeline</h3>
+<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
+                                Publication creates an immutable <span class="font-metric-sm text-primary">v28</span> record and triggers a background course-package build job for all mobile clients. This process typically takes 3-5 minutes.
+                            </p>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-on-tertiary">check</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Queued</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Success</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px] text-on-tertiary">check</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Validating</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Success</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center ring-2 ring-primary ring-offset-2 ring-offset-surface-container-high animate-pulse">
+<span class="material-symbols-outlined text-[18px] text-primary">sync</span>
+</div>
+<div>
+<p class="text-sm font-bold text-primary">Building (45%)</p>
+<p class="text-[10px] text-on-surface-variant uppercase">In Progress</p>
+</div>
+</div>
+<div class="flex items-center gap-3 opacity-30">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+</div>
+<div>
+<p class="text-sm font-bold text-on-surface">Uploading</p>
+<p class="text-[10px] text-on-surface-variant uppercase">Waiting</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Primary CTA -->
+<div class="pt-4">
+<button class="w-full h-touch-target bg-primary-container/20 text-on-primary-container border border-primary/20 rounded-full flex items-center justify-center gap-3 cursor-not-allowed opacity-60" disabled="">
+<span class="material-symbols-outlined">publish</span>
+<span class="font-headline-md text-headline-md uppercase">Xuất bản phiên bản</span>
+</button>
+<p class="text-error text-center text-xs mt-3">Fix 1 blocking error to enable publishing.</p>
+</div>
+</div>
+</div>
+<!-- Technical Footer Info -->
+<footer class="mt-8 pt-8 border-t border-[rgba(255,255,255,0.08)] flex justify-between items-center text-on-surface-variant opacity-40 font-metric-sm">
+<div class="flex gap-6">
+<span>Cluster: ASIA-SOUTH-1</span>
+<span>Revision UID: 7e2f-91a3-44b2</span>
+</div>
+<div class="flex gap-4">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">terminal</span> API v4.2</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">database</span> Sync Status: Locked</span>
+</div>
+</footer>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Simple visual response for checkboxes
+            const authCheck = document.getElementById('auth_check');
+            authCheck.addEventListener('change', (e) => {
+                const btn = document.querySelector('button[disabled]');
+                // In a real app, we'd also check the blocking errors state
+                // For this demo, let's just show a hover effect change
+            });
+        });
+    </script>
+</body></html>

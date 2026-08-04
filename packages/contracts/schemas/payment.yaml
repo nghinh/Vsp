@@ -1,0 +1,474 @@
+# Payment schemas for the Vietnam Smart Golf Platform API
+#
+# Per Story 12.3 AC-1: Platform stores NO prohibited card data.
+# Only opaque paymentMethodRef (provider token) is stored.
+# No PAN, CVV, expiryMonth, expiryYear fields exist in any schema.
+
+# ─── Enums ────────────────────────────────────────────────────────────────────
+
+PaymentState:
+  type: string
+  enum:
+    - pending
+    - succeeded
+    - failed
+    - refunded
+    - partially_refunded
+  description: |
+    Payment lifecycle state.
+    - pending: Intent created, awaiting provider confirmation
+    - succeeded: Funds captured successfully
+    - failed: Provider declined or error occurred
+    - refunded: Full refund issued
+    - partially_refunded: Partial refund issued
+
+PaymentFailureReason:
+  type: string
+  enum:
+    - provider_declined
+    - insufficient_funds
+    - network_error
+    - cancelled
+    - expired
+    - unknown
+  description: |
+    Machine-readable failure reason when state is 'failed'.
+    Used to render user-friendly error copy and for operator triage.
+
+RefundReason:
+  type: string
+  enum:
+    - duplicate
+    - fraudulent
+    - requested_by_customer
+    - course_cancellation
+    - other
+  description: Reason for refund request.
+
+# ─── Domain Objects ───────────────────────────────────────────────────────────
+
+PaymentTransaction:
+  type: object
+  required:
+    - id
+    - idempotencyKey
+    - amount
+    - currency
+    - state
+    - createdAt
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Platform transaction identifier
+      example: 550e8400-e29b-41d4-a716-446655440001
+    idempotencyKey:
+      type: string
+      description: Client-supplied idempotency key for this payment intent
+      example: pay-intent-001
+    providerReference:
+      type: string
+      description: Opaque reference from the payment provider (not card data)
+      example: pi_3NvRqJ4tT9xQz1Z20tGkMG9h
+    paymentMethodRef:
+      type: string
+      description: |
+        Opaque token referencing the payment method at the provider.
+        This is NOT card data — it is a provider-generated token that
+        cannot be reverse-engineered to obtain card details.
+      example: pm_3NvRqJ4tT9xQz1Z20tGkMG9h
+    amount:
+      type: integer
+      description: Amount in smallest currency unit (e.g., cents for USD/VND)
+      minimum: 0
+      example: 150000
+    currency:
+      type: string
+      description: ISO 4217 currency code
+      example: VND
+    state:
+      $ref: '#/PaymentState'
+    failureReason:
+      $ref: '#/PaymentFailureReason'
+    failureMessage:
+      type: string
+      description: Human-readable error message when state is 'failed'
+      example: Card declined by issuing bank
+    metadata:
+      type: object
+      description: Arbitrary key-value pairs for provider and internal use
+      additionalProperties:
+        type: string
+      example:
+        bookingId: "770e8400-e29b-41d4-a716-446655440002"
+        courseId: "660e8400-e29b-41d4-a716-446655440003"
+    createdAt:
+      type: string
+      format: date-time
+      description: Transaction creation timestamp
+      example: "2026-08-02T10:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last state-change timestamp
+      example: "2026-08-02T10:01:30Z"
+
+RefundRequest:
+  type: object
+  required:
+    - id
+    - transactionId
+    - amount
+    - reason
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Refund request identifier
+      example: 880e8400-e29b-41d4-a716-446655440004
+    transactionId:
+      type: string
+      format: uuid
+      description: The parent payment transaction being refunded
+    amount:
+      type: integer
+      description: Refund amount in smallest currency unit (must be ≤ transaction amount)
+      minimum: 0
+      example: 75000
+    reason:
+      $ref: '#/RefundReason'
+    reasonDetail:
+      type: string
+      description: Free-text elaboration when reason is 'other'
+      example: Customer requested cancellation within 24 hours
+    providerRefundRef:
+      type: string
+      description: Opaque refund reference from the provider
+      example: re_3NvRqJ4tT9xQz1Z20tGkMG9h
+    status:
+      type: string
+      enum: [pending, succeeded, failed]
+      description: Refund processing status
+      example: succeeded
+    requestedAt:
+      type: string
+      format: date-time
+      description: When the refund was requested
+      example: "2026-08-03T14:00:00Z"
+    processedAt:
+      type: string
+      format: date-time
+      description: When the refund was processed by the provider
+      example: "2026-08-03T14:05:00Z"
+
+PaymentAuditEntry:
+  type: object
+  required:
+    - id
+    - transactionId
+    - action
+    - timestamp
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Audit log entry identifier
+    transactionId:
+      type: string
+      format: uuid
+      description: Parent payment transaction
+    action:
+      type: string
+      enum:
+        - INTENT_CREATED
+        - CONFIRMATION_SUCCEEDED
+        - CONFIRMATION_FAILED
+        - REFUND_REQUESTED
+        - REFUND_SUCCEEDED
+        - REFUND_FAILED
+        - RECONCILIATION_DISCREPANCY
+      description: Type of auditable action
+    actor:
+      type: string
+      description: Who triggered this action (user ID or 'SYSTEM' or 'PROVIDER_WEBHOOK')
+      example: SYSTEM
+    previousState:
+      $ref: '#/PaymentState'
+    newState:
+      $ref: '#/PaymentState'
+    metadataJson:
+      type: string
+      description: Additional context as JSON string
+    timestamp:
+      type: string
+      format: date-time
+      description: When the action occurred
+      example: "2026-08-02T10:01:30Z"
+
+# ─── Request Schemas ───────────────────────────────────────────────────────────
+
+CreatePaymentIntentRequest:
+  type: object
+  required:
+    - amount
+    - currency
+    - idempotencyKey
+  properties:
+    amount:
+      type: integer
+      description: Amount in smallest currency unit
+      minimum: 1
+      example: 150000
+    currency:
+      type: string
+      description: ISO 4217 currency code
+      example: VND
+    idempotencyKey:
+      type: string
+      description: |
+        Client-supplied idempotency key for this payment intent.
+        Required — requests without this header are rejected with 400.
+        Must be unique per transaction intent.
+      example: pay-intent-001
+    paymentMethodTypes:
+      type: array
+      items:
+        type: string
+      description: Supported payment method types (e.g., card, payos, vnpay)
+      example: ["card"]
+    metadata:
+      type: object
+      description: Arbitrary key-value pairs attached to this payment
+      additionalProperties:
+        type: string
+      example:
+        bookingId: "770e8400-e29b-41d4-a716-446655440002"
+        description: "Green fee payment - Saigon Golf Club"
+    returnUrl:
+      type: string
+      format: uri
+      description: URL to redirect after successful payment (for redirect flows)
+      example: "https://vsp.example.com/payments/completed"
+
+ConfirmPaymentRequest:
+  type: object
+  description: |
+    Payment confirmation — typically triggered by provider webhook or callback.
+    Idempotency key required via Idempotency-Key header.
+  properties:
+    providerReference:
+      type: string
+      description: Provider's transaction reference
+      example: pi_3NvRqJ4tT9xQz1Z20tGkMG9h
+    state:
+      $ref: '#/PaymentState'
+    failureReason:
+      $ref: '#/PaymentFailureReason'
+    failureMessage:
+      type: string
+      description: Human-readable error detail when state is 'failed'
+
+RefundPaymentRequest:
+  type: object
+  required:
+    - reason
+  properties:
+    amount:
+      type: integer
+      description: |
+        Partial refund amount in smallest currency unit.
+        Omit or set equal to transaction amount for full refund.
+      minimum: 1
+      example: 75000
+    reason:
+      $ref: '#/RefundReason'
+    reasonDetail:
+      type: string
+      description: Free-text elaboration when reason is 'other'
+
+# ─── Response Schemas ──────────────────────────────────────────────────────────
+
+CreatePaymentIntentResponse:
+  type: object
+  required:
+    - transactionId
+    - state
+    - amount
+    - currency
+    - createdAt
+  properties:
+    transactionId:
+      type: string
+      format: uuid
+      description: Platform transaction identifier
+      example: 550e8400-e29b-41d4-a716-446655440001
+    providerReference:
+      type: string
+      description: Provider intent reference (for client-side confirmation)
+      example: pi_3NvRqJ4tT9xQz1Z20tGkMG9h
+    state:
+      $ref: '#/PaymentState'
+    amount:
+      type: integer
+      example: 150000
+    currency:
+      type: string
+      example: VND
+    clientSecret:
+      type: string
+      description: |
+        Client secret for provider SDK confirmation flow.
+        Format is provider-specific (e.g., pi_xxx_secret_xxx for Stripe).
+      example: pi_3NvRqJ4tT9xQz1Z20tGkMG9h_secret_abc123
+    returnUrl:
+      type: string
+      format: uri
+      description: Redirect URL for provider-hosted payment page
+      example: "https://checkout.stripe.com/pay/cs_xxx"
+    createdAt:
+      type: string
+      format: date-time
+      example: "2026-08-02T10:00:00Z"
+
+PaymentStatusResponse:
+  type: object
+  required:
+    - id
+    - state
+    - amount
+    - currency
+    - updatedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+      example: 550e8400-e29b-41d4-a716-446655440001
+    providerReference:
+      type: string
+    paymentMethodRef:
+      type: string
+    state:
+      $ref: '#/PaymentState'
+    failureReason:
+      $ref: '#/PaymentFailureReason'
+    failureMessage:
+      type: string
+    amount:
+      type: integer
+      example: 150000
+    currency:
+      type: string
+      example: VND
+    metadata:
+      type: object
+      additionalProperties:
+        type: string
+    refundedAmount:
+      type: integer
+      description: Total amount already refunded
+      example: 0
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+
+RefundResponse:
+  type: object
+  required:
+    - refundRequestId
+    - transactionId
+    - status
+    - amount
+    - reason
+  properties:
+    refundRequestId:
+      type: string
+      format: uuid
+      example: 880e8400-e29b-41d4-a716-446655440004
+    transactionId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      enum: [pending, succeeded, failed]
+    amount:
+      type: integer
+      example: 75000
+    reason:
+      $ref: '#/RefundReason'
+    providerRefundRef:
+      type: string
+    requestedAt:
+      type: string
+      format: date-time
+    processedAt:
+      type: string
+      format: date-time
+
+PaymentAuditLogResponse:
+  type: object
+  properties:
+    entries:
+      type: array
+      items:
+        $ref: '#/PaymentAuditEntry'
+    transactionId:
+      type: string
+      format: uuid
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+ReconciliationReport:
+  type: object
+  description: Daily reconciliation job output
+  properties:
+    runAt:
+      type: string
+      format: date-time
+      example: "2026-08-02T03:00:00Z"
+    checkedTransactions:
+      type: integer
+      description: Number of transactions checked in this run
+      example: 142
+    discrepancies:
+      type: array
+      items:
+        $ref: '#/ReconciliationDiscrepancy'
+    status:
+      type: string
+      enum: [clean, discrepancies_found, error]
+      example: discrepancies_found
+
+ReconciliationDiscrepancy:
+  type: object
+  required:
+    - transactionId
+    - platformState
+    - providerState
+    - detectedAt
+  properties:
+    transactionId:
+      type: string
+      format: uuid
+    platformState:
+      $ref: '#/PaymentState'
+    providerState:
+      type: string
+      description: State as reported by provider
+      example: succeeded
+    amount:
+      type: integer
+    currency:
+      type: string
+    resolution:
+      type: string
+      enum: [pending_review, resolved_platform, resolved_provider, escalated]
+      description: Current resolution status
+    notes:
+      type: string
+      description: Operator notes
+    detectedAt:
+      type: string
+      format: date-time

@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vsp.vnpt.vn/schemas/course-package-manifest/v1",
+  "title": "Course Package Manifest",
+  "description": "Schema for an offline golf course package manifest",
+  "type": "object",
+  "properties": {
+    "packageId": {
+      "type": "string",
+      "description": "Unique package identifier"
+    },
+    "courseId": {
+      "type": "string",
+      "description": "Associated course identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semantic version of this package"
+    },
+    "effectiveDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this package becomes active"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this package expires (null = never)"
+    },
+    "checksum": {
+      "type": "string",
+      "description": "SHA-256 hex digest of package archive"
+    },
+    "sizeBytes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total package size in bytes"
+    },
+    "tilesFormat": {
+      "type": "string",
+      "enum": ["pmtiles", "mbtiles", "vector-tiles"],
+      "description": "Map tile format"
+    },
+    "tilesUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL or path to tile archive"
+    },
+    "geoJsonUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL or path to GeoJSON geometry bundle"
+    },
+    "dataVersion": {
+      "type": "string",
+      "description": "Published data version ID this package was generated from"
+    },
+    "pinSnapshotDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date pin positions were snapshotted"
+    },
+    "weatherSnapshotDate": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Date weather snapshot was taken"
+    },
+    "accuracyClass": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D"],
+      "description": "Data accuracy class (A=RTK surveyed, B=professional, C=satellite, D=community)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence score for this package data"
+    },
+    "files": {
+      "type": "array",
+      "description": "Inventory of all files in this package with checksums",
+      "items": {
+        "$ref": "#/definitions/PackageFileEntry"
+      }
+    },
+    "minimumClientVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Minimum compatible client version (semver)"
+    },
+    "licenses": {
+      "type": "array",
+      "description": "Licenses governing the package contents",
+      "items": {
+        "$ref": "#/definitions/PackageLicense"
+      }
+    },
+    "scorecardUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to scorecard definitions asset"
+    },
+    "rulesUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to local rules asset"
+    },
+    "conditionsUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to course conditions snapshot asset"
+    },
+    "metadataUrl": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL to course/hole metadata asset"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this package was built"
+    },
+    "generatedBy": {
+      "type": "string",
+      "description": "Operator or system that generated this package"
+    },
+    "facilityId": {
+      "type": "string",
+      "description": "Identifier of the facility this package belongs to (offline detection)"
+    },
+    "facilityName": {
+      "type": "string",
+      "description": "Display name of the facility"
+    },
+    "facilityAddress": {
+      "type": "string",
+      "description": "Postal address of the facility"
+    },
+    "facilityLatitude": {
+      "type": "number",
+      "description": "WGS84 latitude of the facility centroid (offline nearby detection)"
+    },
+    "facilityLongitude": {
+      "type": "number",
+      "description": "WGS84 longitude of the facility centroid (offline nearby detection)"
+    },
+    "courseName": {
+      "type": "string",
+      "description": "Display name of the course"
+    },
+    "holesCount": {
+      "type": "integer",
+      "description": "Number of holes in the course"
+    },
+    "parTotal": {
+      "type": "integer",
+      "description": "Total par for the course"
+    }
+  },
+  "required": ["packageId", "courseId", "version", "effectiveDate", "checksum", "sizeBytes"],
+  "definitions": {
+    "PackageFileEntry": {
+      "type": "object",
+      "description": "A single file entry within a course package",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Relative path of the file within the package"
+        },
+        "checksum": {
+          "type": "string",
+          "description": "SHA-256 hex digest of this file"
+        },
+        "sizeBytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "contentType": {
+          "type": "string",
+          "enum": ["METADATA", "GEOMETRY", "TILES", "SCORECARD", "RULES", "CONDITIONS", "WEATHER", "SATELLITE"],
+          "description": "Content type classification"
+        }
+      },
+      "required": ["path", "checksum", "sizeBytes", "contentType"]
+    },
+    "PackageLicense": {
+      "type": "object",
+      "description": "License governing a package or its contents",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Human-readable license name"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "License text or reference URL"
+        },
+        "spdxId": {
+          "type": "string",
+          "description": "SPDX license identifier"
+        }
+      },
+      "required": ["name"]
+    }
+  },
+  "additionalProperties": true
+}

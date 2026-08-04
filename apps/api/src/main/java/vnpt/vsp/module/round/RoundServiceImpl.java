@@ -1,0 +1,271 @@
+package vnpt.vsp.module.round;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.api.error.VspErrorCode;
+import vnpt.vsp.module.audit.AuditAction;
+import vnpt.vsp.module.audit.AuditService;
+import vnpt.vsp.module.course.CourseService;
+import vnpt.vsp.module.course.entity.Course;
+import vnpt.vsp.module.identity.repository.GolferAccountRepository;
+import vnpt.vsp.module.round.dto.RoundCompleteRequest;
+import vnpt.vsp.module.round.dto.RoundCreateRequest;
+import vnpt.vsp.module.round.dto.RoundResponse;
+import vnpt.vsp.module.round.entity.Round;
+import vnpt.vsp.module.round.entity.Score;
+import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.ScoreRepository;
+import vnpt.vsp.module.tournament.TournamentPolicyService;
+import vnpt.vsp.module.tournament.TournamentService;
+import vnpt.vsp.module.tournament.dto.TournamentPolicyResponse;
+import vnpt.vsp.module.tournament.entity.Tournament;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Implementation of RoundService.
+ * Per Story 5.1 Slice D: round creation with validation, idempotency, and audit.
+ */
+@Service
+public class RoundServiceImpl implements RoundService {
+
+    private static final Logger log = LoggerFactory.getLogger(RoundServiceImpl.class);
+
+    private final RoundRepository roundRepository;
+    private final ScoreRepository scoreRepository;
+    private final CourseService courseService;
+    private final GolferAccountRepository golferAccountRepository;
+    private final AuditService auditService;
+    private final TournamentPolicyService tournamentPolicyService;
+    private final TournamentService tournamentService;
+
+    public RoundServiceImpl(
+            RoundRepository roundRepository,
+            ScoreRepository scoreRepository,
+            CourseService courseService,
+            GolferAccountRepository golferAccountRepository,
+            AuditService auditService,
+            TournamentPolicyService tournamentPolicyService,
+            TournamentService tournamentService) {
+        this.roundRepository = roundRepository;
+        this.scoreRepository = scoreRepository;
+        this.courseService = courseService;
+        this.golferAccountRepository = golferAccountRepository;
+        this.auditService = auditService;
+        this.tournamentPolicyService = tournamentPolicyService;
+        this.tournamentService = tournamentService;
+    }
+
+    @Override
+    @Transactional
+    public RoundResponse createRound(Long accountId, RoundCreateRequest request) {
+        log.info("Creating round for account {} with courseId {}", accountId, request.getCourseId());
+
+        // Validate course exists
+        Course course;
+        try {
+            course = courseService.getCourse(request.getCourseId());
+        } catch (Exception e) {
+            throw new VspApiException(VspErrorCode.COURSE_001, "courseId");
+        }
+
+        List<Long> playerIds = request.getPlayerIds();
+        if (playerIds == null || playerIds.isEmpty()) {
+            // Default to the creating golfer
+            playerIds = List.of(accountId);
+        }
+
+        // Validate all player IDs exist
+        for (Long playerId : playerIds) {
+            if (!golferAccountRepository.existsById(playerId)) {
+                throw new VspApiException(VspErrorCode.AUTH_010, "playerIds");
+            }
+        }
+
+        // Determine start time
+        Instant startedAt = request.getStartTime() != null ? request.getStartTime() : Instant.now();
+
+        // Per Story 12.1 Slice F: tournamentId auto-populates tournamentPolicyId from tournament
+        UUID tournamentPolicyId = request.getTournamentPolicyId();
+        UUID tournamentId = request.getTournamentId();
+        Integer tournamentPolicyVersion = null;
+
+        if (tournamentId != null && tournamentPolicyId == null) {
+            // Auto-populate tournamentPolicyId from tournament
+            Tournament tournament = tournamentService.getTournamentEntity(tournamentId);
+            if (tournament != null) {
+                tournamentPolicyId = tournament.getTournamentPolicyId();
+                log.debug("Auto-assigned tournamentPolicyId {} from tournament {}", tournamentPolicyId, tournamentId);
+            }
+        }
+
+        // Validate tournamentPolicyId exists if provided
+        if (tournamentPolicyId != null) {
+            try {
+                TournamentPolicyResponse policy = tournamentPolicyService.getPolicy(tournamentPolicyId);
+                tournamentPolicyVersion = policy.getVersion();
+            } catch (Exception e) {
+                throw new VspApiException(VspErrorCode.TOURNAMENT_001, "tournamentPolicyId");
+            }
+        }
+
+        // Create the round entity
+        Round round = new Round();
+        round.setCourseId(request.getCourseId());
+        round.setGolferAccountId(accountId);
+        round.setStatus(Round.RoundStatus.IN_PROGRESS);
+        round.setStartedAt(startedAt);
+        round.setTournamentPolicyId(tournamentPolicyId);
+        round.setTournamentId(tournamentId);
+        round.setTournamentPolicyVersion(tournamentPolicyVersion);
+
+        Round savedRound = roundRepository.save(round);
+        log.debug("Round created with id {}", savedRound.getId());
+
+        // Auto-lock tournament policy when round starts (idempotent — no-op if already locked)
+        if (tournamentPolicyId != null) {
+            tournamentPolicyService.lockPolicy(tournamentPolicyId, 0L); // 0 = system
+            log.debug("Auto-locked tournament policy {} for round {}", tournamentPolicyId, savedRound.getId());
+        }
+
+        // Create score records for each player
+        List<Score> scores = new ArrayList<>();
+        for (Long playerId : playerIds) {
+            Score score = new Score();
+            score.setRoundId(savedRound.getId());
+            score.setGolferAccountId(playerId);
+            scores.add(score);
+        }
+        scoreRepository.saveAll(scores);
+        log.debug("Created {} score records for round {}", scores.size(), savedRound.getId());
+
+        // Audit log
+        auditService.log(
+                AuditAction.ROUND_CREATE,
+                "Round",
+                savedRound.getId().toString(),
+                null,
+                toJson(savedRound, course.getName(), playerIds),
+                buildMetadata(request, accountId)
+        );
+
+        return toResponse(savedRound, course.getName());
+    }
+
+    @Override
+    @Transactional
+    public RoundResponse completeRound(Long accountId, UUID roundId, RoundCompleteRequest request) {
+        log.info("Completing round {} for account {}", roundId, accountId);
+
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001, "roundId"));
+
+        // Validate ownership
+        if (!round.getGolferAccountId().equals(accountId)) {
+            throw new VspApiException(VspErrorCode.AUTH_010, "roundId");
+        }
+
+        // Idempotent: already completed → return as-is
+        if (round.getStatus() == Round.RoundStatus.COMPLETED) {
+            log.debug("Round {} already completed — returning idempotent success", roundId);
+            String courseName = round.getCourseId() != null
+                    ? courseService.getCourse(round.getCourseId()).getName()
+                    : null;
+            return toResponse(round, courseName);
+        }
+
+        // Validate status allows completion
+        if (round.getStatus() != Round.RoundStatus.IN_PROGRESS) {
+            throw new VspApiException(VspErrorCode.ROUND_005, "roundId");
+        }
+
+        // Set completion timestamp and status
+        if (round.getEndedAt() == null) {
+            round.setEndedAt(Instant.now());
+        }
+        round.setStatus(Round.RoundStatus.COMPLETED);
+        roundRepository.save(round);
+        log.debug("Round {} marked COMPLETED", roundId);
+
+        // Audit log
+        String courseName = round.getCourseId() != null
+                ? courseService.getCourse(round.getCourseId()).getName()
+                : null;
+        auditService.log(
+                AuditAction.ROUND_COMPLETE,
+                "Round",
+                roundId.toString(),
+                null,
+                toJson(round, courseName, null),
+                buildCompletionMetadata(accountId)
+        );
+
+        return toResponse(round, courseName);
+    }
+
+    @Override
+    public TournamentPolicyResponse getRoundTournamentPolicy(UUID roundId, Long accountId) {
+        log.info("getRoundTournamentPolicy roundId={} accountId={}", roundId, accountId);
+
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001, "roundId"));
+
+        if (!round.getGolferAccountId().equals(accountId)) {
+            throw new VspApiException(VspErrorCode.AUTH_010, "roundId");
+        }
+
+        UUID policyId = round.getTournamentPolicyId();
+        if (policyId == null) {
+            throw new VspApiException(VspErrorCode.TOURNAMENT_001, "roundId");
+        }
+
+        return tournamentPolicyService.getPolicy(policyId);
+    }
+
+    // ─── Helpers ───────────────────────────────────────────────────────────
+
+    private RoundResponse toResponse(Round round, String courseName) {
+        RoundResponse response = new RoundResponse();
+        response.setId(round.getId());
+        response.setCourseId(round.getCourseId());
+        response.setCourseName(courseName);
+        response.setStatus(round.getStatus());
+        response.setStartedAt(round.getStartedAt());
+        response.setEndedAt(round.getEndedAt());
+        response.setCreatedAt(round.getCreatedAt());
+        response.setTournamentPolicyId(round.getTournamentPolicyId());
+        response.setTournamentId(round.getTournamentId());
+        response.setTournamentPolicyVersion(round.getTournamentPolicyVersion());
+        return response;
+    }
+
+    private String toJson(Round round, String courseName, List<Long> playerIds) {
+        return String.format(
+                "{\"id\":\"%s\",\"courseName\":\"%s\",\"playerIds\":%s,\"status\":\"%s\",\"startedAt\":\"%s\"}",
+                round.getId(), courseName, playerIds, round.getStatus(), round.getStartedAt()
+        );
+    }
+
+    private String buildMetadata(RoundCreateRequest request, Long accountId) {
+        StringBuilder sb = new StringBuilder("{");
+        sb.append("\"accountId\":").append(accountId);
+        if (request.getPackageId() != null) {
+            sb.append(",\"packageId\":\"").append(request.getPackageId()).append("\"");
+        }
+        if (request.getCartRequested() != null && request.getCartRequested()) {
+            sb.append(",\"cartRequested\":true");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private String buildCompletionMetadata(Long accountId) {
+        return "{\"accountId\":" + accountId + "}";
+    }
+}

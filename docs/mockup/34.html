@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>34 — Cảnh báo sân | Vietnam Smart Golf Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#2d3449",
+                        "secondary-fixed-dim": "#ffb690",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-primary-fixed": "#370e00",
+                        "secondary-fixed": "#ffdbca",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-primary-container": "#4f1700",
+                        "surface-container": "#171f33",
+                        "on-surface-variant": "#e2bfb2",
+                        "surface-bright": "#31394d",
+                        "primary-container": "#f66018",
+                        "on-secondary-container": "#4a1c00",
+                        "surface-dim": "#0b1326",
+                        "on-surface": "#dae2fd",
+                        "secondary-container": "#ec6a06",
+                        "tertiary-fixed": "#85f8c4",
+                        "primary-fixed": "#ffdbce",
+                        "error-container": "#93000a",
+                        "tertiary": "#68dba9",
+                        "surface-container-high": "#222a3d",
+                        "tertiary-container": "#25a475",
+                        "outline": "#a98a7e",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-lowest": "#060e20",
+                        "on-tertiary-fixed": "#002114",
+                        "primary": "#ffb599",
+                        "on-secondary-fixed-variant": "#783200",
+                        "surface-container-low": "#131b2e",
+                        "on-error": "#690005",
+                        "surface": "#0b1326",
+                        "surface-variant": "#2d3449",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "outline-variant": "#5a4138",
+                        "on-primary": "#5a1c00",
+                        "secondary": "#ffb690",
+                        "on-tertiary": "#003825",
+                        "on-secondary-fixed": "#341100",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#552100",
+                        "inverse-primary": "#a73a00",
+                        "surface-tint": "#ffb599",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-container": "#00311f",
+                        "on-background": "#dae2fd",
+                        "background": "#0b1326",
+                        "inverse-surface": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "margin-desktop": "32px",
+                        "touch-target": "44px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "headline-lg": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "body-md": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-active {
+            border-left: 4px solid #f66018;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b1326;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2d3449;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Navigation Drawer (Persistent Sidebar) -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col w-[280px] bg-surface-container-high shadow-lg">
+<div class="p-6 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[32px]">sports_golf</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary tracking-tight">Vietnam Smart Golf</h1>
+</div>
+<nav class="flex-1 px-3 space-y-1">
+<!-- Active Tab: Quản lý sân -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md text-body-md">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Lịch sử vòng chơi</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings_suggest</span>
+<span class="font-body-md text-body-md">Quản lý sân</span>
+</a>
+<div class="pl-12 space-y-1 mt-1">
+<a class="block py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Bản đồ GPS</a>
+<a class="block py-2 text-primary font-medium" href="#">Cảnh báo sân</a>
+<a class="block py-2 text-on-surface-variant hover:text-primary transition-colors" href="#">Giải đấu</a>
+</div>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Hỗ trợ</span>
+</a>
+</nav>
+<div class="p-4 bg-surface-container-highest/50 mt-auto">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">
+                    NA
+                </div>
+<div>
+<p class="font-body-md text-body-md font-bold">Nguyễn Văn A</p>
+<p class="text-[12px] opacity-70">HCP: 12.4 • Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- Top App Bar / Header -->
+<header class="sticky top-0 z-50 bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)] px-margin-desktop h-[72px] flex items-center justify-between">
+<div class="flex flex-col">
+<nav class="flex items-center gap-2 text-on-surface-variant text-[12px] font-label-caps">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Courses</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>BRG Legend Hill</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">Alerts</span>
+</nav>
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Cảnh báo sân</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-high border-none rounded-xl pl-10 pr-4 py-2 w-[240px] focus:ring-2 focus:ring-primary text-body-md" placeholder="Tìm kiếm cảnh báo..." type="text"/>
+</div>
+<button class="bg-primary text-on-primary font-bold px-6 py-2 rounded-xl flex items-center gap-2 active:scale-95 transition-transform" onclick="toggleModal('createAlertModal')">
+<span class="material-symbols-outlined">add_alert</span>
+<span>Tạo cảnh báo</span>
+</button>
+</div>
+</header>
+<!-- Main Content -->
+<section class="p-margin-desktop flex-1 overflow-auto">
+<!-- Dashboard Stats Summary -->
+<div class="grid grid-cols-4 gap-gutter mb-8">
+<div class="bg-surface-container-low p-5 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Đang hoạt động</p>
+<p class="font-display-metrics text-display-metrics text-primary">03</p>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Cảnh báo an toàn</p>
+<p class="font-display-metrics text-display-metrics text-error">01</p>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Tổng lượt gửi (24h)</p>
+<p class="font-display-metrics text-display-metrics">1,248</p>
+</div>
+<div class="bg-surface-container-low p-5 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">Tỉ lệ phản hồi</p>
+<p class="font-display-metrics text-display-metrics text-tertiary">92%</p>
+</div>
+</div>
+<!-- Data Table Section -->
+<div class="bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+<!-- Tabs -->
+<div class="flex border-b border-[rgba(255,255,255,0.08)] px-4">
+<button class="px-6 py-4 text-primary border-b-2 border-primary font-bold">Active (3)</button>
+<button class="px-6 py-4 text-on-surface-variant hover:text-on-surface transition-colors">Scheduled (12)</button>
+<button class="px-6 py-4 text-on-surface-variant hover:text-on-surface transition-colors">Expired</button>
+<button class="px-6 py-4 text-on-surface-variant hover:text-on-surface transition-colors">Draft</button>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container/50 text-on-surface-variant font-label-caps text-[12px] uppercase tracking-wider">
+<tr>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Severity</th>
+<th class="px-6 py-4">Alert Type</th>
+<th class="px-6 py-4">Title</th>
+<th class="px-6 py-4">Target</th>
+<th class="px-6 py-4">Schedule (End)</th>
+<th class="px-6 py-4">Delivery</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[rgba(255,255,255,0.05)]">
+<!-- High Severity Row -->
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full text-[12px] font-bold">CRITICAL</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<span>Safety</span>
+</div>
+</td>
+<td class="px-6 py-4 font-bold">Dự báo Sấm sét - Di tản ngay</td>
+<td class="px-6 py-4 text-on-surface-variant">All Holes, All Flights</td>
+<td class="px-6 py-4 font-metric-sm text-metric-sm">15:30 (Hôm nay)</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface font-metric-sm">182/185</span>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1">
+<div class="bg-tertiary h-full rounded-full w-[98%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-on-surface-variant hover:text-error transition-colors p-2"><span class="material-symbols-outlined">stop_circle</span></button>
+</td>
+</tr>
+<!-- Medium Severity Row -->
+<tr class="hover:bg-surface-variant/30 transition-colors">
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-[12px] font-bold">MEDIUM</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">construction</span>
+<span>Operations</span>
+</div>
+</td>
+<td class="px-6 py-4 font-bold">Bảo trì Green hố số 7</td>
+<td class="px-6 py-4 text-on-surface-variant">Hole 7, Flights Near</td>
+<td class="px-6 py-4 font-metric-sm text-metric-sm">18:00 (Hôm nay)</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="text-on-surface font-metric-sm">42/45</span>
+<div class="w-24 h-1 bg-surface-container-highest rounded-full mt-1">
+<div class="bg-primary h-full rounded-full w-[85%]"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant hover:text-primary transition-colors p-2"><span class="material-symbols-outlined">edit</span></button>
+<button class="text-on-surface-variant hover:text-error transition-colors p-2"><span class="material-symbols-outlined">delete</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</main>
+<!-- Create Alert Modal (Overlay) -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-end bg-black/60 backdrop-blur-sm transition-opacity" id="createAlertModal">
+<div class="w-[1000px] h-full bg-surface-container flex flex-col shadow-2xl animate-slide-in">
+<!-- Modal Header -->
+<header class="p-6 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">add_alert</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md font-bold">Tạo cảnh báo mới</h3>
+<p class="text-on-surface-variant text-[14px]">Thiết lập thông báo tức thì cho golfer trên sân</p>
+</div>
+</div>
+<button class="w-10 h-10 rounded-full hover:bg-surface-variant flex items-center justify-center transition-colors" onclick="toggleModal('createAlertModal')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</header>
+<!-- Modal Body (Two-column layout) -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Form Column -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
+<!-- Alert Classification -->
+<section class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-primary">1. Phân loại & Mức độ</h4>
+<div class="grid grid-cols-3 gap-4">
+<label class="relative group cursor-pointer">
+<input checked="" class="peer hidden" name="alert_type" type="radio"/>
+<div class="p-4 rounded-xl border border-outline-variant peer-checked:border-error peer-checked:bg-error-container/20 transition-all">
+<span class="material-symbols-outlined text-error block mb-2">warning</span>
+<p class="font-bold">An toàn (Safety)</p>
+<p class="text-[12px] opacity-70">Khẩn cấp, thời tiết, di tản</p>
+</div>
+</label>
+<label class="relative group cursor-pointer">
+<input class="peer hidden" name="alert_type" type="radio"/>
+<div class="p-4 rounded-xl border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/20 transition-all">
+<span class="material-symbols-outlined text-primary block mb-2">construction</span>
+<p class="font-bold">Vận hành</p>
+<p class="text-[12px] opacity-70">Bảo trì, hố đóng, chậm flight</p>
+</div>
+</label>
+<label class="relative group cursor-pointer">
+<input class="peer hidden" name="alert_type" type="radio"/>
+<div class="p-4 rounded-xl border border-outline-variant peer-checked:border-tertiary peer-checked:bg-tertiary-container/20 transition-all">
+<span class="material-symbols-outlined text-tertiary block mb-2">celebration</span>
+<p class="font-bold">Khuyến mãi</p>
+<p class="text-[12px] opacity-70">Dịch vụ, giải đấu, ưu đãi</p>
+</div>
+</label>
+</div>
+<div class="grid grid-cols-4 gap-4 mt-4">
+<button class="bg-surface-container-high border border-outline-variant rounded-xl py-2 px-3 hover:border-on-surface transition-all">Low</button>
+<button class="bg-surface-container-high border border-outline-variant rounded-xl py-2 px-3 hover:border-on-surface transition-all">Medium</button>
+<button class="bg-surface-container-high border border-outline-variant rounded-xl py-2 px-3 hover:border-on-surface transition-all">High</button>
+<button class="bg-error-container text-on-error-container rounded-xl py-2 px-3 font-bold">Critical</button>
+</div>
+</section>
+<!-- Content -->
+<section class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-primary">2. Nội dung cảnh báo</h4>
+<div class="space-y-4">
+<div>
+<label class="block text-[14px] text-on-surface-variant mb-2">Tiêu đề cảnh báo</label>
+<input class="w-full bg-surface-container-high border-outline-variant rounded-xl py-3 px-4 focus:ring-primary focus:border-primary" placeholder="Nhập tiêu đề ngắn gọn..." type="text"/>
+</div>
+<div>
+<label class="block text-[14px] text-on-surface-variant mb-2">Nội dung chi tiết (Max 160 ký tự)</label>
+<textarea class="w-full bg-surface-container-high border-outline-variant rounded-xl py-3 px-4 focus:ring-primary focus:border-primary" placeholder="Mô tả chi tiết hướng dẫn cho golfer..." rows="3"></textarea>
+<div class="flex justify-between mt-1">
+<p class="text-[12px] text-error">Yêu cầu nội dung cho trường hợp khẩn cấp</p>
+<p class="text-[12px] text-on-surface-variant">0 / 160</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Targeting & Schedule -->
+<section class="grid grid-cols-2 gap-gutter">
+<div class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-primary">3. Đối tượng mục tiêu</h4>
+<select class="w-full bg-surface-container-high border-outline-variant rounded-xl py-3 px-4 focus:ring-primary focus:border-primary">
+<option>Tất cả golfer (Toàn bộ sân)</option>
+<option>Theo từng hố (Hole-specific)</option>
+<option>Nhóm Golfer (Tournament A)</option>
+</select>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-[12px] flex items-center gap-2">
+                                    BRG Legend Hill <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+<span class="bg-surface-container-highest px-3 py-1 rounded-full text-[12px] flex items-center gap-2">
+                                    Course A <span class="material-symbols-outlined text-[14px] cursor-pointer">close</span>
+</span>
+</div>
+</div>
+<div class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-primary">4. Thời gian hiệu lực</h4>
+<div class="grid grid-cols-2 gap-2">
+<input class="bg-surface-container-high border-outline-variant rounded-xl text-[14px] p-2" type="datetime-local"/>
+<input class="bg-surface-container-high border-outline-variant rounded-xl text-[14px] p-2" type="datetime-local"/>
+</div>
+</div>
+</section>
+<!-- Settings -->
+<section class="p-4 bg-surface-container-low rounded-xl border border-[rgba(255,255,255,0.08)] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<div>
+<p class="font-bold">Yêu cầu xác nhận (Acknowledge)</p>
+<p class="text-[12px] opacity-70">Golfer phải nhấn nút "Đã hiểu" để ẩn cảnh báo này.</p>
+</div>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</section>
+</div>
+<!-- Right Side Panel (Estimation & Preview) -->
+<div class="w-[360px] bg-surface-container-low border-l border-[rgba(255,255,255,0.08)] p-6 space-y-8 overflow-y-auto">
+<!-- Estimate Audience -->
+<section class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">groups</span>
+                            Ước tính đối tượng
+                        </h4>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-3 bg-surface-container-high rounded-xl text-center">
+<p class="font-metric-sm text-metric-sm text-primary">185</p>
+<p class="text-[10px] opacity-60 uppercase">Hiện tại</p>
+</div>
+<div class="p-3 bg-surface-container-high rounded-xl text-center">
+<p class="font-metric-sm text-metric-sm">240</p>
+<p class="text-[10px] opacity-60 uppercase">Dự kiến (2h)</p>
+</div>
+</div>
+</section>
+<!-- Conflict Check -->
+<section class="p-4 bg-error-container/10 border border-error/20 rounded-xl">
+<div class="flex gap-3">
+<span class="material-symbols-outlined text-error">priority_high</span>
+<div>
+<h5 class="font-bold text-error text-[14px]">Kiểm tra xung đột</h5>
+<p class="text-[12px] text-on-surface-variant mt-1">Đang có <strong>1 cảnh báo An toàn</strong> khác hiệu lực cùng khung giờ này.</p>
+</div>
+</div>
+</section>
+<!-- Mobile Preview -->
+<section class="space-y-4">
+<h4 class="font-label-caps text-label-caps text-on-surface-variant">Xem trước Mobile</h4>
+<div class="relative mx-auto w-[200px] h-[400px] bg-black border-[6px] border-[#333] rounded-[32px] overflow-hidden shadow-2xl">
+<!-- Mobile Map Background Mock -->
+<div class="absolute inset-0 bg-[#121212] flex items-center justify-center">
+<div class="absolute inset-0 opacity-40 bg-cover" data-alt="A tactical GPS golf map view showing fairways and greens from a top-down perspective, dark mode aesthetic with neon green and blue highlights, high detail cartography." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDF7yIV-g5ij56cf7pCELE10t-YWP187IAo4l7QQ50L3Q9wibuXL-2ouJki1a1rra9WJMCN8_CshbHXzPm51YLXIdQOEy2mXaHZy87ZC5-CbVE-hBzxFgZQ1eTe8okwTs2LOx2UKyAAw9vhehHKjzmVZSW-UXljrreIhVPVFtfOxC1WguDHUfGgfpQW-4B2hA80K1hEZwOOBkkYySpciWInkctlQp6ecaKeAESeKKCg4QNjr3LeI7BzeQ')"></div>
+<div class="z-10 text-center">
+<div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-2 animate-pulse">
+<span class="material-symbols-outlined text-primary">my_location</span>
+</div>
+<p class="text-[10px] font-metric-sm">Hole 4 - Par 4</p>
+</div>
+</div>
+<!-- Alert Overlay Mock -->
+<div class="absolute bottom-0 left-0 right-0 p-4 animate-bounce-in">
+<div class="bg-error-container text-on-error-container rounded-2xl p-3 shadow-xl border border-white/10">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-[16px]">warning</span>
+<span class="text-[10px] font-bold uppercase">Khẩn cấp</span>
+</div>
+<p class="text-[11px] font-bold leading-tight">Dự báo sấm sét - Di tản ngay</p>
+<p class="text-[9px] opacity-90 mt-1 leading-snug">Vui lòng di chuyển về trạm chờ gần nhất ngay lập tức.</p>
+<button class="w-full bg-white text-error font-bold text-[10px] py-2 rounded-lg mt-2">ĐÃ HIỂU</button>
+</div>
+</div>
+<!-- Phone Notch -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-[80px] h-[18px] bg-[#333] rounded-b-xl"></div>
+</div>
+</section>
+</div>
+</div>
+<!-- Footer Actions -->
+<footer class="p-6 border-t border-[rgba(255,255,255,0.08)] flex justify-end gap-4">
+<button class="px-6 py-2 rounded-xl text-on-surface-variant hover:bg-surface-variant transition-colors" onclick="toggleModal('createAlertModal')">Hủy bỏ</button>
+<button class="px-6 py-2 rounded-xl border border-primary text-primary hover:bg-primary/10 transition-colors">Lưu bản nháp</button>
+<button class="px-8 py-2 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all" onclick="showConfirmation()">Gửi cảnh báo</button>
+</footer>
+</div>
+</div>
+<!-- Safety Confirmation Overlay -->
+<div class="hidden fixed inset-0 z-[110] flex items-center justify-center bg-black/80 backdrop-blur-md" id="safetyConfirm">
+<div class="max-w-md w-full bg-surface-container-highest rounded-2xl p-8 border border-error/30 shadow-2xl text-center">
+<div class="w-20 h-20 bg-error-container/30 text-error rounded-full flex items-center justify-center mx-auto mb-6">
+<span class="material-symbols-outlined text-[48px]">priority_high</span>
+</div>
+<h3 class="font-headline-md text-headline-md font-bold mb-2">Xác nhận cảnh báo KHẨN CẤP?</h3>
+<p class="text-on-surface-variant mb-8">Thông báo này sẽ được gửi ngay lập tức tới <strong>185 golfer</strong> và yêu cầu họ phản hồi. Hành động này không thể hoàn tác.</p>
+<div class="grid grid-cols-2 gap-4">
+<button class="py-3 px-6 rounded-xl border border-outline-variant hover:bg-surface-variant transition-colors" onclick="hideConfirmation()">Quay lại</button>
+<button class="py-3 px-6 rounded-xl bg-error text-on-error font-bold shadow-lg shadow-error/20 active:scale-95 transition-transform">XÁC NHẬN GỬI</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('hidden');
+        }
+
+        function showConfirmation() {
+            document.getElementById('safetyConfirm').classList.remove('hidden');
+        }
+
+        function hideConfirmation() {
+            document.getElementById('safetyConfirm').classList.add('hidden');
+        }
+
+        // Simple animation for the modal
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); }
+                to { transform: translateX(0); }
+            }
+            .animate-slide-in {
+                animation: slideIn 0.3s ease-out forwards;
+            }
+            @keyframes bounceIn {
+                0% { transform: scale(0.9); opacity: 0; }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); opacity: 1; }
+            }
+            .animate-bounce-in {
+                animation: bounceIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            }
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 4px;
+            }
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #ffb599;
+                border-radius: 10px;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

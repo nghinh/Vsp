@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Trạng Thái Hệ Thống - Wear OS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&amp;family=Fira+Code:wght@500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Load Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary": "#EA580C",
+                    "on-primary": "#ffffff",
+                    "surface": "#0b1326",
+                    "surface-container": "#171f33",
+                    "surface-container-high": "#222a3d",
+                    "on-surface": "#dae2fd",
+                    "on-surface-variant": "#e2bfb2",
+                    "outline-variant": "#5a4138",
+                    "tertiary": "#68dba9",
+                    "error": "#ffb4ab",
+                    "background": "#000000"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "touch-target": "48px"
+            },
+            "fontFamily": {
+                    "metric": ["Fira Code", "monospace"],
+                    "body": ["Fira Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color-scheme: dark;
+            font-family: 'Fira Sans', sans-serif;
+        }
+
+        /* Circular Watch Frame Simulation */
+        .watch-face {
+            width: 454px;
+            height: 454px;
+            border-radius: 50%;
+            background-color: #0b1326;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            border: 1px solid #1a1a1a;
+        }
+
+        .status-row {
+            transition: background-color 0.2s ease;
+            min-height: 48px; /* Standard 48dp touch target */
+        }
+
+        .status-row:active {
+            background-color: #222a3d;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        @keyframes pulse-subtle {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .pulse-icon {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+
+        .dim-layer {
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .metric-text {
+            font-family: 'Fira Code', monospace;
+        }
+    </style>
+</head>
+<body class="dark">
+<!-- Watch Canvas -->
+<div class="watch-face relative">
+<!-- Header / Time -->
+<div class="absolute top-10 w-full flex justify-center">
+<span class="metric-text text-sm text-on-surface-variant font-medium">10:45 SA</span>
+</div>
+<!-- Main Content Area - Optimized for Circular Screen -->
+<div class="flex flex-col gap-2 w-full items-center mt-4">
+<!-- GPS Status Row -->
+<div class="status-row flex items-center justify-start bg-surface-container/80 rounded-2xl p-3 w-[88%] border border-white/5">
+<div class="w-10 h-10 flex items-center justify-center bg-tertiary/10 rounded-full mr-3 pulse-icon">
+<span class="material-symbols-outlined text-tertiary text-2xl">gps_fixed</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[12px] font-bold text-tertiary leading-none uppercase tracking-wider">GPS SẴN SÀNG</span>
+<span class="metric-text text-[11px] text-on-surface-variant mt-0.5">SAI SỐ: 2.4M</span>
+</div>
+</div>
+<!-- Connection Status Row -->
+<div class="status-row flex items-center justify-start bg-surface-container/80 rounded-2xl p-3 w-[94%] border border-white/5">
+<div class="w-10 h-10 flex items-center justify-center bg-error/10 rounded-full mr-3">
+<span class="material-symbols-outlined text-error text-2xl">cloud_off</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[12px] font-bold text-error leading-none uppercase tracking-wider">NGOẠI TUYẾN</span>
+<span class="text-[11px] text-on-surface-variant mt-0.5">DỮ LIỆU ĐÃ LƯU TRỮ</span>
+</div>
+</div>
+<!-- Battery Status Row -->
+<div class="status-row flex items-center justify-start bg-surface-container/80 rounded-2xl p-3 w-[88%] border border-white/5">
+<div class="w-10 h-10 flex items-center justify-center bg-primary/10 rounded-full mr-3">
+<span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings: 'FILL' 1;">battery_charging_full</span>
+</div>
+<div class="flex flex-col">
+<span class="text-[12px] font-bold text-primary leading-none uppercase tracking-wider">PIN 82%</span>
+<span class="text-[11px] text-on-surface-variant mt-0.5 uppercase">ĐANG SẠC • 45P ĐẦY</span>
+</div>
+</div>
+</div>
+<!-- Action Area (Dim Mode Toggle) -->
+<div class="absolute bottom-12 flex flex-col items-center">
+<button aria-label="Chế độ tối" class="flex flex-col items-center justify-center w-14 h-14 rounded-full bg-surface-container-high border border-white/10 active:scale-95 transition-transform" id="dimToggle">
+<span class="material-symbols-outlined text-on-surface text-2xl" id="dimIcon">brightness_medium</span>
+</button>
+<span class="text-[10px] font-bold text-on-surface-variant mt-2 uppercase tracking-tighter">CHẾ ĐỘ TỐI</span>
+</div>
+<!-- Screen Overlay for Dim Mode -->
+<div class="dim-layer absolute inset-0 bg-black opacity-0" id="dimOverlay"></div>
+</div>
+<!-- Script for interaction -->
+<script>
+        const dimToggle = document.getElementById('dimToggle');
+        const dimOverlay = document.getElementById('dimOverlay');
+        const dimIcon = document.getElementById('dimIcon');
+        let isDimmed = false;
+
+        dimToggle.addEventListener('click', () => {
+            isDimmed = !isDimmed;
+            
+            if (isDimmed) {
+                dimOverlay.style.opacity = '0.8';
+                dimIcon.innerText = 'brightness_low';
+                dimToggle.style.backgroundColor = '#EA580C';
+                dimIcon.style.color = '#ffffff';
+            } else {
+                dimOverlay.style.opacity = '0';
+                dimIcon.innerText = 'brightness_medium';
+                dimToggle.style.backgroundColor = '';
+                dimIcon.style.color = '';
+            }
+            
+            // Haptic simulation
+            if (window.navigator.vibrate) {
+                window.navigator.vibrate(15);
+            }
+        });
+    </script>
+</body></html>

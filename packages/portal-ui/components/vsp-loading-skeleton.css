@@ -1,0 +1,150 @@
+/**
+ * VSP Loading Skeleton — vsp-loading-skeleton.css
+ * Shimmer animation for loading placeholders.
+ * Reduced-motion suppresses shimmer; shows static placeholder instead.
+ *
+ * No emoji icons.
+ */
+
+/* ─── Base Skeleton ─────────────────────────────────────────────────────────── */
+
+.vsp-loading-skeleton {
+  /* ─── Base appearance ──────────────────────────────────────────────────── */
+  background-color: var(--vsp-color-border);
+  border-radius: var(--vsp-radius-sm);
+  position: relative;
+  overflow: hidden;
+
+  /* Typography baseline */
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-sm);
+  line-height: var(--vsp-line-height-normal);
+  color: transparent;
+
+  /* Prevent text selection during load */
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+}
+
+/* ─── Shimmer Animation ─────────────────────────────────────────────────────── */
+
+.vsp-loading-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  /* Shimmer gradient */
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--vsp-color-surface) 60%, transparent) 50%,
+    transparent 100%
+  );
+
+  background-size: 200% 100%;
+
+  animation: vsp-skeleton-shimmer
+    var(--vsp-duration-slow)
+    var(--vsp-easing-linear)
+    infinite;
+}
+
+@keyframes vsp-skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ─── Reduced Motion — No Shimmer ──────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsp-loading-skeleton::after {
+    animation: none;
+    display: none;
+  }
+
+  /* Static placeholder instead of shimmer */
+  .vsp-loading-skeleton {
+    opacity: var(--vsp-opacity-disabled);
+  }
+}
+
+/* ─── Skeleton Shape Variants ─────────────────────────────────────────────── */
+
+/* Text line */
+.vsp-loading-skeleton--text {
+  height: 1em;
+  width: 100%;
+  border-radius: var(--vsp-radius-sm);
+}
+
+/* Heading */
+.vsp-loading-skeleton--heading {
+  height: 1.5em;
+  width: 60%;
+  border-radius: var(--vsp-radius-sm);
+}
+
+/* Circle / avatar */
+.vsp-loading-skeleton--circle {
+  width: var(--vsp-touch-target-min);
+  height: var(--vsp-touch-target-min);
+  border-radius: var(--vsp-radius-full);
+}
+
+/* Rectangle / card thumbnail */
+.vsp-loading-skeleton--rect {
+  width: 100%;
+  height: 80px;
+  border-radius: var(--vsp-radius-md);
+}
+
+/* Button shape */
+.vsp-loading-skeleton--button {
+  width: 100px;
+  height: var(--vsp-touch-target-min);
+  border-radius: var(--vsp-radius-md);
+}
+
+/* Badge shape */
+.vsp-loading-skeleton--badge {
+  width: 72px;
+  height: 24px;
+  border-radius: var(--vsp-radius-full);
+}
+
+/* Input shape */
+.vsp-loading-skeleton--input {
+  width: 100%;
+  height: var(--vsp-touch-target-min);
+  border-radius: var(--vsp-radius-md);
+}
+
+/* Card body rows */
+.vsp-loading-skeleton--card-row {
+  height: 1em;
+  width: 100%;
+  border-radius: var(--vsp-radius-sm);
+  margin-bottom: var(--vsp-gap-stack);
+}
+
+.vsp-loading-skeleton--card-row:last-child {
+  width: 70%;
+  margin-bottom: 0;
+}
+
+/* ─── Card Skeleton ─────────────────────────────────────────────────────────── */
+
+.vsp-loading-skeleton--card {
+  width: 100%;
+  min-height: 120px;
+  border-radius: var(--vsp-radius-lg);
+  padding: var(--vsp-padding-card);
+  display: flex;
+  flex-direction: column;
+  gap: var(--vsp-gap-stack);
+}

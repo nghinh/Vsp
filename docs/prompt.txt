@@ -1,0 +1,22 @@
+python3 /Users/nghinh/Downloads/projects/source-driven/vnpt-bmad-custom/install_vnpt_bmad_custom_all.py \
+  --repo /Users/nghinh/Downloads/projects/vsp
+oc
+/models
+Đọc file @docs/requirements.md  để xem tech stack của dự án là gì, từ đó tìm kiếm trên context7 để áp dụng vào dự án
+
+/skills
+bmad-agent-pm bắt đầu đọc tài liệu đầu vào tại @docs/Requirements.md  sau đấy chọn các best practices mà không cần hỏi lại tôi, và tạo tài liệu prd chi tiết cho dự án
+/skills
+/bmad-agent-architecture Khởi tạo tài liệu kiến trúc sản phẩm dựa theo các thông tin đã tạo cho dự án
+/skills
+/ui-ux-pro-max Dựa trên tài liệu dự án, tạo tài liệu UX spec cho tôi
+/skills
+/bmad-agent-pm tạo tài liệu epics cho dự án dựa theo các tài liệu đã có
+/bmad-agent-pm  Spawn multi subagents khởi tạo toàn bộ các story của các epics đã có
+mkdir -p /Users/nghinh/Downloads/projects/vsp/scripts
+touch /Users/nghinh/Downloads/projects/vsp/scripts/epics.dev.json
+
+cd /Users/nghinh/Downloads/projects/source-driven/
+./runtime run-epics \
+  --project-root /Users/nghinh/Downloads/projects/vsp \
+  --docs-dir /Users/nghinh/Downloads/projects/vsp/docs

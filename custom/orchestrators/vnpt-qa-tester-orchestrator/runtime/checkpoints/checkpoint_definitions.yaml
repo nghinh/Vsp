@@ -1,0 +1,70 @@
+checkpoints:
+  - id: CP-01
+    name: Phase 1 Context Completion
+    phase: 01-context-reading
+    blocking: true
+    checks:
+      - check: bmads_scanned_recursively
+        evidence: "Discovery path column in 01-context-map.md"
+      - check: eof_reading_proof_exists
+        evidence: "BMAD Docs Inventory with READ_0_EOF status"
+      - check: discovery_path_column_exists
+        evidence: "Discovery path values: recursive-docs-glob, recursive-docs-fallback"
+      - check: scope_relevance_annotated
+        evidence: "Scope relevance column for all PRD, epic, story docs"
+
+  - id: CP-02
+    name: Risk Map Completeness
+    phase: 02-risk-modeling
+    blocking: false
+    checks:
+      - check: p0_risks_have_test_strategy
+        evidence: "Test strategy column in 02-risk-map.md"
+      - check: p1_risks_have_test_strategy
+        evidence: "Test strategy column in 02-risk-map.md"
+      - check: risk_id_format_valid
+        evidence: "RISK-\\d{3} pattern matches all IDs"
+      - check: priority_classification_present
+        evidence: "P0/P1/P2/P3 priority in risk map"
+
+  - id: CP-03
+    name: Oracle Before Automation
+    phase: 05-test-oracle-design
+    blocking: true
+    checks:
+      - check: oracle_exists_for_all_tests
+        evidence: "ORACLE-NNN for each QA-* test in 05-test-oracle.md"
+      - check: oracle_source_documented
+        evidence: "Source column in oracle table"
+      - check: expected_result_specified
+        evidence: "Expected result field in oracle entries"
+      - check: forbidden_result_specified
+        evidence: "Forbidden result field in oracle entries"
+
+  - id: CP-04
+    name: Quality Gate Before Final Report
+    phase: 10-quality-gate
+    blocking: false
+    checks:
+      - check: hard_fails_passed
+        evidence: "10-quality-gate-report.md status = pass"
+      - check: p0_risk_coverage_100_percent
+        evidence: "P0 coverage section shows 100% or JUSTIFIED_EXCEPTION"
+      - check: p1_risk_coverage_adequate
+        evidence: "P1 coverage section shows adequate coverage"
+      - check: triage_complete
+        evidence: "08-failure-triage.md has no untriaged items"
+
+  - id: CP-05
+    name: Fix Briefs Validation
+    phase: 09-fix-brief-generation
+    blocking: false
+    checks:
+      - check: fix_briefs_exist
+        evidence: "09-fix-briefs/*.md count matches PRODUCT_BUG count"
+      - check: fix_brief_has_required_sections
+        evidence: "Summary, severity, reproduction, expected, actual present"
+      - check: fix_brief_is_actionable
+        evidence: "Implementation hints section present"
+
+version: "1.0.0"

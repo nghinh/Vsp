@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="30 seconds">
+
+    <!-- Spring Boot resolves ${LOG_LEVEL} from environment / application.yml -->
+    <property name="LOG_LEVEL" value="${LOG_LEVEL:-INFO}"/>
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="vsp-api"/>
+
+    <!-- ============================================================
+         Console appender — activated when NOT using the 'prod' profile.
+         Plain-text layout for developer readability.
+         ============================================================ -->
+    <springProfile name="!prod">
+        <appender name="CONSOLE_PLAIN" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId:-—}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="${LOG_LEVEL}">
+            <appender-ref ref="CONSOLE_PLAIN"/>
+        </root>
+    </springProfile>
+
+    <!-- ============================================================
+         Console appender — 'prod' profile.
+         JSON structured logging via LogstashEncoder.
+         Includes correlationId from MDC (set by CorrelationIdFilter).
+         Shortened stack trace for operational brevity.
+         ============================================================ -->
+    <springProfile name="prod">
+        <appender name="CONSOLE_JSON" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <includeMdc>true</includeMdc>
+                <includeContext>true</includeContext>
+                <includeCallerData>false</includeCallerData>
+                <shortenedLoggerNameLength>36</shortenedLoggerNameLength>
+                <fieldNames>
+                    <timestamp>@timestamp</timestamp>
+                    <message>message</message>
+                    <logger>logger</logger>
+                    <thread>thread</thread>
+                    <level>level</level>
+                    <levelValue>[ignore]</levelValue>
+                </fieldNames>
+                <customFields>{"application":"${appName}"}</customFields>
+                <!-- Stack trace truncated to first line for ops brevity -->
+                <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+                    <maxDepthPerThrowable>30</maxDepthPerThrowable>
+                    <maxLength>2048</maxLength>
+                    <shortenedClassNameLength>20</shortenedClassNameLength>
+                    <rootCauseFirst>true</rootCauseFirst>
+                    <inlineHash>true</inlineHash>
+                </throwableConverter>
+            </encoder>
+        </appender>
+
+        <!-- Async wrapper to avoid blocking the request thread on log delivery -->
+        <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <includeCallerData>false</includeCallerData>
+            <appender-ref ref="CONSOLE_JSON"/>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
+        </root>
+
+        <!-- Keep prod noisy libraries at WARN to reduce log volume -->
+        <logger name="org.hibernate.SQL" level="WARN"/>
+        <logger name="org.hibernate.type.descriptor.sql" level="WARN"/>
+        <logger name="org.apache.catalina" level="WARN"/>
+        <logger name="org.apache.tomcat" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="INFO"/>
+        <logger name="io.opentelemetry" level="INFO"/>
+    </springProfile>
+
+    <!-- ============================================================
+         File appender — activated in 'dev' profile for local
+         troubleshooting of integration issues.
+         Plain text, same pattern as console.
+         ============================================================ -->
+    <springProfile name="dev">
+        <appender name="FILE_PLAIN" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>logs/vsp-api.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+                <fileNamePattern>logs/vsp-api.%d{yyyy-MM-dd}.log</fileNamePattern>
+                <maxHistory>7</maxHistory>
+                <totalSizeCap>1GB</totalSizeCap>
+            </rollingPolicy>
+            <encoder>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId:-—}] - %msg%n</pattern>
+            </encoder>
+        </appender>
+
+        <root level="DEBUG">
+            <appender-ref ref="CONSOLE_PLAIN"/>
+            <appender-ref ref="FILE_PLAIN"/>
+        </root>
+    </springProfile>
+
+</configuration>

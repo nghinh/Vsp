@@ -1,0 +1,322 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "7.3",
+  "reports": [
+    {
+      "slice_id": "7-3-slice-1",
+      "symbol": "isExpired",
+      "file": "apps/mobile/lib/features/hole_map/domain/pin_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T09:26:02.571990+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T09:26:23.368356+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 3,
+          "timestamp": "2026-08-02T09:27:24.747834+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 4,
+          "timestamp": "2026-08-02T09:27:36.518608+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "7-3-slice-1",
+      "symbol": "isActive",
+      "file": "apps/mobile/lib/features/hole_map/domain/pin_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T09:26:11.373793+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T09:27:26.323847+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "7-3-slice-1",
+      "symbol": "effectiveDate",
+      "file": "apps/mobile/lib/features/hole_map/domain/pin_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T09:26:13.015691+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T09:27:27.546736+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "7-3-slice-1",
+      "symbol": "expiryDate",
+      "file": "apps/mobile/lib/features/hole_map/domain/pin_entity.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T09:26:14.377371+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T09:26:26.106154+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 3,
+          "timestamp": "2026-08-02T09:26:27.086163+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 4,
+          "timestamp": "2026-08-02T09:27:28.694473+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 5,
+          "timestamp": "2026-08-02T09:27:39.669465+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 6,
+          "timestamp": "2026-08-02T09:27:40.789357+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "7-3-slice-1",
+      "symbol": "ConditionSource",
+      "file": "apps/mobile/lib/domain/models/condition_entry.dart",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T09:26:24.630092+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T09:27:38.604945+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

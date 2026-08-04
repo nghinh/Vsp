@@ -1,0 +1,94 @@
+// HoleMapEvent — VSP Mobile App
+//
+// BLoC events for the hole map feature.
+
+import 'package:equatable/equatable.dart';
+
+/// Base class for all hole map events.
+abstract class HoleMapEvent extends Equatable {
+  const HoleMapEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+/// Load the hole map for a specific course and hole.
+class LoadHoleMap extends HoleMapEvent {
+  final String packageId;
+  final String courseId;
+  final String courseName;
+  final int holeNumber;
+
+  const LoadHoleMap({
+    required this.packageId,
+    required this.courseId,
+    required this.courseName,
+    required this.holeNumber,
+  });
+
+  @override
+  List<Object?> get props => [packageId, courseId, courseName, holeNumber];
+}
+
+/// Update the golfer's current GPS position on the map.
+class UpdateGolferPosition extends HoleMapEvent {
+  final double latitude;
+  final double longitude;
+  final double? accuracy;
+
+  const UpdateGolferPosition({
+    required this.latitude,
+    required this.longitude,
+    this.accuracy,
+  });
+
+  @override
+  List<Object?> get props => [latitude, longitude, accuracy];
+}
+
+/// Place or move the target marker on the map.
+class UpdateTarget extends HoleMapEvent {
+  final double latitude;
+  final double longitude;
+  final String? label;
+
+  const UpdateTarget({
+    required this.latitude,
+    required this.longitude,
+    this.label,
+  });
+
+  @override
+  List<Object?> get props => [latitude, longitude, label];
+}
+
+/// Remove the target marker from the map.
+class ClearTarget extends HoleMapEvent {
+  const ClearTarget();
+}
+
+/// Toggle visibility of a specific map layer.
+class ToggleLayerVisibility extends HoleMapEvent {
+  final String layerId;
+  final bool visible;
+
+  const ToggleLayerVisibility({required this.layerId, required this.visible});
+
+  @override
+  List<Object?> get props => [layerId, visible];
+}
+
+/// Navigate to a different hole.
+class NavigateToHole extends HoleMapEvent {
+  final int holeNumber;
+
+  const NavigateToHole({required this.holeNumber});
+
+  @override
+  List<Object?> get props => [holeNumber];
+}
+
+/// Retry loading after an error.
+class RetryLoadHoleMap extends HoleMapEvent {
+  const RetryLoadHoleMap();
+}

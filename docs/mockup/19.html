@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bảo mật & Quyền riêng tư - Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "error-container": "#93000a",
+                    "primary-fixed": "#ffdbce",
+                    "on-surface-variant": "#e2bfb2",
+                    "surface-container-low": "#131b2e",
+                    "surface-container-highest": "#2d3449",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "on-secondary": "#552100",
+                    "surface-container-lowest": "#060e20",
+                    "surface-variant": "#2d3449",
+                    "secondary-fixed": "#ffdbca",
+                    "on-tertiary-fixed": "#002114",
+                    "surface-tint": "#ffb599",
+                    "on-error": "#690005",
+                    "on-background": "#dae2fd",
+                    "error": "#ffb4ab",
+                    "primary": "#ffb599",
+                    "on-tertiary-container": "#00311f",
+                    "on-primary-fixed": "#370e00",
+                    "inverse-surface": "#dae2fd",
+                    "surface-bright": "#31394d",
+                    "outline": "#a98a7e",
+                    "primary-fixed-dim": "#ffb599",
+                    "surface-container-high": "#222a3d",
+                    "secondary-container": "#ec6a06",
+                    "on-secondary-fixed": "#341100",
+                    "secondary": "#ffb690",
+                    "on-surface": "#dae2fd",
+                    "on-primary-container": "#4f1700",
+                    "on-error-container": "#ffdad6",
+                    "surface-container": "#171f33",
+                    "on-secondary-fixed-variant": "#783200",
+                    "surface": "#0b1326",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "on-primary": "#5a1c00",
+                    "tertiary": "#68dba9",
+                    "inverse-on-surface": "#283044",
+                    "outline-variant": "#5a4138",
+                    "tertiary-fixed": "#85f8c4",
+                    "background": "#0b1326",
+                    "on-tertiary": "#003825",
+                    "tertiary-container": "#25a475",
+                    "on-secondary-container": "#4a1c00",
+                    "primary-container": "#f66018",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "surface-dim": "#0b1326",
+                    "inverse-primary": "#a73a00",
+                    "secondary-fixed-dim": "#ffb690"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px",
+                    "gutter": "16px",
+                    "unit": "8px",
+                    "touch-target": "44px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Fira Sans"],
+                    "display-metrics": ["Fira Code"],
+                    "headline-lg": ["Fira Sans"],
+                    "metric-sm": ["Fira Code"],
+                    "body-md": ["Fira Sans"],
+                    "headline-md": ["Fira Sans"],
+                    "label-caps": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .scroll-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .custom-shadow {
+            box-shadow: 0px 4px 20px rgba(0,0,0,0.25);
+        }
+    </style>
+</head>
+<body class="font-body-md overflow-x-hidden">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-surface-container-lowest text-primary flex items-center justify-between px-margin-mobile h-touch-target w-full border-b border-[rgba(255,255,255,0.08)]">
+<button class="active:scale-95 transition-transform flex items-center justify-center h-10 w-10">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold truncate px-4">Bảo mật & Quyền riêng tư</h1>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</header>
+<main class="pb-24 pt-4 px-margin-mobile space-y-6">
+<!-- Section: Thiết bị đang đăng nhập -->
+<section>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-3 uppercase tracking-wider">Thiết bị đang đăng nhập</h2>
+<div class="space-y-3">
+<!-- Device Item 1 -->
+<div class="bg-surface-container-high rounded-xl p-4 border border-[rgba(255,255,255,0.05)] flex items-center gap-4">
+<div class="bg-primary-container text-on-primary-container h-12 w-12 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">smartphone</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md font-semibold truncate text-on-surface">iPhone 15 Pro <span class="text-primary text-xs font-normal ml-1">(Hiện tại)</span></p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Hà Nội, VN
+                        </p>
+<p class="font-metric-sm text-metric-sm text-tertiary mt-1">Đang hoạt động</p>
+</div>
+</div>
+<!-- Device Item 2 -->
+<div class="bg-surface-container rounded-xl p-4 border border-[rgba(255,255,255,0.05)] flex items-center gap-4">
+<div class="bg-surface-variant text-on-surface-variant h-12 w-12 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">tablet_mac</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md font-semibold truncate text-on-surface">iPad Pro 11"</p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Hà Nội, VN
+                        </p>
+<p class="font-metric-sm text-metric-sm text-on-surface-variant mt-1">2 giờ trước</p>
+</div>
+<button class="bg-error-container/20 text-error h-10 w-10 rounded-lg flex items-center justify-center active:scale-90 transition-transform" onclick="confirmRevoke('iPad Pro 11"')">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+<!-- Device Item 3 -->
+<div class="bg-surface-container rounded-xl p-4 border border-[rgba(255,255,255,0.05)] flex items-center gap-4">
+<div class="bg-surface-variant text-on-surface-variant h-12 w-12 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined">smartphone</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-body-md font-semibold truncate text-on-surface">Samsung Galaxy S21 (Old)</p>
+<p class="text-xs text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Đà Nẵng, VN
+                        </p>
+<p class="font-metric-sm text-metric-sm text-on-surface-variant mt-1">3 ngày trước</p>
+</div>
+<button class="bg-error-container/20 text-error h-10 w-10 rounded-lg flex items-center justify-center active:scale-90 transition-transform" onclick="confirmRevoke('Samsung Galaxy S21')">
+<span class="material-symbols-outlined">logout</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Section: Bảo mật tài khoản -->
+<section>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-3 uppercase tracking-wider">Bảo mật tài khoản</h2>
+<div class="bg-surface-container rounded-xl overflow-hidden divide-y divide-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.05)]">
+<!-- Change Password -->
+<div class="flex items-center justify-between p-4 active:bg-surface-bright transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">key</span>
+<span class="font-body-md">Đổi mật khẩu</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+<!-- 2FA -->
+<div class="flex items-center justify-between p-4 active:bg-surface-bright transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<span class="font-body-md">Xác thực 2 yếu tố (MFA)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-xs font-semibold text-tertiary bg-tertiary-container/20 px-2 py-0.5 rounded">Đã bật</span>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</div>
+</div>
+<!-- Security Status -->
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">shield</span>
+<span class="font-body-md">Trạng thái bảo mật</span>
+</div>
+<span class="text-tertiary font-bold flex items-center gap-1">
+                        An toàn
+                    </span>
+</div>
+</div>
+</section>
+<!-- Section: Dữ liệu & Quyền riêng tư -->
+<section>
+<h2 class="font-label-caps text-label-caps text-on-surface-variant mb-3 uppercase tracking-wider">Dữ liệu & Quyền riêng tư</h2>
+<div class="space-y-3">
+<!-- Export Pending -->
+<div class="bg-surface-container rounded-xl p-4 border border-[rgba(255,255,255,0.05)]">
+<div class="flex justify-between items-start mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">download_for_offline</span>
+<span class="font-body-md">Xuất dữ liệu cá nhân</span>
+</div>
+<span class="text-xs font-metric-sm text-secondary px-2 py-0.5 bg-secondary-container/20 rounded">Đang xử lý</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-3 overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 45%"></div>
+</div>
+<div class="flex justify-between mt-1">
+<span class="text-[10px] text-on-surface-variant font-metric-sm">Khởi tạo: 12/10/2023</span>
+<span class="text-[10px] text-secondary font-metric-sm">45%</span>
+</div>
+</div>
+<!-- Delete Round Data Completed -->
+<div class="bg-surface-container rounded-xl p-4 border border-[rgba(255,255,255,0.05)] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">history_toggle_off</span>
+<span class="font-body-md">Xóa dữ liệu vòng đấu</span>
+</div>
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span class="text-xs font-bold uppercase tracking-tighter">Đã hoàn thành</span>
+</div>
+</div>
+<!-- Failed Example State (Hidden by default or shown if error exists) -->
+<div class="bg-surface-container rounded-xl p-4 border border-error-container/30 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error">sync_problem</span>
+<span class="font-body-md">Đồng bộ dữ liệu nâng cao</span>
+</div>
+<button class="text-xs font-bold text-error bg-error-container/20 px-3 py-1 rounded-full flex items-center gap-1 active:scale-95 transition-all">
+                        Lỗi - Thử lại
+                    </button>
+</div>
+<!-- Delete Account (Destructive) -->
+<button class="w-full bg-error-container/10 border border-error-container/30 rounded-xl p-4 flex flex-col items-start gap-2 active:bg-error-container/20 transition-colors text-left group">
+<div class="flex items-center gap-3 text-error">
+<span class="material-symbols-outlined">delete_forever</span>
+<span class="font-body-md font-bold uppercase tracking-wide">Xóa tài khoản</span>
+</div>
+<p class="text-xs text-on-surface-variant group-active:text-on-surface transition-colors">Cảnh báo: Hành động này sẽ xóa vĩnh viễn mọi dữ liệu HCP, lịch sử vòng chơi và thông tin cá nhân. Không thể hoàn tác.</p>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 z-50 border-t border-[rgba(255,255,255,0.08)]">
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant active:scale-90 transition-all duration-150 flex-1 py-1">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-caps text-label-caps mt-1">Sân golf</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant active:scale-90 transition-all duration-150 flex-1 py-1">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-label-caps mt-1">Bản đồ</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant active:scale-90 transition-all duration-150 flex-1 py-1">
+<span class="material-symbols-outlined">markdown_copy</span>
+<span class="font-label-caps text-label-caps mt-1">Bảng điểm</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined active-icon">person</span>
+<span class="font-label-caps text-label-caps mt-1">Cá nhân</span>
+</button>
+</nav>
+<!-- Revoke Confirmation Backdrop (Hidden) -->
+<div class="fixed inset-0 bg-black/80 z-[100] hidden items-center justify-center p-6 backdrop-blur-sm transition-opacity duration-300 opacity-0" id="revoke-modal">
+<div class="bg-surface-container-high w-full max-w-sm rounded-2xl p-6 custom-shadow scale-95 transition-transform duration-300">
+<div class="h-12 w-12 bg-error-container/20 text-error rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-3xl">warning</span>
+</div>
+<h3 class="font-headline-md text-xl font-bold mb-2">Đăng xuất thiết bị?</h3>
+<p class="text-on-surface-variant text-sm mb-6">Bạn đang thực hiện đăng xuất tài khoản khỏi <span class="text-on-surface font-bold" id="target-device"></span>. Bạn sẽ cần đăng nhập lại để truy cập dữ liệu.</p>
+<div class="flex gap-3">
+<button class="flex-1 py-3 font-bold text-on-surface bg-surface-variant rounded-xl active:scale-95 transition-transform" onclick="closeModal()">Hủy</button>
+<button class="flex-1 py-3 font-bold text-on-error bg-error rounded-xl active:scale-95 transition-transform" onclick="handleRevoke()">Đăng xuất</button>
+</div>
+</div>
+</div>
+<script>
+        function confirmRevoke(deviceName) {
+            const modal = document.getElementById('revoke-modal');
+            const target = document.getElementById('target-device');
+            target.textContent = deviceName;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.add('opacity-100');
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('revoke-modal');
+            modal.classList.remove('opacity-100');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function handleRevoke() {
+            // Logic for revocation would go here
+            closeModal();
+            // Show toast or snackbar
+            console.log("Device revoked");
+        }
+    </script>
+</body></html>

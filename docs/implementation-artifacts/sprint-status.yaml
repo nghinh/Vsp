@@ -1,0 +1,122 @@
+# generated: 2026-08-01
+# last_updated: 2026-08-04T21:30:00+07:00
+# project: vsp
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: docs/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# Epic: backlog | in-progress | done
+# Story: backlog | ready-for-dev | in-progress | review | done
+# Retrospective: optional | done
+
+# ─── Verification basis (Wave C reconciliation, 2026-08-04) ───────────────────
+# Statuses below are reconciled against the ACTUAL codebase after a full
+# compile + test pass. Verified evidence:
+#   - API (Java/Spring):  mvn test -> 636/636 PASS, compiles clean
+#   - Portal (Vue/TS):    vue-tsc -> 0 errors, vitest -> 23/23 PASS
+#   - Mobile (Flutter):   analyze -> 0 errors, flutter test -> 993 PASS
+# Remaining known gaps are annotated inline; see docs/implementation-artifacts/wave-c-audit.md.
+# The previous statuses (many "backlog"/"in-progress") were stale/pessimistic:
+# most stories were fully implemented but the tree did not compile before Wave A.
+
+generated: 2026-08-01
+last_updated: 2026-08-04T21:30:00+07:00
+project: vsp
+project_key: NOKEY
+tracking_system: file-system
+story_location: docs/implementation-artifacts
+
+development_status:
+  # ─── MVP 1 ──────────────────────────────────────────────────────────────────
+  epic-1: done
+  1-1-initialize-repository-and-delivery-environments: done
+  1-2-establish-backend-modular-monolith: done
+  1-3-establish-api-contracts-and-error-standards: done
+  1-4-establish-design-system-foundations: done            # tokens (mobile-theme/portal-ui/design-tokens) implemented + consumed
+  1-5-establish-observability-and-security-baseline: done  # observability + JWT/TLS/RBAC config present
+  epic-1-retrospective: optional
+
+  epic-2: done
+  2-1-register-and-authenticate-golfer: done
+  2-2-manage-sessions-securely: done
+  2-3-manage-golfer-profile-and-preferences: done
+  2-4-manage-golf-bag-and-clubs: done
+  2-5-administer-roles-and-privacy-requests: done
+  epic-2-retrospective: optional
+
+  epic-3: done
+  3-1-model-course-and-golf-geometry: done
+  3-2-search-and-discover-courses: done
+  3-3-view-course-details: done
+  3-4-import-and-validate-course-data: done
+  epic-3-retrospective: optional
+
+  epic-4: done
+  4-1-define-course-package-contract: done                 # manifest extended w/ optional facility fields; see wave-c-audit gap G3 (generator population)
+  4-2-generate-and-publish-course-packages: done
+  4-3-download-and-manage-offline-courses: done
+  4-4-incrementally-update-course-data: done
+  epic-4-retrospective: optional
+
+  epic-5: done
+  5-1-configure-and-start-a-round: done
+  5-2-persist-round-locally: done
+  5-3-enter-scores-for-a-flight: done
+  5-4-synchronize-round-idempotently: done
+  5-5-complete-and-review-round: done
+  epic-5-retrospective: optional
+
+  epic-6: in-progress                                       # blocked only by 6-6 field validation
+  6-1-acquire-and-qualify-location: done
+  6-2-detect-course-and-hole: done                          # depends on manifest facility fields at runtime; see wave-c-audit gap G3
+  6-3-render-strategic-hole-map: done
+  6-4-calculate-green-and-hazard-distances: done            # calc engine + distance cubit tests pass
+  6-5-place-and-move-a-target: done
+  6-6-validate-pilot-gps-accuracy-and-battery: in-progress  # telemetry infra done; field/pilot validation pending (real devices + RTK checkpoints)
+  epic-6-retrospective: optional
+
+  epic-7: done
+  7-1-integrate-and-cache-weather: done
+  7-2-display-wind-relative-to-shot-line: done
+  7-3-display-official-pin-and-course-conditions: done
+  7-4-enforce-tournament-mode-restrictions: done
+  epic-7-retrospective: optional
+
+  epic-8: in-progress                                       # blocked only by 8-2 interactive drawing
+  8-1-manage-facilities-and-courses: done
+  8-2-edit-course-geometry: review                          # DrawTools engine + page-side callbacks wired; map-click -> DrawTools drawing pipeline incomplete (wave-c-audit gap G1)
+  8-3-validate-and-publish-course-version: done
+  8-4-roll-back-published-data: done
+  8-5-manage-pins-green-speed-and-conditions: done
+  8-6-send-course-alerts: done
+  epic-8-retrospective: optional
+
+  epic-9: done
+  9-1-submit-correction-offline: done
+  9-2-review-correction-queue: done                         # filters panel component reference fixed (was rendering a type)
+  9-3-resolve-correction-into-published-version: done
+  9-4-monitor-data-quality: done
+  epic-9-retrospective: optional
+
+  # ─── Later phases (MVP 2-4) — implemented but deferred-phase gaps remain ─────
+  epic-10: in-progress                                      # watch apps (wear-os/watch_apple) + shot tracking present
+  10-1-deliver-apple-watch-core-round-experience: review
+  10-2-deliver-wear-os-core-round-experience: review
+  10-3-track-shots-manually: review
+  10-4-detect-shots-with-confidence: in-progress
+  epic-10-retrospective: optional
+
+  epic-11: in-progress                                      # analytics/smart-caddie impl present; widget tests now GREEN (G2 resolved); broader MVP2-3 acceptance pending
+  11-1-calculate-club-performance-and-dispersion: review
+  11-2-deliver-driving-zone-and-round-analytics: review
+  11-3-calculate-strokes-gained: review                     # StrokesGained + chart widget tests now pass (best-effort cache + a11y labels)
+  11-4-generate-explainable-smart-target: review
+  epic-11-retrospective: optional
+
+  epic-12: in-progress                                      # tournament/booking/payment/loyalty/membership/market controllers + modules present
+  12-1-operate-tournament-and-live-leaderboard: in-progress
+  12-2-add-booking-membership-and-loyalty-boundaries: review
+  12-3-add-payments-and-transaction-services: review
+  12-4-enable-international-expansion: review
+  epic-12-retrospective: optional

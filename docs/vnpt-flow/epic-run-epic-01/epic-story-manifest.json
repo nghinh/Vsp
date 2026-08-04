@@ -1,0 +1,34 @@
+{
+  "runId": "run_2026_08_02_008",
+  "epicId": "epic-01",
+  "epicTitle": "Platform Foundation",
+  "manifestHash": "fcc3b6760a63349d64c4d55dd44bde6f68bc253d01ea5c3fdf44914b0c4746cc",
+  "stories": [
+    {
+      "storyId": "1.1",
+      "storyTitle": "Initialize Repository and Delivery Environments",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-1-initialize-repository-and-delivery-environments.md"
+    },
+    {
+      "storyId": "1.2",
+      "storyTitle": "Establish Backend Modular Monolith",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-2-establish-backend-modular-monolith.md"
+    },
+    {
+      "storyId": "1.3",
+      "storyTitle": "Establish API Contracts and Error Standards",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-3-establish-api-contracts-and-error-standards.md"
+    },
+    {
+      "storyId": "1.4",
+      "storyTitle": "Establish Design System Foundations",
+      "sourcePath": "docs/bmad-artifacts/stories/1-4/acceptance-matrix.md"
+    },
+    {
+      "storyId": "1.5",
+      "storyTitle": "Establish Observability and Security Baseline",
+      "sourcePath": "docs/bmad-artifacts/stories/1-5/acceptance-matrix.md"
+    }
+  ],
+  "createdAt": "2026-08-02T03:29:33.563127Z"
+}

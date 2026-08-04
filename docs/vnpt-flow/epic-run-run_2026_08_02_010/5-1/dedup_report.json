@@ -1,0 +1,52 @@
+{
+  "story_id": "5-1",
+  "story_title": "Configure and Start a Round",
+  "slices_completed": ["B", "C", "E", "F", "G"],
+  "slices_status": {
+    "A": "already_done",
+    "B": "completed",
+    "C": "completed",
+    "D": "already_done",
+    "E": "completed",
+    "F": "completed",
+    "G": "completed"
+  },
+  "dedup_results": [
+    {
+      "symbol": "RoundSetupBloc",
+      "file": "apps/mobile/lib/features/round_setup/presentation/round_setup_bloc.dart",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "phase": "pre"
+    },
+    {
+      "symbol": "RoundSetupScreen",
+      "file": "apps/mobile/lib/features/round_setup/presentation/round_setup_screen.dart",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "phase": "pre"
+    },
+    {
+      "symbol": "RoundSetupScreen",
+      "file": "apps/mobile/lib/features/round_setup/presentation/round_setup_screen.dart",
+      "decision": "PRE_WRITE",
+      "block": false,
+      "phase": "post"
+    }
+  ],
+  "files_created": [
+    "apps/mobile/lib/features/round_setup/presentation/round_setup_event.dart",
+    "apps/mobile/lib/features/round_setup/presentation/round_setup_state.dart",
+    "apps/mobile/lib/features/round_setup/presentation/round_setup_bloc.dart",
+    "apps/mobile/lib/features/round_setup/presentation/round_setup_screen.dart",
+    "apps/mobile/lib/features/round_setup/presentation/widgets/package_status_banner.dart",
+    "apps/mobile/lib/features/round_setup/presentation/widgets/player_card.dart",
+    "apps/mobile/lib/features/round_setup/presentation/widgets/format_selector.dart",
+    "apps/mobile/lib/features/round_setup/presentation/widgets/hole_picker.dart",
+    "apps/mobile/lib/data/services/package_readiness_service.dart",
+    "apps/mobile/lib/data/services/nearby_course_service.dart",
+    "apps/mobile/lib/core/storage/round_setup_store.dart"
+  ],
+  "status": "clean",
+  "note": "reindex failed due to gitnexus encoding issue (non-critical for implementation)"
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vnpt-bmad/vnpt-ai-driven-platform/tools/dedup-report.schema.json",
+  "title": "DedupReport",
+  "description": "Durable per-story audit trail for the duplicate-detection gate chain. Written atomically by docs/vnpt-dev-story-orchestrator/tools/dedup.py (subcommand `report`). One container per story holds one report object per (slice_id, symbol); the agent-driven auto-refactor loop appends one attempt per gate-chain pass.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "story_id", "reports"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.0.0" },
+    "story_id": { "type": ["string", "null"] },
+    "reports": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/report" }
+    }
+  },
+  "$defs": {
+    "report": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["slice_id", "symbol", "file", "final_decision", "status", "attempts"],
+      "properties": {
+        "slice_id": { "type": ["string", "null"] },
+        "symbol": { "type": "string", "minLength": 1 },
+        "file": { "type": ["string", "null"] },
+        "final_decision": {
+          "type": "string",
+          "enum": ["REVIEW", "AI_JUDGE", "PRE_WRITE", "SKIP_SEMANTIC", "NO_SEMANTIC_MATCH", "ABORT", "BLOCKED_MAX_ATTEMPTS"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["clean", "resolved", "blocked", "failed"]
+        },
+        "block_reason": { "type": ["string", "null"] },
+        "refactor_action_applied": {
+          "type": ["string", "null"],
+          "enum": [null, "REUSE", "RENAME", "NAMESPACE", "EXTRACT", "NONE"]
+        },
+        "max_attempts": { "type": "integer", "minimum": 1, "default": 3 },
+        "attempts": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/attempt" }
+        }
+      }
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["attempt", "timestamp", "phase", "decision", "gate_chain", "refactor_action", "refactor_applied"],
+      "properties": {
+        "attempt": { "type": "integer", "minimum": 1 },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "phase": { "type": "string", "enum": ["pre", "post"] },
+        "decision": {
+          "type": "string",
+          "enum": ["REVIEW", "AI_JUDGE", "PRE_WRITE", "SKIP_SEMANTIC", "NO_SEMANTIC_MATCH", "ABORT"]
+        },
+        "gate_chain": { "type": "array", "items": { "type": "string" } },
+        "gates": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "candidates": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "signature": { "type": ["object", "null"], "additionalProperties": true },
+        "semantic_top": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "semantic_definitions": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+        "refactor_action": {
+          "type": ["string", "null"],
+          "enum": [null, "REUSE", "RENAME", "NAMESPACE", "EXTRACT", "NONE"]
+        },
+        "refactor_applied": { "type": "boolean" },
+        "block_reason": { "type": ["string", "null"] }
+      }
+    }
+  }
+}

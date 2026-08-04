@@ -1,0 +1,101 @@
+{
+  "story": "1.4",
+  "epic": "1",
+  "phase": "quality-gate",
+  "slices": [
+    {
+      "slice_id": "DS-1",
+      "result": "pass",
+      "findings": [],
+      "evidence": [
+        "Read docs/planning-artifacts/epics.md — Story 1.4 acceptance criteria confirmed",
+        "Read docs/planning-artifacts/prd.md — NFR12/NFR13 confirmed",
+        "Read docs/planning-artifacts/architecture.md — Flutter + MapLibre mobile, web portal confirmed",
+        "Read docs/planning-artifacts/ux-spec.md — §4 token values, §10 accessibility checklist, §11 motion guidelines, §15 no-emoji rule confirmed",
+        "Read docs/implementation-artifacts/epic-01/1-4-establish-design-system-foundations.md — story source confirmed",
+        "Read docs/implementation-artifacts/epic-01/slice-plan-1-4.md — DS-1/DS-2/DS-3 slice plan confirmed",
+        "Read packages/design-tokens/tokens/color.yaml — 8 categories complete, light+dark modes, semantic aliases, no raw hex in components",
+        "Read packages/design-tokens/tokens/typography.yaml — Fira Sans + Fira Code, scale ratios 1.25/1.5/2.0, text tiers defined",
+        "Read packages/design-tokens/tokens/spacing.yaml — 4/8dp rhythm, touch targets 44/48dp, safe areas defined",
+        "Read packages/design-tokens/tokens/icon.yaml — vector-only rule, no emoji, 44/48pt touch targets, stroke widths defined",
+        "Read packages/design-tokens/tokens/focus.yaml — ring, contrast ratios, keyboard nav, focus order defined",
+        "Read packages/design-tokens/tokens/elevation.yaml — Soft UI shadow layers, semantic aliases, opacity layers defined",
+        "Read packages/design-tokens/tokens/state.yaml — GPS/sync/data-confidence states with color+icon+label",
+        "Read packages/design-tokens/tokens/motion.yaml — subtle tier, durations 80-500ms, reduced motion suppression",
+        "Read packages/design-tokens/README.md — design principles confirmed",
+        "All 8 token categories (color, typography, spacing, icon, focus, elevation, state, motion) are defined with semantic naming"
+      ]
+    },
+    {
+      "slice_id": "DS-2",
+      "result": "repair_required",
+      "findings": [
+        {
+          "severity": "high",
+          "category": "dark_mode_color",
+          "description": "VspColorSemantic hardcodes VspColorLight.* values for all state colors. Dark mode GPS/sync/data-confidence colors are incorrect — all semantic colors resolve to light palette even when isDark=true. Examples: gpsReady, gpsLowAccuracy, online, offline, syncPending, syncFailed, official, estimated, stale all use VspColorLight palette constants.",
+          "location": "packages/mobile-theme/lib/tokens/vsp_color.dart:87-108 (VspColorSemantic class)",
+          "recommendation": "VspColorSemantic should resolve colors based on current brightness. Recommended fix: in components that already have BuildContext (VspCard, VspDistanceDisplay), use Theme.of(context).colorScheme.tertiary/secondary/error values directly for semantic state colors instead of VspColorSemantic static constants. Alternatively, add brightness parameter to VspColorSemantic."
+        },
+        {
+          "severity": "medium",
+          "category": "token_drift",
+          "description": "VspButton._FocusRingWrapper hardcodes colorScheme.primary instead of VspFocusRing.color token. VspFocusRing.color is defined in vsp_focus.dart but _FocusRingWrapper at line 299 ignores it.",
+          "location": "packages/mobile-theme/lib/components/vsp_button.dart:297-301 (_FocusRingWrapper)",
+          "recommendation": "Replace hardcoded Theme.of(context).colorScheme.primary with VspFocusRing.color in _FocusRingWrapper.build() at line 299."
+        },
+        {
+          "severity": "low",
+          "category": "unused_token",
+          "description": "VspScaleRatio.large (2.0) is defined but _scaled() only applies VspScaleRatio.medium (1.5) when boldText=true. Per Flutter's MediaQuery.boldTextOf, this is binary — the large ratio is never consumed.",
+          "location": "packages/mobile-theme/lib/tokens/vsp_typography.dart:76-82 and 182-189",
+          "recommendation": "Document that Flutter bold text maps to medium scale ratio, or remove the unused large ratio from the token definition."
+        }
+      ],
+      "evidence": [
+        "Read packages/mobile-theme/lib/tokens/vsp_color.dart — VspColorSemantic hardcodes VspColorLight.* values at lines 89-108",
+        "Read packages/mobile-theme/lib/components/vsp_button.dart — _FocusRingWrapper uses hardcoded colorScheme.primary at line 299",
+        "Read packages/mobile-theme/lib/tokens/vsp_typography.dart — VspScaleRatio.large=2.0 defined but never consumed",
+        "VspButton: loading spinner (reduced motion suppressed), disabled opacity, visible focus ring, 44/48pt touch target, Semantics wrapper — all correct",
+        "VspCard: elevation tokens, state color surface, loading state — correct",
+        "VspTextField: error state, helper text, 44pt touch, reduced motion — correct",
+        "VspIcon: type-safe vector-only (IconData), screen-reader label required, 44/48pt touch padding — correct",
+        "VspLoadingIndicator: reduced-motion suppression with static icon — correct",
+        "VspDistanceDisplay: MediaQuery.boldTextOf, reduced motion, high contrast — correct",
+        "ThemeData built entirely from token values, dark() uses VspColorDark — correct"
+      ]
+    },
+    {
+      "slice_id": "DS-3",
+      "result": "repair_required",
+      "findings": [
+        {
+          "severity": "medium",
+          "category": "token_drift",
+          "description": "CSS dark mode --vsp-color-ring is #FDBA74 but color.yaml dark.ring is #FB923C. CSS value is orange-300 while token spec defines orange-400 (#FB923C) for dark mode focus ring. Orange-300 may not meet 4.5:1 contrast against #0F172A.",
+          "location": "packages/portal-ui/tokens.css:214 (dark mode --vsp-color-ring)",
+          "recommendation": "Change --vsp-color-ring in [data-theme=\"dark\"] from #FDBA74 to #FB923C to match color.yaml dark.ring value."
+        }
+      ],
+      "evidence": [
+        "Read packages/portal-ui/tokens.css — CSS custom properties on :root, dark mode via [data-theme=\"dark\"], --vsp-color-ring is #FDBA74 vs #FB923C in color.yaml",
+        "Read packages/portal-ui/components/vsp-button.css — :focus-visible uses var(--vsp-focus-ring), affected by ring color drift",
+        "Read packages/portal-ui/components/vsp-card.css — elevation tokens, state-aware borders — correct",
+        "Read packages/portal-ui/components/vsp-form-field.css — error state, helper text, 44pt min touch, label always visible — correct",
+        "Read packages/portal-ui/components/vsp-status-badge.css — color+icon+label (never color alone) — correct",
+        "Read packages/portal-ui/components/vsp-loading-skeleton.css — shimmer with prefers-reduced-motion suppression — correct",
+        "No emoji in any portal CSS component source",
+        "All CSS values reference token variables (--vsp-color-*, --vsp-space-*, etc.) — no raw values in component CSS"
+      ]
+    }
+  ],
+  "overall_result": "repair_required",
+  "next_action": "proceed_to_fix",
+  "blocking_issues": [
+    {
+      "severity": "high",
+      "location": "packages/mobile-theme/lib/tokens/vsp_color.dart:87-108",
+      "description": "VspColorSemantic hardcodes light palette — dark mode semantic state colors incorrect"
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+# WhiteLabel configuration schema for the Vietnam Smart Golf Platform API
+#
+# Boundary Invariant: forkGpsBehavior and forkScoreBehavior MUST always be false.
+# This is enforced by readOnly: true on these properties and validated at config load time.
+# Core GPS behavior must not be forked — white-label customization is limited to branding only.
+
+WhiteLabelConfig:
+  type: object
+  properties:
+    brandId:
+      type: string
+      description: Unique brand identifier
+      example: my-golf-club
+    brandName:
+      type: string
+      description: Display name for the white-label brand
+      example: My Golf Club
+    primaryColor:
+      type: string
+      description: Primary brand color (hex)
+      example: "#1E3A5F"
+    logoUrl:
+      type: string
+      format: uri
+      description: URL of the brand logo
+    enabledModules:
+      type: array
+      items:
+        type: string
+        enum: [booking, membership, loyalty, sponsorship]
+      description: Modules enabled for this white-label deployment
+    roundBehavior:
+      $ref: '#/RoundBehavior'
+
+RoundBehavior:
+  type: object
+  description: |
+    Controls how rounds behave in this white-label deployment.
+    CRITICAL: These properties are read-only. They MUST always be false.
+    Core GPS and Score behavior cannot be forked — this is a platform invariant.
+  properties:
+    allowCustomBranding:
+      type: boolean
+      description: Allow custom branding on round screens
+      default: true
+    forkGpsBehavior:
+      type: boolean
+      description: |
+        FORK GPS BEHAVIOR — MUST BE FALSE.
+        If true, the white-label could override core GPS calculations.
+        This is a platform boundary invariant and is always rejected.
+      readOnly: true
+      default: false
+    forkScoreBehavior:
+      type: boolean
+      description: |
+        FORK SCORE BEHAVIOR — MUST BE FALSE.
+        If true, the white-label could override core scoring logic.
+        This is a platform boundary invariant and is always rejected.
+      readOnly: true
+      default: false
+
+WhiteLabelValidation:
+  type: object
+  description: Validation result for white-label configuration
+  properties:
+    valid:
+      type: boolean
+    violations:
+      type: array
+      items:
+        type: string
+      description: List of validation violations

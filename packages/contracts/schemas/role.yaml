@@ -1,0 +1,134 @@
+# Role schemas for the Vietnam Smart Golf Platform API
+# Per Story 2.5 AC-1: RBAC supports 6 role types.
+# Per Story 2.5 AC-2: Admin accounts require MFA (TOTP per RFC 6238).
+
+RoleResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Role identifier
+      example: 1
+    roleName:
+      type: string
+      enum: [SUPER_ADMIN, COURSE_ADMIN, GREENKEEPER, TOURNAMENT_DIRECTOR, CADDIE_MASTER, AUDITOR]
+      description: Role name
+      example: SUPER_ADMIN
+    createdAt:
+      type: string
+      format: date-time
+      description: Role creation timestamp
+      example: "2026-08-02T10:00:00Z"
+
+AdminAccountResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Admin account identifier
+      example: 1
+    golferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID
+      example: 42
+    mfaEnabled:
+      type: boolean
+      description: Whether MFA is enabled for this admin account
+      example: true
+    mfaVerifiedAt:
+      type: string
+      format: date-time
+      description: Timestamp of first successful TOTP verification
+      example: "2026-08-02T10:00:00Z"
+    roles:
+      type: array
+      items:
+        type: string
+        enum: [SUPER_ADMIN, COURSE_ADMIN, GREENKEEPER, TOURNAMENT_DIRECTOR, CADDIE_MASTER, AUDITOR]
+      description: List of assigned roles
+      example: [SUPER_ADMIN, COURSE_ADMIN]
+    createdAt:
+      type: string
+      format: date-time
+      description: Admin account creation timestamp
+      example: "2026-08-02T10:00:00Z"
+
+AssignRoleRequest:
+  type: object
+  required:
+    - golferAccountId
+    - roleName
+  properties:
+    golferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID to assign the role to
+      example: 42
+    roleName:
+      type: string
+      enum: [SUPER_ADMIN, COURSE_ADMIN, GREENKEEPER, TOURNAMENT_DIRECTOR, CADDIE_MASTER, AUDITOR]
+      description: Role to assign
+      example: COURSE_ADMIN
+
+RevokeRoleRequest:
+  type: object
+  required:
+    - golferAccountId
+    - roleName
+  properties:
+    golferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID to revoke the role from
+      example: 42
+    roleName:
+      type: string
+      enum: [SUPER_ADMIN, COURSE_ADMIN, GREENKEEPER, TOURNAMENT_DIRECTOR, CADDIE_MASTER, AUDITOR]
+      description: Role to revoke
+      example: COURSE_ADMIN
+
+EnableMfaRequest:
+  type: object
+  required:
+    - totpCode
+  properties:
+    totpCode:
+      type: string
+      pattern: "^[0-9]{6}$"
+      description: |
+        Current 6-digit TOTP code from authenticator app.
+        Per RFC 6238: SHA-1, 6-digit code, 30-second window.
+      example: "123456"
+
+EnableMfaResponse:
+  type: object
+  properties:
+    provisioningUri:
+      type: string
+      format: uri
+      description: |
+        otpauth:// URI for QR code generation.
+        Encode as QR code and scan with Google Authenticator, Authy, etc.
+      example: "otpauth://totp/VSP%20Admin:42?secret=..."
+
+VerifyMfaRequest:
+  type: object
+  required:
+    - totpCode
+  properties:
+    totpCode:
+      type: string
+      pattern: "^[0-9]{6}$"
+      description: Current 6-digit TOTP code
+      example: "123456"
+
+VerifyMfaResponse:
+  type: object
+  properties:
+    valid:
+      type: boolean
+      description: Whether the TOTP code is valid
+      example: true

@@ -1,0 +1,14 @@
+{
+  "story_id": "11-1-calculate-club-performance-and-dispersion",
+  "story_key": "11-1-calculate-club-performance-and-dispersion",
+  "epic_id": "epic-11",
+  "phase": "discovery",
+  "status": "pending",
+  "bmad_status": "ready-for-dev",
+  "routing_decision": "planning",
+  "context_read": true,
+  "contract_read": true,
+  "run_id": "run_2026_08_02_010",
+  "created_at": "2026-08-02T01:00:00+07:00",
+  "updated_at": "2026-08-02T01:00:00+07:00"
+}

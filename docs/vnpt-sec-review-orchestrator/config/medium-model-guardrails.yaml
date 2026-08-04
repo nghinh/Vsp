@@ -1,0 +1,60 @@
+orchestrator: vnpt-sec-review-orchestrator
+profile: medium_model_strict
+version: 1.0.0
+
+phase_order_is_mandatory: true
+allow_phase_skip: false
+allow_automation_before_oracle: false
+allow_generic_placeholders_as_final: false
+allow_silent_assumptions: false
+allow_shallow_scanner_only_findings: false
+
+traceability:
+  require_issue_id: true
+  require_issue_signature: true
+  require_evidence_before: true
+  require_success_condition: true
+  require_evidence_after_before_closure: true
+  require_recursive_docs_proof: true
+  require_0_eof_proof: true
+
+minimum_per_risk:
+  P0:
+    source_or_config_review: 1
+    negative_or_boundary_check: 2
+    corroboration_check: 1
+    fix_validation: 1
+    fresh_re_review: 1
+  P1:
+    source_or_config_review: 1
+    negative_or_boundary_check: 1
+    corroboration_check: 1
+
+required_state_fields:
+  - scope_id
+  - scope_source
+  - mode
+  - status
+  - pass_count
+  - open_issue_count_history
+  - latest_pass_id
+  - fresh_confirmation_pass_done
+
+required_context_sections:
+  - BMAD Docs Inventory and 0-EOF Proof
+  - Stack and Trust Boundary Map
+  - Control-Family Risk Map
+  - Source/Config Verification Notes
+
+required_issue_fields:
+  - issue_id
+  - issue_signature
+  - title
+  - severity
+  - category
+  - files
+  - evidence_before
+  - success_condition
+
+self_review_required_before_final_report: true
+

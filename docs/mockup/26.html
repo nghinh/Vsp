@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>26 — Tổng quan vận hành | Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "inverse-surface": "#dae2fd",
+                "secondary-fixed-dim": "#ffb690",
+                "primary-container": "#f66018",
+                "outline-variant": "#5a4138",
+                "tertiary-container": "#25a475",
+                "surface-tint": "#ffb599",
+                "on-secondary": "#552100",
+                "on-primary-fixed-variant": "#7f2b00",
+                "surface": "#0b1326",
+                "primary-fixed-dim": "#ffb599",
+                "on-error-container": "#ffdad6",
+                "inverse-on-surface": "#283044",
+                "on-error": "#690005",
+                "surface-variant": "#2d3449",
+                "on-tertiary-container": "#00311f",
+                "on-surface-variant": "#e2bfb2",
+                "tertiary": "#68dba9",
+                "background": "#0b1326",
+                "surface-container-high": "#222a3d",
+                "secondary-fixed": "#ffdbca",
+                "secondary": "#ffb690",
+                "tertiary-fixed": "#85f8c4",
+                "on-surface": "#dae2fd",
+                "surface-bright": "#31394d",
+                "surface-dim": "#0b1326",
+                "surface-container-low": "#131b2e",
+                "error": "#ffb4ab",
+                "on-primary-fixed": "#370e00",
+                "on-primary-container": "#4f1700",
+                "on-primary": "#5a1c00",
+                "on-secondary-fixed-variant": "#783200",
+                "error-container": "#93000a",
+                "inverse-primary": "#a73a00",
+                "on-tertiary-fixed-variant": "#005137",
+                "surface-container-highest": "#2d3449",
+                "surface-container-lowest": "#060e20",
+                "primary-fixed": "#ffdbce",
+                "primary": "#ffb599",
+                "secondary-container": "#ec6a06",
+                "on-secondary-container": "#4a1c00",
+                "surface-container": "#171f33",
+                "on-secondary-fixed": "#341100",
+                "on-tertiary": "#003825",
+                "on-background": "#dae2fd",
+                "tertiary-fixed-dim": "#68dba9",
+                "on-tertiary-fixed": "#002114",
+                "outline": "#a98a7e"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "margin-desktop": "32px",
+                "unit": "8px",
+                "touch-target": "44px",
+                "margin-mobile": "16px",
+                "gutter": "16px"
+            },
+            "fontFamily": {
+                "body-md": ["Fira Sans"],
+                "metric-sm": ["Fira Code"],
+                "label-caps": ["Fira Sans"],
+                "headline-lg": ["Fira Sans"],
+                "headline-md": ["Fira Sans"],
+                "body-lg": ["Fira Sans"],
+                "display-metrics": ["Fira Code"]
+            },
+            "fontSize": {
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            font-family: 'Fira Sans', sans-serif;
+            overflow-x: hidden;
+        }
+        .sidebar-active-indicator {
+            width: 4px;
+            height: 24px;
+            background-color: #ec6a06;
+            position: absolute;
+            left: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #060e20;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d3449;
+            border-radius: 10px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .font-variation-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- Persistent Left Sidebar -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col w-[280px] bg-surface-container-high shadow-lg border-r border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center px-6 h-20">
+<span class="font-headline-md text-headline-md font-bold text-primary">Vietnam Smart Golf</span>
+</div>
+<nav class="flex-1 px-3 space-y-1 overflow-y-auto custom-scrollbar pt-4">
+<!-- Dashboard Active Item -->
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4 relative" href="#">
+<span class="material-symbols-outlined font-variation-fill">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Facilities/Courses -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">golf_course</span>
+<span class="font-body-md text-body-md">Cơ sở &amp; Sân</span>
+</a>
+<!-- Map Editor -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">map</span>
+<span class="font-body-md text-body-md">Biên tập bản đồ</span>
+</a>
+<!-- Pin Positions -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">keep</span>
+<span class="font-body-md text-body-md">Vị trí cắm cờ</span>
+</a>
+<!-- Conditions -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">thermostat</span>
+<span class="font-body-md text-body-md">Tình trạng sân</span>
+</a>
+<!-- Alerts -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">warning</span>
+<span class="font-body-md text-body-md">Cảnh báo</span>
+</a>
+<!-- Corrections -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">edit_notifications</span>
+<span class="font-body-md text-body-md">Hiệu chỉnh</span>
+</a>
+<!-- Versions & Audit -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md text-body-md">Phiên bản &amp; Kiểm tra</span>
+</a>
+<!-- Users & Roles -->
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Người dùng &amp; Vai trò</span>
+</a>
+</nav>
+<div class="p-6 border-t border-[rgba(255,255,255,0.08)] bg-surface-container-low">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-on-secondary font-bold">NH</div>
+<div class="overflow-hidden">
+<p class="font-label-caps text-label-caps text-on-surface truncate">Nguyễn Hồng Nghi</p>
+<p class="font-label-caps text-[10px] text-on-surface-variant">Course Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col min-h-screen bg-surface-container-lowest">
+<!-- Top Bar -->
+<header class="h-touch-target flex items-center justify-between px-margin-desktop bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)] sticky top-0 z-50">
+<div class="flex items-center gap-6">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">26 — Tổng quan vận hành</h1>
+<div class="flex items-center gap-2 bg-surface-container h-9 px-4 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">location_on</span>
+<select class="bg-transparent border-none focus:ring-0 text-on-surface font-body-md text-sm p-0">
+<option>BRG Legend Hill</option>
+<option>Kings Island</option>
+<option>Van Tri Golf Club</option>
+</select>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<!-- Search -->
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="bg-surface-container border-none h-9 pl-10 pr-4 rounded-full text-sm text-on-surface w-64 focus:ring-1 focus:ring-primary transition-all" placeholder="Tìm kiếm hệ thống..." type="text"/>
+</div>
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-bright text-on-surface-variant relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-bright text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+</div>
+</header>
+<!-- Content Body -->
+<div class="p-margin-desktop flex-1">
+<!-- Welcome & Refresh Timestamp -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<p class="font-body-md text-on-surface-variant">Chào buổi chiều, <span class="text-primary font-semibold">Nghi</span>. Đây là trạng thái vận hành hiện tại.</p>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px] animate-spin-slow">sync</span>
+<span class="font-metric-sm text-metric-sm">Cập nhật lúc: 14:32, 01/08/2026</span>
+</div>
+</div>
+<!-- KPI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-8">
+<!-- KPI Card 1 -->
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-primary transition-all group">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 rounded-lg bg-[rgba(246,96,24,0.1)] text-primary">
+<span class="material-symbols-outlined">verified_user</span>
+</span>
+<span class="font-metric-sm text-metric-sm text-primary">Cần xử lý</span>
+</div>
+<p class="font-display-metrics text-[32px] text-primary mb-1">03</p>
+<p class="font-body-md text-on-surface font-medium">Sân cần xác minh</p>
+<button class="mt-4 w-full py-2 bg-surface-bright text-on-surface rounded font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors">CHI TIẾT</button>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-secondary transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 rounded-lg bg-[rgba(236,106,6,0.1)] text-secondary">
+<span class="material-symbols-outlined">edit_square</span>
+</span>
+<span class="font-metric-sm text-metric-sm text-secondary">Chờ duyệt</span>
+</div>
+<p class="font-display-metrics text-[32px] text-secondary mb-1">12</p>
+<p class="font-body-md text-on-surface font-medium">Hiệu chỉnh chờ xử lý</p>
+<button class="mt-4 w-full py-2 bg-surface-bright text-on-surface rounded font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors">XỬ LÝ NGAY</button>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-error transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 rounded-lg bg-[rgba(255,180,171,0.1)] text-error">
+<span class="material-symbols-outlined">campaign</span>
+</span>
+<span class="font-metric-sm text-metric-sm text-error">Khẩn cấp</span>
+</div>
+<p class="font-display-metrics text-[32px] text-error mb-1">02</p>
+<p class="font-body-md text-on-surface font-medium">Cảnh báo đang hoạt động</p>
+<button class="mt-4 w-full py-2 bg-error-container text-on-error-container rounded font-label-caps text-label-caps hover:bg-error transition-colors transition-all duration-200">XEM CẢNH BÁO</button>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface-container p-6 rounded-xl border border-outline-variant hover:border-tertiary transition-all">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 rounded-lg bg-[rgba(104,219,169,0.1)] text-tertiary">
+<span class="material-symbols-outlined">calendar_today</span>
+</span>
+<span class="font-metric-sm text-metric-sm text-tertiary">Lên lịch</span>
+</div>
+<p class="font-display-metrics text-[32px] text-tertiary mb-1">18</p>
+<p class="font-body-md text-on-surface font-medium">Vị trí cờ sắp tới</p>
+<button class="mt-4 w-full py-2 bg-surface-bright text-on-surface rounded font-label-caps text-label-caps hover:bg-surface-container-highest transition-colors">XEM LỊCH</button>
+</div>
+</div>
+<!-- Dashboard Main Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column (8 units) -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- Data Trust & Freshness -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">analytics</span>
+                                Độ tươi &amp; Tin cậy dữ liệu
+                            </h2>
+<span class="px-3 py-1 rounded-full bg-tertiary text-on-tertiary font-metric-sm text-[12px]">CHÍNH THỨC</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<div class="flex justify-between items-end mb-2">
+<p class="font-body-md text-on-surface-variant">Class A (RTK Surveyed)</p>
+<p class="font-metric-sm text-tertiary">74%</p>
+</div>
+<div class="w-full bg-surface-container rounded-full h-3">
+<div class="bg-tertiary h-3 rounded-full" style="width: 74%"></div>
+</div>
+<p class="mt-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Độ chính xác &lt; 2cm</p>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<p class="font-body-md text-on-surface-variant">Class B (Satellite/Manual)</p>
+<p class="font-metric-sm text-primary">26%</p>
+</div>
+<div class="w-full bg-surface-container rounded-full h-3">
+<div class="bg-primary h-3 rounded-full" style="width: 26%"></div>
+</div>
+<p class="mt-4 font-label-caps text-[10px] text-on-surface-variant uppercase tracking-wider">Độ chính xác ~ 50cm</p>
+</div>
+</div>
+</div>
+<!-- Operational Health -->
+<div class="bg-surface-container-high rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden">
+<div class="p-6 border-b border-[rgba(255,255,255,0.08)] flex justify-between items-center">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">health_and_safety</span>
+                                Tình trạng dữ liệu vận hành
+                            </h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low">
+<tr>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">DANH MỤC</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">TRẠNG THÁI</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant">HẠN CẬP NHẬT</th>
+<th class="px-6 py-3 font-label-caps text-label-caps text-on-surface-variant text-right">HÀNH ĐỘNG</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-[rgba(255,255,255,0.05)]">
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">keep</span>
+<div>
+<p class="font-body-md text-on-surface">Vị trí cờ (Stale Pins)</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Legend Hill - Course A</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-error font-metric-sm text-sm">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                                                Quá hạn 2h
+                                            </span>
+</td>
+<td class="px-6 py-4 font-metric-sm text-on-surface">12:00, 01/08</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-label-caps text-label-caps">CẬP NHẬT</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">speed</span>
+<div>
+<p class="font-body-md text-on-surface">Tốc độ Green (Stimp)</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Tất cả các sân</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-tertiary font-metric-sm text-sm">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+                                                Đã cập nhật
+                                            </span>
+</td>
+<td class="px-6 py-4 font-metric-sm text-on-surface">06:00, 02/08</td>
+<td class="px-6 py-4 text-right">
+<button class="text-on-surface-variant font-label-caps text-label-caps opacity-50 cursor-not-allowed">HỢP LỆ</button>
+</td>
+</tr>
+<tr>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant">water_drop</span>
+<div>
+<p class="font-body-md text-on-surface">Điều kiện Bunker/Cỏ</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Kings Island - Mountain</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-2 text-secondary font-metric-sm text-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                                Đang chờ (1)
+                                            </span>
+</td>
+<td class="px-6 py-4 font-metric-sm text-on-surface">14:00, 01/08</td>
+<td class="px-6 py-4 text-right">
+<button class="text-primary hover:underline font-label-caps text-label-caps">KIỂM TRA</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Correction Trends (Placeholder/Chart Area) -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-fixed-dim">trending_up</span>
+                                Xu hướng xử lý hiệu chỉnh
+                            </h2>
+<select class="bg-surface-container-low border-none rounded-lg text-xs font-label-caps px-3 py-1 text-on-surface-variant focus:ring-0">
+<option>7 ngày qua</option>
+<option>30 ngày qua</option>
+</select>
+</div>
+<div class="h-48 flex items-end gap-2 px-2">
+<!-- Simple custom CSS bar chart to represent trend -->
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 40%" title="Mon: 12 fixes"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 65%" title="Tue: 22 fixes"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 50%" title="Wed: 18 fixes"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 85%" title="Thu: 30 fixes"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 70%" title="Fri: 25 fixes"></div>
+<div class="flex-1 bg-primary rounded-t transition-colors cursor-help" style="height: 95%" title="Sat: 34 fixes (Today)"></div>
+<div class="flex-1 bg-surface-container-highest rounded-t hover:bg-primary transition-colors cursor-help" style="height: 20%" title="Sun: Scheduled"></div>
+</div>
+<div class="flex justify-between mt-4 font-metric-sm text-[10px] text-on-surface-variant px-2">
+<span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span class="text-primary font-bold">T7</span><span>CN</span>
+</div>
+</div>
+</div>
+<!-- Right Column (4 units) -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- Upcoming Pin Changes -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Lịch cắm cờ</h2>
+<button class="text-primary material-symbols-outlined">add_circle</button>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 bg-surface-container rounded-lg border-l-4 border-primary">
+<div class="w-12 h-12 flex flex-col items-center justify-center bg-surface-container-low rounded border border-outline-variant">
+<span class="font-metric-sm text-xs text-on-surface-variant">HOLE</span>
+<span class="font-display-metrics text-xl leading-none">04</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-on-surface">Vị trí: B2 (Trung tâm)</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Bắt đầu: 06:00, Ngày mai</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container rounded-lg border-l-4 border-outline">
+<div class="w-12 h-12 flex flex-col items-center justify-center bg-surface-container-low rounded border border-outline-variant">
+<span class="font-metric-sm text-xs text-on-surface-variant">HOLE</span>
+<span class="font-display-metrics text-xl leading-none">12</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-on-surface">Vị trí: A3 (Gần trái)</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Bắt đầu: 06:30, Ngày mai</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 bg-surface-container rounded-lg border-l-4 border-outline">
+<div class="w-12 h-12 flex flex-col items-center justify-center bg-surface-container-low rounded border border-outline-variant">
+<span class="font-metric-sm text-xs text-on-surface-variant">HOLE</span>
+<span class="font-display-metrics text-xl leading-none">18</span>
+</div>
+<div class="flex-1">
+<p class="font-body-md text-on-surface">Vị trí: C1 (Phía sau)</p>
+<p class="font-metric-sm text-[12px] text-on-surface-variant">Bắt đầu: 07:00, Ngày mai</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-3 border border-outline-variant rounded-lg font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-bright transition-all">XEM TẤT CẢ 18 LỊCH</button>
+</div>
+<!-- Package Build Status -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Trạng thái đóng gói</h2>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">package_2</span>
+<span class="font-body-md text-on-surface">Legend Hill (Offline)</span>
+</div>
+<span class="font-metric-sm text-[12px] text-tertiary px-2 py-0.5 bg-[rgba(104,219,169,0.1)] rounded">V2.4.1 — SUCCESS</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">package_2</span>
+<span class="font-body-md text-on-surface">Van Tri GC</span>
+</div>
+<span class="font-metric-sm text-[12px] text-primary flex items-center gap-2">
+<span class="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin"></span>
+                                    BUILDING (82%)
+                                </span>
+</div>
+</div>
+</div>
+<!-- Recent Activity -->
+<div class="bg-surface-container-high rounded-xl p-6 border border-[rgba(255,255,255,0.08)]">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6">Hoạt động gần đây</h2>
+<div class="relative pl-6 space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant">
+<!-- Activity 1 -->
+<div class="relative">
+<span class="absolute -left-[20px] top-1 w-3 h-3 rounded-full bg-tertiary ring-4 ring-surface-container-high"></span>
+<div class="flex flex-col">
+<p class="font-body-md text-sm text-on-surface"><span class="font-bold">Trần Minh Quân</span> đã công bố bản đồ</p>
+<p class="font-metric-sm text-[11px] text-on-surface-variant">Version ID: <span class="text-primary">#LH-9921</span> • 14:05</p>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="relative">
+<span class="absolute -left-[20px] top-1 w-3 h-3 rounded-full bg-secondary ring-4 ring-surface-container-high"></span>
+<div class="flex flex-col">
+<p class="font-body-md text-sm text-on-surface"><span class="font-bold">Lê Văn Ba</span> cập nhật Green Speed</p>
+<p class="font-metric-sm text-[11px] text-on-surface-variant">Legend Hill Course B • 13:42</p>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="relative">
+<span class="absolute -left-[20px] top-1 w-3 h-3 rounded-full bg-error ring-4 ring-surface-container-high"></span>
+<div class="flex flex-col opacity-60">
+<p class="font-body-md text-sm text-on-surface line-through"><span class="font-bold">Admin</span> rollback phiên bản</p>
+<p class="font-metric-sm text-[11px] text-on-surface-variant">Bị hủy bỏ bởi System • 12:15</p>
+</div>
+</div>
+</div>
+<!-- Role-based Disabled Control Example -->
+<div class="mt-8 p-4 bg-surface-container-lowest rounded-lg border border-dashed border-outline-variant flex items-center justify-between group">
+<div class="flex items-center gap-2 text-on-surface-variant opacity-50">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+<span class="font-label-caps text-[11px]">ADMINISTRATIVE ROLLBACK</span>
+</div>
+<button class="px-3 py-1 bg-surface-variant text-[10px] rounded text-on-surface-variant cursor-not-allowed font-bold" disabled="">LOCKED</button>
+<!-- Tooltip on hover simulation -->
+<div class="hidden group-hover:block absolute bg-surface-container-highest p-2 rounded text-[10px] text-on-surface w-32 -translate-y-12">Chỉ dành cho Super Admin</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Audit Trace -->
+<footer class="mt-auto py-4 px-margin-desktop bg-surface-container-low flex justify-between items-center border-t border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-4">
+<span class="font-metric-sm text-[12px] text-on-surface-variant">Hệ thống: <span class="text-tertiary">Vận hành ổn định</span></span>
+<span class="h-1 w-1 rounded-full bg-outline-variant"></span>
+<span class="font-metric-sm text-[12px] text-on-surface-variant">Server: 10.0.4.22</span>
+</div>
+<div class="flex items-center gap-6">
+<a class="font-label-caps text-[11px] text-on-surface-variant hover:text-primary transition-colors" href="#">NHẬT KÝ KIỂM TRA</a>
+<a class="font-label-caps text-[11px] text-on-surface-variant hover:text-primary transition-colors" href="#">CHÍNH SÁCH BẢO MẬT</a>
+<span class="font-metric-sm text-[11px] text-on-surface-variant opacity-30">© 2026 VSG OPS PORTAL</span>
+</div>
+</footer>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple search animation focus
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.classList.add('w-80');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.classList.remove('w-80');
+        });
+
+        // Periodic update visual trigger
+        setInterval(() => {
+            const timeEl = document.querySelector('.animate-spin-slow');
+            if(timeEl) {
+                timeEl.classList.remove('animate-spin-slow');
+                void timeEl.offsetWidth; // Trigger reflow
+                timeEl.classList.add('animate-spin-slow');
+            }
+        }, 30000);
+    </script>
+<style>
+        .animate-spin-slow {
+            animation: spin 3s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</body></html>

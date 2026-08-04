@@ -1,0 +1,211 @@
+# Round schemas for the Vietnam Smart Golf Platform API
+
+Round:
+  type: object
+  required:
+    - id
+    - courseId
+    - playerId
+    - startedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Round unique identifier
+      example: 770e8400-e29b-41d4-a716-446655440002
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    courseName:
+      type: string
+      description: Course name (denormalized for convenience)
+      example: Saigon Golf Club
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+    playerName:
+      type: string
+      description: Player name
+      example: John Doe
+    startedAt:
+      type: string
+      format: date-time
+      description: Round start time
+      example: "2026-08-01T06:30:00Z"
+    endedAt:
+      type: string
+      format: date-time
+      description: Round end time
+      example: "2026-08-01T11:45:00Z"
+    status:
+      type: string
+      enum: [in_progress, completed, abandoned, cancelled]
+      description: Round status
+      example: completed
+    holes:
+      type: array
+      items:
+        $ref: '#/HoleScore'
+      description: Scores per hole
+    totalScore:
+      type: integer
+      description: Total strokes
+      example: 85
+    totalPar:
+      type: integer
+      description: Total par for played holes
+      example: 72
+    relativeScore:
+      type: integer
+      description: Score relative to par
+      example: 13
+    weather:
+      $ref: './weather.yaml#/WeatherSnapshot'
+    notes:
+      type: string
+      description: Player notes
+    version:
+      type: string
+      description: Content version hash for ETag
+
+RoundCreate:
+  type: object
+  required:
+    - courseId
+    - startTime
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    startTime:
+      type: string
+      format: date-time
+      description: Planned start time
+      example: "2026-08-01T06:30:00Z"
+    playerIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+      description: IDs of all players in the group
+      example: ["550e8400-e29b-41d4-a716-446655440000"]
+    packageId:
+      type: string
+      format: uuid
+      description: Optional package being used
+    cartRequested:
+      type: boolean
+      description: Whether a cart is requested
+      example: false
+
+RoundUpdate:
+  type: object
+  properties:
+    endedAt:
+      type: string
+      format: date-time
+      description: Round end time
+    status:
+      type: string
+      enum: [in_progress, completed, abandoned, cancelled]
+      description: Round status
+    notes:
+      type: string
+      description: Player notes
+
+HoleScore:
+  type: object
+  required:
+    - holeNumber
+    - par
+    - strokes
+  properties:
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number
+      example: 1
+    par:
+      type: integer
+      minimum: 3
+      maximum: 6
+      description: Par for the hole
+      example: 4
+    strokes:
+      type: integer
+      minimum: 1
+      description: Strokes taken
+      example: 5
+    putts:
+      type: integer
+      minimum: 0
+      description: Putts taken
+      example: 2
+    fairwayHit:
+      type: boolean
+      description: Whether the fairway was hit (par 4 or 5)
+    gir:
+      type: boolean
+      description: Green in regulation
+    penalties:
+      type: integer
+      minimum: 0
+      description: Penalty strokes
+      example: 0
+    clubUsed:
+      type: string
+      description: Club used for approach shot
+      example: "7-iron"
+
+RoundListResponse:
+  type: object
+  properties:
+    rounds:
+      type: array
+      items:
+        $ref: '#/Round'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+RoundCompleteRequest:
+  type: object
+  description: |
+    Request to complete a round. Empty body — roundId in path is sufficient.
+    Idempotency key provided via Idempotency-Key header.
+  properties: {}
+
+RoundCompleteResponse:
+  type: object
+  description: Response after completing a round
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Round unique identifier
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    courseName:
+      type: string
+      description: Course name
+    status:
+      type: string
+      enum: [in_progress, completed, abandoned, cancelled]
+      description: Round status
+    startedAt:
+      type: string
+      format: date-time
+      description: Round start time
+    endedAt:
+      type: string
+      format: date-time
+      description: Round end time
+    createdAt:
+      type: string
+      format: date-time
+      description: Round creation timestamp

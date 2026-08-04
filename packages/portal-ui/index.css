@@ -1,0 +1,16 @@
+/**
+ * VSP Portal UI — Design System Entry Point
+ *
+ * Import order matters:
+ * 1. tokens.css — CSS custom properties (variables) on :root
+ * 2. Components — use token variables only
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+@import './tokens.css';
+@import './components/vsp-button.css';
+@import './components/vsp-card.css';
+@import './components/vsp-form-field.css';
+@import './components/vsp-status-badge.css';
+@import './components/vsp-loading-skeleton.css';

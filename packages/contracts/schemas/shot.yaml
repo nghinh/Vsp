@@ -1,0 +1,800 @@
+# Shot schemas for the Vietnam Smart Golf Platform API
+#
+# Per Story 10.3: Track Shots Manually
+# Canonical shot entity with 22 fields covering start/end location,
+# club, lie, distance, conditions, result, source, and sync metadata.
+
+# ─── Enums ────────────────────────────────────────────────────────────────────
+
+ShotLie:
+  type: string
+  enum:
+    - teebox
+    - fairway
+    - rough
+    - bunker
+    - water
+    - penalty
+    - green
+    - putt
+    - out_of_bounds
+    - cart_path
+    - native_rough
+    - primary_rough
+    - secondary_rough
+    - waste_bunker
+    - desert
+    - other
+  description: |
+    Physical lie of the ball when the shot ended.
+    Derived from GPS end-location + course geometry in Slice 2 (auto-detect).
+    Manually editable by golfer.
+
+ShotResult:
+  type: string
+  enum:
+    - fairway_hit
+    - green_hit
+    - in_bunker
+    - in_water
+    - out_of_bounds
+    - penalty
+    - mulligan
+    - provisional
+    - scramble_save
+    - chip_in
+    - hole_out
+    - in_the_hole
+    - hit_L
+    - hit_slices
+    - hit_pull
+    - hit_push
+    - hit_hook
+    - hit_thin
+    - hit_heavy
+    - whiff
+    - unknown
+  description: |
+    Outcome of the shot — what happened after the ball came to rest.
+    Multiple flags can be true on the Shot entity (isPenalty, isProvisional, isMulligan)
+    to capture special conditions; this result enum captures the primary outcome.
+
+ShotSource:
+  type: string
+  enum:
+    - manual
+    - detected
+    - corrected
+  description: |
+    How the shot was created:
+    - manual: golfer explicitly started/ended the shot via ShotEntrySheet
+    - detected: automatically detected by GPS pattern analysis (Story 10.4, future)
+    - corrected: created via the correction workflow (Story 9.x)
+
+ShotSyncStatus:
+  type: string
+  enum:
+    - pending
+    - synced
+    - failed
+  description: |
+    Server-side sync state for the shot record.
+    - pending: server received mutation event but not yet applied
+    - synced: server confirmed persistence
+    - failed: server rejected the event (4xx), no retry
+
+# ─── Core Schemas ─────────────────────────────────────────────────────────────
+
+Shot:
+  type: object
+  required:
+    - id
+    - roundId
+    - flightId
+    - playerId
+    - holeNumber
+    - shotNumber
+    - startedAt
+    - endedAt
+    - source
+    - syncStatus
+    - idempotencyKey
+    - createdAt
+    - updatedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Shot unique identifier
+      example: 880e8400-e29b-41d4-a716-446655440001
+
+    roundId:
+      type: string
+      format: uuid
+      description: Round this shot belongs to
+      example: 880e8400-e29b-41d4-a716-446655440002
+
+    flightId:
+      type: string
+      format: uuid
+      description: Flight (group of players) this shot belongs to
+      example: 880e8400-e29b-41d4-a716-446655440003
+
+    playerId:
+      type: string
+      format: uuid
+      description: Player account ID who owns this shot
+      example: 880e8400-e29b-41d4-a716-446655440004
+
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number (1–18 for standard rounds; up to 27 for modified)
+      example: 5
+
+    shotNumber:
+      type: integer
+      minimum: 1
+      maximum: 20
+      description: Per-hole shot sequence (1 = first shot, 2 = second, etc.)
+      example: 2
+
+    clubId:
+      type: string
+      format: uuid
+      description: Club used for this shot (FK to Club from Epic 2 Golf Bag). Null until assigned.
+      example: 880e8400-e29b-41d4-a716-446655440005
+
+    startedAt:
+      type: string
+      format: date-time
+      description: When the shot was started (GPS lock acquired)
+      example: "2026-08-01T07:45:00Z"
+
+    endedAt:
+      type: string
+      format: date-time
+      description: When the shot was ended (GPS lock on ball at rest)
+      example: "2026-08-01T07:48:30Z"
+
+    startLocation:
+      $ref: '#/GeoJSONPoint'
+      description: |
+        Ball position when shot started.
+        Stored as GeoJSON Point with WGS84 coordinates (SRID 4326).
+
+    endLocation:
+      $ref: '#/GeoJSONPoint'
+      description: |
+        Ball position when shot ended.
+        Stored as GeoJSON Point with WGS84 coordinates (SRID 4326).
+
+    lie:
+      $ref: '#/ShotLie'
+      description: |
+        Lie of the ball at rest.
+        Auto-detected from endLocation + course geometry in Slice 2.
+        Editable by golfer in ShotEditSheet.
+
+    distanceYards:
+      type: number
+      format: double
+      description: |
+        Shot distance in yards. Calculated from startLocation → endLocation
+        using Haversine or ST_Distance PostGIS function (geography type).
+        Null until shot is ended.
+      example: 215.5
+
+    distanceMeters:
+      type: number
+      format: double
+      description: Shot distance in meters (conved from yards).
+      example: 197.0
+
+    conditions:
+      type: object
+      description: |
+        Snapshot of conditions at shot time.
+        Captures: windDirection, windSpeed, temperature, humidity, altitude.
+        Stored as a free-form JSON object.
+      properties:
+        windDirection:
+          type: integer
+          description: Wind direction in degrees (0–360)
+          example: 45
+        windSpeed:
+          type: number
+          description: Wind speed in km/h
+          example: 15.5
+        temperature:
+          type: number
+          description: Temperature in Celsius
+          example: 28.0
+        humidity:
+          type: integer
+          description: Relative humidity percentage (0–100)
+          example: 75
+        altitude:
+          type: number
+          description: Altitude in meters above sea level
+          example: 12.0
+
+    result:
+      $ref: '#/ShotResult'
+      description: Primary outcome of the shot
+
+    isPenalty:
+      type: boolean
+      description: Whether this shot incurred a penalty stroke
+      example: false
+
+    isProvisional:
+      type: boolean
+      description: Whether this was a provisional ball (played under penalty while searching)
+      example: false
+
+    isMulligan:
+      type: boolean
+      description: Whether this shot was declared a mulligan (not counted)
+      example: false
+
+    mergedIntoShotId:
+      type: string
+      format: uuid
+      description: |
+        If non-null, this shot was merged into the referenced shot.
+        Used for merge tracking; the merged shot's record remains for audit.
+      example: 880e8400-e29b-41d4-a716-446655440006
+
+    source:
+      $ref: '#/ShotSource'
+      description: How the shot was created
+
+    confidence:
+      type: number
+      format: float
+      minimum: 0.0
+      maximum: 1.0
+      description: |
+        Confidence in shot detection/location quality.
+        0.0 = very low (e.g., GPS error > 20 m)
+        1.0 = very high (e.g., RTK-quality or short iron with good GPS)
+        Null for manual shots.
+      example: 0.85
+
+    syncStatus:
+      $ref: '#/ShotSyncStatus'
+      description: Server-side sync state
+
+    idempotencyKey:
+      type: string
+      format: uuid
+      description: |
+        Client-generated UUID v4 used as the idempotency key for this mutation.
+        Sent as `Idempotency-Key` HTTP header on all write operations.
+        Server deduplicates by this key within the TTL window.
+      example: 880e8400-e29b-41d4-a716-446655440007
+
+    createdAt:
+      type: string
+      format: date-time
+      description: Server-side creation timestamp
+      example: "2026-08-01T07:45:00Z"
+
+    updatedAt:
+      type: string
+      format: date-time
+      description: Server-side last-update timestamp
+      example: "2026-08-01T07:48:30Z"
+
+# ─── GeoJSON Helpers ───────────────────────────────────────────────────────────
+
+GeoJSONPoint:
+  type: object
+  required:
+    - type
+    - coordinates
+  properties:
+    type:
+      type: string
+      enum: [Point]
+      default: Point
+    coordinates:
+      type: array
+      minItems: 2
+      maxItems: 3
+      items:
+        type: number
+      description: |
+        [longitude, latitude, elevation?]
+        All coordinates use WGS84 (SRID 4326).
+        Elevation is optional (in meters).
+      example: [106.7194, 10.8327, 8.5]
+
+# ─── Shot Event (for sync queue) ──────────────────────────────────────────────
+
+ShotEvent:
+  type: object
+  required:
+    - eventType
+    - shotId
+    - roundId
+    - playerId
+    - idempotencyKey
+    - timestamp
+  properties:
+    eventType:
+      type: string
+      enum:
+        - ShotStarted
+        - ShotEnded
+        - ShotEdited
+        - ShotDeleted
+        - ShotsMerged
+      description: Type of shot mutation event
+    shotId:
+      type: string
+      format: uuid
+      description: Shot UUID (for ShotDeleted / ShotsMerged may be the source shot)
+      example: 880e8400-e29b-41d4-a716-446655440001
+    roundId:
+      type: string
+      format: uuid
+      description: Round UUID this shot belongs to
+      example: 880e8400-e29b-41d4-a716-446655440002
+    playerId:
+      type: string
+      format: uuid
+      description: Player account ID
+      example: 880e8400-e29b-41d4-a716-446655440004
+    payload:
+      type: object
+      description: |
+        Shot fields at time of event.
+        For ShotStarted: all fields except endLocation, endedAt, distanceYards, distanceMeters.
+        For ShotEnded: complete shot snapshot including calculated distance.
+        For ShotEdited: only changed fields (partial update semantics).
+        For ShotDeleted: null payload.
+        For ShotsMerged: { "mergedIntoShotId": "<uuid>" }.
+    idempotencyKey:
+      type: string
+      format: uuid
+      description: Client-generated UUID v4, stable across retries
+      example: 880e8400-e29b-41d4-a716-446655440007
+    timestamp:
+      type: string
+      format: date-time
+      description: Client-side UTC timestamp when event was created
+      example: "2026-08-01T07:45:00Z"
+
+# ─── DTOs ─────────────────────────────────────────────────────────────────────
+
+CreateShotRequest:
+  type: object
+  required:
+    - holeNumber
+    - shotNumber
+    - playerId
+    - startedAt
+    - startLocation
+    - idempotencyKey
+  properties:
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number
+      example: 5
+    shotNumber:
+      type: integer
+      minimum: 1
+      maximum: 20
+      description: Per-hole shot sequence
+      example: 1
+    playerId:
+      type: string
+      format: uuid
+      description: Player account ID
+    clubId:
+      type: string
+      format: uuid
+      description: Optional club assignment
+    startedAt:
+      type: string
+      format: date-time
+      description: When shot was started
+      example: "2026-08-01T07:45:00Z"
+    startLocation:
+      $ref: '#/GeoJSONPoint'
+      description: GPS position when shot started
+    conditions:
+      $ref: '#/Shot/properties/conditions'
+    idempotencyKey:
+      type: string
+      format: uuid
+      description: Client-generated UUID v4 for deduplication
+      example: 880e8400-e29b-41d4-a716-446655440007
+
+UpdateShotRequest:
+  type: object
+  description: Partial update — only fields present in the body are updated.
+  properties:
+    clubId:
+      type: string
+      format: uuid
+      description: Updated club assignment
+    endedAt:
+      type: string
+      format: date-time
+      description: Updated end timestamp
+    endLocation:
+      $ref: '#/GeoJSONPoint'
+      description: Updated GPS end position (re-set by client)
+    lie:
+      $ref: '#/ShotLie'
+      description: Manually corrected lie
+    distanceYards:
+      type: number
+      format: double
+      description: Manually adjusted distance
+    distanceMeters:
+      type: number
+      format: double
+    conditions:
+      $ref: '#/Shot/properties/conditions'
+    result:
+      $ref: '#/ShotResult'
+    isPenalty:
+      type: boolean
+    isProvisional:
+      type: boolean
+    isMulligan:
+      type: boolean
+    confidence:
+      type: number
+      format: float
+      minimum: 0.0
+      maximum: 1.0
+
+MergeShotsRequest:
+  type: object
+  required:
+    - sourceShotId
+    - targetShotId
+    - idempotencyKey
+  properties:
+    sourceShotId:
+      type: string
+      format: uuid
+      description: Shot to be merged (marked mergedIntoShotId → targetShotId)
+      example: 880e8400-e29b-41d4-a716-446655440008
+    targetShotId:
+      type: string
+      format: uuid
+      description: Shot to merge into (surviving record)
+      example: 880e8400-e29b-41d4-a716-446655440009
+    idempotencyKey:
+      type: string
+      format: uuid
+      description: Client-generated UUID v4 for deduplication
+
+ShotResponse:
+  type: object
+  properties:
+    shot:
+      $ref: '#/Shot'
+    eventId:
+      type: string
+      format: uuid
+      description: Server-side shot event ID for audit trail
+    syncedAt:
+      type: string
+      format: date-time
+      description: Server-side sync confirmation timestamp
+
+ShotListResponse:
+  type: object
+  properties:
+    shots:
+      type: array
+      items:
+        $ref: '#/Shot'
+      description: List of shots for the round
+    cursor:
+      type: string
+      description: |
+        Opaque sync cursor for delta sync.
+        Client passes this as `?cursor=<cursor>` on next GET to retrieve only new/updated shots.
+        Null or empty string when no more shots.
+    hasMore:
+      type: boolean
+      description: True if additional shots exist beyond this page
+
+ShotSyncResponse:
+  type: object
+  properties:
+    status:
+      $ref: '#/ShotSyncStatus'
+    eventId:
+      type: string
+      format: uuid
+      description: Server-assigned event ID for this mutation
+    syncedAt:
+      type: string
+      format: date-time
+      description: Server-side confirmation timestamp
+    error:
+      type: string
+      description: Error message if status is 'failed'
+
+# ─── Analytics Schemas (Story 11.2) ─────────────────────────────────────────────
+
+DrivingZoneStatisticsResponse:
+  type: object
+  description: Aggregated landing zone statistics per club per hole-zone
+  properties:
+    filter:
+      $ref: '#/DrivingZoneFilter'
+    holeStats:
+      type: array
+      items:
+        $ref: '#/HoleZoneStats'
+    generatedAt:
+      type: string
+      format: date-time
+    isSampleInsufficient:
+      type: boolean
+      default: false
+
+DrivingZoneFilter:
+  type: object
+  properties:
+    playerId:
+      type: string
+      format: uuid
+    timeRange:
+      $ref: '#/TimeRange'
+    clubIds:
+      type: array
+      items:
+        type: string
+        format: uuid
+    teeSetId:
+      type: string
+    windCondition:
+      type: string
+      enum: [any, calm, light, moderate, windy, headwind, tailwind, crosswind_left, crosswind_right]
+    minimumShotCount:
+      type: integer
+      default: 5
+
+TimeRange:
+  type: object
+  properties:
+    start:
+      type: string
+      format: date-time
+    end:
+      type: string
+      format: date-time
+
+HoleZoneStats:
+  type: object
+  properties:
+    holeNumber:
+      type: integer
+    clubId:
+      type: string
+      format: uuid
+    clubName:
+      type: string
+    totalShots:
+      type: integer
+    zoneCells:
+      type: array
+      items:
+        $ref: '#/ZoneCell'
+    averageDistanceYards:
+      type: number
+      format: double
+    averageDistanceMeters:
+      type: number
+      format: double
+    lastUpdated:
+      type: string
+      format: date-time
+
+ZoneCell:
+  type: object
+  properties:
+    horizontalZone:
+      type: integer
+      description: "-1=left, 0=center, 1=right"
+    distanceBand:
+      type: integer
+      description: "0=short, 1=mid, 2=long"
+    shotCount:
+      type: integer
+    percentage:
+      type: number
+      format: double
+
+RoundReviewMetricsResponse:
+  type: object
+  description: Scoring and shot metrics for a completed round review
+  properties:
+    scoring:
+      $ref: '#/RoundScoringSummary'
+    shotMetrics:
+      $ref: '#/ShotMetrics'
+    incompleteDataWarning:
+      $ref: '#/IncompleteDataWarning'
+    generatedAt:
+      type: string
+      format: date-time
+    courseName:
+      type: string
+    roundDate:
+      type: string
+      format: date-time
+
+RoundScoringSummary:
+  type: object
+  properties:
+    roundId:
+      type: string
+      format: uuid
+    playerId:
+      type: string
+      format: uuid
+    totalGrossScore:
+      type: integer
+    totalPutts:
+      type: integer
+    totalPenalties:
+      type: integer
+    girCount:
+      type: integer
+    girTotal:
+      type: integer
+    firCount:
+      type: integer
+    firTotal:
+      type: integer
+    upAndDownCount:
+      type: integer
+    upAndDownTotal:
+      type: integer
+    sandSaveCount:
+      type: integer
+    sandSaveTotal:
+      type: integer
+    birdieOrBetterCount:
+      type: integer
+    parOrBetterCount:
+      type: integer
+    bogeyOrWorseCount:
+      type: integer
+    scoringAverage:
+      type: number
+      format: double
+    scoreToPar:
+      type: integer
+
+ShotMetrics:
+  type: object
+  properties:
+    roundId:
+      type: string
+      format: uuid
+    playerId:
+      type: string
+      format: uuid
+    clubMetrics:
+      type: array
+      items:
+        $ref: '#/ClubShotMetrics'
+    totalShots:
+      type: integer
+    fromDate:
+      type: string
+      format: date-time
+    toDate:
+      type: string
+      format: date-time
+
+ClubShotMetrics:
+  type: object
+  properties:
+    clubId:
+      type: string
+      format: uuid
+    clubName:
+      type: string
+    totalShots:
+      type: integer
+    averageDistanceYards:
+      type: number
+      format: double
+    averageDistanceMeters:
+      type: number
+      format: double
+    medianDistanceYards:
+      type: number
+      format: double
+    minDistanceYards:
+      type: number
+      format: double
+    maxDistanceYards:
+      type: number
+      format: double
+    standardDeviationYards:
+      type: number
+      format: double
+    distanceDistribution:
+      type: array
+      items:
+        $ref: '#/DistanceBucket'
+    lieDistribution:
+      type: array
+      items:
+        $ref: '#/LieDistribution'
+    bestResultCount:
+      type: integer
+    bestResultRate:
+      type: number
+      format: double
+
+DistanceBucket:
+  type: object
+  properties:
+    minYards:
+      type: number
+      format: double
+    maxYards:
+      type: number
+      format: double
+    shotCount:
+      type: integer
+    percentage:
+      type: number
+      format: double
+
+LieDistribution:
+  type: object
+  properties:
+    lie:
+      type: string
+    shotCount:
+      type: integer
+    percentage:
+      type: number
+      format: double
+
+IncompleteDataWarning:
+  type: object
+  properties:
+    id:
+      type: string
+    severity:
+      type: string
+      enum: [info, warning, error]
+    category:
+      type: string
+      enum: [totalShots, clubShots, holeShots, roundShots, timeRange, clubFilter, teeFilter, windFilter, mixed]
+    title:
+      type: string
+    message:
+      type: string
+    requiredMinimum:
+      type: integer
+    actualCount:
+      type: integer
+    recommendedAction:
+      type: string
+    generatedAt:
+      type: string
+      format: date-time
+    context:
+      type: string

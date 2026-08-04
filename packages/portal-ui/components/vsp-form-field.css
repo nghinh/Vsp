@@ -1,0 +1,164 @@
+/**
+ * VSP Form Field — vsp-form-field.css
+ * Error state, helper text, 44pt min touch, label always visible.
+ *
+ * No emoji icons. Use vector icons only.
+ */
+
+.vsp-form-field {
+  /* ─── Container ────────────────────────────────────────────────────────── */
+  display: flex;
+  flex-direction: column;
+  gap: var(--vsp-space-1);
+}
+
+/* ─── Label ───────────────────────────────────────────────────────────────── */
+
+/* Label is always visible per accessibility requirement */
+.vsp-form-field__label {
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-sm);
+  font-weight: var(--vsp-font-weight-medium);
+  letter-spacing: var(--vsp-letter-spacing-wide);
+  line-height: var(--vsp-line-height-snug);
+  color: var(--vsp-color-text-primary);
+
+  /* Label is always visible — never hidden */
+  visibility: visible;
+}
+
+/* Required indicator */
+.vsp-form-field__label--required::after {
+  content: " *";
+  color: var(--vsp-color-destructive);
+}
+
+/* ─── Input Wrapper ───────────────────────────────────────────────────────── */
+
+.vsp-form-field__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vsp-form-field__input {
+  /* ─── Base Input ────────────────────────────────────────────────────────── */
+  width: 100%;
+  min-height: var(--vsp-touch-target-min);
+
+  /* Typography */
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-base);
+  line-height: var(--vsp-line-height-normal);
+  color: var(--vsp-color-text-primary);
+
+  /* Spacing */
+  padding: var(--vsp-space-2) var(--vsp-padding-input);
+
+  /* Appearance */
+  background-color: var(--vsp-color-surface);
+  border: 1px solid var(--vsp-color-border-strong);
+  border-radius: var(--vsp-radius-md);
+
+  /* Motion */
+  transition:
+    border-color var(--vsp-duration-press) var(--vsp-easing-deceleration),
+    box-shadow var(--vsp-duration-press) var(--vsp-easing-deceleration);
+
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* ─── Focus State ──────────────────────────────────────────────────────────── */
+
+.vsp-form-field__input:focus-visible {
+  border-color: var(--vsp-color-ring);
+  box-shadow: var(--vsp-focus-ring);
+}
+
+/* ─── Error State ─────────────────────────────────────────────────────────── */
+
+.vsp-form-field--error .vsp-form-field__input {
+  border-color: var(--vsp-color-destructive);
+}
+
+.vsp-form-field--error .vsp-form-field__input:focus-visible {
+  border-color: var(--vsp-color-destructive);
+  box-shadow: 0 0 0 2px var(--vsp-color-destructive);
+}
+
+/* ─── Disabled State ─────────────────────────────────────────────────────── */
+
+.vsp-form-field__input:disabled {
+  opacity: var(--vsp-opacity-disabled);
+  cursor: not-allowed;
+  background-color: var(--vsp-color-muted);
+}
+
+/* ─── Helper Text ─────────────────────────────────────────────────────────── */
+
+.vsp-form-field__helper {
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-xs);
+  line-height: var(--vsp-line-height-normal);
+  color: var(--vsp-color-text-tertiary);
+  margin: 0;
+}
+
+/* ─── Error Text ──────────────────────────────────────────────────────────── */
+
+.vsp-form-field__error {
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-xs);
+  line-height: var(--vsp-line-height-normal);
+  color: var(--vsp-color-destructive);
+  font-weight: var(--vsp-font-weight-medium);
+  margin: 0;
+}
+
+/* ─── Input with Icon ─────────────────────────────────────────────────────── */
+
+.vsp-form-field__input--with-icon-start {
+  padding-left: calc(var(--vsp-padding-input) + var(--vsp-space-4) + var(--vsp-space-0-5));
+}
+
+.vsp-form-field__input--with-icon-end {
+  padding-right: calc(var(--vsp-padding-input) + var(--vsp-space-4) + var(--vsp-space-0-5));
+}
+
+.vsp-form-field__icon-start,
+.vsp-form-field__icon-end {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  color: var(--vsp-color-text-tertiary);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.vsp-form-field__icon-start {
+  left: var(--vsp-padding-input);
+}
+
+.vsp-form-field__icon-end {
+  right: var(--vsp-padding-input);
+}
+
+/* ─── Textarea Variant ────────────────────────────────────────────────────── */
+
+.vsp-form-field__input--textarea {
+  min-height: calc(var(--vsp-touch-target-min) * 2);
+  resize: vertical;
+  vertical-align: top;
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsp-form-field__input {
+    transition-duration: var(--vsp-duration-instant);
+  }
+}

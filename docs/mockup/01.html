@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=390, height=844, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Vietnam Smart Golf - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-low": "#131b2e",
+                        "surface-variant": "#2d3449",
+                        "surface-tint": "#ffb599",
+                        "on-secondary": "#552100",
+                        "surface-container-highest": "#2d3449",
+                        "on-surface": "#dae2fd",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "secondary-fixed": "#ffdbca",
+                        "primary-container": "#f66018",
+                        "surface-container-high": "#222a3d",
+                        "secondary-fixed-dim": "#ffb690",
+                        "surface-container-lowest": "#060e20",
+                        "background": "#0b1326",
+                        "primary-fixed-dim": "#ffb599",
+                        "outline-variant": "#5a4138",
+                        "on-secondary-fixed": "#341100",
+                        "inverse-surface": "#dae2fd",
+                        "surface": "#0b1326",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-bright": "#31394d",
+                        "on-background": "#dae2fd",
+                        "on-secondary-container": "#4a1c00",
+                        "outline": "#a98a7e",
+                        "tertiary-fixed": "#85f8c4",
+                        "tertiary-container": "#25a475",
+                        "primary-fixed": "#ffdbce",
+                        "surface-dim": "#0b1326",
+                        "inverse-on-surface": "#283044",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-error-container": "#ffdad6",
+                        "primary": "#ffb599",
+                        "on-primary-fixed": "#370e00",
+                        "on-tertiary-container": "#00311f",
+                        "on-primary": "#5a1c00",
+                        "on-secondary-fixed-variant": "#783200",
+                        "on-tertiary": "#003825",
+                        "on-surface-variant": "#e2bfb2",
+                        "surface-container": "#171f33",
+                        "secondary": "#ffb690",
+                        "secondary-container": "#ec6a06",
+                        "error": "#ffb4ab",
+                        "error-container": "#93000a",
+                        "on-primary-container": "#4f1700",
+                        "tertiary": "#68dba9",
+                        "on-error": "#690005",
+                        "inverse-primary": "#a73a00",
+                        "on-tertiary-fixed": "#002114"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "touch-target": "44px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "label-caps": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "body-lg": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            overflow: hidden;
+            font-family: 'Fira Sans', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .gradient-overlay {
+            background: linear-gradient(to top, rgba(11, 19, 38, 1) 0%, rgba(11, 19, 38, 0.6) 40%, rgba(11, 19, 38, 0.2) 100%);
+        }
+        .bottom-sheet {
+            transition: transform 0.4s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+        .loading-shimmer {
+            background: linear-gradient(90deg, #ec6a06 25%, #ffb690 50%, #ec6a06 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+        }
+        @keyframes shimmer {
+            from { background-position: 200% 0; }
+            to { background-position: -200% 0; }
+        }
+    </style>
+</head>
+<body class="w-full h-screen relative flex flex-col items-center justify-between">
+<!-- Full Height Background -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRuYByMMzXsfi5cUQ3lmXhu2DETWZPy2zT9nC3NJ6rW6osLAGWASQo2-n9BYKRJ8c6_GLiyrKM32YGO3IxWB5k2Kbx94LYzbAWwCGhnOydE8FR4pUGuKVDgUJCiW4-2Zhj7V3ITK__wGqvpDdRghNvS_CcbnlxNiwS23V8-dIPK92Q9H3ltShR-rG4XS3JSb183uXU91tqhEB94B-E-4AYVeUkWA-Il-9XQp1v4Whmi1BvGt9b1z1qaA')"></div>
+<div class="absolute inset-0 gradient-overlay"></div>
+</div>
+<!-- Top Section -->
+<header class="relative z-10 w-full pt-12 flex flex-col items-center px-margin-mobile text-center">
+<img alt="Vietnam Smart Golf Logo" class="w-24 h-24 mb-6 drop-shadow-2xl" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBkmGrf--aeFSl9Sag-R2cD5OEMNyN4qspI9GReHnCh0jLSMzvSUAACMj-XeWGZpbUuZJkaq3SjUkIKFIxJDZ-nQ1eDcAjqFpuHLmd6FpKHk-drpNfgRRgXE6abiv6WVo7ZJzbrkiBhpVUTU7Pf8Nszfj1g6S75ItpJaqKVdsujCHHF0pzi4Nyi3q4TMz4TOIxx_YZsxDQ-OmlrfUj8OFF0Wtn_ffWl03E0U_zfToXm-hR7Mta2RiK0_w"/>
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2 tracking-tight">Play with Confidence</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-[280px]">
+            Accurate GPS, official course data, and offline play for the perfect round.
+        </p>
+</header>
+<!-- Bottom Actions (Initial View) -->
+<div class="relative z-10 w-full px-margin-mobile pb-12 flex flex-col gap-4" id="initialActions">
+<button class="w-full h-touch-target bg-secondary-container text-on-secondary-container font-headline-md text-body-lg rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg" onclick="openSheet()">
+            Continue with Phone Number
+        </button>
+<button class="w-full h-touch-target bg-surface-variant text-on-surface font-body-lg rounded-full flex items-center justify-center transition-all active:scale-95 border border-[rgba(255,255,255,0.1)]">
+            Continue with Email
+        </button>
+<div class="flex items-center gap-4 my-2">
+<div class="h-[1px] flex-1 bg-outline-variant"></div>
+<span class="font-label-caps text-label-caps text-outline">OR</span>
+<div class="h-[1px] flex-1 bg-outline-variant"></div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<button class="h-touch-target bg-surface-container-high text-on-surface rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 border border-[rgba(255,255,255,0.08)]">
+<span class="material-symbols-outlined text-[20px]">google</span>
+<span class="text-sm font-medium">Google</span>
+</button>
+<button class="h-touch-target bg-surface-container-high text-on-surface rounded-full flex items-center justify-center gap-2 transition-all active:scale-95 border border-[rgba(255,255,255,0.08)]">
+<span class="material-symbols-outlined text-[20px]">file_download</span>
+<span class="text-sm font-medium">Apple</span>
+</button>
+</div>
+<div class="mt-4 text-center space-y-2">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Don't have an account? <a class="text-primary font-bold" href="#">Sign Up</a>
+</p>
+<div class="flex justify-center gap-4 pt-2">
+<a class="font-label-caps text-[10px] text-outline uppercase tracking-widest" href="#">Terms of Service</a>
+<a class="font-label-caps text-[10px] text-outline uppercase tracking-widest" href="#">Privacy Policy</a>
+</div>
+</div>
+</div>
+<!-- Persistent Bottom Sheet Overlay -->
+<div class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full bottom-sheet bg-surface-container-low rounded-t-[32px] px-margin-mobile pt-4 pb-10 shadow-[0_-20px_40px_rgba(0,0,0,0.5)]" id="bottomSheet">
+<!-- Handle -->
+<div class="w-12 h-1 bg-outline-variant rounded-full mx-auto mb-8 cursor-pointer" onclick="closeSheet()"></div>
+<div class="flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">Sign In</h2>
+<button class="text-outline hover:text-on-surface transition-colors" onclick="closeSheet()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Error State -->
+<div class="bg-error-container/30 border border-error/50 p-3 rounded-xl flex items-center gap-3" id="errorAlert">
+<span class="material-symbols-outlined text-error text-[20px]">error</span>
+<p class="font-body-md text-sm text-on-error-container">Invalid credentials. Please try again.</p>
+</div>
+<!-- Inputs -->
+<div class="space-y-4">
+<div class="flex gap-2">
+<div class="w-24 relative">
+<select class="w-full bg-surface-variant border-none rounded-xl h-[56px] text-on-surface font-body-md focus:ring-2 focus:ring-primary appearance-none px-4">
+<option>+84</option>
+<option>+1</option>
+<option>+44</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none">arrow_drop_down</span>
+</div>
+<div class="flex-1">
+<input class="w-full bg-surface-variant border-none rounded-xl h-[56px] text-on-surface font-body-md focus:ring-2 focus:ring-primary px-4 placeholder:text-outline" placeholder="Phone Number" type="tel" value="0987654321"/>
+</div>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-variant border-none rounded-xl h-[56px] text-on-surface font-body-md focus:ring-2 focus:ring-primary px-4 placeholder:text-outline" id="passwordInput" placeholder="Password" type="password" value="password123"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="eyeIcon">visibility_off</span>
+</button>
+</div>
+</div>
+<div class="flex justify-between items-center px-1">
+<a class="text-primary font-body-md text-sm" href="#">Forgot Password?</a>
+</div>
+<!-- Primary Action with Loading State -->
+<button class="w-full h-touch-target bg-secondary-container text-on-secondary-container font-headline-md text-body-lg rounded-full flex items-center justify-center transition-all active:scale-95 shadow-lg overflow-hidden relative" id="loginBtn" onclick="simulateLogin()">
+<span id="btnText">Sign In</span>
+<div class="hidden absolute inset-0 loading-shimmer" id="btnLoading"></div>
+</button>
+</div>
+</div>
+<!-- JS for interactions -->
+<script>
+        const sheet = document.getElementById('bottomSheet');
+        const initialActions = document.getElementById('initialActions');
+        const loginBtn = document.getElementById('loginBtn');
+        const btnText = document.getElementById('btnText');
+        const btnLoading = document.getElementById('btnLoading');
+        const errorAlert = document.getElementById('errorAlert');
+
+        function openSheet() {
+            sheet.classList.remove('translate-y-full');
+            sheet.classList.add('translate-y-0');
+        }
+
+        function closeSheet() {
+            sheet.classList.remove('translate-y-0');
+            sheet.classList.add('translate-y-full');
+        }
+
+        function togglePassword() {
+            const input = document.getElementById('passwordInput');
+            const icon = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility_off';
+            }
+        }
+
+        function simulateLogin() {
+            btnText.innerText = 'Verifying...';
+            btnLoading.classList.remove('hidden');
+            loginBtn.disabled = true;
+            
+            // Artificial delay to show loading state
+            setTimeout(() => {
+                btnText.innerText = 'Sign In';
+                btnLoading.classList.add('hidden');
+                loginBtn.disabled = false;
+                // Show error state as requested
+                errorAlert.classList.remove('hidden');
+            }, 2000);
+        }
+
+        // Auto-open sheet for demonstration purpose in this prompt
+        setTimeout(openSheet, 500);
+    </script>
+</body></html>

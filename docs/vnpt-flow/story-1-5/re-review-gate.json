@@ -1,0 +1,31 @@
+{
+  "story": "1.5",
+  "epic": "1",
+  "phase": "re-review",
+  "fixes_verified": [
+    {
+      "slice_id": "OBS-1",
+      "issue_id": "OBS-1-F1",
+      "fix_verified": true,
+      "evidence": "Lines 106-149: degraded flag is now set to true when sync queue depth > critical threshold (line 114-116), API p99 latency > critical threshold (line 128-130), or package failure rate > critical threshold (line 144-146). Returns 'DOWN' status when degraded (line 149)."
+    },
+    {
+      "slice_id": "OBS-3",
+      "issue_id": "OBS-3-F1",
+      "fix_verified": true,
+      "evidence": "Lines 101-103: catch block now contains log.warn('Failed to extract correlation ID from MDC: {}', e.getMessage()) before returning null. Silent swallow is eliminated."
+    }
+  ],
+  "new_issues": [],
+  "overall_result": "pass",
+  "next_action": "proceed_to_closed_loop",
+  "pre_existing_note": {
+    "description": "AuditAspect extracts actor/role/correlationId but passes nulls to auditService.log() — this was present in original evidence and predates this repair pass. Not introduced by the OBS-3 fix.",
+    "issue_id": "OBS-3-F1-PREEXISTING",
+    "blocking": false
+  },
+  "summary": {
+    "OBS-1": "AlertRulesHealthIndicator now performs actual threshold comparisons for sync queue depth, API latency p99, and package failure rate. degraded flag is set correctly. Returns DOWN when breached.",
+    "OBS-3": "AuditAspect.extractCorrelationId() now logs a warning when MDC access fails instead of silently returning null."
+  }
+}

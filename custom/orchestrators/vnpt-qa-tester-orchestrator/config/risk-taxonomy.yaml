@@ -1,0 +1,37 @@
+risks:
+  R1:
+    name: Business-critical flow
+    examples: [checkout, packing, replenishment, assignment, payment, approval, mission dispatch]
+  R2:
+    name: Data corruption or data loss
+    examples: [duplicate records, lost update, wrong quantity, stale state, broken idempotency]
+  R3:
+    name: State transition bug
+    examples: [cancelled to completed, completed to pending, retry loops, invalid terminal transition]
+  R4:
+    name: Permission or security boundary
+    examples: [unauthorized action, missing tenant isolation, data exposure]
+  R5:
+    name: Invalid input or boundary value
+    examples: [null, empty, negative, zero, huge, decimal, malformed, unicode, timezone]
+  R6:
+    name: Offline, online, timeout, or network failure
+    examples: [timeout, retry, reconnect, partial failure, duplicate sync]
+  R7:
+    name: Concurrency, duplicate event, or race condition
+    examples: [double click, parallel request, duplicate assignment, lost update]
+  R8:
+    name: Integration or API contract failure
+    examples: [wrong status code, response schema mismatch, missing field, nullable mismatch]
+  R9:
+    name: UI misoperation or UX state error
+    examples: [wrong disabled state, stale display, confusing error, loading stuck]
+  R10:
+    name: Regression-prone area
+    examples: [recently changed file, previous bug, TODO, fragile logic]
+  R11:
+    name: Performance, load, or timeout risk
+    examples: [slow query, debounce failure, background job delay, large data set]
+  R12:
+    name: Observability or diagnosability gap
+    examples: [missing log, no error ID, no trace, silent failure]

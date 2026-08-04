@@ -1,0 +1,123 @@
+version: 1.4.1
+bmad_docs_root: docs
+mandatory_scan: true
+recursive_discovery_required: true
+scan_depth: unlimited
+must_read_before_phase:
+  - 02-risk-modeling
+  - 04-test-case-design
+  - 05-test-oracle-design
+# IMPORTANT: BMAD files may be sharded or placed in arbitrary subfolders under docs/.
+# The orchestrator must not assume PRD/architecture/epic/story files are directly under docs/.
+# Discovery is recursive-first, then classification by path, filename, heading, and content markers.
+recursive_include_globs:
+  - docs/**/*.md
+  - docs/**/*.mdx
+  - docs/**/*.yaml
+  - docs/**/*.yml
+  - docs/**/*.json
+recursive_exclude_globs:
+  - docs/qa/**
+  - docs/**/.archive/**
+  - docs/**/archive/**
+  - docs/**/generated/**
+  - docs/**/node_modules/**
+priority_patterns:
+  # root-level conventional BMAD names
+  - docs/prd.md
+  - docs/PRD.md
+  - docs/brownfield-prd.md
+  - docs/project-brief.md
+  - docs/brief.md
+  - docs/architecture.md
+  - docs/fullstack-architecture.md
+  - docs/front-end-spec.md
+  - docs/frontend-spec.md
+  - docs/ux-spec.md
+  - docs/epic*.md
+  - docs/stor*.md
+  # recursive BMAD/sharded names at any folder depth under docs/
+  - docs/**/prd*.md
+  - docs/**/PRD*.md
+  - docs/**/*prd*.md
+  - docs/**/brownfield-prd*.md
+  - docs/**/project-brief*.md
+  - docs/**/brief*.md
+  - docs/**/architecture*.md
+  - docs/**/fullstack-architecture*.md
+  - docs/**/front-end-spec*.md
+  - docs/**/frontend-spec*.md
+  - docs/**/ux-spec*.md
+  - docs/**/epic*.md
+  - docs/**/*epic*.md
+  - docs/**/story*.md
+  - docs/**/stories*.md
+  - docs/**/*stor*.md
+  - docs/**/acceptance*.md
+  - docs/**/*acceptance*.md
+  - docs/**/api*.md
+  - docs/**/openapi*.yaml
+  - docs/**/openapi*.yml
+  - docs/**/schema*.md
+  - docs/**/data*.md
+  - docs/**/*.md
+classification_rules:
+  PRD_OR_BRIEF:
+    path_keywords: [prd, product-requirements, requirement, requirements, project-brief, brief, scope]
+    heading_keywords: [prd, product requirements, product requirement, requirements, scope, non-goals, goals]
+  ARCHITECTURE:
+    path_keywords: [architecture, arch, system-design, solution-design, c4, likec4]
+    heading_keywords: [architecture, system design, components, data flow, deployment, c4]
+  EPIC:
+    path_keywords: [epic, epics]
+    heading_keywords: [epic, epic goal, epic summary]
+  STORY:
+    path_keywords: [story, stories, user-story]
+    heading_keywords: [story, user story, acceptance criteria, ac]
+  UX_FRONTEND_SPEC:
+    path_keywords: [ux, ui, frontend, front-end, wireframe, screen, page]
+    heading_keywords: [ux, ui, frontend, screen, interaction, accessibility]
+  API_SPEC:
+    path_keywords: [api, openapi, swagger, endpoint, contract]
+    heading_keywords: [api, endpoint, request, response, contract]
+  DATA_MODEL:
+    path_keywords: [schema, data, database, migration, seed, erd, model]
+    heading_keywords: [schema, database, table, migration, seed, erd, data model]
+required_context_sections:
+  - product_goal
+  - non_goals
+  - personas_or_users
+  - functional_requirements
+  - acceptance_criteria
+  - epics_and_stories
+  - architecture_components
+  - data_flow
+  - api_contracts
+  - db_or_data_model
+  - ui_ux_behavior
+  - assumptions_and_ambiguities
+hard_gates:
+  bmad_docs_recursive_scan_done: true
+  bmad_docs_scan_done: true
+  relevant_docs_read_0_eof_or_exception: true
+missing_docs_behavior:
+  record_gap: SPEC_AMBIGUITY
+  fallback_allowed: true
+  fallback_sources:
+    - README
+    - source_code
+    - API_schema
+    - existing_tests
+    - migrations
+proof_table_required: true
+proof_table_heading: "BMAD Docs Inventory and 0-EOF Proof"
+proof_table_required_columns:
+  - File
+  - BMAD type
+  - Lines
+  - Discovery path
+  - Read method
+  - 0-EOF status
+  - Scope relevance
+  - Extracted requirement IDs
+  - Open gaps

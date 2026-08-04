@@ -1,0 +1,86 @@
+decision_request_required_when:
+  - trigger_id: decision-request-01
+    name: P0 Bug Found
+    condition:
+      bug_type: PRODUCT_BUG
+      severity: P0
+    action: review_and_approve_fix_brief
+    artifact_path: "09-fix-briefs/"
+    required_response: approve_with_changes | reject | escalate
+    auto_escalate_after_hours: 24
+
+  - trigger_id: decision-request-02
+    name: Security Issue Found
+    condition:
+      bug_type: SECURITY_ISSUE | AUTHORIZATION_BYPASS | INPUT_VALIDATION_BYPASS
+      severity: P0 | P1
+    action: review_and_classify
+    artifact_path: "08-failure-triage.md"
+    required_response: approve_continue | request_changes | escalate
+    auto_escalate_after_hours: 4
+
+  - trigger_id: decision-request-03
+    name: Exploratory Test Planned
+    condition:
+      test_type: QA-EXP
+      any: true
+    action: review_test_charter
+    artifact_path: "04i-exploratory-charter.md"
+    required_response: approve_continue | request_changes
+    auto_escalate_after_hours: 48
+
+  - trigger_id: decision-request-04
+    name: Risk Model Significant Change
+    condition:
+      coverage_delta_percent: ">10"
+    action: review_risk_model
+    artifact_path: "02-risk-map.md"
+    required_response: approve_continue | request_changes
+    auto_escalate_after_hours: 24
+
+  - trigger_id: decision-request-05
+    name: Conditional Quality Gate
+    condition:
+      quality_gate_score: "70-84"
+    action: approve_conditional_release
+    artifact_path: "10-quality-gate-report.md"
+    required_response: approve_continue | request_changes | reject
+    auto_escalate_after_hours: 72
+
+  - trigger_id: decision-request-06
+    name: Untriaged Failure
+    condition:
+      triage_status: untriaged
+    action: complete_triage
+    artifact_path: "08-failure-triage.md"
+    required_response: approve_continue
+    blocking: true
+
+  - trigger_id: decision-request-07
+    name: Concurrency/State Bug
+    condition:
+      bug_type: RACE_CONDITION | DEADLOCK_OR_LIVELOCK | DATA_RACE | ATOMICITY_VIOLATION
+      severity: P0 | P1
+    action: review_and_approve_fix_brief
+    artifact_path: "09-fix-briefs/"
+    required_response: approve_with_changes | reject | escalate
+    auto_escalate_after_hours: 12
+
+response_types:
+  approve_continue:
+    description: Approve current progress and continue
+    allows: ["proceed_to_next_phase"]
+  approve_with_changes:
+    description: Approve with modifications via patch
+    allows: ["proceed_with_patch", "proceed_to_next_phase"]
+  request_changes:
+    description: Request additional work
+    allows: ["restart_phase", "append_work"]
+  reject:
+    description: Reject output, restart from checkpoint
+    allows: ["restart_from_checkpoint"]
+  escalate:
+    description: Escalate to senior QA/architect
+    allows: ["senior_review", "architect_review"]
+
+version: "1.0.0"

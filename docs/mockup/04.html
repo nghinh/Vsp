@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vietnam Smart Golf - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "error": "#BA1A1A",
+                "secondary-container": "#ec6a06",
+                "on-surface-variant": "#53433F",
+                "surface-container-lowest": "#FFFFFF",
+                "error-container": "#FFDAD6",
+                "on-secondary-fixed": "#341100",
+                "on-tertiary-container": "#002114",
+                "primary-fixed-dim": "#ffb599",
+                "outline": "#85736E",
+                "outline-variant": "#D8C2BC",
+                "tertiary": "#006C4C",
+                "on-background": "#191C1E",
+                "primary-fixed": "#FFDBCE",
+                "primary-container": "#f66018",
+                "background": "#FDFBFF",
+                "primary": "#A73A00",
+                "on-tertiary": "#FFFFFF",
+                "secondary": "#914D00",
+                "surface-tint": "#A73A00",
+                "surface-container-highest": "#E2E2E6",
+                "inverse-primary": "#FFB599",
+                "surface-container": "#F0F0F3",
+                "on-surface": "#191C1E",
+                "surface-dim": "#D9D9DC",
+                "secondary-fixed": "#FFDBCA",
+                "inverse-on-surface": "#F1F0F4",
+                "surface-container-high": "#E8E8EB",
+                "tertiary-fixed-dim": "#68DBA9",
+                "secondary-fixed-dim": "#FFB690",
+                "on-primary-container": "#370E00",
+                "on-secondary-container": "#2E1500",
+                "on-error": "#FFFFFF",
+                "on-secondary-fixed-variant": "#783200",
+                "surface-variant": "#F4DED7",
+                "on-error-container": "#410002",
+                "surface-bright": "#F9F9FC",
+                "tertiary-fixed": "#85F8C4",
+                "on-primary": "#FFFFFF",
+                "surface": "#FDFBFF",
+                "tertiary-container": "#25A475",
+                "inverse-surface": "#2F3033",
+                "on-primary-fixed": "#370E00",
+                "on-secondary": "#FFFFFF",
+                "surface-container-low": "#F4F3F7",
+                "on-tertiary-fixed-variant": "#005137"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.125rem",
+                "lg": "0.25rem",
+                "xl": "0.5rem",
+                "full": "0.75rem"
+            },
+            "spacing": {
+                "gutter": "16px",
+                "margin-mobile": "16px",
+                "touch-target": "44px",
+                "margin-desktop": "32px",
+                "unit": "8px"
+            },
+            "fontFamily": {
+                "body-md": ["Fira Sans"],
+                "body-lg": ["Fira Sans"],
+                "headline-lg": ["Fira Sans"],
+                "headline-md": ["Fira Sans"],
+                "label-caps": ["Fira Sans"],
+                "metric-sm": ["Fira Code"],
+                "display-metrics": ["Fira Code"]
+            },
+            "fontSize": {
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body {
+            background-color: #FDFBFF;
+            color: #191C1E;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .safe-area-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        .safe-area-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md antialiased">
+<!-- Top AppBar (from JSON) -->
+<header class="fixed top-0 w-full z-50 bg-surface-container-lowest border-b border-[rgba(0,0,0,0.08)] safe-area-top flex items-center justify-between px-margin-mobile h-touch-target">
+<div class="flex items-center gap-3">
+<button class="material-symbols-outlined text-primary active:scale-95 transition-transform" data-icon="menu">menu</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Vietnam Smart Golf</h1>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-green-600" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<button class="material-symbols-outlined text-primary active:scale-95 transition-transform" data-icon="account_circle">account_circle</button>
+</div>
+</header>
+<main class="pt-16 pb-24 px-margin-mobile min-h-screen">
+<!-- Safety Alert Banner -->
+<div class="mt-4 mb-6 bg-error-container text-on-error-container p-3 rounded-xl flex items-center gap-3">
+<span class="material-symbols-outlined" data-icon="warning">warning</span>
+<p class="font-body-md font-medium">Lưu ý: Hố số 4 tại BRG Legend Hill đang được bảo trì xanh.</p>
+</div>
+<!-- Greeting & Weather -->
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Chào anh Nghi</h2>
+<p class="text-on-surface-variant">Chúc anh một vòng đấu tuyệt vời!</p>
+</div>
+<div class="bg-surface-container-high px-3 py-2 rounded-xl flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500" data-icon="sunny">sunny</span>
+<span class="font-metric-sm text-metric-sm">Hà Nội, 31°C</span>
+</div>
+</div>
+<!-- Primary Action Card: Bắt đầu vòng đấu -->
+<section class="mb-6">
+<div class="relative bg-surface-container-low rounded-2xl overflow-hidden shadow-sm border border-outline-variant/30">
+<div class="h-40 w-full bg-cover bg-center relative" data-alt="A high-resolution aerial photography of the BRG Legend Hill Golf Resort in Vietnam. Lush green fairways meander through rolling hills with pristine white bunkers and calm water hazards under a clear blue sky. The morning sunlight casts long, soft shadows over the impeccably manicured grass, creating a professional and inviting golf atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCLzOYkONPu-Kd26Na1WOVlncAYDox6i9KL_f5jVDb1GpiXuss-E4nkofSvuLkvyBRgmXVDDM7Uz1e1vrWuc6ONrJGyeJKSXssHN0w5RRbEiyhX0veesYs4-uWQ1Le-GMEA8OWh1hq8tgPoOZVR59opO4BAlE8RFh7erhbWIqaqaO8upddI0XqRQg8at8Lg8nANyA2U-hpeUg1_KOx2zV4ArXfiZ-fGsON0YLoA9WadIiD55xBN2sW5pw')">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent"></div>
+<div class="absolute top-4 left-4 flex gap-2">
+<span class="bg-green-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider">Chính thức</span>
+<div class="bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-[10px] font-bold text-on-surface">GPS-ready</span>
+</div>
+</div>
+</div>
+<div class="p-5">
+<h3 class="font-headline-md text-on-surface mb-1">Bắt đầu vòng đấu</h3>
+<p class="text-on-surface-variant flex items-center gap-1 mb-4">
+<span class="material-symbols-outlined text-sm" data-icon="near_me">near_me</span>
+                        BRG Legend Hill Golf Resort · cách 1,2 km
+                    </p>
+<button class="w-full bg-[#EA580C] text-white py-3 rounded-full font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-lg shadow-orange-200">
+                        Bắt đầu
+                        <span class="material-symbols-outlined" data-icon="play_arrow" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Secondary Content: Tiếp tục vòng đang chơi -->
+<section class="mb-8">
+<div class="bg-primary-container/10 border border-primary-container/20 p-4 rounded-xl flex justify-between items-center active:bg-primary-container/20 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-white">
+<span class="font-metric-sm text-lg font-bold">H7</span>
+</div>
+<div>
+<p class="font-label-caps text-primary uppercase">Đang diễn ra</p>
+<h4 class="font-body-lg font-bold text-on-surface">Vòng đấu tại Long Biên</h4>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="chevron_right">chevron_right</span>
+</div>
+</section>
+<!-- Sân gần đây -->
+<section class="mb-8">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-on-surface">Sân gần đây</h3>
+<button class="text-primary font-bold text-sm">Xem tất cả</button>
+</div>
+<div class="flex overflow-x-auto gap-4 hide-scrollbar -mx-margin-mobile px-margin-mobile">
+<div class="flex-none w-64 bg-surface-container rounded-xl p-3 border border-outline-variant/20">
+<div class="aspect-video w-full rounded-lg bg-cover bg-center mb-3" data-alt="Close up of a vibrant green golf course putting green with a hole and flag in the background. The early morning light creates a dew-covered glistening effect on the grass blades. Minimalist and professional golf aesthetic with a soft color palette." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD7FaCY-fFRZ2OP5W2kS1ek-aQWGyc7hK0JyhnjDyCbcre4cZTPisvoVmAw_6CtsCywsp3P4UsXd2EkUHivVSU4CwMIvQAG8i23aW2eWlzFvGQ5RVwMrRFcMYqfKQBXObQ6GosGbO_E3iVSkaaW-HVeUZs910SMCjxMBpuI33BOvJOPGfTLFOTvNFmzNO3nSO_TcEpBxyoTzkdbKe8KzBwA6Jl6Td38qYe0yRjWcuWSLEnbX19X_1QOKA')"></div>
+<h4 class="font-body-md font-bold truncate">Phoenix Golf Resort</h4>
+<p class="text-on-surface-variant text-sm">Chơi lần cuối: 12/10/2023</p>
+</div>
+<div class="flex-none w-64 bg-surface-container rounded-xl p-3 border border-outline-variant/20">
+<div class="aspect-video w-full rounded-lg bg-cover bg-center mb-3" data-alt="A modern golf clubhouse with glass walls reflecting a stunning sunset over the course. The architectural design is sleek and professional, surrounded by landscaped gardens and palm trees. Soft warm lighting creates a high-end, exclusive atmosphere." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBY-wO62LJPsazicyww25v6IyAmcWPx_V_3JzBFAphHkFGB3gt3K5myLYiP5j_fyYomyTHKM1Ti0I-DIkzUW9m8fRxBd1_BrJDDXbyYpJyHq7WDXWXz7865SjcinM3nzkjnd67IgXyl9NcCXnneyya-DNW6GCyPIA7fbdtra_bVWVmO1fl5fmI94eLIVjSZzZGsb6tnWJc-VLjA780nc4zPSf8lI5f-qBnc8jGfm-5lLYrAa2uulphzOA')"></div>
+<h4 class="font-body-md font-bold truncate">Van Tri Golf Club</h4>
+<p class="text-on-surface-variant text-sm">Chơi lần cuối: 05/10/2023</p>
+</div>
+<div class="flex-none w-64 bg-surface-container rounded-xl p-3 border border-outline-variant/20">
+<div class="aspect-video w-full rounded-lg bg-cover bg-center mb-3" data-alt="Wide shot of a dramatic golf fairway flanked by tall pine trees under a misty morning sky in the mountains of Vietnam. The scene is quiet, serene, and professional, emphasizing the natural beauty and technical difficulty of the course." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB7udQNl1rVrztSLPFSAFyljo_eyo43YPvCbt9mdDAMAfpCAGLSfwWNvtO9oH1VfoZftEyZL34jfnsq3gt53UietsBsCXzlMUGigojjGdIol5eoYrbn6nKYkki7B3yUwGdDe8dNA-FRMHyWtYPKwEs-Vt3FjBC0-yOLL_DPfpE8mV_ygN5TL2bxmUlbKHmsRJp-LzZ9mXHkzkI0gdtY-qjtGsgJtOui3vtJ5qJrvLFHfv71AjSEIEelhw')"></div>
+<h4 class="font-body-md font-bold truncate">Kings' Island Golf</h4>
+<p class="text-on-surface-variant text-sm">Chơi lần cuối: 28/09/2023</p>
+</div>
+</div>
+</section>
+<!-- Vòng đấu gần nhất -->
+<section class="mb-8">
+<h3 class="font-headline-md text-on-surface mb-4">Vòng đấu gần nhất</h3>
+<div class="bg-surface-container-high rounded-2xl p-5 border border-outline-variant/20 shadow-sm">
+<div class="flex justify-between items-start mb-6">
+<div>
+<h4 class="font-body-lg font-bold">Yen Dung Resort &amp; Golf Club</h4>
+<p class="text-on-surface-variant text-sm">15 Tháng 10, 2023</p>
+</div>
+<div class="text-right">
+<div class="font-display-metrics text-primary leading-tight">94</div>
+<div class="font-metric-sm text-secondary font-bold">+22</div>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-4 py-4 border-t border-outline-variant/20">
+<div class="text-center">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Fairways</p>
+<p class="font-metric-sm text-lg">54%</p>
+</div>
+<div class="text-center border-x border-outline-variant/20">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">GIR</p>
+<p class="font-metric-sm text-lg">22%</p>
+</div>
+<div class="text-center">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Putts</p>
+<p class="font-metric-sm text-lg">34</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Gói ngoại tuyến -->
+<section class="mb-8">
+<div class="bg-surface-container p-4 rounded-xl border border-outline-variant/20">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" data-icon="cloud_download">cloud_download</span>
+<h3 class="font-body-md font-bold">Gói ngoại tuyến</h3>
+</div>
+<button class="bg-secondary-container text-white px-3 py-1 rounded-full text-xs font-bold active:scale-95 transition-transform">Cập nhật (1)</button>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Đã tải: 3 sân</span>
+<span class="font-metric-sm">240 MB / 1 GB</span>
+</div>
+<div class="w-full bg-outline-variant/30 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 24%"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar (from JSON) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 border-t border-[rgba(0,0,0,0.08)] safe-area-bottom z-50">
+<!-- Play / Home (Active) -->
+<a class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="explore" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="font-label-caps text-label-caps">Sân golf</span>
+</a>
+<!-- Map -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="map">map</span>
+<span class="font-label-caps text-label-caps">Bản đồ</span>
+</a>
+<!-- Scorecard -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="scorecard">markdown_copy</span>
+<span class="font-label-caps text-label-caps">Bảng điểm</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-caps text-label-caps">Cá nhân</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for feedback
+        document.querySelectorAll('button, a').forEach(elem => {
+            elem.addEventListener('click', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            });
+        });
+
+        // Simple weather update simulation
+        const weatherTexts = ["31°C", "32°C", "30°C"];
+        let weatherIdx = 0;
+        setInterval(() => {
+            const weatherEl = document.querySelector('.bg-surface-container-high .font-metric-sm');
+            if (weatherEl) {
+                weatherIdx = (weatherIdx + 1) % weatherTexts.length;
+                weatherEl.innerText = `Hà Nội, ${weatherTexts[weatherIdx]}`;
+            }
+        }, 300000); // Update every 5 mins
+    </script>
+</body></html>

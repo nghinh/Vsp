@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#ffb599",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "on-primary-fixed": "#370e00",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd",
+                        "surface-bright": "#31394d",
+                        "surface-dim": "#0b1326",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "primary-fixed": "#ffdbce",
+                        "inverse-on-surface": "#283044",
+                        "surface-variant": "#2d3449",
+                        "secondary": "#ffb690",
+                        "on-surface": "#dae2fd",
+                        "primary-fixed-dim": "#ffb599",
+                        "surface-container-lowest": "#060e20",
+                        "tertiary": "#68dba9",
+                        "on-secondary-container": "#4a1c00",
+                        "surface-container-low": "#131b2e",
+                        "on-surface-variant": "#e2bfb2",
+                        "on-primary-container": "#4f1700",
+                        "primary-container": "#f66018",
+                        "outline": "#a98a7e",
+                        "surface": "#0b1326",
+                        "background": "#0b1326",
+                        "secondary-fixed-dim": "#ffb690",
+                        "secondary-fixed": "#ffdbca",
+                        "secondary-container": "#ec6a06",
+                        "error": "#ffb4ab",
+                        "tertiary-container": "#25a475",
+                        "on-primary": "#5a1c00",
+                        "outline-variant": "#5a4138",
+                        "error-container": "#93000a",
+                        "inverse-primary": "#a73a00",
+                        "on-tertiary": "#003825",
+                        "on-secondary": "#552100",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-tertiary-container": "#00311f",
+                        "on-error": "#690005",
+                        "on-error-container": "#ffdad6",
+                        "surface-container": "#171f33",
+                        "primary": "#ffb599",
+                        "on-tertiary-fixed": "#002114",
+                        "on-secondary-fixed": "#341100",
+                        "on-secondary-fixed-variant": "#783200",
+                        "inverse-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "32px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "label-caps": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-metrics": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "metric-sm": ["14px", { "lineHeight": "20px", "fontWeight": "500" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .dispersion-grid {
+            background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen pb-24 selection:bg-primary selection:text-on-primary">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between px-margin-mobile h-touch-target w-full">
+<button class="flex items-center justify-center w-10 h-10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Hiệu suất gậy</h1>
+<button class="flex items-center justify-center w-10 h-10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">account_circle</span>
+</button>
+</header>
+<!-- Navigation Tabs -->
+<nav class="flex border-b border-[rgba(255,255,255,0.08)] bg-surface-container-low">
+<button class="flex-1 py-3 text-center border-b-2 border-primary text-primary font-label-caps text-label-caps">GẬY</button>
+<button class="flex-1 py-3 text-center text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-bright transition-colors">VÒNG ĐẤU</button>
+<button class="flex-1 py-3 text-center text-on-surface-variant font-label-caps text-label-caps hover:bg-surface-bright transition-colors">STROKES GAINED</button>
+</nav>
+<!-- Content Area -->
+<main class="px-margin-mobile pt-6 space-y-6">
+<!-- Filter Chips -->
+<div class="flex gap-2 overflow-x-auto scrollbar-hide -mx-margin-mobile px-margin-mobile">
+<button class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-label-caps font-label-caps whitespace-nowrap">Last 90 Days</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-label-caps font-label-caps whitespace-nowrap">All Lies</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-label-caps font-label-caps whitespace-nowrap">Calm/Light Wind</button>
+<button class="px-4 py-1.5 rounded-full bg-surface-container-high text-on-surface-variant text-label-caps font-label-caps whitespace-nowrap">All Courses</button>
+</div>
+<!-- Club Selector -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-bold text-headline-md">7</div>
+<div>
+<h3 class="font-headline-md text-on-surface">7-Iron</h3>
+<p class="text-on-surface-variant text-metric-sm font-metric-sm">Callaway Apex DCB</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="px-3 py-1 rounded-lg bg-surface-container-highest text-primary font-label-caps text-label-caps">34 SHOTS</span>
+<span class="material-symbols-outlined text-on-surface-variant mt-1">expand_more</span>
+</div>
+</div>
+<!-- Low-Sample Warning -->
+<div class="p-4 bg-error-container/20 border border-error/30 rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<p class="text-error text-metric-sm font-metric-sm leading-tight">Cần thêm 12 cú đánh để mở khóa Smart Target cho gậy này.</p>
+</div>
+<!-- Primary Metrics Card -->
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2 p-6 bg-surface-container-high rounded-xl border border-[rgba(255,255,255,0.08)] relative overflow-hidden">
+<div class="absolute top-4 right-4">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container text-on-tertiary-container text-[10px] font-label-caps flex items-center gap-1">
+<span class="w-1.5 h-1.5 bg-on-tertiary-container rounded-full animate-pulse"></span>
+                        HIGH CONFIDENCE
+                    </span>
+</div>
+<p class="text-on-surface-variant font-label-caps text-label-caps mb-1">MEDIAN CARRY</p>
+<div class="flex items-baseline gap-2">
+<span class="font-display-metrics text-display-metrics text-white">138</span>
+<span class="text-on-surface-variant font-headline-md text-headline-md">m</span>
+</div>
+<div class="grid grid-cols-2 gap-6 mt-6 pt-6 border-t border-[rgba(255,255,255,0.08)]">
+<div>
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">AVG TOTAL</p>
+<p class="font-display-metrics text-headline-md text-white">147<span class="text-body-md font-body-md ml-1">m</span></p>
+</div>
+<div>
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">VARIABILITY</p>
+<p class="font-display-metrics text-headline-md text-primary">+/- 6<span class="text-body-md font-body-md ml-1">m</span></p>
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-2 uppercase">Miss Pattern</p>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">south_east</span>
+<span class="font-display-metrics text-body-lg text-white">62%</span>
+</div>
+<p class="text-on-surface-variant text-metric-sm font-metric-sm mt-1">Short/Right</p>
+</div>
+<div class="p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)] flex flex-col justify-between">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-2 uppercase">Official Data</p>
+<span class="px-2 py-1 bg-tertiary text-on-tertiary text-center rounded text-[10px] font-bold">CHÍNH THỨC</span>
+</div>
+</div>
+<!-- Dispersion Plot Section -->
+<section class="space-y-4">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-md text-headline-md text-on-surface">Phân tán cú đánh</h2>
+<div class="flex items-center gap-2">
+<span class="text-label-caps font-label-caps text-on-surface-variant">HAZARD VIEW</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary-container"></div>
+</label>
+</div>
+</div>
+<div class="relative w-full aspect-square bg-surface-dim rounded-xl border border-[rgba(255,255,255,0.08)] overflow-hidden dispersion-grid">
+<!-- Axes Labels -->
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2 text-on-surface-variant text-[10px] font-metric-sm uppercase tracking-widest">Lateral Deviance (m)</div>
+<div class="absolute left-2 top-1/2 -rotate-90 -translate-y-1/2 text-on-surface-variant text-[10px] font-metric-sm uppercase tracking-widest">Distance (m)</div>
+<!-- Fairway Overlay (25m wide) -->
+<div class="absolute left-1/2 -translate-x-1/2 w-[120px] h-full bg-tertiary/5 border-x border-tertiary/20"></div>
+<!-- Target Crosshair -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border border-primary/50 rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-primary rounded-full"></div>
+</div>
+<!-- Dispersion Ellipse -->
+<div class="absolute top-1/2 left-1/2 -translate-x-[40%] -translate-y-[45%] w-[80px] h-[140px] border-2 border-secondary/40 rounded-[50%] bg-secondary/5 rotate-[15deg]"></div>
+<!-- Individual Shots -->
+<!-- Fairway Lie: Filled Circles -->
+<div class="absolute w-2 h-2 bg-white rounded-full shadow-lg" style="top: 48%; left: 52%;"></div>
+<div class="absolute w-2 h-2 bg-white rounded-full shadow-lg" style="top: 55%; left: 45%;"></div>
+<div class="absolute w-2 h-2 bg-white rounded-full shadow-lg" style="top: 35%; left: 42%;"></div>
+<div class="absolute w-2 h-2 bg-white rounded-full shadow-lg" style="top: 60%; left: 58%;"></div>
+<!-- Rough Lie: Ring Circles with Dot -->
+<div class="absolute w-3 h-3 border border-white rounded-full flex items-center justify-center" style="top: 70%; left: 65%;">
+<div class="w-1 h-1 bg-white rounded-full"></div>
+</div>
+<div class="absolute w-3 h-3 border border-white rounded-full flex items-center justify-center" style="top: 25%; left: 35%;">
+<div class="w-1 h-1 bg-white rounded-full"></div>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex justify-center gap-6">
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 bg-white rounded-full"></div>
+<span class="text-on-surface-variant text-[10px] font-label-caps">FAIRWAY</span>
+</div>
+<div class="flex items-center gap-2">
+<div class="w-3 h-3 border border-white rounded-full flex items-center justify-center">
+<div class="w-1 h-1 bg-white rounded-full"></div>
+</div>
+<span class="text-on-surface-variant text-[10px] font-label-caps">ROUGH</span>
+</div>
+</div>
+</section>
+<!-- Insights Section -->
+<section class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Xu hướng &amp; Cải thiện</h2>
+<div class="space-y-3">
+<div class="p-4 bg-surface-container-high rounded-xl border-l-4 border-tertiary">
+<p class="text-on-surface font-body-md">Median carry increased by <span class="text-tertiary font-bold">4m</span> over the last 10 rounds.</p>
+</div>
+<div class="p-4 bg-surface-container-high rounded-xl border-l-4 border-secondary">
+<p class="text-on-surface font-body-md">Lateral dispersion is <span class="text-secondary font-bold">15% tighter</span> from Tee vs Fairway.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[64px] bg-surface-container-low px-2 z-50">
+<button class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">explore</span>
+<span class="font-label-caps text-[10px] mt-1">SÂN GOLF</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">map</span>
+<span class="font-label-caps text-[10px] mt-1">BẢN ĐỒ</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-4 py-1 active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">markdown_copy</span>
+<span class="font-label-caps text-[10px] mt-0.5">BẢNG ĐIỂM</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-caps text-[10px] mt-1">CÁ NHÂN</span>
+</button>
+</nav>
+<script>
+        // Micro-interactions for chips
+        document.querySelectorAll('.scrollbar-hide button').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.querySelectorAll('button').forEach(btn => {
+                    btn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                    btn.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+                });
+                this.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+                this.classList.add('bg-secondary-container', 'text-on-secondary-container');
+            });
+        });
+    </script>
+</body></html>

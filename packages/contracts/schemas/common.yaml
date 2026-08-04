@@ -1,0 +1,171 @@
+# Common shared schemas for the Vietnam Smart Golf Platform API
+
+Error:
+  type: object
+  required:
+    - code
+    - correlationId
+    - message
+  properties:
+    code:
+      type: string
+      description: Machine-readable error code in the format VSP-ERR-<DOMAIN>-<NUMBER>
+      example: VSP-ERR-AUTH-001
+    message:
+      type: string
+      description: Human-readable error description
+      example: Invalid credentials
+    correlationId:
+      type: string
+      description: Unique identifier for request tracing
+      format: uuid
+      example: 550e8400-e29b-41d4-a716-446655440000
+    field:
+      type: string
+      description: The field that caused the error, if applicable
+      example: email
+    details:
+      type: array
+      items:
+        $ref: '#/ErrorDetail'
+      description: Additional error details
+
+ErrorDetail:
+  type: object
+  properties:
+    key:
+      type: string
+      description: Detail key
+      example: reason
+    value:
+      type: string
+      description: Detail value
+      example: account_locked
+
+Pagination:
+  type: object
+  required:
+    - items
+    - pageToken
+    - hasMore
+  properties:
+    items:
+      type: array
+      description: List of items for the current page
+      items: {}
+    pageToken:
+      type: string
+      description: Opaque cursor token for fetching the next page
+      example: eyJwYWdlIjoyLCJwYWdlU2l6ZSI6MjAsInNvcnRGaWVsZCI6ImlkIiwic29ydERpciI6IkFVQlQifQ==
+    hasMore:
+      type: boolean
+      description: Whether there are more pages available
+      example: true
+    totalCount:
+      type: integer
+      description: Total number of items (optional, may not be available for all collections)
+      format: int64
+      example: 150
+
+PageToken:
+  type: object
+  description: Cursor token structure (Base64-encoded JSON for client-side decoding)
+  properties:
+    page:
+      type: integer
+      description: Current page number (0-indexed)
+      minimum: 0
+      example: 1
+    pageSize:
+      type: integer
+      description: Number of items per page
+      minimum: 1
+      maximum: 100
+      example: 20
+    sortField:
+      type: string
+      description: Field used for sorting
+      example: id
+    sortDir:
+      type: string
+      enum: [ASC, DESC]
+      description: Sort direction
+      example: ASC
+    anchor:
+      type: string
+      description: Anchor value for cursor-based pagination (e.g., last seen ID)
+      example: "12345"
+
+IdempotencyKey:
+  type: object
+  required:
+    - key
+    - createdAt
+    - endpoint
+  properties:
+    key:
+      type: string
+      description: The idempotency key value
+      example: req-123456
+    createdAt:
+      type: string
+      format: date-time
+      description: When the original request was made
+      example: "2026-08-01T10:30:00Z"
+    endpoint:
+      type: string
+      description: The endpoint that was called
+      example: /courses
+    responseCode:
+      type: integer
+      description: HTTP status code of the original response
+      example: 201
+    responseBody:
+      type: string
+      description: Serialized response body
+
+# ─── GeoJSON Primitives ───────────────────────────────────────────────────────
+
+GeoJsonPoint:
+  type: object
+  description: GeoJSON Point geometry with WGS84 (SRID 4326) coordinates
+  required:
+    - type
+    - coordinates
+  properties:
+    type:
+      type: string
+      enum: [Point]
+      description: GeoJSON geometry type
+      example: "Point"
+    coordinates:
+      type: array
+      minItems: 2
+      maxItems: 2
+      items:
+        type: number
+      description: "[longitude, latitude] in WGS84 (SRID 4326)"
+      example: [106.6292, 10.8231]
+
+# ─── Package Error Codes (Story 4.1 PKG-CONTRACT-4) ─────────────────────────────
+
+ErrorCode:
+  type: string
+  enum:
+    # Generic
+    - INTERNAL_ERROR
+    - VALIDATION_ERROR
+    - NOT_FOUND
+    - UNAUTHORIZED
+    - FORBIDDEN
+    - CONFLICT
+    # Package errors (Story 4.1 AC-3)
+    - PACKAGE_NOT_FOUND
+    - PACKAGE_INCOMPATIBLE
+    - PACKAGE_CORRUPT
+    - PACKAGE_NO_LONGER_EFFECTIVE
+    # Package build errors (Story 4.2 PKG-PUBLISH-3)
+    - BUILD_ALREADY_IN_PROGRESS
+    - BUILD_NOT_FOUND
+    - COURSE_NOT_PUBLISHED
+  description: Stable machine-readable error codes for the VSP API

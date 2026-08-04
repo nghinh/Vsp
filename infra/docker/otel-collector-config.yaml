@@ -1,0 +1,54 @@
+# OpenTelemetry Collector configuration for VSP staging/prod environments.
+# Receives OTLP (gRPC) from the API and fans out to tracing + metrics backends.
+#
+# For local dev without this collector, the API uses a no-op span exporter
+# (see OtelConfig.java — no crash, spans dropped).
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+  # Resource attributes — inject deployment environment for multi-tenant queries
+  resource:
+    attributes:
+      - key: deployment.environment
+        action: upsert
+        value: ${DEPLOYMENT_ENVIRONMENT:unknown}
+
+exporters:
+  # Debug exporter — logs traces/metrics to stdout (disable in prod)
+  logging:
+    loglevel: debug
+    verbosity: detailed
+  # Prometheus exporter — scrapable at :8888/metrics (add to prometheus scrape config)
+  prometheus:
+    endpoint: "0.0.0.0:8888"
+    namespace: vsp_otel
+    resource_to_telemetry_conversion:
+      enabled: true
+  # Jaeger / Tempo OTLP (uncomment and configure endpoint for production tracing)
+  # jaeger:
+  #   endpoint: ${JAEGER_ENDPOINT:localhost:14250}
+  #   tls:
+  #     insecure: true
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [logging, prometheus]
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [logging, prometheus]
+  telemetry:
+    logs:
+      level: info

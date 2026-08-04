@@ -1,0 +1,53 @@
+approval_workflow:
+  enabled: true
+  require_approval_for:
+    - policy: p0_risk_minimum_coverage
+      when: JUSTIFIED_EXCEPTION requested
+      approvers:
+        - role: qa_lead
+          name: QA Lead
+          notification: email | slack | telegram
+    - policy: conditional_pass
+      when: score below 85
+      approvers:
+        - role: qa_lead
+        - role: tech_lead
+          name: Technical Lead
+          notification: email | slack
+    - policy: checkpoint_skip
+      when: blocking checkpoint fail
+      approvers:
+        - role: qa_lead
+        - role: architect
+          name: System Architect
+          notification: email
+    - policy: shallow_test_exception
+      when: test marked as exception
+      approvers:
+        - role: qa_lead
+          name: QA Lead
+
+  approval_timeout_hours:
+    p0_risk_minimum_coverage: 24
+    conditional_pass: 72
+    checkpoint_skip: 4
+    shallow_test_exception: 48
+
+  escalation:
+    auto_escalate_after_hours: 48
+    escalation_chain:
+      - qa_lead
+      - tech_lead
+      - architect
+      - engineering_manager
+
+  notification:
+    channels:
+      - telegram
+      - slack
+    on_approval_required: true
+    on_approved: true
+    on_rejected: true
+    on_escalated: true
+
+version: "1.0.0"

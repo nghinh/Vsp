@@ -1,0 +1,15 @@
+-- 001_baseline.sql
+-- Baseline migration: establishes schema version marker and PostGIS extension
+-- This file is intentionally empty of schema definitions; real migrations begin with 002_*
+--
+-- PostgreSQL/PostGIS initialization marker
+-- Generated for: course_operations database
+-- Extension: PostGIS (already enabled via postgis/postgis:16-3.4 Docker image)
+--
+-- Migration version tracking (placeholder for future migration tooling e.g. Flyway, Liquibase)
+-- Version: 001_baseline
+-- Applied: (pending)
+--
+-- NOTE: PostGIS extension is available automatically in the postgis/postgis:16-3.4 image.
+-- To verify: SELECT postgis_full_version();
+-- To enable manually (if needed): CREATE EXTENSION IF NOT EXISTS postgis;

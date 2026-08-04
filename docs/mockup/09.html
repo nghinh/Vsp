@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300..700&amp;family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom map textures */
+        .map-canvas {
+            background-color: #0b1326;
+            background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+        /* Distance pulse animation */
+        @keyframes pulse-blue {
+            0% { transform: scale(1); opacity: 0.8; }
+            70% { transform: scale(2.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+        .pulse-ring {
+            animation: pulse-blue 2s infinite;
+        }
+        /* Glass panel effect */
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#25a475",
+                        "tertiary": "#68dba9",
+                        "surface-dim": "#0b1326",
+                        "on-error": "#690005",
+                        "on-background": "#dae2fd",
+                        "on-primary-container": "#4f1700",
+                        "on-tertiary-fixed": "#002114",
+                        "tertiary-fixed": "#85f8c4",
+                        "primary-fixed": "#ffdbce",
+                        "on-tertiary": "#003825",
+                        "background": "#0b1326",
+                        "primary": "#ffb599",
+                        "on-secondary-container": "#4a1c00",
+                        "primary-container": "#f66018",
+                        "secondary": "#ffb690",
+                        "on-surface-variant": "#e2bfb2",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "outline": "#a98a7e",
+                        "inverse-on-surface": "#283044",
+                        "surface-container-low": "#131b2e",
+                        "on-tertiary-container": "#00311f",
+                        "primary-fixed-dim": "#ffb599",
+                        "error-container": "#93000a",
+                        "on-surface": "#dae2fd",
+                        "surface-container-highest": "#2d3449",
+                        "inverse-surface": "#dae2fd",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "on-error-container": "#ffdad6",
+                        "on-primary-fixed": "#370e00",
+                        "surface-tint": "#ffb599",
+                        "secondary-fixed-dim": "#ffb690",
+                        "surface-bright": "#31394d",
+                        "outline-variant": "#5a4138",
+                        "on-secondary": "#552100",
+                        "on-secondary-fixed": "#341100",
+                        "error": "#ffb4ab",
+                        "surface-container": "#171f33",
+                        "secondary-fixed": "#ffdbca",
+                        "surface": "#0b1326",
+                        "on-secondary-fixed-variant": "#783200",
+                        "surface-container-lowest": "#060e20",
+                        "on-primary": "#5a1c00",
+                        "surface-container-high": "#222a3d",
+                        "secondary-container": "#ec6a06",
+                        "inverse-primary": "#a73a00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-desktop": "32px",
+                        "gutter": "16px",
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "display-metrics": ["Fira Code"],
+                        "body-lg": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "headline-lg": ["Fira Sans"],
+                        "body-md": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "display-metrics": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "metric-sm": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "fontWeight": "700" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen w-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-margin-mobile h-[72px] bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)] z-50">
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined text-on-surface">chevron_left</span>
+</button>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary leading-tight">Hố 7</span>
+<div class="flex items-center gap-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Par 4 · 368 m</span>
+<span class="px-2 py-0.5 bg-surface-variant text-secondary rounded-full font-label-caps text-[10px]">+8</span>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant active:scale-95 transition-all">
+<span class="material-symbols-outlined text-on-surface">chevron_right</span>
+</button>
+</div>
+<div class="flex flex-col items-end">
+<div class="flex items-center gap-1 text-tertiary">
+<span class="material-symbols-outlined text-[18px] fill-icon">battery_charging_full</span>
+<span class="font-label-caps text-[10px]">Ngoại tuyến · Đã lưu</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span class="font-metric-sm text-[11px]">GPS OK</span>
+</div>
+</div>
+</header>
+<!-- Main Map Area -->
+<main class="relative flex-grow map-canvas overflow-hidden touch-none">
+<!-- Wind Indicator -->
+<div class="absolute top-4 left-4 z-20 flex items-center gap-2 bg-surface-container-low/80 p-2 rounded-lg border border-white/5">
+<span class="material-symbols-outlined text-tertiary rotate-[-45deg]">north</span>
+<span class="font-metric-sm text-metric-sm text-on-surface">12 km/h ĐB</span>
+</div>
+<!-- Strategy Layer (Simulated Vector Map) -->
+<div class="absolute inset-0 flex items-center justify-center p-8">
+<div class="relative w-full h-full max-w-sm">
+<!-- Outer Ring (Distance Reference) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-white/5 pointer-events-none"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-white/10 pointer-events-none"></div>
+<!-- The Course Graphics -->
+<svg class="w-full h-full drop-shadow-2xl" viewbox="0 0 200 400">
+<!-- Out of Bounds -->
+<rect fill="none" height="400" opacity="0.4" stroke="#ef4444" stroke-dasharray="8 4" stroke-width="2" width="200" x="0" y="0"></rect>
+<!-- Rough -->
+<path d="M40,380 L60,340 Q100,320 140,340 L160,380 Z" fill="#1b2e1e"></path>
+<path d="M30,340 Q100,50 170,340 Z" fill="#1b2e1e"></path>
+<!-- Cart Path -->
+<path d="M180,400 Q190,200 160,0" fill="none" stroke="#334155" stroke-linecap="round" stroke-width="4"></path>
+<!-- Fairway -->
+<path d="M60,340 Q100,300 140,340 Q130,200 120,80 Q100,50 80,80 Q70,200 60,340" fill="#2d5a27"></path>
+<!-- Water Hazard -->
+<path d="M20,200 Q40,150 70,180 Q60,220 20,200" fill="#1e3a8a" opacity="0.8"></path>
+<!-- Bunkers -->
+<ellipse cx="140" cy="180" fill="#d4c3a1" rx="10" ry="15"></ellipse>
+<ellipse cx="65" cy="110" fill="#d4c3a1" rx="8" ry="12"></ellipse>
+<!-- Green -->
+<path d="M100,40 Q130,40 130,70 Q100,90 70,70 Q70,40 100,40" fill="#4ade80"></path>
+<!-- Tee Box -->
+<rect fill="#15803d" height="15" width="20" x="90" y="360"></rect>
+<!-- Shot Line -->
+<line stroke="#f66018" stroke-dasharray="4 4" stroke-width="2" x1="100" x2="110" y1="368" y2="220"></line>
+<line stroke="#ffb599" stroke-dasharray="4 2" stroke-width="1.5" x1="110" x2="100" y1="220" y2="60"></line>
+<!-- Markers -->
+<!-- Tee (Player) -->
+<circle cx="100" cy="368" fill="#3b82f6" r="4"></circle>
+<circle class="pulse-ring" cx="100" cy="368" fill="none" r="8" stroke="#3b82f6" stroke-width="1"></circle>
+<!-- Target Crosshair -->
+<g transform="translate(110, 220)">
+<circle cx="0" cy="0" fill="none" r="10" stroke="#ec6a06" stroke-width="1"></circle>
+<line stroke="#ec6a06" stroke-width="2" x1="-12" x2="12" y1="0" y2="0"></line>
+<line stroke="#ec6a06" stroke-width="2" x1="0" x2="0" y1="-12" y2="12"></line>
+</g>
+<!-- Flag -->
+<g transform="translate(100, 60)">
+<line stroke="white" stroke-width="1.5" x1="0" x2="0" y1="0" y2="-15"></line>
+<path d="M0,-15 L8,-11 L0,-7 Z" fill="#ef4444"></path>
+</g>
+</svg>
+</div>
+</div>
+<!-- Floating Map Controls -->
+<div class="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
+<div class="glass-panel rounded-full flex flex-col p-1 shadow-2xl">
+<button class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-90 transition-transform">
+<span class="material-symbols-outlined">my_location</span>
+</button>
+<div class="h-px bg-white/10 mx-2"></div>
+<button class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-90 transition-transform">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-90 transition-transform">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<div class="h-px bg-white/10 mx-2"></div>
+<button class="w-11 h-11 flex items-center justify-center rounded-full hover:bg-surface-variant text-on-surface active:scale-90 transition-transform">
+<span class="material-symbols-outlined">explore</span>
+</button>
+</div>
+<button class="glass-panel w-11 h-11 flex items-center justify-center rounded-full text-on-surface shadow-2xl active:scale-90">
+<span class="material-symbols-outlined">layers</span>
+</button>
+<button class="glass-panel w-11 h-11 flex items-center justify-center rounded-full text-secondary shadow-2xl active:scale-90">
+<span class="material-symbols-outlined">contrast</span>
+</button>
+</div>
+<!-- Large Distance Overlay (Main UX Anchor) -->
+<div class="absolute bottom-[80px] left-margin-mobile right-margin-mobile z-40">
+<div class="glass-panel rounded-xl overflow-hidden shadow-2xl border-l-4 border-l-primary-container">
+<div class="flex items-center justify-between px-6 py-4">
+<div class="flex flex-col items-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Front</span>
+<span class="font-display-metrics text-[24px] text-on-surface">128</span>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-caps text-[12px] text-primary uppercase tracking-widest font-bold">Center</span>
+<div class="flex items-baseline gap-1">
+<span class="font-display-metrics text-[48px] text-white leading-none">141</span>
+<span class="font-metric-sm text-on-surface-variant">m</span>
+</div>
+</div>
+<div class="flex flex-col items-center">
+<span class="font-label-caps text-[10px] text-on-surface-variant uppercase tracking-widest">Back</span>
+<span class="font-display-metrics text-[24px] text-on-surface">154</span>
+</div>
+</div>
+<div class="bg-surface-container-high/50 px-4 py-2 flex items-center justify-between border-t border-white/5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[14px] text-tertiary">check_circle</span>
+<span class="font-metric-sm text-[11px] text-on-surface-variant">±4 m · vừa cập nhật</span>
+</div>
+<div class="px-2 py-0.5 bg-tertiary-container rounded text-white font-label-caps text-[9px] font-bold">CHÍNH THỨC</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation Shell -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center h-[72px] bg-surface-container-low border-t border-[rgba(255,255,255,0.08)] px-2 pb-safe z-[60]">
+<!-- Item 1: Bản đồ (Active) -->
+<button class="flex flex-col items-center justify-center bg-secondary-container text-on-secondary-container rounded-full px-5 py-2 active:scale-90 transition-all duration-150">
+<span class="material-symbols-outlined fill-icon">map</span>
+<span class="font-label-caps text-label-caps mt-0.5">Bản đồ</span>
+</button>
+<!-- Item 2: Điểm -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant p-2 rounded-lg active:scale-90 transition-all">
+<span class="material-symbols-outlined">markdown_copy</span>
+<span class="font-label-caps text-label-caps mt-0.5">Điểm</span>
+</button>
+<!-- Item 3: Mục tiêu -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant p-2 rounded-lg active:scale-90 transition-all">
+<span class="material-symbols-outlined">ads_click</span>
+<span class="font-label-caps text-label-caps mt-0.5">Mục tiêu</span>
+</button>
+<!-- Item 4: Điều kiện -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant p-2 rounded-lg active:scale-90 transition-all">
+<span class="material-symbols-outlined">thermostat</span>
+<span class="font-label-caps text-label-caps mt-0.5">Điều kiện</span>
+</button>
+<!-- Item 5: Thêm -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-variant p-2 rounded-lg active:scale-90 transition-all">
+<span class="material-symbols-outlined">more_horiz</span>
+<span class="font-label-caps text-label-caps mt-0.5">Thêm</span>
+</button>
+</nav>
+<!-- Micro-interaction Scripts -->
+<script>
+        // Simple haptic feedback simulation
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('touchstart', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            });
+        });
+
+        // Map pan simulation logic could go here
+    </script>
+</body></html>

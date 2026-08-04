@@ -1,0 +1,222 @@
+# Bag schemas for the Vietnam Smart Golf Platform API
+# Per Story 2.4 AC-1: bags can be created, edited, deleted with all specified fields.
+# Per Story 2.4 AC-2: exactly one bag is active at a time.
+# Per Story 2.4 AC-3: minimum data threshold for recommendations.
+
+GolfBagResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Bag identifier
+      example: 1
+    golferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID
+      example: 42
+    name:
+      type: string
+      maxLength: 255
+      description: Bag name
+      example: Driver Bag
+    isActive:
+      type: boolean
+      description: Whether this bag is the currently active bag
+      example: true
+    clubs:
+      type: array
+      items:
+        $ref: '#/ClubResponse'
+      description: List of clubs in this bag
+    createdAt:
+      type: string
+      format: date-time
+      description: Bag creation timestamp
+      example: "2026-08-02T10:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last update timestamp
+      example: "2026-08-02T12:30:00Z"
+
+CreateGolfBagRequest:
+  type: object
+  required:
+    - name
+  properties:
+    name:
+      type: string
+      maxLength: 255
+      description: Name for the new bag
+      example: My Fairway Woods
+
+UpdateGolfBagRequest:
+  type: object
+  description: |
+    Partial update — all fields optional.
+    Per Story 2.4 AC-2: setting isActive to true activates this bag (deactivates all others).
+  properties:
+    name:
+      type: string
+      maxLength: 255
+      description: New bag name
+      example: Competition Bag
+    isActive:
+      type: boolean
+      description: Set to true to make this the active bag
+      example: true
+
+ClubResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Club identifier
+      example: 1
+    golfBagId:
+      type: integer
+      format: int64
+      description: Parent golf bag ID
+      example: 1
+    clubType:
+      type: string
+      enum: [DRIVER, WOOD, HYBRID, IRON, WEDGE, PUTTER]
+      description: Type of club
+      example: DRIVER
+    loft:
+      type: number
+      format: double
+      description: Loft angle in degrees
+      example: 10.5
+    carryDistance:
+      type: number
+      format: double
+      description: Carry distance in **meters** (canonical unit — do not convert)
+      example: 220.0
+    totalDistance:
+      type: number
+      format: double
+      description: Total distance in **meters** (includes roll; canonical unit)
+      example: 235.0
+    dispersion:
+      type: number
+      format: double
+      description: Dispersion in degrees. Phase 2 scope — stored but not used in MVP recommendations.
+      example: 5.2
+    shaft:
+      type: string
+      maxLength: 100
+      description: Shaft description
+      example: "Graphite, Regular Flex"
+    useDate:
+      type: string
+      format: date
+      description: Date the club was put into use
+      example: "2026-01-15"
+    createdAt:
+      type: string
+      format: date-time
+      description: Club creation timestamp
+      example: "2026-08-02T10:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last update timestamp
+      example: "2026-08-02T12:30:00Z"
+
+CreateClubRequest:
+  type: object
+  required:
+    - clubType
+  properties:
+    clubType:
+      type: string
+      enum: [DRIVER, WOOD, HYBRID, IRON, WEDGE, PUTTER]
+      description: Type of club
+      example: IRON
+    loft:
+      type: number
+      format: double
+      minimum: 0.0
+      maximum: 90.0
+      description: Loft angle in degrees
+      example: 25.0
+    carryDistance:
+      type: number
+      format: double
+      minimum: 0.001
+      description: Carry distance in **meters** (canonical — do not convert to yards before sending)
+      example: 150.0
+    totalDistance:
+      type: number
+      format: double
+      minimum: 0.001
+      description: Total distance in **meters** (canonical — includes roll)
+      example: 160.0
+    dispersion:
+      type: number
+      format: double
+      minimum: 0.0
+      description: Dispersion in degrees. Phase 2 scope — stored but not used in MVP recommendations.
+      example: 4.5
+    shaft:
+      type: string
+      maxLength: 100
+      description: Shaft description
+      example: "Steel, Stiff Flex"
+    useDate:
+      type: string
+      format: date
+      description: Date the club was put into use (ISO format YYYY-MM-DD)
+      example: "2026-02-01"
+
+UpdateClubRequest:
+  type: object
+  description: |
+    Partial update — all fields optional.
+    Per Story 2.4 AC-1: all fields can be updated.
+    Per PRD Phase 2: dispersion is stored but not used in MVP recommendations.
+  properties:
+    clubType:
+      type: string
+      enum: [DRIVER, WOOD, HYBRID, IRON, WEDGE, PUTTER]
+      description: Type of club
+      example: HYBRID
+    loft:
+      type: number
+      format: double
+      minimum: 0.0
+      maximum: 90.0
+      description: Loft angle in degrees
+      example: 22.0
+    carryDistance:
+      type: number
+      format: double
+      minimum: 0.001
+      description: Carry distance in **meters** (canonical)
+      example: 155.0
+    totalDistance:
+      type: number
+      format: double
+      minimum: 0.001
+      description: Total distance in **meters** (canonical)
+      example: 165.0
+    dispersion:
+      type: number
+      format: double
+      minimum: 0.0
+      description: Dispersion in degrees. Phase 2 scope.
+      example: 4.0
+    shaft:
+      type: string
+      maxLength: 100
+      description: Shaft description
+      example: "Graphite, Light Flex"
+    useDate:
+      type: string
+      format: date
+      description: Date the club was put into use (ISO format YYYY-MM-DD)
+      example: "2026-03-01"

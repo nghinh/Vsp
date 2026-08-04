@@ -1,0 +1,125 @@
+/**
+ * VSP Card — vsp-card.css
+ * Elevation shadow, state-aware border, hover/pressed states.
+ *
+ * Uses elevation tokens and color tokens only.
+ * No emoji icons.
+ */
+
+.vsp-card {
+  /* ─── Base ──────────────────────────────────────────────────────────────── */
+  background-color: var(--vsp-color-surface);
+  border: 1px solid var(--vsp-color-border);
+  border-radius: var(--vsp-radius-lg);
+
+  /* Elevation */
+  box-shadow: var(--vsp-shadow-card);
+
+  /* Motion */
+  transition:
+    box-shadow var(--vsp-duration-normal) var(--vsp-easing-standard),
+    border-color var(--vsp-duration-normal) var(--vsp-easing-standard),
+    background-color var(--vsp-duration-normal) var(--vsp-easing-standard);
+
+  /* Content padding via inset property if needed */
+}
+
+.vsp-card__body {
+  padding: var(--vsp-padding-card);
+}
+
+.vsp-card__header {
+  padding: var(--vsp-padding-card);
+  padding-bottom: var(--vsp-space-0);
+}
+
+.vsp-card__footer {
+  padding: var(--vsp-padding-card);
+  padding-top: var(--vsp-space-0);
+}
+
+/* ─── Hover State ─────────────────────────────────────────────────────────── */
+
+.vsp-card--hoverable {
+  cursor: pointer;
+}
+
+.vsp-card--hoverable:hover {
+  box-shadow: var(--vsp-shadow-card-hover);
+  border-color: var(--vsp-color-border-strong);
+}
+
+/* ─── Pressed State ───────────────────────────────────────────────────────── */
+
+.vsp-card--pressable:active {
+  box-shadow: var(--vsp-shadow-card-pressed);
+  border-color: var(--vsp-color-border);
+}
+
+/* ─── State-Aware Border ─────────────────────────────────────────────────── */
+
+/* Selected / active state */
+.vsp-card--selected {
+  border-color: var(--vsp-color-primary);
+  border-width: 2px;
+}
+
+/* Error / destructive state */
+.vsp-card--error {
+  border-color: var(--vsp-color-destructive);
+  border-width: 1px;
+}
+
+/* Muted / disabled surface */
+.vsp-card--muted {
+  background-color: var(--vsp-color-muted);
+  border-color: var(--vsp-color-border);
+}
+
+/* ─── Elevation Variants ──────────────────────────────────────────────────── */
+
+.vsp-card--elevation-0 {
+  box-shadow: var(--vsp-shadow-level0);
+}
+
+.vsp-card--elevation-1 {
+  box-shadow: var(--vsp-shadow-level1);
+}
+
+.vsp-card--elevation-2 {
+  box-shadow: var(--vsp-shadow-level2);
+}
+
+.vsp-card--elevation-3 {
+  box-shadow: var(--vsp-shadow-level3);
+}
+
+.vsp-card--elevation-4 {
+  box-shadow: var(--vsp-shadow-level4);
+}
+
+/* ─── Dense Variant (portal tables) ─────────────────────────────────────── */
+
+.vsp-card--dense .vsp-card__body {
+  padding: var(--vsp-padding-card-dense);
+}
+
+.vsp-card--dense .vsp-card__header {
+  padding: var(--vsp-padding-card-dense);
+  padding-bottom: var(--vsp-space-0);
+}
+
+.vsp-card--dense .vsp-card__footer {
+  padding: var(--vsp-padding-card-dense);
+  padding-top: var(--vsp-space-0);
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsp-card,
+  .vsp-card--hoverable:hover,
+  .vsp-card--pressable:active {
+    transition-duration: var(--vsp-duration-instant);
+  }
+}

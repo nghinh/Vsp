@@ -1,0 +1,238 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "8-4-roll-back-published-data",
+  "reports": [
+    {
+      "slice_id": "wave-a",
+      "symbol": "DataVersion",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/entity/DataVersion.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T10:16:07.244772+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-a",
+      "symbol": "CourseVersionService",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/CourseVersionService.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T10:18:27.785075+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-a",
+      "symbol": "CourseVersionServiceImpl",
+      "file": "apps/api/src/main/java/vnpt/vsp/module/course/CourseVersionServiceImpl.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T10:18:35.371828+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-b",
+      "symbol": "CourseVersionController",
+      "file": "apps/api/src/main/java/vnpt/vsp/api/course/CourseVersionController.java",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T10:34:01.879842+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T10:35:30.272934+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-d",
+      "symbol": "CourseVersionApi",
+      "file": "apps/portal/src/api/course-version.ts",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-d",
+      "symbol": "VersionListResponse",
+      "file": "apps/portal/src/types/course-version.ts",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-d",
+      "symbol": "CourseVersionDto",
+      "file": "apps/portal/src/types/course-version.ts",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    },
+    {
+      "slice_id": "wave-d",
+      "symbol": "versions_index",
+      "file": "apps/portal/src/pages/courses/[courseId]/versions/index.vue",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 1,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T23:00:00+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "new_duplicate_likely": false
+        }
+      ]
+    }
+  ]
+}

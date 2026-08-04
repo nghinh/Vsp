@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Test Data Fixtures Schema",
+  "description": "Schema for test data fixtures used in QA orchestrator test execution",
+  "type": "object",
+  "required": [
+    "fixtures"
+  ],
+  "properties": {
+    "fixtures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "fixture_id",
+          "description",
+          "data_type",
+          "data",
+          "usage"
+        ],
+        "properties": {
+          "fixture_id": {
+            "type": "string",
+            "pattern": "^FIXTURE-[A-Z]+-[0-9]{3,}$",
+            "examples": ["FIXTURE-USER-001", "FIXTURE-PRODUCT-002"]
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of this fixture"
+          },
+          "data_type": {
+            "type": "string",
+            "enum": [
+              "seed",
+              "mock",
+              "stub",
+              "synthetic",
+              "sampled",
+              "production_snapshot"
+            ],
+            "description": "Type of fixture data"
+          },
+          "version": {
+            "type": "string",
+            "description": "Fixture version for reproducibility"
+          },
+          "data": {
+            "type": "object",
+            "description": "Fixture data structure",
+            "additionalProperties": true
+          },
+          "constraints": {
+            "type": "object",
+            "properties": {
+              "min": {
+                "description": "Minimum value for numeric fields"
+              },
+              "max": {
+                "description": "Maximum value for numeric fields"
+              },
+              "nullable": {
+                "type": "boolean",
+                "default": false
+              },
+              "unique": {
+                "type": "boolean",
+                "default": false
+              },
+              "pattern": {
+                "type": "string",
+                "description": "Regex pattern for string validation"
+              }
+            }
+          },
+          "setup_commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Commands to run before fixture is ready"
+          },
+          "teardown_commands": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Commands to run to clean up fixture"
+          },
+          "environment": {
+            "type": "string",
+            "enum": ["dev", "staging", "prod", "all"],
+            "default": "all"
+          },
+          "idempotent": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether fixture can be set up multiple times safely"
+          },
+          "depends_on": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Other fixture IDs this fixture depends on"
+          },
+          "usage": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "test_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Test IDs that use this fixture"
+                },
+                "setup_action": {
+                  "type": "string",
+                  "enum": ["before_each", "before_all", "manual"],
+                  "default": "before_each"
+                },
+                "teardown_action": {
+                  "type": "string",
+                  "enum": ["after_each", "after_all", "manual", "none"],
+                  "default": "after_each"
+                }
+              }
+            }
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "description": "Where fixture data originated"
+              },
+              "last_updated": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "sensitivity": {
+                "type": "string",
+                "enum": ["public", "internal", "confidential", "restricted"]
+              },
+              "tags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "data_type_descriptions": {
+      "seed": "Initial data loaded before test suite runs",
+      "mock": "Mocked data replacing external dependencies",
+      "stub": "Minimal placeholder data for unit tests",
+      "synthetic": "Artificially generated test data",
+      "sampled": "Subset of real data for testing",
+      "production_snapshot": "Anonymized copy of production data"
+    }
+  }
+}

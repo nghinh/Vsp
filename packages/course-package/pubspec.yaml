@@ -1,0 +1,14 @@
+name: course_package
+description: VSP Golf Platform — Course package reader for offline geometry and manifest data.
+publish_to: none
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.10.0"
+
+dependencies:
+  equatable: ^2.0.5
+  path_provider: ^2.1.2
+
+dev_dependencies:
+  flutter_lints: ^5.0.0

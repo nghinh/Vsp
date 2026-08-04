@@ -1,0 +1,29 @@
+{
+  "runId": "run_2026_08_02_005",
+  "epicId": "epic-03",
+  "epicTitle": "Course Catalog and Data Foundation",
+  "manifestHash": "c50224aaca463c170bd826b11cfdca9f91991ec53b8290f6f2e093825c164753",
+  "stories": [
+    {
+      "storyId": "3-1",
+      "storyTitle": "Model Course and Golf Geometry",
+      "sourcePath": "docs/implementation-artifacts/epic-03/3-1-model-course-and-golf-geometry.md"
+    },
+    {
+      "storyId": "3-2",
+      "storyTitle": "Search and Discover Courses",
+      "sourcePath": "docs/implementation-artifacts/epic-03/3-2-search-and-discover-courses.md"
+    },
+    {
+      "storyId": "3-3",
+      "storyTitle": "View Course Details",
+      "sourcePath": "docs/implementation-artifacts/epic-03/3-3-view-course-details.md"
+    },
+    {
+      "storyId": "3-4",
+      "storyTitle": "Import and Validate Course Data",
+      "sourcePath": "docs/implementation-artifacts/epic-03/3-4-import-and-validate-course-data.md"
+    }
+  ],
+  "createdAt": "2026-08-01T22:16:40Z"
+}

@@ -1,0 +1,174 @@
+# Correction schemas for the Vietnam Smart Golf Platform API
+
+Correction:
+  type: object
+  required:
+    - id
+    - courseId
+    - type
+    - status
+    - submittedBy
+    - submittedAt
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Correction unique identifier
+      example: 990e8400-e29b-41d4-a716-446655440004
+    courseId:
+      type: string
+      format: uuid
+      description: Course this correction applies to
+    courseName:
+      type: string
+      description: Course name (denormalized)
+      example: Saigon Golf Club
+    type:
+      type: string
+      enum: [hole_location, yardage, hazard, bunker, water, out_of_bounds, course_info, scoring, Other]
+      description: Type of correction
+      example: hole_location
+    status:
+      type: string
+      enum: [pending, under_review, approved, rejected, implemented]
+      description: Correction status
+      example: pending
+    submittedBy:
+      type: string
+      format: uuid
+      description: Player who submitted the correction
+    submittedByName:
+      type: string
+      description: Submitter name
+      example: John Doe
+    submittedAt:
+      type: string
+      format: date-time
+      description: When the correction was submitted
+      example: "2026-08-01T14:30:00Z"
+    description:
+      type: string
+      description: Detailed description of the issue
+      example: "Hole 5 pin location appears to be different from the card"
+    suggestedCorrection:
+      type: string
+      description: Suggested fix
+      example: "Move pin 3 meters back"
+    location:
+      $ref: './common.yaml#/Location'
+    photoUrls:
+      type: array
+      items:
+        type: string
+        format: uri
+      description: Photos documenting the issue
+    assignedTo:
+      type: string
+      format: uuid
+      description: Admin reviewing the correction
+    assignedToName:
+      type: string
+      description: Reviewer name
+    reviewNotes:
+      type: string
+      description: Review notes
+    reviewedAt:
+      type: string
+      format: date-time
+      description: When the correction was reviewed
+    implementedAt:
+      type: string
+      format: date-time
+      description: When the correction was implemented
+
+CorrectionCreate:
+  type: object
+  required:
+    - courseId
+    - type
+    - description
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course this correction applies to
+    type:
+      type: string
+      enum: [hole_location, yardage, hazard, bunker, water, out_of_bounds, course_info, scoring, Other]
+      description: Type of correction
+    description:
+      type: string
+      minLength: 10
+      maxLength: 2000
+      description: Detailed description of the issue
+    suggestedCorrection:
+      type: string
+      maxLength: 1000
+      description: Suggested fix
+    location:
+      $ref: './common.yaml#/Location'
+    photoUrls:
+      type: array
+      items:
+        type: string
+        format: uri
+      maxItems: 5
+      description: Photos documenting the issue
+
+CorrectionReview:
+  type: object
+  properties:
+    status:
+      type: string
+      enum: [under_review, approved, rejected]
+      description: New status after review
+    reviewNotes:
+      type: string
+      description: Notes about the decision
+    reviewedAt:
+      type: string
+      format: date-time
+      description: When the review was completed
+      example: "2026-08-02T09:00:00Z"
+
+CorrectionListResponse:
+  type: object
+  properties:
+    corrections:
+      type: array
+      items:
+        $ref: '#/Correction'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+CorrectionStats:
+  type: object
+  properties:
+    total:
+      type: integer
+      description: Total number of corrections
+      example: 45
+    pending:
+      type: integer
+      description: Pending corrections
+      example: 12
+    underReview:
+      type: integer
+      description: Corrections under review
+      example: 5
+    approved:
+      type: integer
+      description: Approved corrections
+      example: 20
+    rejected:
+      type: integer
+      description: Rejected corrections
+      example: 3
+    implemented:
+      type: integer
+      description: Implemented corrections
+      example: 15
+    averageResolutionTime:
+      type: number
+      description: Average time to resolve in hours
+      example: 48.5

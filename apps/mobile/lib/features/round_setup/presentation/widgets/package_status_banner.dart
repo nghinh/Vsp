@@ -1,0 +1,201 @@
+// Package Status Banner — VSP Mobile App
+//
+// Banner showing package offline readiness status.
+// Shows green/amber/red with icon+text based on package status.
+//
+// Design: ux-spec §4.2, §5.2 — color + icon for offline state, not color-only.
+// Touch target: 44pt minimum on interactive elements.
+//
+// Story 5.1 — Slice B: Round Setup UI Screen
+
+import 'package:flutter/material.dart';
+
+import '../round_setup_state.dart';
+
+/// Banner showing package offline readiness status.
+///
+/// States:
+/// - valid: green badge "Offline Ready"
+/// - notDownloaded: amber warning "Course data not downloaded"
+/// - expired: amber warning "Course data may be outdated"
+/// - invalid/checksumMismatch: red warning "Course data is corrupted"
+/// - notChecked: neutral "Checking package..."
+class PackageStatusBanner extends StatelessWidget {
+  final PackageReadiness? packageReadiness;
+  final VoidCallback? onDownloadPressed;
+  final VoidCallback? onWarningAcknowledged;
+
+  const PackageStatusBanner({
+    super.key,
+    this.packageReadiness,
+    this.onDownloadPressed,
+    this.onWarningAcknowledged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final brightness = theme.colorScheme.brightness;
+
+    if (packageReadiness == null) {
+      return _buildBanner(
+        context: context,
+        icon: Icons.hourglass_empty,
+        iconColor: theme.colorScheme.outline,
+        label: 'Checking package...',
+        backgroundColor: theme.colorScheme.surfaceContainerHighest,
+        textColor: theme.colorScheme.onSurfaceVariant,
+      );
+    }
+
+    switch (packageReadiness!.status) {
+      case PackageStatus.valid:
+        return _buildBanner(
+          context: context,
+          icon: Icons.offline_pin,
+          iconColor: const Color(0xFF059669), // semantic green
+          label: 'Offline Ready',
+          backgroundColor: const Color(0xFF059669).withOpacity(0.12),
+          textColor: const Color(0xFF059669),
+        );
+
+      case PackageStatus.notDownloaded:
+        return _buildBanner(
+          context: context,
+          icon: Icons.cloud_download_outlined,
+          iconColor: const Color(0xFFF97316), // semantic amber
+          label: 'Course data not downloaded',
+          backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
+          textColor: const Color(0xFFF97316),
+          action: onDownloadPressed != null
+              ? _Action(label: 'Download', onPressed: onDownloadPressed!)
+              : null,
+        );
+
+      case PackageStatus.expired:
+        return _buildBanner(
+          context: context,
+          icon: Icons.warning_amber_rounded,
+          iconColor: const Color(0xFFF97316), // semantic amber
+          label: 'Course data may be outdated',
+          subtitle: packageReadiness!.expiresAt != null
+              ? 'Expired ${_formatDate(packageReadiness!.expiresAt!)}'
+              : 'Package expired',
+          backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
+          textColor: const Color(0xFFF97316),
+          action: onWarningAcknowledged != null
+              ? _Action(label: 'Play Anyway', onPressed: onWarningAcknowledged!)
+              : null,
+        );
+
+      case PackageStatus.invalid:
+        return _buildBanner(
+          context: context,
+          icon: Icons.error_outline,
+          iconColor: const Color(0xFFDC2626), // semantic red
+          label: 'Course data is corrupted',
+          subtitle: 'Please re-download the course package',
+          backgroundColor: const Color(0xFFDC2626).withOpacity(0.12),
+          textColor: const Color(0xFFDC2626),
+          action: onDownloadPressed != null
+              ? _Action(label: 'Re-download', onPressed: onDownloadPressed!)
+              : null,
+        );
+
+      case PackageStatus.notChecked:
+        return _buildBanner(
+          context: context,
+          icon: Icons.hourglass_empty,
+          iconColor: theme.colorScheme.outline,
+          label: 'Checking package...',
+          backgroundColor: theme.colorScheme.surfaceContainerHighest,
+          textColor: theme.colorScheme.onSurfaceVariant,
+        );
+    }
+  }
+
+  Widget _buildBanner({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    String? subtitle,
+    required Color backgroundColor,
+    required Color textColor,
+    _Action? action,
+  }) {
+    final theme = Theme.of(context);
+
+    return Semantics(
+      label: label,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: iconColor, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  if (subtitle != null)
+                    Text(
+                      subtitle,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: textColor.withOpacity(0.8),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (action != null) ...[
+              const SizedBox(width: 8),
+              TextButton(
+                onPressed: action.onPressed,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(44, 36), // 44pt touch target
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                ),
+                child: Text(
+                  action.label,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final diff = now.difference(date);
+
+    if (diff.inDays == 0) return 'today';
+    if (diff.inDays == 1) return 'yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    return '${date.month}/${date.day}/${date.year}';
+  }
+}
+
+class _Action {
+  final String label;
+  final VoidCallback onPressed;
+
+  const _Action({required this.label, required this.onPressed});
+}

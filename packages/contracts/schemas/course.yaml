@@ -1,0 +1,1642 @@
+# Course schemas for the Vietnam Smart Golf Platform API
+
+Course:
+  type: object
+  required:
+    - id
+    - name
+    - location
+    - holes
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Course unique identifier
+      example: 550e8400-e29b-41d4-a716-446655440000
+    name:
+      type: string
+      description: Course name
+      example: Saigon Golf Club
+    description:
+      type: string
+      description: Course description
+      example: Premium 18-hole golf course in Ho Chi Minh City
+    location:
+      $ref: './common.yaml#/Location'
+    address:
+      type: string
+      description: Physical address
+      example: "123 Nguyen Hue, District 1, HCMC"
+    holes:
+      type: integer
+      minimum: 9
+      maximum: 27
+      description: Number of holes
+      example: 18
+    par:
+      type: integer
+      minimum: 54
+      maximum: 81
+      description: Total par for the course
+      example: 72
+    rating:
+      type: number
+      format: float
+      minimum: 0
+      maximum: 10
+      description: Course rating
+      example: 4.5
+    slope:
+      type: integer
+      minimum: 55
+      maximum: 155
+      description: Course slope rating
+      example: 125
+    imageUrls:
+      type: array
+      items:
+        type: string
+        format: uri
+      description: Course images
+      example: ["https://vsp.example.com/images/saigon-golf-1.jpg"]
+    facilities:
+      type: array
+      items:
+        $ref: '#/Facility'
+      description: Available facilities
+    isActive:
+      type: boolean
+      description: Whether the course is active
+      example: true
+    version:
+      type: string
+      description: Content version hash for ETag
+      example: "abc123def456"
+
+CourseSummary:
+  type: object
+  required:
+    - id
+    - name
+    - holes
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Course unique identifier
+    name:
+      type: string
+      description: Course name
+    holes:
+      type: integer
+      description: Number of holes
+    imageUrl:
+      type: string
+      format: uri
+      description: Thumbnail image URL
+    rating:
+      type: number
+      format: float
+      description: Average rating
+
+CourseVersion:
+  type: object
+  required:
+    - courseId
+    - version
+    - effectiveFrom
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    version:
+      type: string
+      description: Version hash
+      example: "abc123def456"
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When this version becomes effective
+      example: "2026-09-01T00:00:00Z"
+    changes:
+      type: array
+      items:
+        $ref: '#/CourseChange'
+      description: List of changes in this version
+
+CoursePackage:
+  type: object
+  required:
+    - id
+    - courseId
+    - name
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Package unique identifier
+      example: 660e8400-e29b-41d4-a716-446655440001
+    courseId:
+      type: string
+      format: uuid
+      description: Associated course identifier
+    name:
+      type: string
+      description: Package name
+      example: Weekend Special
+    description:
+      type: string
+      description: Package description
+      example: Includes 18 holes, cart, and lunch
+    price:
+      type: number
+      format: decimal
+      minimum: 0
+      description: Package price
+      example: 150.00
+    currency:
+      type: string
+      description: Currency code
+      example: VND
+    validFrom:
+      type: string
+      format: date
+      description: Start date of validity
+      example: "2026-01-01"
+    validTo:
+      type: string
+      format: date
+      description: End date of validity
+      example: "2026-12-31"
+    includes:
+      type: array
+      items:
+        type: string
+      description: Items included in the package
+      example: ["18 holes", "Golf cart", "Lunch buffet"]
+    restrictions:
+      type: array
+      items:
+        type: string
+      description: Booking restrictions
+      example: ["Weekends only", "Before 6pm"]
+    maxPlayers:
+      type: integer
+      description: Maximum players per booking
+      example: 4
+    isActive:
+      type: boolean
+      description: Whether the package is active
+      example: true
+
+Location:
+  type: object
+  properties:
+    latitude:
+      type: number
+      format: double
+      description: Latitude in SRID 4326
+      example: 10.8231
+    longitude:
+      type: number
+      format: double
+      description: Longitude in SRID 4326
+      example: 106.6292
+    address:
+      type: string
+      description: Human-readable address
+    district:
+      type: string
+      description: District name
+    city:
+      type: string
+      description: City name
+    province:
+      type: string
+      description: Province name
+
+Facility:
+  type: object
+  properties:
+    type:
+      type: string
+      enum: [clubhouse, restaurant, pro_shop, driving_range, putting_green, bunker, cart_path, locker, spa, Other]
+      description: Facility type
+    name:
+      type: string
+      description: Facility name
+    available:
+      type: boolean
+      description: Whether the facility is currently available
+
+CourseChange:
+  type: object
+  properties:
+    field:
+      type: string
+      description: Changed field name
+    oldValue:
+      type: string
+      description: Previous value
+    newValue:
+      type: string
+      description: New value
+    changedAt:
+      type: string
+      format: date-time
+      description: When the change was made
+
+# ─── Search DTOs (Story 3.2 SD-BACK-2) ────────────────────────────────────────────
+
+DataFreshnessDto:
+  type: object
+  description: Data freshness metadata returned in every search result
+  properties:
+    publishedAt:
+      type: string
+      format: date-time
+      description: When this data version was published
+      example: "2026-07-15T10:00:00Z"
+    versionNumber:
+      type: integer
+      description: Version number of the latest published data version
+      example: 3
+    publisher:
+      type: string
+      description: Entity that published this data
+      example: "Thuyle Golf Club"
+    verificationStatus:
+      type: string
+      enum: [VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED]
+      description: Verification status
+      example: "VERIFIED"
+    lastVerifiedAt:
+      type: string
+      format: date-time
+      description: When the data was last verified by an authoritative source
+      example: "2026-07-14T08:30:00Z"
+
+CourseSearchResultDto:
+  type: object
+  description: Individual course search result with data freshness metadata
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course unique identifier
+      example: 123
+    facilityId:
+      type: integer
+      format: int64
+      description: Golf facility unique identifier
+      example: 456
+    facilityName:
+      type: string
+      description: Golf facility name
+      example: "Saigon Golf Club"
+    courseName:
+      type: string
+      description: Course name
+      example: " Championship Course"
+    address:
+      type: string
+      description: Facility address
+      example: "123 Nguyen Hue, District 1, HCMC"
+    latitude:
+      type: number
+      format: double
+      description: Latitude in WGS84
+      example: 10.8231
+    longitude:
+      type: number
+      format: double
+      description: Longitude in WGS84
+      example: 106.6292
+    holesCount:
+      type: integer
+      description: Number of holes
+      example: 18
+    parTotal:
+      type: integer
+      description: Total par for the course
+      example: 72
+    rating:
+      type: number
+      format: float
+      description: Course rating
+      example: 4.5
+    slope:
+      type: integer
+      description: Course slope rating
+      example: 125
+    distanceMeters:
+      type: number
+      format: double
+      description: Distance from search point in meters (only set for nearby searches)
+      example: 1523.5
+    hasPackage:
+      type: boolean
+      description: Whether a published data package exists for this course
+      example: true
+    updateAvailable:
+      type: boolean
+      description: Whether an update is available compared to downloadedVersion in request
+      example: false
+    dataFreshness:
+      $ref: '#/DataFreshnessDto'
+
+FavoriteCourseDto:
+  type: object
+  description: Favorite course response including course summary and favorited timestamp
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course unique identifier
+      example: 123
+    facilityId:
+      type: integer
+      format: int64
+      description: Golf facility unique identifier
+      example: 456
+    facilityName:
+      type: string
+      description: Golf facility name
+      example: "Saigon Golf Club"
+    courseName:
+      type: string
+      description: Course name
+      example: " Championship Course"
+    address:
+      type: string
+      description: Facility address
+      example: "123 Nguyen Hue, District 1, HCMC"
+    holesCount:
+      type: integer
+      description: Number of holes
+      example: 18
+    favoritedAt:
+      type: string
+      format: date-time
+      description: When the course was favorited
+      example: "2026-07-20T14:30:00Z"
+
+RecentCourseDto:
+  type: object
+  description: Recently viewed course response including course summary and viewed timestamp
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course unique identifier
+      example: 123
+    facilityId:
+      type: integer
+      format: int64
+      description: Golf facility unique identifier
+      example: 456
+    facilityName:
+      type: string
+      description: Golf facility name
+      example: "Saigon Golf Club"
+    courseName:
+      type: string
+      description: Course name
+      example: " Championship Course"
+    address:
+      type: string
+      description: Facility address
+      example: "123 Nguyen Hue, District 1, HCMC"
+    holesCount:
+      type: integer
+      description: Number of holes
+      example: 18
+    viewedAt:
+      type: string
+      format: date-time
+      description: When the course was last viewed
+      example: "2026-07-20T14:30:00Z"
+
+CourseSearchRequest:
+  type: object
+  description: Request parameters for course search — text query, geographic filter, and pagination
+  properties:
+    q:
+      type: string
+      description: Text search query (searches facility name, course name, address)
+      example: "Saigon Golf"
+    lat:
+      type: number
+      format: double
+      minimum: -90
+      maximum: 90
+      description: Latitude of search center (WGS84)
+      example: 10.8231
+    lng:
+      type: number
+      format: double
+      minimum: -180
+      maximum: 180
+      description: Longitude of search center (WGS84)
+      example: 106.6292
+    radiusMeters:
+      type: number
+      format: double
+      minimum: 1
+      maximum: 50000
+      description: Search radius in meters (max 50,000 / 50km)
+      example: 10000
+    page:
+      type: integer
+      minimum: 0
+      default: 0
+      description: Page number (0-indexed)
+      example: 0
+    size:
+      type: integer
+      minimum: 1
+      maximum: 100
+      default: 20
+      description: Page size
+      example: 20
+    sortBy:
+      type: string
+      default: "name"
+      description: Sort field
+      example: "name"
+    sortDirection:
+      type: string
+      enum: [ASC, DESC]
+      default: "ASC"
+      description: Sort direction
+      example: "ASC"
+    downloadedVersion:
+      type: integer
+      description: Mobile-reported downloaded version number — if provided, response includes updateAvailable flag
+      example: 2
+
+PageResponse:
+  type: object
+  description: Standard paginated response wrapper
+  properties:
+    content:
+      type: array
+      items:
+        type: object
+      description: List of items in the current page
+    page:
+      type: integer
+      description: Current page number (0-indexed)
+      example: 0
+    size:
+      type: integer
+      description: Page size
+      example: 20
+    totalElements:
+      type: integer
+      format: int64
+      description: Total number of elements across all pages
+      example: 150
+    totalPages:
+      type: integer
+      description: Total number of pages
+      example: 8
+    first:
+      type: boolean
+      description: Whether this is the first page
+      example: true
+    last:
+      type: boolean
+      description: Whether this is the last page
+      example: false
+
+# ─── Course Detail DTOs (Story 3.3 CD-BACK-1) ───────────────────────────────────
+
+DataQualityDto:
+  type: object
+  description: Data quality metadata for course detail sub-entities
+  properties:
+    accuracyClass:
+      type: string
+      enum: [A_RTK_SURVEYED, B_LICENSED_PROVIDER, C_VERIFIED_SATELLITE, D_UNVERIFIED_COMMUNITY]
+      description: Accuracy class per PRD §9.4
+      example: "A_RTK_SURVEYED"
+    verificationStatus:
+      type: string
+      enum: [VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED]
+      description: Verification status
+      example: "VERIFIED"
+
+HoleSummaryDto:
+  type: object
+  description: Hole summary for course detail view
+  properties:
+    holeNumber:
+      type: integer
+      description: Hole number (1-18+)
+      example: 1
+    par:
+      type: integer
+      description: Par for the hole
+      example: 4
+    playingLengthMeters:
+      type: number
+      format: double
+      description: Playing length in meters
+      example: 382.5
+
+TeeSetSummaryDto:
+  type: object
+  description: Tee set summary for course detail view
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Tee set unique identifier
+      example: 10
+    name:
+      type: string
+      description: Tee set name
+      example: "Black Tee"
+    totalPar:
+      type: integer
+      description: Total par from this tee set
+      example: 72
+    yardages:
+      type: object
+      description: Hole number to yardage (meters) map
+      additionalProperties:
+        type: integer
+      example:
+        1: 382
+        2: 435
+        3: 528
+    rating:
+      type: number
+      format: float
+      description: Course rating (null if unavailable)
+      example: 4.5
+    slope:
+      type: integer
+      description: Course slope rating (null if unavailable)
+      example: 125
+    dataQuality:
+      $ref: '#/DataQualityDto'
+
+ConditionDto:
+  type: object
+  description: Course condition for detail view
+  properties:
+    conditionType:
+      type: string
+      enum: [GREEN_SPEED, GREEN_FIRMNESS, FAIRWAY_FIRMNESS, ROUGH_DENSITY, BUNKER_CONDITION, COURSE_MOISTURE, COURSE_OVERALL, WEATHER_IMPACT, OTHER]
+      description: Type of condition
+      example: "GREEN_SPEED"
+    severity:
+      type: string
+      enum: [LOW, MODERATE, HIGH, CRITICAL]
+      description: Condition severity
+      example: "MODERATE"
+    description:
+      type: string
+      description: Human-readable condition description (null if unavailable)
+      example: "Greens are running fast at 11 on the stimpmeter"
+    effectiveDate:
+      type: string
+      format: date
+      description: When this condition became effective
+      example: "2026-08-01"
+    dataQuality:
+      $ref: '#/DataQualityDto'
+
+CourseDetailDto:
+  type: object
+  description: Comprehensive course detail response per Story 3.3 AC-1, AC-2, AC-3
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course unique identifier
+      example: 123
+    facilityId:
+      type: integer
+      format: int64
+      description: Golf facility unique identifier
+      example: 456
+    facilityName:
+      type: string
+      description: Golf facility name
+      example: "Saigon Golf Club"
+    courseName:
+      type: string
+      description: Course name
+      example: "Championship Course"
+    phone:
+      type: string
+      description: Facility phone (null if unavailable)
+      example: "+84-28-3822-5555"
+    website:
+      type: string
+      description: Facility website (null if unavailable)
+      example: "https://saigon-golf.com"
+    address:
+      type: string
+      description: Facility address
+      example: "123 Nguyen Hue, District 1, HCMC"
+    latitude:
+      type: number
+      format: double
+      description: Latitude from facility location (WGS84)
+      example: 10.8231
+    longitude:
+      type: number
+      format: double
+      description: Longitude from facility location (WGS84)
+      example: 106.6292
+    holesCount:
+      type: integer
+      description: Number of holes
+      example: 18
+    parTotal:
+      type: integer
+      description: Total par for the course
+      example: 72
+    rating:
+      type: number
+      format: float
+      description: Course rating (null if unavailable per AC-2)
+      example: 4.5
+    slope:
+      type: integer
+      description: Course slope rating (null if unavailable per AC-2)
+      example: 125
+    imageUrls:
+      type: array
+      items:
+        type: string
+        format: uri
+      description: Course image URLs (empty if unavailable per AC-2)
+      example: []
+    facilities:
+      type: array
+      items:
+        type: string
+      description: Available facilities (empty if unavailable per AC-2)
+      example: []
+    localRules:
+      type: array
+      items:
+        type: string
+      description: Local rules (empty if unavailable per AC-2)
+      example: []
+    holes:
+      type: array
+      items:
+        $ref: '#/HoleSummaryDto'
+      description: Hole summaries ordered by hole number
+    teeSets:
+      type: array
+      items:
+        $ref: '#/TeeSetSummaryDto'
+      description: Tee set summaries
+    conditions:
+      type: array
+      items:
+        $ref: '#/ConditionDto'
+      description: Active course conditions
+    dataFreshness:
+      $ref: '#/DataFreshnessDto'
+
+# ─── Course Import DTOs (Story 3.4 IMP-BACK-1) ───────────────────────────────────
+
+GeoJsonImportRequest:
+  type: object
+  required:
+    - geoJson
+  properties:
+    geoJson:
+      type: string
+      description: GeoJSON string (FeatureCollection or single Feature)
+      example: '{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Point","coordinates":[106.6292,10.8231]},"properties":{"landmark_type":"clubhouse","name":"Club House"}}]}'
+    source:
+      type: string
+      description: Origin of this data (e.g., provider name, survey team)
+      example: "Vietnam Golf Survey Co."
+    license:
+      type: string
+      description: License governing use of this data
+      example: "CC BY 4.0"
+
+ImportPreviewResponse:
+  type: object
+  description: Preview of GeoJSON import with validation errors
+  properties:
+    totalFeatures:
+      type: integer
+      description: Total number of features in GeoJSON
+      example: 25
+    validCount:
+      type: integer
+      description: Number of valid features
+      example: 23
+    errorCount:
+      type: integer
+      description: Number of features with errors
+      example: 2
+    geometryTypeBreakdown:
+      type: object
+      description: Count of features by geometry type
+      additionalProperties:
+        type: integer
+      example:
+        Point: 5
+        LineString: 3
+        Polygon: 17
+    errorSummary:
+      type: string
+      description: Human-readable error summary
+      example: "25 features, 23 valid, 2 errors"
+    previewToken:
+      type: string
+      description: Opaque token for committing this import
+      example: "abc123-def456-789xyz-123-courseId-admin"
+    errors:
+      type: array
+      items:
+        $ref: '#/ValidationError'
+
+ImportCommitRequest:
+  type: object
+  required:
+    - previewToken
+  properties:
+    previewToken:
+      type: string
+      description: Token from previewImport
+      example: "abc123-def456-789xyz-123-courseId-admin"
+
+ImportResultResponse:
+  type: object
+  description: Result of committed import
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course ID
+      example: 123
+    dataVersionId:
+      type: integer
+      format: int64
+      description: New DataVersion ID
+      example: 456
+    versionNumber:
+      type: integer
+      description: Version number of new DataVersion
+      example: 3
+    featureCount:
+      type: integer
+      description: Number of features imported
+      example: 23
+    status:
+      type: string
+      description: Status of new DataVersion
+      example: "DRAFT"
+
+ValidationError:
+  type: object
+  description: Single validation error for a feature
+  properties:
+    featureIndex:
+      type: integer
+      description: Index of the feature in the GeoJSON
+      example: 5
+    geometryType:
+      type: string
+      description: GeoJSON geometry type
+      example: "Point"
+    field:
+      type: string
+      description: Field that has the error
+      example: "coordinates"
+    code:
+      type: string
+      description: Machine-readable error code
+      example: "INVALID_COORDINATE"
+    message:
+      type: string
+      description: Human-readable error message
+      example: "Invalid coordinate [200.0, 100.0] at index 5: out of WGS84 range"
+    severity:
+      type: string
+      enum: [HIGH, MEDIUM, LOW]
+      description: Error severity
+      example: "HIGH"
+
+# ─── Course Package Manifest DTOs (Story 4.1 PKG-CONTRACT-1) ───────────────────
+
+PackageLicense:
+  type: object
+  description: License governing package or content data
+  properties:
+    name:
+      type: string
+      description: Human-readable license name
+      example: "CC BY 4.0"
+    url:
+      type: string
+      format: uri
+      description: License text or reference URL
+      example: "https://creativecommons.org/licenses/by/4.0/"
+    spdxId:
+      type: string
+      description: SPDX license identifier
+      example: "CC-BY-4.0"
+
+PackageFileEntry:
+  type: object
+  description: A single file within a course package with its checksum
+  properties:
+    path:
+      type: string
+      description: Relative path of the file within the package
+      example: "tiles/pmtiles"
+    checksum:
+      type: string
+      description: SHA-256 hex digest of the file contents
+      example: "a3f5e2d..."
+    sizeBytes:
+      type: integer
+      format: int64
+      minimum: 0
+      description: File size in bytes
+      example: 15728640
+    contentType:
+      type: string
+      enum: [METADATA, GEOMETRY, TILES, SCORECARD, RULES, CONDITIONS, WEATHER, SATELLITE]
+      description: Content type classification of this file
+      example: "TILES"
+
+CoursePackageManifest:
+  type: object
+  description: Course package manifest — the contract for offline course data packages (Story 4.1 AC-1)
+  properties:
+    packageId:
+      type: string
+      format: uuid
+      description: Unique package identifier
+      example: "660e8400-e29b-41d4-a716-446655440001"
+    courseId:
+      type: string
+      format: uuid
+      description: Associated course identifier
+      example: "550e8400-e29b-41d4-a716-446655440000"
+    version:
+      type: string
+      pattern: "^\\d+\\.\\d+\\.\\d+$"
+      description: Semantic version of this package
+      example: "1.0.0"
+    effectiveDate:
+      type: string
+      format: date-time
+      description: When this package becomes active
+      example: "2026-09-01T00:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this package expires (null = never)
+      example: "2026-12-31T23:59:59Z"
+    checksum:
+      type: string
+      description: SHA-256 hex digest of the complete package archive
+      example: "abc123def456..."
+    sizeBytes:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Total package size in bytes
+      example: 52428800
+    tilesFormat:
+      type: string
+      enum: [PMTILES, MBTILES, VECTOR_TILES]
+      description: Map tile format
+      example: "PMTILES"
+    tilesUrl:
+      type: string
+      format: uri
+      description: URL or path to tile archive
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/tiles.pmtiles"
+    geoJsonUrl:
+      type: string
+      format: uri
+      description: URL to GeoJSON geometry bundle
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/geometry.geojson"
+    dataVersion:
+      type: string
+      description: Published data version ID this package was generated from
+      example: "v3"
+    files:
+      type: array
+      items:
+        $ref: '#/PackageFileEntry'
+      description: Inventory of all files in this package with checksums (AC-1, AC-2)
+    minimumClientVersion:
+      type: string
+      pattern: "^\\d+\\.\\d+\\.\\d+$"
+      description: Minimum compatible client version (AC-1)
+      example: "1.0.0"
+    licenses:
+      type: array
+      items:
+        $ref: '#/PackageLicense'
+      description: Licenses governing the package contents (AC-1)
+    scorecardUrl:
+      type: string
+      format: uri
+      description: URL to scorecard definitions asset
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/scorecard.json"
+    rulesUrl:
+      type: string
+      format: uri
+      description: URL to local rules asset
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/rules.json"
+    conditionsUrl:
+      type: string
+      format: uri
+      description: URL to course conditions snapshot asset
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/conditions.json"
+    metadataUrl:
+      type: string
+      format: uri
+      description: URL to course/hole metadata asset
+      example: "https://cdn.vsp.vn/packages/550e8400/v1/metadata.json"
+    generatedAt:
+      type: string
+      format: date-time
+      description: When this package was built
+      example: "2026-08-01T12:00:00Z"
+    generatedBy:
+      type: string
+      description: Operator or system that generated this package
+      example: "vsp-package-worker@v1"
+    pinSnapshotDate:
+      type: string
+      format: date-time
+      description: Date pin positions were snapshotted
+      example: "2026-08-01T06:00:00Z"
+    weatherSnapshotDate:
+      type: string
+      format: date-time
+      description: Date weather snapshot was taken
+      example: "2026-08-01T06:30:00Z"
+    accuracyClass:
+      type: string
+      enum: [A_RTK_SURVEYED, B_LICENSED_PROVIDER, C_VERIFIED_SATELLITE, D_UNVERIFIED_COMMUNITY]
+      description: Data accuracy class
+      example: "A_RTK_SURVEYED"
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1
+      description: Confidence score for this package data
+      example: 0.95
+  required:
+    - packageId
+    - courseId
+    - version
+    - effectiveDate
+    - checksum
+    - sizeBytes
+
+PackageManifestListResponse:
+  type: object
+  description: Paginated list of course package manifests
+  properties:
+    content:
+      type: array
+      items:
+        $ref: '#/CoursePackageManifest'
+      description: List of package manifests in this page
+    page:
+      type: integer
+      description: Current page number (0-indexed)
+      example: 0
+    size:
+      type: integer
+      description: Page size
+      example: 20
+    totalElements:
+      type: integer
+      format: int64
+      description: Total number of manifests across all pages
+      example: 5
+    totalPages:
+      type: integer
+      description: Total number of pages
+      example: 1
+    first:
+      type: boolean
+      description: Whether this is the first page
+      example: true
+    last:
+      type: boolean
+      description: Whether this is the last page
+      example: true
+
+# ─── Package Build Job DTOs (Story 4.2 PKG-PUBLISH-3) ───────────────────────
+
+PackageBuildJobDto:
+  type: object
+  description: Async package build job record — tracks build lifecycle from QUEUED to COMPLETED or FAILED
+  properties:
+    jobId:
+      type: string
+      format: uuid
+      description: Unique job identifier
+      example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+    courseId:
+      type: integer
+      format: int64
+      description: Course identifier
+      example: 123
+    dataVersionId:
+      type: integer
+      format: int64
+      description: Data version this package was built from
+      example: 456
+    manifestVersion:
+      type: string
+      pattern: "^\\d+\\.\\d+\\.\\d+$"
+      description: Assigned semver version (null until COMPLETED)
+      example: "1.3.0"
+    status:
+      type: string
+      enum: [QUEUED, VALIDATING, BUILDING, ASSEMBLING, UPLOADING, PUBLISHING, COMPLETED, FAILED]
+      description: Current pipeline stage
+      example: "BUILDING"
+    createdAt:
+      type: string
+      format: date-time
+      description: When the job was created
+      example: "2026-08-01T10:00:00Z"
+    startedAt:
+      type: string
+      format: date-time
+      description: When the worker picked up the job (null if QUEUED)
+      example: "2026-08-01T10:00:05Z"
+    completedAt:
+      type: string
+      format: date-time
+      description: When the job reached a terminal state (null if still in progress)
+      example: "2026-08-01T10:02:30Z"
+    errorCode:
+      type: string
+      description: Machine-readable error code (null unless FAILED)
+      example: "GEOMETRY_INCOMPLETE"
+    errorMessage:
+      type: string
+      description: Human-readable error summary (null unless FAILED)
+      example: "Geometry incomplete"
+    errorDetail:
+      type: string
+      description: Actionable fix hint for operators (null unless FAILED)
+      example: "Complete all hole geometry before publishing"
+    triggeredBy:
+      type: string
+      description: Username of the operator who triggered this build
+      example: "admin@saigon-golf.com"
+    buildDurationMs:
+      type: integer
+      format: int64
+      description: Total elapsed time in milliseconds (null until terminal state)
+      example: 150000
+  required:
+    - jobId
+    - courseId
+    - dataVersionId
+    - status
+    - createdAt
+    - triggeredBy
+
+TriggerBuildRequest:
+  type: object
+  required:
+    - dataVersionId
+    - triggeredBy
+  properties:
+    dataVersionId:
+      type: integer
+      format: int64
+      description: The data version to package
+      example: 456
+    triggeredBy:
+      type: string
+      description: Username of the operator triggering the build
+      example: "admin@saigon-golf.com"
+
+TriggerBuildResponse:
+  type: object
+  required:
+    - jobId
+  properties:
+    jobId:
+      type: string
+      format: uuid
+      description: ID of the enqueued (or existing) build job
+      example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+
+PackageBuildJobListResponse:
+  type: object
+  description: Paginated list of build jobs for a course
+  properties:
+    jobs:
+      type: array
+      items:
+        $ref: '#/PackageBuildJobDto'
+      description: Build jobs in this page (newest first)
+    total:
+      type: integer
+      format: int64
+      description: Total number of build jobs for this course
+      example: 12
+    page:
+      type: integer
+      description: Page number (0-indexed)
+      example: 0
+    pageSize:
+      type: integer
+      description: Number of items in this page
+      example: 20
+
+# ─── Course Alert DTOs (Story 8.6 SEND-COURSE-ALERTS) ───────────────────────
+
+AlertTargetType:
+  type: string
+  enum: [FACILITY, COURSE, HOLE, FLIGHT, GROUP]
+  description: Target scope for a course alert — FACILITY sends to all golfers at a facility, COURSE to all on a course, HOLE to those on a specific hole, FLIGHT to a specific playing group, GROUP to a non-playing cluster
+  example: COURSE
+
+CourseAlert:
+  type: object
+  description: Course alert entity — safety or promotion message targeted at golfers at a specific scope (Story 8.6 AC-1, AC-2, AC-3)
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Unique alert identifier
+      example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+    # Targeting fields — at least one must be set (AC-1)
+    facilityId:
+      type: integer
+      format: int64
+      description: Facility scope — if set, alert reaches all golfers at this facility
+      example: 42
+    courseId:
+      type: integer
+      format: int64
+      description: Course scope — if set, alert reaches all golfers on this course
+      example: 123
+    holeId:
+      type: integer
+      format: int64
+      description: Hole scope — if set, alert reaches golfers currently on this hole
+      example: 5
+    flightId:
+      type: string
+      format: uuid
+      description: Flight scope — if set, alert reaches a specific playing flight
+      example: 550e8400-e29b-41d4-a716-446655440001
+    groupId:
+      type: string
+      format: uuid
+      description: Group scope — if set, alert reaches a non-playing group
+      example: 550e8400-e29b-41d4-a716-446655440002
+    # Alert classification (AC-2: visual distinction)
+    alertType:
+      type: string
+      enum: [SAFETY, PROMOTION]
+      description: Alert type — SAFETY alerts are rendered with visual warning treatment; PROMOTION with informational treatment
+      example: SAFETY
+    # Content
+    title:
+      type: string
+      description: Alert headline (max 120 characters)
+      example: Lightning Advisory
+      maxLength: 120
+    body:
+      type: string
+      description: Alert body text (max 500 characters)
+      example: Lightning detected within 10km. Seek shelter immediately. All players must leave the course.
+      maxLength: 500
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, CRITICAL]
+      default: NORMAL
+      description: Alert priority — affects delivery ordering and mobile notification treatment
+      example: HIGH
+    # Timing
+    effectiveAt:
+      type: string
+      format: date-time
+      description: When the alert becomes active (defaults to now on creation)
+      example: "2026-08-02T14:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When the alert expires and is no longer displayed (null = never)
+      example: "2026-08-02T18:00:00Z"
+    # Delivery tracking (AC-3)
+    deliveryStatus:
+      type: string
+      enum: [PENDING, DELIVERED, FAILED, EXPIRED]
+      description: Delivery status — PENDING before dispatch, DELIVERED after push sent, FAILED on unrecoverable error, EXPIRED when past expiresAt
+      example: DELIVERED
+    deliveredAt:
+      type: string
+      format: date-time
+      description: When the alert was dispatched to mobile clients (null if PENDING or FAILED)
+      example: "2026-08-02T14:01:00Z"
+    # Acknowledgment (AC-3)
+    acknowledgmentRequired:
+      type: boolean
+      default: false
+      description: Whether the alert requires explicit golfer acknowledgment
+      example: true
+    acknowledgedAt:
+      type: string
+      format: date-time
+      description: When the alert was acknowledged by the golfer (null if not yet acknowledged)
+      example: "2026-08-02T14:05:00Z"
+    acknowledgedBy:
+      type: string
+      description: Golfer account ID that acknowledged the alert (null if not yet acknowledged)
+      example: 99
+    # Audit fields
+    createdAt:
+      type: string
+      format: date-time
+      description: When the alert was created
+      example: "2026-08-02T14:00:00Z"
+    createdBy:
+      type: string
+      description: Operator account ID that created the alert
+      example: admin@saigon-golf.com
+    publishedVersion:
+      type: string
+      description: Content version hash at time of creation for ETag / optimistic concurrency
+      example: abc123def456
+    # Data quality fields (per architecture §9.3)
+    source:
+      type: string
+      description: Origin of the alert data (e.g., operator, weather system, AI)
+      example: weather-service-v2
+    license:
+      type: string
+      description: License governing alert content
+      example: Proprietary
+    accuracyClass:
+      type: string
+      enum: [A_RTK_SURVEYED, B_LICENSED_PROVIDER, C_VERIFIED_SATELLITE, D_UNVERIFIED_COMMUNITY]
+      description: Accuracy classification
+      example: B_LICENSED_PROVIDER
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1
+      description: Confidence score for alert accuracy
+      example: 0.95
+    verificationStatus:
+      type: string
+      enum: [VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED]
+      description: Verification status
+      example: VERIFIED
+    version:
+      type: integer
+      format: int64
+      description: Optimistic concurrency version — incremented on each update
+      example: 1
+  required:
+    - id
+    - alertType
+    - title
+    - deliveryStatus
+    - createdAt
+
+CourseAlertCreate:
+  type: object
+  description: Request body for creating and sending a course alert (Story 8.6 AC-1, AC-3)
+  properties:
+    facilityId:
+      type: integer
+      format: int64
+      description: Facility scope — alert reaches all golfers at this facility
+      example: 42
+    courseId:
+      type: integer
+      format: int64
+      description: Course scope — alert reaches all golfers on this course
+      example: 123
+    holeId:
+      type: integer
+      format: int64
+      description: Hole scope — alert reaches golfers currently on this hole
+      example: 5
+    flightId:
+      type: string
+      format: uuid
+      description: Flight scope — alert reaches a specific playing flight
+      example: 550e8400-e29b-41d4-a716-446655440001
+    groupId:
+      type: string
+      format: uuid
+      description: Group scope — alert reaches a non-playing group
+      example: 550e8400-e29b-41d4-a716-446655440002
+    alertType:
+      type: string
+      enum: [SAFETY, PROMOTION]
+      description: Alert type (required) — SAFETY or PROMOTION
+      example: SAFETY
+    title:
+      type: string
+      description: Alert headline (required, max 120 characters)
+      maxLength: 120
+      example: Lightning Advisory
+    body:
+      type: string
+      description: Alert body text (required, max 500 characters)
+      maxLength: 500
+      example: Lightning detected within 10km. Seek shelter immediately.
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, CRITICAL]
+      default: NORMAL
+      description: Alert priority
+      example: HIGH
+    effectiveAt:
+      type: string
+      format: date-time
+      description: When the alert becomes active — defaults to now if not provided
+      example: "2026-08-02T14:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When the alert expires — null means never expires
+      example: "2026-08-02T18:00:00Z"
+    acknowledgmentRequired:
+      type: boolean
+      default: false
+      description: Whether the alert requires explicit golfer acknowledgment
+      example: true
+  required:
+    - alertType
+    - title
+    - body
+
+CourseAlertUpdate:
+  type: object
+  description: Request body for updating a course alert (only allowed before effectiveAt)
+  properties:
+    title:
+      type: string
+      description: Alert headline (max 120 characters)
+      maxLength: 120
+      example: Lightning Advisory — Updated
+    body:
+      type: string
+      description: Alert body text (max 500 characters)
+      maxLength: 500
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, CRITICAL]
+      description: Alert priority
+    effectiveAt:
+      type: string
+      format: date-time
+      description: New effective time — must be in the future
+    expiresAt:
+      type: string
+      format: date-time
+      description: New expiry time — must be after effectiveAt
+
+CourseAlertListResponse:
+  type: object
+  description: Paginated list of course alerts with optional filtering
+  properties:
+    alerts:
+      type: array
+      items:
+        $ref: '#/CourseAlert'
+      description: Alerts in this page
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+# ─── Course Version Publish DTOs (Story 8.3 PUBLISH-CONTRACT) ─────────────────
+
+ValidationResult:
+  type: string
+  enum:
+    - VALID
+    - GEOMETRY_INVALID
+    - METADATA_MISSING
+    - LICENSE_MISSING
+    - QUALITY_INSUFFICIENT
+    - SOURCE_MISSING
+    - VALIDATION_ERROR
+  description: Result code of pre-publish validation
+  example: VALID
+
+ValidationError:
+  type: object
+  description: Single field-level validation error
+  properties:
+    entity:
+      type: string
+      description: Entity type that failed validation
+      example: FairwaySegment
+    entityId:
+      type: integer
+      format: int64
+      description: Entity ID that failed validation
+      example: 42
+    field:
+      type: string
+      description: Field that caused the validation failure
+      example: location
+    code:
+      type: string
+      description: Machine-readable error code
+      example: GEOMETRY_INVALID
+    message:
+      type: string
+      description: Human-readable error message
+      example: Geometry is not valid (ST_IsValid=false)
+
+ValidationWarning:
+  type: object
+  description: Non-blocking warning during validation
+  properties:
+    entity:
+      type: string
+      description: Entity type with a warning
+      example: Hole
+    entityId:
+      type: integer
+      format: int64
+      description: Entity ID with a warning
+      example: 5
+    field:
+      type: string
+      description: Field with a warning
+      example: metadata.accuracyClass
+    code:
+      type: string
+      description: Machine-readable warning code
+      example: QUALITY_BELOW_THRESHOLD
+    message:
+      type: string
+      description: Human-readable warning message
+      example: Accuracy class D is below recommended minimum B
+
+ValidationResponse:
+  type: object
+  description: Response from pre-publish validation endpoint (Story 8.3 AC-1)
+  properties:
+    versionId:
+      type: integer
+      format: int64
+      description: DataVersion ID that was validated
+      example: 12
+    result:
+      $ref: '#/ValidationResult'
+    errors:
+      type: array
+      items:
+        $ref: '#/ValidationError'
+      description: Blocking errors — publish is not allowed when errors exist
+      example: []
+    warnings:
+      type: array
+      items:
+        $ref: '#/ValidationWarning'
+      description: Non-blocking warnings — visible to admin but do not block publish
+      example: []
+  required:
+    - versionId
+    - result
+
+VersionDiffEntry:
+  type: object
+  description: A single change between two versions
+  properties:
+    entity:
+      type: string
+      description: Entity type that changed
+      example: FairwaySegment
+    entityId:
+      type: integer
+      format: int64
+      description: Entity ID
+      example: 42
+    field:
+      type: string
+      description: Field that changed
+      example: location
+    changeType:
+      type: string
+      enum: [ADDED, REMOVED, CHANGED]
+      description: Type of change
+      example: CHANGED
+    oldValue:
+      type: string
+      description: Previous value (null for ADDED)
+      example: null
+    newValue:
+      type: string
+      description: New value (null for REMOVED)
+      example: "POLYGON((106.62 10.82, 106.63 10.83, 106.63 10.82, 106.62 10.82))"
+
+VersionDiff:
+  type: object
+  description: Differences between a draft version and the latest published version (Story 8.3 AC-2)
+  properties:
+    draftVersionId:
+      type: integer
+      format: int64
+      description: The draft version being compared
+      example: 13
+    publishedVersionId:
+      type: integer
+      format: int64
+      description: The published version used as baseline (null if no published version)
+      example: 12
+    added:
+      type: array
+      items:
+        $ref: '#/VersionDiffEntry'
+      description: Entities present in draft but not in published version
+      example: []
+    removed:
+      type: array
+      items:
+        $ref: '#/VersionDiffEntry'
+      description: Entities present in published but not in draft
+      example: []
+    changed:
+      type: array
+      items:
+        $ref: '#/VersionDiffEntry'
+      description: Entities with field-level changes
+      example: []
+  required:
+    - draftVersionId
+
+PublishRequest:
+  type: object
+  description: Request body for publishing a course version (Story 8.3 AC-2)
+  properties:
+    publishNote:
+      type: string
+      description: Required publish note (min 10 characters) describing the change
+      example: "Updated hole 5 fairway geometry and added new bunker on hole 12"
+      minLength: 10
+    forcePublish:
+      type: boolean
+      default: false
+      description: If true, bypasses quality class threshold warning (still requires validation to pass)
+      example: false
+  required:
+    - publishNote
+
+PublishResponse:
+  type: object
+  description: Response after successful version publish (Story 8.3 AC-3)
+  properties:
+    newVersionId:
+      type: integer
+      format: int64
+      description: The newly published DataVersion ID
+      example: 13
+    status:
+      type: string
+      enum: [PUBLISHED]
+      description: Resulting status of the new version
+      example: PUBLISHED
+    auditId:
+      type: string
+      format: uuid
+      description: Audit entry ID for the publish action
+      example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+    buildJobId:
+      type: string
+      format: uuid
+      description: Package build job ID queued for this publish
+      example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+    publishedAt:
+      type: string
+      format: date-time
+      description: When the version was published
+      example: "2026-08-02T10:00:00Z"
+  required:
+    - newVersionId
+    - status
+    - publishedAt

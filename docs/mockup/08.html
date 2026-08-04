@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Thiết lập vòng đấu - Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&amp;family=Fira+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#0b1326",
+                    "on-background": "#dae2fd",
+                    "on-error": "#690005",
+                    "surface": "#0b1326",
+                    "on-primary-container": "#4f1700",
+                    "inverse-surface": "#dae2fd",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "secondary-container": "#ec6a06",
+                    "on-tertiary": "#003825",
+                    "error": "#ffb4ab",
+                    "secondary-fixed-dim": "#ffb690",
+                    "error-container": "#93000a",
+                    "tertiary-fixed": "#85f8c4",
+                    "primary-fixed": "#ffdbce",
+                    "on-tertiary-fixed": "#002114",
+                    "on-secondary-fixed-variant": "#783200",
+                    "surface-variant": "#2d3449",
+                    "secondary-fixed": "#ffdbca",
+                    "on-surface-variant": "#e2bfb2",
+                    "background": "#0b1326",
+                    "surface-tint": "#ffb599",
+                    "surface-bright": "#31394d",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "on-secondary-container": "#4a1c00",
+                    "on-primary-fixed": "#370e00",
+                    "primary-fixed-dim": "#ffb599",
+                    "surface-container-highest": "#2d3449",
+                    "inverse-primary": "#a73a00",
+                    "on-tertiary-container": "#00311f",
+                    "surface-container": "#171f33",
+                    "tertiary-container": "#25a475",
+                    "outline": "#a98a7e",
+                    "surface-container-low": "#131b2e",
+                    "surface-container-high": "#222a3d",
+                    "secondary": "#ffb690",
+                    "on-surface": "#dae2fd",
+                    "inverse-on-surface": "#283044",
+                    "on-secondary-fixed": "#341100",
+                    "on-secondary": "#552100",
+                    "on-primary": "#5a1c00",
+                    "primary": "#ffb599",
+                    "surface-container-lowest": "#060e20",
+                    "on-error-container": "#ffdad6",
+                    "tertiary": "#68dba9",
+                    "primary-container": "#f66018",
+                    "outline-variant": "#5a4138",
+                    "on-primary-fixed-variant": "#7f2b00"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "touch-target": "44px",
+                    "gutter": "16px",
+                    "unit": "8px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "metric-sm": ["Fira Code"],
+                    "body-lg": ["Fira Sans"],
+                    "display-metrics": ["Fira Code"],
+                    "headline-md": ["Fira Sans"],
+                    "body-md": ["Fira Sans"],
+                    "label-caps": ["Fira Sans"],
+                    "headline-lg": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .segmented-active {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md selection:bg-primary selection:text-on-primary">
+<!-- Top AppBar (Mobile Style) -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-margin-mobile h-touch-target w-full bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-on-surface">Thiết lập vòng đấu</h1>
+</div>
+<button class="active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</header>
+<main class="pb-32">
+<!-- Course Info Card -->
+<section class="p-margin-mobile">
+<div class="relative overflow-hidden rounded-xl bg-surface-container p-4 border border-[rgba(255,255,255,0.08)]">
+<div class="flex flex-col gap-2">
+<div class="flex flex-wrap gap-2 mb-1">
+<span class="px-2 py-0.5 rounded-sm bg-tertiary-container text-on-tertiary-container font-label-caps text-[10px] uppercase tracking-wider">Chính thức</span>
+<span class="px-2 py-0.5 rounded-sm bg-surface-variant text-on-surface-variant border border-outline-variant font-label-caps text-[10px] uppercase tracking-wider">Sẵn sàng ngoại tuyến</span>
+</div>
+<h2 class="font-headline-md text-on-surface leading-tight">BRG Legend Hill Golf Resort</h2>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="text-sm font-body-md">Sóc Sơn, Hà Nội</span>
+</div>
+</div>
+<div class="absolute -right-4 -top-4 opacity-10">
+<span class="material-symbols-outlined text-[120px]">golf_course</span>
+</div>
+</div>
+</section>
+<!-- Form Section 1: Course Config -->
+<section class="px-margin-mobile space-y-gutter">
+<h3 class="font-label-caps text-on-surface-variant uppercase tracking-widest pl-1">Cấu hình sân</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-lg border border-[rgba(255,255,255,0.08)] active:bg-surface-bright transition-colors">
+<label class="block font-label-caps text-on-surface-variant mb-1">Sơ đồ</label>
+<div class="flex items-center justify-between">
+<span class="font-body-md font-semibold text-on-surface">Legend Course</span>
+<span class="material-symbols-outlined text-primary text-sm">expand_more</span>
+</div>
+<span class="text-xs text-on-surface-variant">18 Hố</span>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-[rgba(255,255,255,0.08)] active:bg-surface-bright transition-colors">
+<label class="block font-label-caps text-on-surface-variant mb-1">Tee</label>
+<div class="flex items-center justify-between">
+<span class="font-body-md font-semibold text-on-surface">White</span>
+<span class="material-symbols-outlined text-primary text-sm">expand_more</span>
+</div>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">5,842 m</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-3 rounded-lg border border-[rgba(255,255,255,0.08)] active:bg-surface-bright transition-colors">
+<label class="block font-label-caps text-on-surface-variant mb-1">Thể thức</label>
+<div class="flex items-center justify-between">
+<span class="font-body-md font-semibold text-on-surface">Stroke Play</span>
+<span class="material-symbols-outlined text-primary text-sm">expand_more</span>
+</div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-[rgba(255,255,255,0.08)] active:bg-surface-bright transition-colors">
+<label class="block font-label-caps text-on-surface-variant mb-1">Bắt đầu</label>
+<div class="flex items-center justify-between">
+<span class="font-body-md font-semibold text-on-surface">Hố 1</span>
+<span class="material-symbols-outlined text-primary text-sm">expand_more</span>
+</div>
+<span class="text-[10px] text-primary">Tự động đề xuất</span>
+</div>
+</div>
+</section>
+<!-- Form Section 2: Equipment & Mode -->
+<section class="mt-8 px-margin-mobile space-y-gutter">
+<h3 class="font-label-caps text-on-surface-variant uppercase tracking-widest pl-1">Thiết bị &amp; Chế độ</h3>
+<div class="bg-surface-container-low p-3 rounded-lg border border-[rgba(255,255,255,0.08)] active:bg-surface-bright transition-colors flex items-center justify-between">
+<div>
+<label class="block font-label-caps text-on-surface-variant mb-1">Túi gậy</label>
+<span class="font-body-md font-semibold text-on-surface">Túi chính (14 gậy)</span>
+</div>
+<span class="material-symbols-outlined text-primary">edit</span>
+</div>
+<div class="bg-surface-container-highest p-1 rounded-xl flex gap-1 h-12">
+<button class="flex-1 rounded-lg text-sm font-semibold transition-all duration-200 bg-secondary-container text-on-secondary-container segmented-active" id="btn-normal" onclick="toggleMode('normal')">
+                    Thông thường
+                </button>
+<button class="flex-1 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-bright transition-all duration-200" id="btn-practice" onclick="toggleMode('practice')">
+                    Luyện tập
+                </button>
+<button class="flex-1 rounded-lg text-sm font-semibold text-on-surface-variant hover:bg-surface-bright transition-all duration-200" id="btn-tournament" onclick="toggleMode('tournament')">
+                    Giải đấu
+                </button>
+</div>
+<div class="hidden animate-in fade-in slide-in-from-top-2 duration-300" id="tournament-policy">
+<div class="bg-surface-container p-4 rounded-xl border border-outline-variant flex gap-3">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">lock</span>
+<div class="space-y-1">
+<p class="font-bold text-sm text-primary">Chế độ Giải đấu</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Các tính năng hỗ trợ (độ dốc, gợi ý gậy) sẽ bị khóa theo luật R&amp;A.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Form Section 3: Players List -->
+<section class="mt-8 px-margin-mobile space-y-gutter">
+<div class="flex items-center justify-between pl-1">
+<h3 class="font-label-caps text-on-surface-variant uppercase tracking-widest">Người chơi</h3>
+<span class="font-metric-sm text-on-surface-variant">2/4</span>
+</div>
+<div class="space-y-3">
+<!-- Player 1 (User) -->
+<div class="bg-surface-container p-4 rounded-xl border-l-4 border-primary flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant border-2 border-primary">
+<img class="w-full h-full object-cover" data-alt="A close-up professional portrait of a male golfer wearing a white polo shirt with a sophisticated navy collar. He has a calm, focused expression on his face. The lighting is soft and natural, suggesting an early morning atmosphere on a lush green golf course. The overall style is clean, modern, and high-contrast dark-mode friendly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDffiH1evTUlkDiwXmsCOfmxVMUJZPRRFNQO1iHLP132_BiHzs0788zVZ7l_pp07o0YLjqiZtmjObVsiM_Gy35AfT42lbBIzxqG6e67AAhhA0pkJy1l96FbQI5a4-LzDL55IxDBUjKUNoVetErk_3rRVuBFmf7PEZjg5RNFc-BJ-INPVpemc8gGpvysTO57-yfs9LJp_Q12e2A3H5VdL6V9hulnaXDuRXUtG7T05UjL5LbjDdREkLhunA"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Nghi (Tôi)</p>
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-primary">HCP: 12.4</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-xs text-on-surface-variant">White Tee</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">edit</span>
+</button>
+</div>
+<!-- Player 2 -->
+<div class="bg-surface-container p-4 rounded-xl border border-[rgba(255,255,255,0.08)] flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-surface-variant">
+<img class="w-full h-full object-cover" data-alt="Headshot of a middle-aged male golfer with a friendly but professional demeanor, set against a blurred background of a premium golf resort clubhouse. He wears a high-performance athletic polo shirt in a deep charcoal grey. The image is crisp, using cinematic lighting to emphasize high-end sports branding and a luxurious golf lifestyle." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtbvS7hyiLXv5NKBBztzewQQiHxyCpqi45pNisXdHdqzFbMS83TNSBHNOavJnjuWZgfWPulBiG4yfKMSB4DsnuWlvQKpQZwfHBojqQCXirwHyGIPLvFgWj1o3r86LiX25UHLWYjfFrni3fPpZa4Sa5VIu9u37r257vwWEXi4nT3By2tbTtTj_lIGukji7qVFA_XffYRR-iyA3aZScV9BiNHftuNvB_qOLGl3njDW0WTvTyYv2Pp-6NYA"/>
+</div>
+<div>
+<p class="font-bold text-on-surface">Nguyễn Văn A</p>
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-secondary">HCP: 15.2</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<span class="text-xs text-on-surface-variant">Blue Tee</span>
+</div>
+</div>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full active:bg-error-container transition-colors">
+<span class="material-symbols-outlined text-error">close</span>
+</button>
+</div>
+<!-- Add Player Button -->
+<button class="w-full h-14 border-2 border-dashed border-outline-variant rounded-xl flex items-center justify-center gap-2 text-on-surface-variant active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">person_add</span>
+<span class="font-bold">Thêm người chơi</span>
+</button>
+</div>
+</section>
+<!-- Warning State -->
+<section class="mt-8 px-margin-mobile">
+<div class="bg-error-container/20 border border-error-container p-4 rounded-xl">
+<div class="flex gap-3 items-start">
+<span class="material-symbols-outlined text-error mt-0.5">warning</span>
+<div class="space-y-3">
+<p class="text-sm text-error-container dark:text-error leading-relaxed">Dữ liệu ngoại tuyến chưa được tải. Bạn vẫn có thể chơi nhưng một số tính năng bản đồ và khoảng cách sẽ bị hạn chế.</p>
+<label class="flex items-center gap-3 select-none active:opacity-70 transition-opacity">
+<input class="w-5 h-5 rounded border-error text-error focus:ring-error focus:ring-offset-background bg-transparent" type="checkbox"/>
+<span class="text-sm font-semibold text-on-surface">Tôi hiểu và muốn tiếp tục</span>
+</label>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Bottom CTA -->
+<footer class="fixed bottom-0 left-0 w-full p-margin-mobile bg-gradient-to-t from-surface-dim via-surface-dim/95 to-transparent pt-8">
+<button class="w-full h-touch-target bg-primary-container text-on-primary-container rounded-full font-bold uppercase tracking-widest shadow-lg shadow-primary-container/20 active:scale-[0.98] active:brightness-90 transition-all">
+            Bắt đầu vòng đấu
+        </button>
+</footer>
+<script>
+        function toggleMode(mode) {
+            const btns = ['btn-normal', 'btn-practice', 'btn-tournament'];
+            const policy = document.getElementById('tournament-policy');
+            
+            btns.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btnId === 'btn-' + mode) {
+                    btn.classList.add('bg-secondary-container', 'text-on-secondary-container', 'segmented-active');
+                    btn.classList.remove('text-on-surface-variant');
+                } else {
+                    btn.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'segmented-active');
+                    btn.classList.add('text-on-surface-variant');
+                }
+            });
+
+            if (mode === 'tournament') {
+                policy.classList.remove('hidden');
+            } else {
+                policy.classList.add('hidden');
+            }
+        }
+
+        // Initialize state
+        window.addEventListener('load', () => {
+            // Check for tournament mode start
+            // Default is normal
+        });
+    </script>
+</body></html>

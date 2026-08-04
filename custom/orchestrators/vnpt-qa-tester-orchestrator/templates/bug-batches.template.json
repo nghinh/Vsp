@@ -1,0 +1,19 @@
+{
+  "bugs": [
+    {
+      "id": "QA-BUG-001",
+      "severity": "P1",
+      "type": "PRODUCT_BUG",
+      "area": "",
+      "risk_id": "RISK-001",
+      "failed_tests": [],
+      "reproduction_steps": [],
+      "expected": "",
+      "actual": "",
+      "suspected_files": [],
+      "fix_hint": "",
+      "evidence": "",
+      "tests_to_rerun": []
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Golf GPS - Hazard View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#2d3449",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "background": "#0b1326",
+                        "on-secondary-fixed-variant": "#783200",
+                        "primary-fixed": "#ffdbce",
+                        "outline-variant": "#5a4138",
+                        "on-primary-container": "#4f1700",
+                        "surface-variant": "#2d3449",
+                        "surface-container-lowest": "#060e20",
+                        "surface-bright": "#31394d",
+                        "inverse-surface": "#dae2fd",
+                        "primary-container": "#f66018",
+                        "on-primary-fixed": "#370e00",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#131b2e",
+                        "surface": "#0b1326",
+                        "error-container": "#93000a",
+                        "on-secondary-fixed": "#341100",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "primary-fixed-dim": "#ffb599",
+                        "secondary-fixed-dim": "#ffb690",
+                        "inverse-on-surface": "#283044",
+                        "inverse-primary": "#a73a00",
+                        "on-tertiary-container": "#00311f",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-tertiary-fixed": "#002114",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "on-surface-variant": "#e2bfb2",
+                        "on-secondary": "#552100",
+                        "on-error-container": "#ffdad6",
+                        "secondary": "#ffb690",
+                        "on-secondary-container": "#4a1c00",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#ec6a06",
+                        "surface-container-high": "#222a3d",
+                        "secondary-fixed": "#ffdbca",
+                        "on-tertiary": "#003825",
+                        "on-surface": "#dae2fd",
+                        "on-primary": "#5a1c00",
+                        "primary": "#ffb599",
+                        "tertiary": "#68dba9",
+                        "tertiary-container": "#25a475",
+                        "surface-container": "#171f33",
+                        "surface-dim": "#0b1326",
+                        "outline": "#a98a7e",
+                        "on-error": "#690005",
+                        "surface-tint": "#ffb599"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "body-lg": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "label-caps": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #000000;
+            color: #dae2fd;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior: none;
+        }
+        .apple-watch-frame {
+            width: 396px; /* Approx 45mm at display scale */
+            height: 484px;
+            margin: 0 auto;
+            position: relative;
+            background: #000;
+            border-radius: 60px;
+            overflow: hidden;
+            box-shadow: 0 0 0 4px #1a1a1a, 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .haptic-pulse {
+            animation: pulse-haptic 2s infinite ease-in-out;
+        }
+        @keyframes pulse-haptic {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+        }
+        .scrolling-content {
+            height: calc(484px - 44px - 44px); /* Frame minus top/bottom nav areas */
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen bg-neutral-950 p-4">
+<!-- Apple Watch 45mm Container -->
+<div class="apple-watch-frame flex flex-col">
+<!-- Top App Bar (Shared Component Logic) -->
+<header class="bg-background flex justify-between items-center w-full px-4 h-touch-target sticky top-0 z-20">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-body-md" style="font-variation-settings: 'FILL' 1;">gps_fixed</span>
+<h1 class="font-headline-md text-body-md font-bold text-primary">Hole 14</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">PAR 4</span>
+<span class="material-symbols-outlined text-primary text-body-md">battery_charging_full</span>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 overflow-y-auto no-scrollbar px-4 pt-2 pb-24 relative scrolling-content">
+<!-- Haptic Indicator Overlay (Contextual) -->
+<div class="absolute right-2 top-1/2 -translate-y-1/2 flex flex-col items-center opacity-40 pointer-events-none">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px] haptic-pulse">vibration</span>
+</div>
+<!-- Distance Cluster (Primary Content) -->
+<div class="flex flex-col gap-3">
+<!-- Hazard: Bunker Carry (Primary Focus) -->
+<button class="w-full bg-surface-container-low rounded-xl p-4 flex justify-between items-center transition-transform active:scale-95 text-left border border-outline-variant/20">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">landslide</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Bunker Carry</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-metrics text-display-metrics text-white">185</span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">m</span>
+</div>
+</div>
+<div class="h-12 w-1.5 bg-primary-container rounded-full"></div>
+</button>
+<!-- Hazard: Water Front -->
+<button class="w-full bg-surface-container-low rounded-xl p-4 flex justify-between items-center transition-transform active:scale-95 text-left border border-outline-variant/20">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">waves</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Water Front</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-metrics text-[36px] font-bold text-white leading-tight">210</span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">m</span>
+</div>
+</div>
+<div class="h-12 w-1.5 bg-secondary-container rounded-full"></div>
+</button>
+<!-- Hazard: Trees Right -->
+<button class="w-full bg-surface-container-low rounded-xl p-4 flex justify-between items-center transition-transform active:scale-95 text-left border border-outline-variant/20">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-outline-variant" style="font-variation-settings: 'FILL' 1;">park</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">Trees Right</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-metrics text-[36px] font-bold text-white leading-tight">245</span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">m</span>
+</div>
+</div>
+<div class="h-12 w-1.5 bg-outline-variant/50 rounded-full"></div>
+</button>
+<!-- Hazard: OB Back -->
+<button class="w-full bg-surface-container-low rounded-xl p-4 flex justify-between items-center transition-transform active:scale-95 text-left border border-outline-variant/20">
+<div class="flex flex-col">
+<div class="flex items-center gap-2 mb-1">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">dangerous</span>
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant">O.B. Back</span>
+</div>
+<div class="flex items-baseline gap-1">
+<span class="font-display-metrics text-[36px] font-bold text-white leading-tight">282</span>
+<span class="font-metric-sm text-metric-sm text-on-surface-variant">m</span>
+</div>
+</div>
+<div class="h-12 w-1.5 bg-error-container rounded-full"></div>
+</button>
+</div>
+<!-- Decorative Map Snippet (Asymmetric/Modern Layout) -->
+<div class="mt-4 rounded-full overflow-hidden border-2 border-primary/30 relative h-32 w-full">
+<div class="absolute inset-0 bg-surface-container-highest flex items-center justify-center opacity-40">
+<span class="material-symbols-outlined text-primary scale-[2]">map</span>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+<div class="absolute bottom-2 left-1/2 -translate-x-1/2">
+<div class="px-3 py-1 bg-primary-container rounded-full shadow-lg">
+<span class="font-label-caps text-[10px] text-on-primary-container">PIN VIEW</span>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation (Shared Component Logic) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 pb-2 h-[60px] bg-background/80 backdrop-blur-lg border-t border-outline-variant/30">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 h-10 w-10">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">sports_golf</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">list_alt</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">error_outline</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest transition-colors rounded-full">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</nav>
+<!-- Floating GPS Confidence Badge (Style Guidance Requirement) -->
+<div class="absolute top-12 left-4 z-30 pointer-events-none">
+<div class="flex items-center gap-1.5 bg-background/80 backdrop-blur-md border border-tertiary/50 px-2 py-0.5 rounded-full">
+<div class="w-2 h-2 bg-tertiary rounded-full animate-pulse shadow-[0_0_8px_#68dba9]"></div>
+<span class="font-metric-sm text-[10px] text-tertiary uppercase tracking-widest">High Conf</span>
+</div>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const listItems = document.querySelectorAll('button');
+            
+            listItems.forEach(item => {
+                item.addEventListener('touchstart', () => {
+                    // Visual feedback for tap targets
+                    item.classList.add('bg-surface-container-high');
+                });
+                item.addEventListener('touchend', () => {
+                    item.classList.remove('bg-surface-container-high');
+                });
+            });
+
+            // Simulate Digital Crown haptic scrolling
+            const scrollContainer = document.querySelector('main');
+            let lastScrollTop = 0;
+            
+            scrollContainer.addEventListener('scroll', () => {
+                const currentScroll = scrollContainer.scrollTop;
+                // Every 20px of scroll simulates a "notch"
+                if (Math.abs(currentScroll - lastScrollTop) > 20) {
+                    console.log('Haptic click'); // In a real app, window.navigator.vibrate(1)
+                    lastScrollTop = currentScroll;
+                }
+            });
+        });
+    </script>
+</body></html>

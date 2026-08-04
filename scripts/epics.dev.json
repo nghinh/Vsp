@@ -1,0 +1,352 @@
+{
+    "version": "1",
+    "epics": [
+        {
+            "epicId": "epic-01",
+            "epicTitle": "Platform Foundation",
+            "stories": [
+                {
+                    "storyId": "story-1.1",
+                    "storyTitle": "Initialize Repository and Delivery Environments",
+                    "sourcePath": "docs/implementation-artifacts/epic-01/1-1-initialize-repository-and-delivery-environments.md"
+                },
+                {
+                    "storyId": "story-1.2",
+                    "storyTitle": "Establish Backend Modular Monolith",
+                    "sourcePath": "docs/implementation-artifacts/epic-01/1-2-establish-backend-modular-monolith.md"
+                },
+                {
+                    "storyId": "story-1.3",
+                    "storyTitle": "Establish API Contracts and Error Standards",
+                    "sourcePath": "docs/implementation-artifacts/epic-01/1-3-establish-api-contracts-and-error-standards.md"
+                },
+                {
+                    "storyId": "story-1.4",
+                    "storyTitle": "Establish Design System Foundations",
+                    "sourcePath": "docs/implementation-artifacts/epic-01/1-4-establish-design-system-foundations.md"
+                },
+                {
+                    "storyId": "story-1.5",
+                    "storyTitle": "Establish Observability and Security Baseline",
+                    "sourcePath": "docs/implementation-artifacts/epic-01/1-5-establish-observability-and-security-baseline.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-02",
+            "epicTitle": "Identity and Golfer Profile",
+            "stories": [
+                {
+                    "storyId": "story-2.1",
+                    "storyTitle": "Register and Authenticate Golfer",
+                    "sourcePath": "docs/implementation-artifacts/epic-02/2-1-register-and-authenticate-golfer.md"
+                },
+                {
+                    "storyId": "story-2.2",
+                    "storyTitle": "Manage Sessions Securely",
+                    "sourcePath": "docs/implementation-artifacts/epic-02/2-2-manage-sessions-securely.md"
+                },
+                {
+                    "storyId": "story-2.3",
+                    "storyTitle": "Manage Golfer Profile and Preferences",
+                    "sourcePath": "docs/implementation-artifacts/epic-02/2-3-manage-golfer-profile-and-preferences.md"
+                },
+                {
+                    "storyId": "story-2.4",
+                    "storyTitle": "Manage Golf Bag and Clubs",
+                    "sourcePath": "docs/implementation-artifacts/epic-02/2-4-manage-golf-bag-and-clubs.md"
+                },
+                {
+                    "storyId": "story-2.5",
+                    "storyTitle": "Administer Roles and Privacy Requests",
+                    "sourcePath": "docs/implementation-artifacts/epic-02/2-5-administer-roles-and-privacy-requests.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-03",
+            "epicTitle": "Course Catalog and Data Foundation",
+            "stories": [
+                {
+                    "storyId": "story-3.1",
+                    "storyTitle": "Model Course and Golf Geometry",
+                    "sourcePath": "docs/implementation-artifacts/epic-03/3-1-model-course-and-golf-geometry.md"
+                },
+                {
+                    "storyId": "story-3.2",
+                    "storyTitle": "Search and Discover Courses",
+                    "sourcePath": "docs/implementation-artifacts/epic-03/3-2-search-and-discover-courses.md"
+                },
+                {
+                    "storyId": "story-3.3",
+                    "storyTitle": "View Course Details",
+                    "sourcePath": "docs/implementation-artifacts/epic-03/3-3-view-course-details.md"
+                },
+                {
+                    "storyId": "story-3.4",
+                    "storyTitle": "Import and Validate Course Data",
+                    "sourcePath": "docs/implementation-artifacts/epic-03/3-4-import-and-validate-course-data.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-04",
+            "epicTitle": "Offline Course Packages",
+            "stories": [
+                {
+                    "storyId": "story-4.1",
+                    "storyTitle": "Define Course Package Contract",
+                    "sourcePath": "docs/implementation-artifacts/epic-04/4-1-define-course-package-contract.md"
+                },
+                {
+                    "storyId": "story-4.2",
+                    "storyTitle": "Generate and Publish Course Packages",
+                    "sourcePath": "docs/implementation-artifacts/epic-04/4-2-generate-and-publish-course-packages.md"
+                },
+                {
+                    "storyId": "story-4.3",
+                    "storyTitle": "Download and Manage Offline Courses",
+                    "sourcePath": "docs/implementation-artifacts/epic-04/4-3-download-and-manage-offline-courses.md"
+                },
+                {
+                    "storyId": "story-4.4",
+                    "storyTitle": "Incrementally Update Course Data",
+                    "sourcePath": "docs/implementation-artifacts/epic-04/4-4-incrementally-update-course-data.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-05",
+            "epicTitle": "Round Setup and Local-First Scoring",
+            "stories": [
+                {
+                    "storyId": "story-5.1",
+                    "storyTitle": "Configure and Start a Round",
+                    "sourcePath": "docs/implementation-artifacts/epic-05/5-1-configure-and-start-a-round.md"
+                },
+                {
+                    "storyId": "story-5.2",
+                    "storyTitle": "Persist Round Locally",
+                    "sourcePath": "docs/implementation-artifacts/epic-05/5-2-persist-round-locally.md"
+                },
+                {
+                    "storyId": "story-5.3",
+                    "storyTitle": "Enter Scores for a Flight",
+                    "sourcePath": "docs/implementation-artifacts/epic-05/5-3-enter-scores-for-a-flight.md"
+                },
+                {
+                    "storyId": "story-5.4",
+                    "storyTitle": "Synchronize Round Idempotently",
+                    "sourcePath": "docs/implementation-artifacts/epic-05/5-4-synchronize-round-idempotently.md"
+                },
+                {
+                    "storyId": "story-5.5",
+                    "storyTitle": "Complete and Review Round",
+                    "sourcePath": "docs/implementation-artifacts/epic-05/5-5-complete-and-review-round.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-06",
+            "epicTitle": "Live Golf GPS Experience",
+            "stories": [
+                {
+                    "storyId": "story-6.1",
+                    "storyTitle": "Acquire and Qualify Location",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-1-acquire-and-qualify-location.md"
+                },
+                {
+                    "storyId": "story-6.2",
+                    "storyTitle": "Detect Course and Hole",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-2-detect-course-and-hole.md"
+                },
+                {
+                    "storyId": "story-6.3",
+                    "storyTitle": "Render Strategic Hole Map",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-3-render-strategic-hole-map.md"
+                },
+                {
+                    "storyId": "story-6.4",
+                    "storyTitle": "Calculate Green and Hazard Distances",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-4-calculate-green-and-hazard-distances.md"
+                },
+                {
+                    "storyId": "story-6.5",
+                    "storyTitle": "Place and Move a Target",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-5-place-and-move-a-target.md"
+                },
+                {
+                    "storyId": "story-6.6",
+                    "storyTitle": "Validate Pilot GPS Accuracy and Battery",
+                    "sourcePath": "docs/implementation-artifacts/epic-06/6-6-validate-pilot-gps-accuracy-and-battery.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-07",
+            "epicTitle": "Weather, Conditions, and Tournament Safety",
+            "stories": [
+                {
+                    "storyId": "story-7.1",
+                    "storyTitle": "Integrate and Cache Weather",
+                    "sourcePath": "docs/implementation-artifacts/epic-07/7-1-integrate-and-cache-weather.md"
+                },
+                {
+                    "storyId": "story-7.2",
+                    "storyTitle": "Display Wind Relative to Shot Line",
+                    "sourcePath": "docs/implementation-artifacts/epic-07/7-2-display-wind-relative-to-shot-line.md"
+                },
+                {
+                    "storyId": "story-7.3",
+                    "storyTitle": "Display Official Pin and Course Conditions",
+                    "sourcePath": "docs/implementation-artifacts/epic-07/7-3-display-official-pin-and-course-conditions.md"
+                },
+                {
+                    "storyId": "story-7.4",
+                    "storyTitle": "Enforce Tournament Mode Restrictions",
+                    "sourcePath": "docs/implementation-artifacts/epic-07/7-4-enforce-tournament-mode-restrictions.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-08",
+            "epicTitle": "Course Operations Portal",
+            "stories": [
+                {
+                    "storyId": "story-8.1",
+                    "storyTitle": "Manage Facilities and Courses",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-1-manage-facilities-and-courses.md"
+                },
+                {
+                    "storyId": "story-8.2",
+                    "storyTitle": "Edit Course Geometry",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-2-edit-course-geometry.md"
+                },
+                {
+                    "storyId": "story-8.3",
+                    "storyTitle": "Validate and Publish Course Version",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-3-validate-and-publish-course-version.md"
+                },
+                {
+                    "storyId": "story-8.4",
+                    "storyTitle": "Roll Back Published Data",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-4-roll-back-published-data.md"
+                },
+                {
+                    "storyId": "story-8.5",
+                    "storyTitle": "Manage Pins, Green Speed, and Conditions",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-5-manage-pins-green-speed-and-conditions.md"
+                },
+                {
+                    "storyId": "story-8.6",
+                    "storyTitle": "Send Course Alerts",
+                    "sourcePath": "docs/implementation-artifacts/epic-08/8-6-send-course-alerts.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-09",
+            "epicTitle": "Correction and Data Quality Loop",
+            "stories": [
+                {
+                    "storyId": "story-9.1",
+                    "storyTitle": "Submit Correction Offline",
+                    "sourcePath": "docs/implementation-artifacts/epic-09/9-1-submit-correction-offline.md"
+                },
+                {
+                    "storyId": "story-9.2",
+                    "storyTitle": "Review Correction Queue",
+                    "sourcePath": "docs/implementation-artifacts/epic-09/9-2-review-correction-queue.md"
+                },
+                {
+                    "storyId": "story-9.3",
+                    "storyTitle": "Resolve Correction into Published Version",
+                    "sourcePath": "docs/implementation-artifacts/epic-09/9-3-resolve-correction-into-published-version.md"
+                },
+                {
+                    "storyId": "story-9.4",
+                    "storyTitle": "Monitor Data Quality",
+                    "sourcePath": "docs/implementation-artifacts/epic-09/9-4-monitor-data-quality.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-10",
+            "epicTitle": "Smartwatch and Shot Tracking",
+            "stories": [
+                {
+                    "storyId": "story-10.1",
+                    "storyTitle": "Deliver Apple Watch Core Round Experience",
+                    "sourcePath": "docs/implementation-artifacts/epic-10/10-1-deliver-apple-watch-core-round-experience.md"
+                },
+                {
+                    "storyId": "story-10.2",
+                    "storyTitle": "Deliver Wear OS Core Round Experience",
+                    "sourcePath": "docs/implementation-artifacts/epic-10/10-2-deliver-wear-os-core-round-experience.md"
+                },
+                {
+                    "storyId": "story-10.3",
+                    "storyTitle": "Track Shots Manually",
+                    "sourcePath": "docs/implementation-artifacts/epic-10/10-3-track-shots-manually.md"
+                },
+                {
+                    "storyId": "story-10.4",
+                    "storyTitle": "Detect Shots with Confidence",
+                    "sourcePath": "docs/implementation-artifacts/epic-10/10-4-detect-shots-with-confidence.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-11",
+            "epicTitle": "Performance Analytics and Smart Caddie",
+            "stories": [
+                {
+                    "storyId": "story-11.1",
+                    "storyTitle": "Calculate Club Performance and Dispersion",
+                    "sourcePath": "docs/implementation-artifacts/epic-11/11-1-calculate-club-performance-and-dispersion.md"
+                },
+                {
+                    "storyId": "story-11.2",
+                    "storyTitle": "Deliver Driving Zone and Round Analytics",
+                    "sourcePath": "docs/implementation-artifacts/epic-11/11-2-deliver-driving-zone-and-round-analytics.md"
+                },
+                {
+                    "storyId": "story-11.3",
+                    "storyTitle": "Calculate Strokes Gained",
+                    "sourcePath": "docs/implementation-artifacts/epic-11/11-3-calculate-strokes-gained.md"
+                },
+                {
+                    "storyId": "story-11.4",
+                    "storyTitle": "Generate Explainable Smart Target",
+                    "sourcePath": "docs/implementation-artifacts/epic-11/11-4-generate-explainable-smart-target.md"
+                }
+            ]
+        },
+        {
+            "epicId": "epic-12",
+            "epicTitle": "Tournament and Smart Golf Ecosystem",
+            "stories": [
+                {
+                    "storyId": "story-12.1",
+                    "storyTitle": "Operate Tournament and Live Leaderboard",
+                    "sourcePath": "docs/implementation-artifacts/epic-12/12-1-operate-tournament-and-live-leaderboard.md"
+                },
+                {
+                    "storyId": "story-12.2",
+                    "storyTitle": "Add Booking, Membership, and Loyalty Boundaries",
+                    "sourcePath": "docs/implementation-artifacts/epic-12/12-2-add-booking-membership-and-loyalty-boundaries.md"
+                },
+                {
+                    "storyId": "story-12.3",
+                    "storyTitle": "Add Payments and Transaction Services",
+                    "sourcePath": "docs/implementation-artifacts/epic-12/12-3-add-payments-and-transaction-services.md"
+                },
+                {
+                    "storyId": "story-12.4",
+                    "storyTitle": "Enable International Expansion",
+                    "sourcePath": "docs/implementation-artifacts/epic-12/12-4-enable-international-expansion.md"
+                }
+            ]
+        }
+    ]
+}

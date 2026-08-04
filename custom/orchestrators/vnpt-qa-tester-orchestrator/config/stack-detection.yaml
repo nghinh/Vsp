@@ -1,0 +1,83 @@
+stacks:
+  javascript:
+    markers: [package.json]
+    test_frameworks: [jest, vitest, mocha]
+    property_tools: [fast-check]
+    e2e_tools: [playwright]
+    api_fuzz_tools: [schemathesis]
+    mutation_tools: [stryker]
+  typescript:
+    markers: [tsconfig.json, package.json]
+    test_frameworks: [vitest, jest]
+    property_tools: [fast-check]
+    e2e_tools: [playwright]
+    api_fuzz_tools: [schemathesis]
+    mutation_tools: [stryker]
+  python:
+    markers: [pyproject.toml, requirements.txt, setup.py]
+    test_frameworks: [pytest, unittest]
+    property_tools: [hypothesis]
+    stateful_tools: [hypothesis-stateful]
+    api_fuzz_tools: [schemathesis]
+    mutation_tools: [mutmut, cosmic-ray]
+  java:
+    markers: [pom.xml, build.gradle, build.gradle.kts]
+    test_frameworks: [junit]
+    property_tools: [jqwik, quicktheories]
+    api_test_tools: [rest-assured]
+    mutation_tools: [pit]
+  dotnet:
+    markers: ["*.csproj", "*.sln"]
+    test_frameworks: [xunit, nunit, mstest]
+    property_tools: [fscheck]
+    mutation_tools: [stryker-dotnet]
+  go:
+    markers: [go.mod, go.sum, Gopkg.toml, Gopkg.lock]
+    test_frameworks: [go-test, testing]
+    property_tools: [gopter, rapid]
+    api_test_tools: [resty, hrv, chi]
+    fuzz_tools: [go-fuzz, go-fuzz-corpus]
+    mutation_tools: []
+    note: No mature mutation testing tool available for Go
+  rust:
+    markers: [Cargo.toml, Cargo.lock]
+    test_frameworks: [cargo-test, testing]
+    property_tools: [proptest, quickcheck]
+    fuzz_tools: [cargo-fuzz, libfuzzer-sys]
+    api_test_tools: [reqwest, http-req]
+    mutation_tools: []
+    note: No mature mutation testing tool available for Rust
+  php:
+    markers: [composer.json, composer.lock]
+    test_frameworks: [phpunit, pest]
+    property_tools: [phpunit-property]
+    api_test_tools: [phpunit, dusk]
+    mutation_tools: [infection]
+  ruby:
+    markers: [Gemfile, Gemfile.lock, Rakefile]
+    test_frameworks: [rspec, minitest]
+    property_tools: [rantly, quickcheck]
+    mutation_tools: [mutant]
+  # Framework-specific overrides
+  nextjs:
+    markers: [next.config.js, next.config.ts]
+    extends: typescript
+    e2e_tools: [playwright, cypress]
+    note: Next.js specific configuration
+  nestjs:
+    markers: [nest-cli.json]
+    extends: typescript
+    e2e_tools: [jest, supertest]
+    api_test_tools: [supertest]
+    note: NestJS uses Jest by default with supertest for API
+  react_native:
+    markers: [app.json]
+    test_frameworks: [jest]
+    e2e_tools: [detox, aws-device-farm]
+    note: React Native testing stack
+  flutter:
+    markers: [pubspec.yaml, pubspec.lock]
+    test_frameworks: [flutter_test]
+    widget_test_tools: [flutter_test]
+    integration_test_tools: [integration_test]
+    note: Flutter's built-in testing infrastructure

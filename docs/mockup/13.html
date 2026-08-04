@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Báo dữ liệu sai - Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@100..900&family=Fira+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-container": "#4a1c00",
+                    "on-error-container": "#ffdad6",
+                    "surface": "#0b1326",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "on-secondary-fixed-variant": "#783200",
+                    "inverse-primary": "#a73a00",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "primary-container": "#f66018",
+                    "on-surface": "#dae2fd",
+                    "outline-variant": "#5a4138",
+                    "surface-bright": "#31394d",
+                    "on-tertiary": "#003825",
+                    "on-primary": "#5a1c00",
+                    "inverse-surface": "#dae2fd",
+                    "surface-container": "#171f33",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "secondary-fixed-dim": "#ffb690",
+                    "tertiary-container": "#25a475",
+                    "on-surface-variant": "#e2bfb2",
+                    "tertiary-fixed": "#85f8c4",
+                    "surface-variant": "#2d3449",
+                    "surface-dim": "#0b1326",
+                    "surface-container-lowest": "#060e20",
+                    "secondary": "#ffb690",
+                    "secondary-container": "#ec6a06",
+                    "on-tertiary-container": "#00311f",
+                    "on-primary-container": "#4f1700",
+                    "primary-fixed": "#ffdbce",
+                    "secondary-fixed": "#ffdbca",
+                    "on-secondary-fixed": "#341100",
+                    "on-primary-fixed": "#370e00",
+                    "primary": "#ffb599",
+                    "error-container": "#93000a",
+                    "surface-container-low": "#131b2e",
+                    "on-background": "#dae2fd",
+                    "on-tertiary-fixed": "#002114",
+                    "surface-tint": "#ffb599",
+                    "surface-container-highest": "#2d3449",
+                    "error": "#ffb4ab",
+                    "on-error": "#690005",
+                    "on-secondary": "#552100",
+                    "tertiary": "#68dba9",
+                    "surface-container-high": "#222a3d",
+                    "primary-fixed-dim": "#ffb599",
+                    "background": "#0b1326",
+                    "inverse-on-surface": "#283044",
+                    "outline": "#a98a7e"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "touch-target": "44px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "display-metrics": ["Fira Code"],
+                    "headline-md": ["Fira Sans"],
+                    "label-caps": ["Fira Sans"],
+                    "body-lg": ["Fira Sans"],
+                    "headline-lg": ["Fira Sans"],
+                    "metric-sm": ["Fira Code"],
+                    "body-md": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #171f33;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2d3449;
+            border-radius: 10px;
+        }
+        .chip-selected {
+            background-color: #ec6a06;
+            color: #4a1c00;
+            border-color: #ec6a06;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen font-body-md text-body-md">
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)] flex items-center justify-between px-margin-mobile h-touch-target w-full">
+<div class="flex items-center gap-3">
+<button aria-label="Go back" class="flex items-center justify-center w-10 h-10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md text-primary leading-tight">Hố 7</h1>
+<p class="text-[12px] text-on-surface-variant uppercase tracking-wider font-medium">BRG Legend Hill Golf Resort</p>
+</div>
+</div>
+<button class="flex items-center justify-center w-10 h-10 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto px-margin-mobile pt-6 pb-32 custom-scrollbar">
+<!-- Step 1: Issue Selection -->
+<section class="mb-8">
+<div class="flex items-center gap-2 mb-4">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-primary-container text-on-primary-container text-[12px] font-bold">1</span>
+<h2 class="font-headline-md text-[18px] text-on-surface">Chọn vấn đề</h2>
+</div>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Vị trí green</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Bunker</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Hồ nước</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">OB</button>
+<button class="px-4 py-2 rounded-full chip-selected text-[14px] font-bold shadow-lg shadow-primary/20">Vị trí cờ</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Khoảng cách</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Điều kiện sân</button>
+<button class="px-4 py-2 rounded-full border border-outline-variant text-[14px] font-medium transition-all active:scale-95 hover:bg-surface-bright">Khác</button>
+</div>
+</section>
+<!-- Evidence Section -->
+<section class="mb-8">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-surface-container-highest text-on-surface-variant text-[12px] font-bold">2</span>
+<h2 class="font-headline-md text-[18px] text-on-surface">Dữ liệu tự động</h2>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-[#10b981]/10 border border-[#10b981]/20">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-pulse"></span>
+<span class="font-metric-sm text-[10px] text-[#10b981] uppercase font-bold">Live GPS</span>
+</div>
+</div>
+<div class="bg-surface-container rounded-xl overflow-hidden border border-[rgba(255,255,255,0.04)] shadow-xl">
+<div class="grid grid-cols-3 gap-4 p-4">
+<div class="col-span-1">
+<div class="aspect-square rounded-lg overflow-hidden border border-outline-variant/30 bg-surface-dim" data-alt="A detailed satellite map view of a lush green golf course hole at BRG Legend Hill. The map shows tactical GPS coordinates overlayed with high-contrast outlines of the green and bunkers. The overall aesthetic is professional and technical, using deep greens and stark UI elements in a dark theme context." data-location="Soc Son, Hanoi" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC4CmEFGrbBonF9uUQCCWfTrz7tpZEaAHBKWGldBeqh9Kr-Z73FVBYJBkWUxwYC6mm6F4XJAf7RRjs_YpxBdTPRirScvqSvy_tFsipXkRoipOEoWXlfjs1pUfSrfgpI_ZkDk4RWUOqSc0dziprgtrBc-0Bi1rEmN_36M6vo3OtBsS3voahNK31CTccZWa80-Wdf5zxJW0XTuooP4KreC59I1W8Si__PnEB6gyG9SIP3DgHFooPxNH0Q6g')">
+<div class="w-full h-full bg-black/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+</div>
+<div class="col-span-2 flex flex-col justify-center space-y-2">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">location_searching</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Vị trí hiện tại</span>
+<span class="font-metric-sm text-metric-sm text-on-surface tracking-tight">21.0285° N, 105.8542° E</span>
+</div>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">radar</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Độ chính xác</span>
+<span class="font-metric-sm text-metric-sm text-on-surface">±4 m</span>
+</div>
+</div>
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mt-0.5">schedule</span>
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant uppercase font-bold tracking-tighter">Thời gian ghi nhận</span>
+<span class="font-metric-sm text-metric-sm text-on-surface">17:45:12</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-high px-4 py-2 border-t border-[rgba(255,255,255,0.04)] flex items-center justify-between">
+<span class="text-[11px] text-on-surface-variant">Sân / Hố hiện tại:</span>
+<span class="text-[11px] font-bold text-primary">BRG Legend Hill / Hố 7</span>
+</div>
+</div>
+</section>
+<!-- Input Section -->
+<section class="mb-8 space-y-6">
+<div>
+<label class="block text-[14px] font-medium text-on-surface mb-3">Thêm ảnh (tùy chọn)</label>
+<div class="grid grid-cols-3 gap-3">
+<button class="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-low active:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant mb-1 group-active:scale-90 transition-transform">add_a_photo</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Chụp ảnh</span>
+</button>
+<button class="aspect-square flex flex-col items-center justify-center border-2 border-dashed border-outline-variant rounded-xl bg-surface-container-low active:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant mb-1 group-active:scale-90 transition-transform">upload_file</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Tải lên</span>
+</button>
+</div>
+</div>
+<div>
+<label class="block text-[14px] font-medium text-on-surface mb-2" for="notes">Ghi chú</label>
+<textarea class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface placeholder:text-outline focus:ring-1 focus:ring-primary focus:border-primary transition-all text-body-md" id="notes" placeholder="Mô tả ngắn gọn lỗi bạn nhận thấy..." rows="3"></textarea>
+</div>
+<div class="flex items-start gap-3 p-3 rounded-lg bg-surface-variant/30 border border-outline-variant/20">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">privacy_tip</span>
+<p class="text-[12px] text-on-surface-variant leading-relaxed">
+                    Vị trí của bạn chỉ được sử dụng để xác minh tính chính xác của dữ liệu được báo cáo. Thông tin này được bảo mật và xóa sau khi xử lý.
+                </p>
+</div>
+</section>
+</main>
+<!-- Footer Actions -->
+<footer class="fixed bottom-0 left-0 w-full z-50 bg-surface-container-low border-t border-[rgba(255,255,255,0.08)]">
+<div class="px-margin-mobile py-2">
+<div class="flex items-center justify-center gap-2 mb-3">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">cloud_off</span>
+<span class="text-[11px] text-on-surface-variant font-medium">Đã lưu ngoại tuyến. Sẽ tự gửi khi có mạng.</span>
+</div>
+<button class="w-full h-touch-target bg-secondary-container text-on-secondary-container rounded-full font-bold flex items-center justify-center gap-2 active:scale-95 transition-all mb-4 shadow-lg shadow-secondary-container/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+<span>Gửi báo cáo</span>
+</button>
+</div>
+<!-- Safe area indicator for modern phones -->
+<div class="h-6 w-full"></div>
+</footer>
+<script>
+        // Micro-interaction for Chip Selection
+        const chips = document.querySelectorAll('button[class*="rounded-full"]');
+        chips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                if(chip.innerText !== "Gửi báo cáo") {
+                    chips.forEach(c => c.classList.remove('chip-selected', 'shadow-lg', 'shadow-primary/20'));
+                    chips.forEach(c => {
+                        if(c.innerText !== "Gửi báo cáo" && !c.classList.contains('chip-selected')) {
+                            c.classList.add('border', 'border-outline-variant');
+                        }
+                    });
+                    chip.classList.add('chip-selected', 'shadow-lg', 'shadow-primary/20');
+                    chip.classList.remove('border', 'border-outline-variant');
+                }
+            });
+        });
+
+        // Simple haptic feedback simulation
+        const buttons = document.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (window.navigator.vibrate) {
+                    window.navigator.vibrate(10);
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "10-2",
+  "reports": [
+    {
+      "slice_id": "slice-2",
+      "symbol": "WearRound",
+      "file": "apps/wear-os/app/src/main/java/vnpt/vsp/wear/domain/model/WearRound.kt",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T12:20:17.215942+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": [
+            "Cy",
+            "Emb(no)"
+          ],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        }
+      ]
+    }
+  ]
+}

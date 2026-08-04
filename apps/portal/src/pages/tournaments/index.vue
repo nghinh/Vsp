@@ -1,0 +1,538 @@
+<template>
+  <div class="tournament-policies-page">
+
+    <header class="page-header">
+      <div class="header-content">
+        <h1 class="page-title">Tournament Policies</h1>
+        <p class="page-subtitle">Create and manage tournament mode feature restrictions.</p>
+      </div>
+      <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
+        {{ showCreateForm ? 'Cancel' : '+ New Policy' }}
+      </button>
+    </header>
+
+    <!-- ─── Create form ─────────────────────────────────────────────────────── -->
+    <div v-if="showCreateForm" class="create-form-panel">
+      <h2 class="form-title">Create Tournament Policy</h2>
+
+      <div class="form-grid">
+        <!-- Name -->
+        <div class="form-field">
+          <label class="form-label" for="policy-name">Policy Name <span class="required">*</span></label>
+          <input
+            id="policy-name"
+            v-model="createForm.name"
+            class="form-input"
+            type="text"
+            placeholder="e.g. Official Tournament 2026"
+            autocomplete="off"
+          />
+          <span v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</span>
+        </div>
+
+        <!-- Description -->
+        <div class="form-field full-width">
+          <label class="form-label" for="policy-desc">Description</label>
+          <textarea
+            id="policy-desc"
+            v-model="createForm.description"
+            class="form-input"
+            rows="2"
+            placeholder="Optional description of when to use this policy…"
+          />
+        </div>
+      </div>
+
+      <!-- Feature toggles -->
+      <fieldset class="feature-group">
+        <legend class="feature-group-title">Feature Flags</legend>
+
+        <div class="toggle-grid">
+          <div v-for="flag in featureFlags" :key="flag.key" class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-label">{{ flag.label }}</span>
+              <span class="toggle-description">{{ flag.description }}</span>
+            </div>
+            <button
+              class="toggle-btn"
+              :class="getFlagValue(flag.key) ? 'toggle-on' : 'toggle-off'"
+              role="switch"
+              :aria-checked="getFlagValue(flag.key)"
+              :aria-label="flag.label"
+              @click="setFlag(flag.key, !getFlagValue(flag.key))"
+            >
+              <span class="toggle-thumb" />
+            </button>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Form actions -->
+      <div class="form-actions">
+        <span v-if="createError" class="error-message" role="alert">{{ createError }}</span>
+        <button
+          class="btn btn-primary"
+          :disabled="creating"
+          @click="handleCreate"
+        >
+          {{ creating ? 'Creating…' : 'Create Policy' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- ─── Loading ──────────────────────────────────────────────────────────── -->
+    <div v-if="loading" class="loading-state" aria-busy="true">
+      <div v-for="i in 3" :key="i" class="skeleton-card" />
+    </div>
+
+    <!-- ─── Error ─────────────────────────────────────────────────────────────── -->
+    <div v-else-if="fetchError" class="error-state" role="alert">
+      <span class="error-icon">⚠</span>
+      <span>{{ fetchError }}</span>
+      <button class="btn btn-secondary" @click="loadPolicies">Retry</button>
+    </div>
+
+    <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
+    <div v-else-if="policies.length === 0 && !showCreateForm" class="empty-state">
+      <span class="empty-icon">🏌️</span>
+      <p class="empty-title">No tournament policies yet.</p>
+      <p class="empty-subtitle">Create your first policy to start restricting features in tournament mode.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Create First Policy</button>
+    </div>
+
+    <!-- ─── Policy list ──────────────────────────────────────────────────────── -->
+    <div v-else class="policy-list" role="list">
+      <div
+        v-for="policy in policies"
+        :key="policy.id"
+        class="policy-card"
+        role="listitem"
+        @click="navigateToPolicy(policy.id)"
+      >
+        <!-- Lock badge -->
+        <div class="policy-header">
+          <span class="policy-name">{{ policy.name }}</span>
+          <span v-if="policy.isLocked" class="lock-badge" title="Policy is locked — cannot be edited">
+            🔒 Locked
+          </span>
+        </div>
+
+        <p v-if="policy.description" class="policy-description">{{ policy.description }}</p>
+
+        <!-- Feature flags summary -->
+        <div class="feature-summary">
+          <span
+            v-for="flag in enabledFlags(policy)"
+            :key="flag"
+            class="feature-pill pill-enabled"
+          >{{ flagLabels[flag] }} ✓</span>
+          <span
+            v-for="flag in disabledFlags(policy)"
+            :key="flag"
+            class="feature-pill pill-disabled"
+          >{{ flagLabels[flag] }} ✗</span>
+        </div>
+
+        <!-- Meta row -->
+        <div class="policy-meta">
+          <span class="meta-item">v{{ policy.version }}</span>
+          <span class="meta-item">Created {{ formatInstant(policy.createdAt) }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import type {
+  TournamentPolicyResponse,
+  TournamentPolicyCreateRequest,
+} from '@/types/tournament-policy';
+import { tournamentPolicyApi } from '@/api/tournament-policy';
+
+const router = useRouter();
+
+const policies = ref<TournamentPolicyResponse[]>([]);
+const loading = ref(false);
+const fetchError = ref<string | null>(null);
+
+// ─── Create form state ────────────────────────────────────────────────────────
+const showCreateForm = ref(false);
+const creating = ref(false);
+const createError = ref<string | null>(null);
+const validationErrors = reactive<Record<string, string>>({});
+
+const defaultFlags = () => ({
+  windAdjustmentEnabled: true,
+  playsLikeEnabled: true,
+  elevationEnabled: true,
+  clubRecommendationEnabled: true,
+  contoursEnabled: true,
+  puttingHelpEnabled: true,
+  aiFeaturesEnabled: true,
+});
+
+const createForm = reactive<TournamentPolicyCreateRequest>({
+  name: '',
+  description: '',
+  ...defaultFlags(),
+});
+
+const featureFlags: Array<{ key: keyof TournamentPolicyCreateRequest; label: string; description: string }> = [
+  { key: 'windAdjustmentEnabled', label: 'Wind Adjustment', description: 'Allow wind adjustment on shots' },
+  { key: 'playsLikeEnabled', label: 'Plays-Like Distances', description: 'Show plays-like distances from tee' },
+  { key: 'elevationEnabled', label: 'Elevation Data', description: 'Display elevation information' },
+  { key: 'clubRecommendationEnabled', label: 'Club Recommendation', description: 'Show AI club suggestions' },
+  { key: 'contoursEnabled', label: 'Green Contours', description: 'Display putting green contours' },
+  { key: 'puttingHelpEnabled', label: 'Putting Help', description: 'Show putting assistance overlays' },
+  { key: 'aiFeaturesEnabled', label: 'AI Features', description: 'Enable Smart Target and AI features' },
+];
+
+const flagLabels: Record<string, string> = {
+  windAdjustmentEnabled: 'Wind',
+  playsLikeEnabled: 'Plays-Like',
+  elevationEnabled: 'Elevation',
+  clubRecommendationEnabled: 'Club Rec',
+  contoursEnabled: 'Contours',
+  puttingHelpEnabled: 'Putting Help',
+  aiFeaturesEnabled: 'AI',
+};
+
+function getFlagValue(key: string): boolean {
+  return createForm[key as keyof TournamentPolicyCreateRequest] as boolean;
+}
+
+function setFlag(key: string, value: boolean) {
+  (createForm as Record<string, unknown>)[key] = value;
+}
+
+function enabledFlags(policy: TournamentPolicyResponse): string[] {
+  return Object.entries(policy)
+    .filter(([k, v]) => typeof v === 'boolean' && v && k.endsWith('Enabled'))
+    .map(([k]) => k);
+}
+
+function disabledFlags(policy: TournamentPolicyResponse): string[] {
+  return Object.entries(policy)
+    .filter(([k, v]) => typeof v === 'boolean' && !v && k.endsWith('Enabled'))
+    .map(([k]) => k);
+}
+
+// ─── Load ─────────────────────────────────────────────────────────────────────
+
+async function loadPolicies() {
+  loading.value = true;
+  fetchError.value = null;
+  try {
+    // Fetch all policies — the API currently has no list endpoint;
+    // in a real implementation this would be a paginated list.
+    // For MVP, we navigate to the policy page directly after creation.
+    policies.value = [];
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function handleCreate() {
+  // Validate
+  validationErrors.name = createForm.name.trim() ? '' : 'Policy name is required';
+  if (validationErrors.name) return;
+
+  creating.value = true;
+  createError.value = null;
+  try {
+    const policy = await tournamentPolicyApi.createPolicy(createForm, props.authToken);
+    // Reset form
+    showCreateForm.value = false;
+    Object.assign(createForm, { name: '', description: '', ...defaultFlags() });
+    // Navigate to the new policy's detail page
+    router.push(`/tournaments/${policy.id}`);
+  } catch (err: unknown) {
+    const apiErr = err as { message?: string };
+    createError.value = apiErr?.message ?? 'Failed to create policy';
+  } finally {
+    creating.value = false;
+  }
+}
+
+function navigateToPolicy(id: string) {
+  router.push(`/tournaments/${id}`);
+}
+
+function formatInstant(iso: string): string {
+  return new Date(iso).toLocaleDateString();
+}
+
+const props = defineProps<{
+  authToken: string;
+}>();
+
+onMounted(() => loadPolicies());
+</script>
+
+<style scoped>
+.tournament-policies-page {
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 1.5rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Header */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 1rem;
+}
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+.page-subtitle {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.25rem 0 0;
+}
+
+/* Buttons */
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  min-height: 44px;
+  transition: background 0.15s;
+}
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+.btn-primary:hover:not(:disabled) { background: #1d4ed8; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary {
+  background: white;
+  color: #374151;
+  border-color: #d1d5db;
+}
+.btn-secondary:hover { background: #f9fafb; }
+
+/* Create form */
+.create-form-panel {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.form-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 1rem;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.full-width { grid-column: 1 / -1; }
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+.required { color: #dc2626; }
+.form-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  min-height: 44px;
+  background: white;
+  color: #111827;
+}
+.form-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+textarea.form-input { resize: vertical; }
+.field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  margin-top: 0.125rem;
+}
+
+/* Feature toggles */
+.feature-group {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: white;
+}
+.feature-group-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  padding: 0 0.5rem;
+}
+.toggle-grid { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.toggle-info { display: flex; flex-direction: column; gap: 0.1rem; }
+.toggle-label { font-size: 0.875rem; font-weight: 500; color: #111827; }
+.toggle-description { font-size: 0.75rem; color: #6b7280; }
+
+.toggle-btn {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle-off { background: #d1d5db; }
+.toggle-on { background: #2563eb; }
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle-off .toggle-thumb { left: 2px; }
+.toggle-on .toggle-thumb { transform: translateX(20px); }
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+.error-message {
+  font-size: 0.875rem;
+  color: #dc2626;
+  margin-right: auto;
+}
+
+/* Loading */
+.loading-state { display: flex; flex-direction: column; gap: 0.75rem; }
+.skeleton-card {
+  height: 5rem;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error / Empty */
+.error-state,
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 3rem 1rem;
+  color: #6b7280;
+  text-align: center;
+}
+.error-state { color: #dc2626; }
+.empty-icon, .error-icon { font-size: 2rem; }
+.empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: #9ca3af; margin: 0; }
+
+/* Policy list */
+.policy-list { display: flex; flex-direction: column; gap: 0.75rem; }
+.policy-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.policy-card:hover {
+  background: #f9fafb;
+  border-color: #2563eb;
+}
+.policy-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.policy-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+.lock-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  white-space: nowrap;
+}
+.policy-description {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  margin: 0 0 0.5rem;
+}
+.feature-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+.feature-pill {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+}
+.pill-enabled { color: #15803d; background: #dcfce7; }
+.pill-disabled { color: #9ca3af; background: #f3f4f6; }
+.policy-meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+</style>

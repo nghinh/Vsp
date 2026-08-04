@@ -1,0 +1,218 @@
+# Strokes Gained Schemas — Vietnam Smart Golf Platform API
+#
+# Strokes Gained analytics for golf performance measurement.
+# Per Story 11.3 Slice 2: Repository + OpenAPI
+#
+# Computes shot-level performance vs. benchmark baselines across 4 categories:
+# Off-the-Tee, Approach, Around-the-Green, Putting.
+
+# ─── Enums ────────────────────────────────────────────────────────────────────
+
+SGBenchmarkType:
+  type: string
+  enum:
+    - similar_handicap
+    - target_handicap
+    - self_history
+    - professional
+  description: |
+    Benchmark reference type for Strokes Gained comparison.
+    - similar_handicap: Peer group benchmark (e.g., 10–15 handicap)
+    - target_handicap: User's target/goal handicap
+    - self_history: Player's own historical average
+    - professional: Valid professional reference (PGA Tour baselines)
+
+SGCategory:
+  type: string
+  enum:
+    - off_the_tee
+    - approach
+    - around_the_green
+    - putting
+  description: |
+    Supported Strokes Gained categories.
+    - off_the_tee: Par-4/Par-5 tee shots (excluding putters)
+    - approach: Shots from 100+ yards to green
+    - around_the_green: Shots inside 100 yards, not on green
+    - putting: All putts
+
+SGLimitation:
+  type: string
+  enum:
+    - insufficient_sample
+    - no_club_data
+    - no_benchmark_data
+    - mixed_conditions
+    - tournament_rounds_only
+  description: |
+    Limitation flags when Strokes Gained cannot be reliably computed.
+    - insufficient_sample: Fewer than 20 shots in category
+    - no_club_data: No club distance data for this shot type
+    - no_benchmark_data: Benchmark reference unavailable
+    - mixed_conditions: Wind/condition variance too high
+    - tournament_rounds_only: Filter applied but too few tournament rounds
+
+# ─── Value Objects ─────────────────────────────────────────────────────────────
+
+SGDateRange:
+  type: object
+  required:
+    - start
+    - end
+  properties:
+    start:
+      type: string
+      format: date-time
+      description: Start of the date range
+      example: "2026-07-01T00:00:00Z"
+    end:
+      type: string
+      format: date-time
+      description: End of the date range
+      example: "2026-07-31T23:59:59Z"
+
+# ─── Domain Models ─────────────────────────────────────────────────────────────
+
+StrokesGainedResult:
+  type: object
+  required:
+    - category
+    - benchmarkType
+    - strokesGained
+    - baselineStrokes
+    - actualStrokes
+    - sampleCount
+    - confidence
+  properties:
+    category:
+      $ref: '#/SGCategory'
+    benchmarkType:
+      $ref: '#/SGBenchmarkType'
+    strokesGained:
+      type: number
+      description: Strokes gained (negative = lost shots, positive = gained)
+      example: 0.5
+    baselineStrokes:
+      type: number
+      description: Expected strokes for benchmark
+      example: 15.0
+    actualStrokes:
+      type: number
+      description: Actual strokes taken
+      example: 14.5
+    sampleCount:
+      type: integer
+      minimum: 0
+      description: Number of shots in this category
+      example: 25
+    limitation:
+      $ref: '#/SGLimitation'
+      description: Limitation flag if result is not credible (null if robust)
+    confidence:
+      type: number
+      minimum: 0
+      maximum: 1
+      description: Confidence score (0.0–1.0 based on sample + shot quality)
+      example: 0.72
+
+StrokesGainedSummary:
+  type: object
+  required:
+    - playerId
+    - overallStrokesGained
+    - categoryBreakdown
+    - limitations
+    - lastCalculatedAt
+  properties:
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+      example: 880e8400-e29b-41d4-a716-446655440001
+    roundId:
+      type: string
+      format: uuid
+      description: Round identifier (null if date range)
+    dateRange:
+      $ref: '#/SGDateRange'
+      description: Date range for this summary (null if single round)
+    overallStrokesGained:
+      type: number
+      description: Overall strokes gained across all categories
+      example: 2.5
+    categoryBreakdown:
+      type: array
+      items:
+        $ref: '#/StrokesGainedResult'
+      description: Strokes Gained result for each category and benchmark type combination
+    limitations:
+      type: array
+      items:
+        $ref: '#/SGLimitation'
+      description: All limitation flags for this summary
+    lastCalculatedAt:
+      type: string
+      format: date-time
+      description: When this summary was calculated
+      example: "2026-08-01T14:30:00Z"
+
+SGBenchmarkData:
+  type: object
+  required:
+    - type
+    - category
+    - baselineStrokesPerShot
+  properties:
+    type:
+      $ref: '#/SGBenchmarkType'
+    category:
+      $ref: '#/SGCategory'
+    baselineStrokesPerShot:
+      type: number
+      description: Expected strokes per shot in this category
+      example: 3.0
+    minSampleForCredibility:
+      type: integer
+      minimum: 1
+      description: Minimum shots needed for credible SG calculation
+      default: 20
+      example: 20
+
+# ─── Request/Response ─────────────────────────────────────────────────────────
+
+StrokesGainedRequest:
+  type: object
+  required:
+    - playerId
+    - benchmarkTypes
+  properties:
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+    roundId:
+      type: string
+      format: uuid
+      description: Optional round ID (mutually exclusive with dateRange)
+    dateRange:
+      $ref: '#/SGDateRange'
+      description: Optional date range (mutually exclusive with roundId)
+    benchmarkTypes:
+      type: array
+      items:
+        $ref: '#/SGBenchmarkType'
+      minItems: 1
+      description: Benchmark types to calculate against
+      example: ["similar_handicap", "professional"]
+
+StrokesGainedResponse:
+  type: object
+  required:
+    - summary
+  properties:
+    summary:
+      $ref: '#/StrokesGainedSummary'
+    cachedAt:
+      type: string
+      format: date-time
+      description: When this response was cached (if applicable)

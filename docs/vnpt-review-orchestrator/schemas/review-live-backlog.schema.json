@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ReviewLiveBacklog",
+  "type": "array",
+  "minItems": 0,
+  "items": {
+    "type": "object",
+    "additionalProperties": true,
+    "required": [
+      "issue_id",
+      "issue_signature",
+      "state",
+      "owner_scope",
+      "priority",
+      "title",
+      "severity",
+      "category",
+      "files",
+      "evidence_before",
+      "success_condition"
+    ],
+    "properties": {
+      "issue_id": { "type": "string", "minLength": 1 },
+      "issue_signature": { "type": "string", "minLength": 1 },
+      "state": {
+        "type": "string",
+        "enum": ["open", "in_progress", "stalled", "fixed", "closed", "waived", "deferred"]
+      },
+      "owner_scope": { "type": "string", "minLength": 1 },
+      "priority": { "type": "integer", "minimum": 0 },
+      "title": { "type": "string", "minLength": 1 },
+      "severity": {
+        "type": "string",
+        "enum": ["info", "low", "medium", "high", "critical"]
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "workflow/review",
+          "workflow/fix",
+          "code/style",
+          "code/logic",
+          "code/security",
+          "code/performance",
+          "config/build",
+          "config/ci",
+          "docs/missing",
+          "test/coverage",
+          "test/quality"
+        ]
+      },
+      "files": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "evidence_before": { "type": "string", "minLength": 1 },
+      "evidence_after": { "type": ["string", "null"] },
+      "success_condition": { "type": "string", "minLength": 1 }
+    }
+  }
+}

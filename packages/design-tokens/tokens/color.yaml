@@ -1,0 +1,103 @@
+# Design Tokens — Color
+# Source: UX Spec §4.2 — Vietnam Smart Golf Platform
+# Platform-agnostic semantic color tokens.
+# No raw hex values may be used in component code — only token references.
+
+color:
+  # ─── Light Mode ────────────────────────────────────────────────────────────
+
+  light:
+    # Primary palette
+    primary:        "#EA580C"   # Orange — primary action, selected mode, active target
+    onPrimary:      "#FFFFFF"  # Text/icon on primary
+    secondary:      "#F97316"  # Orange — secondary emphasis, warning-adjacent highlights
+    onSecondary:    "#FFFFFF"
+    accent:         "#059669"  # Emerald — safe/ready/success, pace-positive signals
+    onAccent:       "#FFFFFF"
+
+    # Destructive
+    destructive:    "#DC2626"  # Red — danger, delete, severe weather
+    onDestructive:  "#FFFFFF"
+
+    # Backgrounds
+    background:     "#FFFFFF"
+    onBackground:   "#0F172A"
+    surface:        "#FFFFFF"
+    onSurface:      "#0F172A"
+    muted:          "#F8FAFC"
+    onMuted:        "#64748B"
+
+    # Borders
+    border:          "rgba(15,23,42,0.08)"
+    borderStrong:    "rgba(15,23,42,0.16)"
+
+    # Focus ring (same as primary — 4.5:1 on white)
+    ring:            "#EA580C"
+
+    # Text contrast tiers
+    textPrimary:     "#0F172A"   # 4.5:1 on white
+    textSecondary:   "#475569"   # 4.5:1 on white
+    textTertiary:    "#94A3B8"   # 3:1 on white
+
+  # ─── Dark / Outdoor Mode ────────────────────────────────────────────────────
+
+  dark:
+    # Primary palette
+    primary:        "#FB923C"   # Lighter orange for dark surfaces — 4.5:1 on #0F172A
+    onPrimary:      "#0F172A"
+    secondary:       "#FBBF24"  # Amber — warning-adjacent highlights on dark
+    onSecondary:    "#0F172A"
+    accent:          "#34D399"  # Emerald-400 — safe/ready on dark
+    onAccent:       "#052E16"
+
+    # Destructive
+    destructive:     "#F87171"  # Red-400 — 4.5:1 on dark background
+    onDestructive:  "#450A0A"
+
+    # Backgrounds
+    background:      "#0F172A"  # Outdoor dark base, map overlays, night/dim mode
+    onBackground:    "#FFFFFF"
+    surface:         "#1E293B"  # Card/modal surface on dark
+    onSurface:       "#F1F5F9"
+    muted:           "#201C27"  # Secondary surfaces
+    onMuted:         "#94A3B8"
+
+    # Borders
+    border:          "rgba(255,255,255,0.08)"
+    borderStrong:    "rgba(255,255,255,0.16)"
+
+    # Focus ring
+    ring:            "#FB923C"   # Visible on dark, 4.5:1
+
+    # Text contrast tiers
+    textPrimary:     "#FFFFFF"  # 4.5:1 on dark background
+    textSecondary:   "#CBD5E1"  # 4.5:1 on dark
+    textTertiary:    "#64748B"  # 3:1 on dark
+
+  # ─── Semantic Aliases ───────────────────────────────────────────────────────
+
+  semantic:
+    # GPS / location states
+    gpsReady:        "{color.accent}"
+    gpsLowAccuracy:  "{color.secondary}"
+    gpsSearching:    "{color.muted}"
+
+    # Sync / connectivity states
+    online:          "{color.accent}"
+    offline:         "{color.muted}"
+    syncPending:     "#3B82F6"  # Blue — progress/neutral
+    syncFailed:      "{color.destructive}"
+
+    # Data confidence
+    official:        "{color.accent}"
+    estimated:       "{color.secondary}"
+    stale:           "{color.destructive}"
+
+    # Course status
+    courseDownloaded: "{color.accent}"
+    courseUpdateAvailable: "{color.secondary}"
+    courseOfflineReady: "{color.accent}"
+    courseNotDownloaded: "{color.textTertiary}"
+
+    # Focus indicator
+    focusRing:       "{color.ring}"

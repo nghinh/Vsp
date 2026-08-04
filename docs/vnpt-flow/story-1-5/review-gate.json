@@ -1,0 +1,141 @@
+{
+  "story": "1.5",
+  "epic": "1",
+  "phase": "quality-gate",
+  "slices": [
+    {
+      "slice_id": "OBS-1",
+      "result": "repair_required",
+      "findings": [
+        {
+          "issue_id": "OBS-1-F1",
+          "issue_signature": "AlertRulesHealthIndicator always returns UP — degraded flag hardcoded to false, threshold breach detection is a no-op",
+          "title": "Health indicator does not detect threshold breaches",
+          "severity": "high",
+          "category": "correctness",
+          "files": [
+            "apps/api/src/main/java/vnpt/vsp/api/observability/AlertRules.java"
+          ],
+          "evidence_before": "Line 99: `boolean degraded = false;` — never set to true. Lines 101-115: threshold values are read and added as details but `degraded` is never toggled. Line 119: `return builder.status(degraded ? \"DEGRADED\" : \"UP\").build();` — always returns \"UP\".",
+          "fix_recommendation": "Add threshold comparison logic inside the HealthIndicator lambda: query actual values via MeterRegistry or MetricsConfig.syncQueueDepthHolder, compare against thresholds, set degraded=true when breached.",
+          "blocking_validation": "A synthetic health check that always returns UP provides no operational value and will mislead monitoring/alerting.",
+          "success_condition": "AlertRulesHealthIndicator returns DOWN or DEGRADED when any critical threshold is breached at check time"
+        }
+      ],
+      "evidence": [
+        "logback-spring.xml: LogstashEncoder configured for prod profile with includeMdc=true and customFields — CORRECT",
+        "logback-spring.xml: AsyncAppender with queueSize=512, discardingThreshold=0 wraps CONSOLE_JSON for non-blocking async logging — CORRECT",
+        "application-prod.yml: SSL/TLS configured with env vars only (${VSP_SSL_KEYSTORE_PATH}, ${VSP_SSL_KEYSTORE_PASSWORD}) — CORRECT",
+        "application-staging.yml: alert.thresholds section present with api/sync/gps/package thresholds — CORRECT",
+        "application-prod.yml: alert.thresholds section present with tighter prod thresholds — CORRECT",
+        "OtelConfig.java: W3C Trace Context propagation, OTLP exporter conditional on OTEL_EXPORTER_OTLP_ENDPOINT env var, no-op SDK when absent — CORRECT",
+        "MetricsConfig.java: vsp_api.sync.queue.depth gauge, vsp_api.api.latency timer, vsp_api.gps.quality counters, vsp_api.package.download.count counters — ALL 4 custom meters present",
+        "application.yml: management.endpoints.web.exposure.include=health,info,prometheus,metrics — prometheus endpoint exposed",
+        "application.yml: management.tracing.sampling.probability=1.0 — full tracing in dev",
+        "AlertRules.java: @ConfigurationProperties(prefix='alert.thresholds') bean for env-specific threshold binding — PRESENT but DEGRADED (F1)"
+      ]
+    },
+    {
+      "slice_id": "OBS-2",
+      "result": "pass",
+      "findings": [
+        {
+          "issue_id": "OBS-2-F1",
+          "issue_signature": "docker-compose.yaml contains hardcoded default password for postgres service",
+          "title": "Hardcoded dev password in docker-compose.yaml (non-blocking)",
+          "severity": "low",
+          "category": "secrets",
+          "files": [
+            "infra/docker/docker-compose.yaml"
+          ],
+          "evidence_before": "Line 10: `POSTGRES_PASSWORD: vsp_dev_password` — hardcoded in docker-compose.yaml service definition. Acceptable for local dev only.",
+          "fix_recommendation": "No fix required — this is intentional local dev defaults, not production secrets. Production deployments use env-var substitution (POSTGRES_PASSWORD from ${POSTGRES_PASSWORD:-vsp_dev_password}).",
+          "blocking_validation": "Not blocking — accepted as dev-only default.",
+          "success_condition": "N/A"
+        }
+      ],
+      "evidence": [
+        "application-prod.yml: server.ssl.* uses env vars only (${VSP_SSL_KEYSTORE_PATH}, ${VSP_SSL_KEYSTORE_PASSWORD}, ${VSP_SSL_TRUSTSTORE_PATH}, ${VSP_SSL_TRUSTSTORE_PASSWORD}) — no hardcoded secrets",
+        "application-prod.yml: cipher-suite restricted to TLS_AES_256_GCM_SHA384:TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256 — CORRECT",
+        "application-prod.yml: client-auth: need (mutual TLS) — CORRECT",
+        "setupLocalEnv.sh: Generates .env.local.example with all VSP_SECRETS_MANAGER_*, VSP_TLS_*, VSP_DB_ENCRYPTION_KEY_REF vars — CORRECT",
+        "setupLocalEnv.sh: Explicitly warns 'NEVER commit .env.local to version control' — CORRECT",
+        "docker-compose.yaml backup-cron: VSP_BACKUP_S3_BUCKET, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY all read from env vars — CORRECT",
+        "backup.sh: Idempotent with flock lock file (exec 200>\"$LOCK_FILE\"; flock -n 200 || exit 0) — CORRECT",
+        "backup.sh: Cleanup trap 'rm -f \"$LOCK_FILE\"' ensures lock released on exit — CORRECT",
+        "backup.sh: AWS KMS encryption when VSP_BACKUP_ENCRYPTION_KEY_ID set, AES-256-GCM fallback — CORRECT",
+        "backup.sh: S3 upload skipped when VSP_BACKUP_S3_BUCKET is empty — CORRECT",
+        "backup.sh: Retention pruning via find -mtime — CORRECT",
+        "backup-retention-policy.md: 30-day daily, 12-week weekly, 12-month monthly, 7-year annual tiers — CORRECT",
+        "backup-retention-policy.md: S3 Object Lock WORM for compliance, cross-region replication — CORRECT",
+        "encryption-policy.md: TLS 1.3 only cipher suites — CORRECT",
+        "encryption-policy.md: pgcrypto for column-level encryption, AWS KMS for envelope encryption — CORRECT",
+        "ci-api.yml: OWASP dependency-check with failBuildOnCVSS=7 — CORRECT",
+        "ci-api.yml: Gitleaks/gitleaks-action for secret scanning — CORRECT",
+        "docker-compose.yaml: postgres image postgis/postgis:16-3.4 with healthcheck — CORRECT",
+        "docker-compose.yaml: backup-cron service with profiles=['backup'] (disabled by default) — CORRECT",
+        "docker-compose.yaml: otel-collector with profiles=['observability'] (disabled by default) — CORRECT",
+        "infra/docker/backup-cron/main: cron schedule full (Sunday 02:00 UTC) + incremental (Mon-Sat 02:00 UTC) — CORRECT",
+        "infra/scripts/backup.sh: stat 755 — executable — CORRECT",
+        "docker-compose.yaml: hardcoded vsp_dev_password — acceptable for local dev only (OBS-2-F1, low severity, non-blocking)"
+      ]
+    },
+    {
+      "slice_id": "OBS-3",
+      "result": "repair_required",
+      "findings": [
+        {
+          "issue_id": "OBS-3-F1",
+          "issue_signature": "AuditAspect.extractCorrelationId() silently returns null with no logging when MDC.get('correlationId') throws",
+          "title": "Correlation ID silently lost in AuditAspect when MDC access fails",
+          "severity": "medium",
+          "category": "observability",
+          "files": [
+            "apps/api/src/main/java/vnpt/vsp/module/audit/AuditAspect.java"
+          ],
+          "evidence_before": "Lines 96-104: try { return org.slf4j.MDC.get(\"correlationId\"); } catch (Exception e) { return null; } — if MDC.get() throws any exception (e.g., IllegalArgumentException from a malformed key), it is silently swallowed and null is returned. No log.warn() or log.debug() call. The audit entry will have null correlation_id with no indication that extraction failed.",
+          "fix_recommendation": "Add a log.warn() or log.debug() in the catch block documenting the failure. Alternatively, check MDC.getCopyOfContextMap() != null before calling MDC.get() and log at DEBUG level if context is absent (expected in some unit test scenarios).",
+          "blocking_validation": "MEDIUM — correlation ID may be silently lost in edge-case scenarios, breaking traceability between audit entries and request logs. However, the primary path (normal MDC access) works correctly.",
+          "success_condition": "AuditAspect logs a warning when correlation ID cannot be extracted, rather than silently returning null"
+        }
+      ],
+      "evidence": [
+        "V1__audit_entries.sql: CREATE TABLE audit_entries with all required columns (actor, role, action, object_type, object_id, before_json, after_json, metadata_json, correlation_id, timestamp, version) — CORRECT",
+        "V1__audit_entries.sql: idx_audit_object, idx_audit_actor, idx_audit_action, idx_audit_correlation indexes — CORRECT",
+        "AuditEntry.java: JPA entity with @Table annotation, indexes matching schema, correlation_id field — CORRECT",
+        "AuditEntry.java: Builder-style constructor sets all fields including correlationId and timestamp — CORRECT",
+        "AuditEntry.java: Getters only, no setters (immutable after construction) — CORRECT",
+        "AuditAction.java: All 9 enum values (ADMIN_LOGIN, COURSE_PUBLISH, COURSE_ROLLBACK, PIN_UPDATE, GREEN_UPDATE, CONDITION_UPDATE, CORRECTION_APPROVE, CORRECTION_REJECT, ROLE_ASSIGN) — CORRECT",
+        "AuditService.java: Interface with log(AuditAction, objectType, objectId, beforeJson, afterJson, metadataJson) method — CORRECT",
+        "AuditServiceImpl.java: @Async + @Transactional on log() method — audit write is non-blocking",
+        "AuditServiceImpl.java: MDC propagated into async thread via MDC.getCopyOfContextMap() + MDC.setContextMap() — CORRECT",
+        "AuditServiceImpl.java: entityManager.persist + flush in try block; exception caught and logged with AUDIT_WRITE_FAILED — failure isolation",
+        "AuditServiceImpl.java: MDC.clear() in finally block — prevents MDC bleed between requests",
+        "AuditServiceImpl.java: extractActor() reads SecurityContextHolder synchronously before async dispatch — CORRECT",
+        "AsyncConfig.java: @EnableAsync with DelegatingSecurityContextAsyncTaskExecutor wrapping fixed thread pool — SecurityContext propagation to async threads",
+        "Audited.java: @Documented, @Retention(RUNTIME), @Target(METHOD) annotation with action() and objectType() attributes — CORRECT",
+        "AuditAspect.java: @Around('@annotation(audited)') advice proceeds to business method first, logs after success — CORRECT",
+        "AuditAspect.java: extractCorrelationId() uses MDC.get('correlationId') but swallows exceptions silently — ISSUE (OBS-3-F1)",
+        "CourseServiceImpl.java: auditService.log(COURSE_PUBLISH) and auditService.log(COURSE_ROLLBACK) — BOTH actions instrumented",
+        "IdentityServiceImpl.java: auditService.log(ADMIN_LOGIN) — CORRECT",
+        "OperationsServiceImpl.java: auditService.log(PIN_UPDATE), auditService.log(GREEN_UPDATE), auditService.log(CONDITION_UPDATE) — ALL THREE actions instrumented",
+        "CorrectionServiceImpl.java: auditService.log(CORRECTION_APPROVE), auditService.log(CORRECTION_REJECT) — BOTH actions instrumented",
+        "application.yml: audit.retention-days: 2555 (7-year compliance per NFR10) — CORRECT"
+      ]
+    }
+  ],
+  "overall_result": "repair_required",
+  "next_action": "proceed_to_fix",
+  "pre_existing_issues": [
+    {
+      "issue_signature": "opentelemetry-spring-boot-starter in pom.xml line 97 has no explicit version",
+      "description": "Dependency is managed by opentelemetry-instrumentation-bom (version 2.2.0) via dependencyManagement, so the actual version resolves correctly at build time. This is pre-existing and not caused by Story 1.5. Not blocking.",
+      "blocking": false
+    }
+  ],
+  "summary": {
+    "OBS-1": "Core observability infrastructure is well-implemented (JSON logging, metrics, tracing, alerting config) but AlertRulesHealthIndicator is a no-op — it never sets degraded=true regardless of threshold values",
+    "OBS-2": "Security baseline is fully implemented — TLS env-only secrets, OWASP scanning, encrypted backups, backup retention policy, encryption policy. Minor note: docker-compose hardcoded dev password is acceptable for local dev only",
+    "OBS-3": "Audit infrastructure is comprehensive and well-designed (async non-blocking writes, MDC propagation, transactional, failure-isolated). One issue: AuditAspect.extractCorrelationId() silently swallows exceptions when MDC access fails"
+  }
+}

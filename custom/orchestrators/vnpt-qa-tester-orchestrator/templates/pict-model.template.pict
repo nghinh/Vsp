@@ -1,0 +1,10 @@
+# PICT Model: <feature>
+# One parameter per line: Parameter: value1, value2, value3
+
+UserRole: Staff, Supervisor
+NetworkState: Online, Offline, Timeout
+DataState: Empty, Normal, Large, Invalid
+Action: Create, Update, Cancel, Retry
+
+# Constraints example:
+# IF [NetworkState] = "Offline" THEN [Action] <> "Update";

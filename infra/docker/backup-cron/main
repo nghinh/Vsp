@@ -1,0 +1,5 @@
+# VSP Backup Schedule — UTC
+# Full backup: Sunday at 02:00 UTC
+0 2 * * 0 root /usr/local/bin/backup.sh full >> /var/log/backup.log 2>&1
+# Incremental backup: daily at 02:00 UTC (Mon–Sat)
+0 2 * * 1-6 root /usr/local/bin/backup.sh incremental >> /var/log/backup.log 2>&1

@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "story_id": "8-6-send-course-alerts",
+  "reports": [
+    {
+      "slice_id": "slice-2",
+      "symbol": "CourseAlertSchema",
+      "file": "packages/contracts/schemas/course.yaml",
+      "final_decision": "PRE_WRITE",
+      "status": "clean",
+      "block_reason": null,
+      "refactor_action_applied": "NONE",
+      "max_attempts": 3,
+      "attempts": [
+        {
+          "attempt": 1,
+          "timestamp": "2026-08-02T10:32:55.105709+00:00",
+          "phase": "pre",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 2,
+          "timestamp": "2026-08-02T10:34:19.595716+00:00",
+          "phase": "post",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null
+        },
+        {
+          "attempt": 3,
+          "timestamp": "2026-08-02T10:35:30.000000+00:00",
+          "phase": "precheck",
+          "decision": "PRE_WRITE",
+          "gate_chain": ["Cy", "Emb(no)"],
+          "gates": [],
+          "candidates": [],
+          "signature": null,
+          "refactor_action": "NONE",
+          "refactor_applied": false,
+          "block_reason": null,
+          "precheck_result": {
+            "new_duplicate_likely": false,
+            "exact_match": false
+          }
+        }
+      ],
+      "duplicate_detection_outcome": {
+        "gate_chain": ["Cy", "Emb(no)"],
+        "candidate_list": [],
+        "llm_verdict": "No collision detected. CourseAlert schemas are new additions to course.yaml. No refactoring needed."
+      }
+    }
+  ]
+}

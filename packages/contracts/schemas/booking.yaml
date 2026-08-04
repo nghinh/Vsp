@@ -1,0 +1,128 @@
+# Booking schemas for the Vietnam Smart Golf Platform API
+
+Booking:
+  type: object
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+      description: Booking unique identifier
+      example: 770e8400-e29b-41d4-a716-446655440010
+    userId:
+      type: string
+      format: uuid
+      description: User who made the booking
+    courseId:
+      type: string
+      format: uuid
+      description: Course for the booking
+    teeTime:
+      type: string
+      format: date-time
+      description: Scheduled tee time
+      example: "2026-08-01T06:30:00Z"
+    players:
+      type: array
+      items:
+        $ref: '#/BookingPlayer'
+      description: Players in the booking
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled, completed]
+      description: Booking status
+      example: confirmed
+    consentGiven:
+      type: boolean
+      description: Whether user consent was given for data processing
+    consentTimestamp:
+      type: string
+      format: date-time
+      description: When consent was given
+
+BookingPlayer:
+  type: object
+  properties:
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+    name:
+      type: string
+      description: Player name
+      example: John Doe
+    email:
+      type: string
+      format: email
+      description: Player email
+
+BookingSlot:
+  type: object
+  properties:
+    slotId:
+      type: string
+      description: Slot unique identifier
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    startTime:
+      type: string
+      format: date-time
+      description: Slot start time
+    endTime:
+      type: string
+      format: date-time
+      description: Slot end time
+    available:
+      type: boolean
+      description: Whether the slot is available for booking
+
+BookingCreate:
+  type: object
+  required:
+    - courseId
+    - teeTime
+  properties:
+    courseId:
+      type: string
+      format: uuid
+      description: Course identifier
+    teeTime:
+      type: string
+      format: date-time
+      description: Requested tee time
+    players:
+      type: array
+      items:
+        $ref: '#/BookingPlayer'
+      description: Players to include in the booking
+    consentGiven:
+      type: boolean
+      description: Whether user consent was given
+
+BookingUpdate:
+  type: object
+  properties:
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled, completed]
+      description: New booking status
+
+BookingResponse:
+  type: object
+  description: Response after booking operation
+  properties:
+    bookingId:
+      type: string
+      format: uuid
+    courseId:
+      type: string
+      format: uuid
+    status:
+      type: string
+      enum: [pending, confirmed, cancelled, completed]
+    teeTime:
+      type: string
+      format: date-time
+    consentGiven:
+      type: boolean

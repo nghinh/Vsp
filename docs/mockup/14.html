@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .font-variation-fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for data-heavy sections */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #0B1326; }
+        ::-webkit-scrollbar-thumb { background: #2D3449; border-radius: 10px; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#341100",
+                        "inverse-surface": "#dae2fd",
+                        "primary": "#ffb599",
+                        "on-tertiary-container": "#00311f",
+                        "on-surface": "#dae2fd",
+                        "surface-container-high": "#222a3d",
+                        "on-secondary": "#552100",
+                        "outline": "#a98a7e",
+                        "inverse-on-surface": "#283044",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "on-error-container": "#ffdad6",
+                        "primary-container": "#f66018",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface-bright": "#31394d",
+                        "on-primary-fixed": "#370e00",
+                        "outline-variant": "#5a4138",
+                        "background": "#0b1326",
+                        "surface-container-lowest": "#060e20",
+                        "on-primary-container": "#4f1700",
+                        "primary-fixed-dim": "#ffb599",
+                        "secondary-container": "#ec6a06",
+                        "surface-container-highest": "#2d3449",
+                        "on-background": "#dae2fd",
+                        "inverse-primary": "#a73a00",
+                        "tertiary": "#68dba9",
+                        "on-tertiary": "#003825",
+                        "surface": "#0b1326",
+                        "surface-container": "#171f33",
+                        "surface-tint": "#ffb599",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-secondary-fixed-variant": "#783200",
+                        "on-tertiary-fixed": "#002114",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "surface-dim": "#0b1326",
+                        "surface-variant": "#2d3449",
+                        "tertiary-container": "#25a475",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#4a1c00",
+                        "error-container": "#93000a",
+                        "surface-container-low": "#131b2e",
+                        "secondary": "#ffb690",
+                        "secondary-fixed-dim": "#ffb690",
+                        "primary-fixed": "#ffdbce",
+                        "on-error": "#690005",
+                        "secondary-fixed": "#ffdbca",
+                        "on-surface-variant": "#e2bfb2",
+                        "on-primary": "#5a1c00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "unit": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Fira Sans"],
+                        "body-lg": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "label-caps": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="bg-surface-container-lowest text-primary flex items-center justify-between px-margin-mobile h-touch-target w-full sticky top-0 z-50 border-b border-[rgba(255,255,255,0.08)]">
+<span class="font-headline-md text-headline-md font-bold">Kết thúc vòng đấu</span>
+<button class="p-2 active:scale-95 transition-transform" onclick="window.history.back()">
+<span class="material-symbols-outlined text-on-surface-variant">close</span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto px-margin-mobile py-6 space-y-8">
+<!-- Completion Checklist -->
+<section class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+                Kiểm tra dữ liệu
+                <span class="material-symbols-outlined text-tertiary text-[20px]">verified</span>
+</h2>
+<div class="space-y-3">
+<!-- Checklist Item 1 -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary font-variation-fill">check_circle</span>
+<span class="font-body-md text-on-surface">Ghi điểm: 18/18 hố</span>
+</div>
+<span class="font-metric-sm text-on-surface-variant text-xs">100%</span>
+</div>
+<!-- Checklist Item 2 -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary font-variation-fill">check_circle</span>
+<span class="font-body-md text-on-surface">Người chơi: 4/4 hoàn thành</span>
+</div>
+<span class="font-metric-sm text-on-surface-variant text-xs">OK</span>
+</div>
+<!-- Checklist Item 3: Warning -->
+<button class="w-full flex items-center justify-between p-4 bg-error-container/20 rounded-xl border border-error/30 active:scale-[0.98] transition-all" onclick="toggleReviewDialog()">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary font-variation-fill">warning</span>
+<span class="font-body-md text-on-surface">Cảnh báo: 1 lỗi tại Hố 12</span>
+</div>
+<span class="material-symbols-outlined text-secondary">chevron_right</span>
+</button>
+<!-- Checklist Item 4: Sync Status -->
+<div class="flex items-center justify-between p-4 bg-surface-container rounded-xl border border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary animate-pulse">sync</span>
+<span class="font-body-md text-on-surface">Đã lưu ngoại tuyến (Chờ đồng bộ)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Flight Totals Section -->
+<section class="space-y-4">
+<h2 class="font-headline-md text-headline-md text-on-surface">Tổng kết Flight</h2>
+<div class="grid grid-cols-2 gap-3">
+<!-- Golfer Card 1 -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">PLAYER</p>
+<p class="font-headline-md text-primary truncate">Nghi</p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="font-display-metrics text-[32px] text-on-surface">82</span>
+<span class="font-metric-sm text-secondary">(+10)</span>
+</div>
+</div>
+<!-- Golfer Card 2 -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">PLAYER</p>
+<p class="font-headline-md text-primary truncate">Minh</p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="font-display-metrics text-[32px] text-on-surface">85</span>
+<span class="font-metric-sm text-secondary">(+13)</span>
+</div>
+</div>
+<!-- Golfer Card 3 -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">PLAYER</p>
+<p class="font-headline-md text-primary truncate">Dương</p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="font-display-metrics text-[32px] text-on-surface">78</span>
+<span class="font-metric-sm text-tertiary">(+6)</span>
+</div>
+</div>
+<!-- Golfer Card 4 -->
+<div class="bg-surface-container-high p-4 rounded-xl border border-[rgba(255,255,255,0.08)]">
+<p class="text-on-surface-variant font-label-caps text-[10px] mb-1">PLAYER</p>
+<p class="font-headline-md text-primary truncate">Giang</p>
+<div class="mt-3 flex items-baseline gap-2">
+<span class="font-display-metrics text-[32px] text-on-surface">90</span>
+<span class="font-metric-sm text-error">(+18)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Tournament Mode Indicator (Optional Section) -->
+<section class="hidden p-4 rounded-xl bg-primary-container/10 border-2 border-primary-container/30 border-dashed space-y-4" id="tournamentSection">
+<div class="flex items-center gap-2 text-primary-container">
+<span class="material-symbols-outlined font-variation-fill">emoji_events</span>
+<span class="font-label-caps uppercase">Chế độ thi đấu (Tournament)</span>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<p class="font-label-caps text-on-surface-variant">CHỮ KÝ NGƯỜI CHƠI (PLAYER)</p>
+<div class="h-24 bg-surface-container-lowest rounded-lg border border-outline/20 relative flex items-center justify-center">
+<span class="text-on-surface-variant/30 font-body-md italic">Ký tại đây</span>
+<span class="material-symbols-outlined absolute bottom-2 right-2 text-on-surface-variant">draw</span>
+</div>
+</div>
+<div class="space-y-2">
+<p class="font-label-caps text-on-surface-variant">CHỮ KÝ NGƯỜI GHI ĐIỂM (SCORER)</p>
+<div class="h-24 bg-surface-container-lowest rounded-lg border border-outline/20 relative flex items-center justify-center">
+<span class="text-on-surface-variant/30 font-body-md italic">Ký tại đây</span>
+<span class="material-symbols-outlined absolute bottom-2 right-2 text-on-surface-variant">draw</span>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant leading-relaxed">
+                    Kết quả sẽ được khóa sau khi ký. Mọi thay đổi sau đó cần sự phê duyệt của Ban trọng tài.
+                </p>
+</div>
+</section>
+<!-- Buffer for fixed footer -->
+<div class="h-32"></div>
+</main>
+<!-- Fixed Actions Footer -->
+<footer class="fixed bottom-0 left-0 w-full p-margin-mobile bg-surface-container-low/95 backdrop-blur-md border-t border-[rgba(255,255,255,0.08)] space-y-3 z-[60]">
+<button class="w-full h-touch-target bg-primary-container text-on-primary-container font-headline-md rounded-full shadow-lg active:scale-95 transition-transform" id="mainCta" onclick="showConfirmDialog()">
+            Xác nhận kết thúc
+        </button>
+<button class="w-full h-touch-target bg-transparent text-primary font-headline-md rounded-full border border-primary/30 active:bg-surface-variant transition-colors" onclick="toggleTournament()">
+             Tiếp tục chỉnh sửa
+        </button>
+</footer>
+<!-- Overlay: Confirmation Dialog -->
+<div class="hidden fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm" id="confirmDialog">
+<div class="bg-surface-container-highest w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-[rgba(255,255,255,0.1)] animate-in fade-in zoom-in duration-300">
+<div class="w-16 h-16 bg-primary-container/20 rounded-full flex items-center justify-center mx-auto mb-4">
+<span class="material-symbols-outlined text-primary text-[32px] font-variation-fill">sports_golf</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-center text-on-surface mb-3">Hoàn tất vòng đấu?</h3>
+<p class="text-center text-on-surface-variant mb-6 text-sm">
+                Bạn vẫn có thể điều chỉnh điểm số sau khi kết thúc trong phần Lịch sử vòng chơi.
+            </p>
+<div class="flex flex-col gap-3">
+<button class="w-full h-touch-target bg-primary-container text-on-primary-container font-headline-md rounded-xl" onclick="completeRound()">
+                    Xác nhận
+                </button>
+<button class="w-full h-touch-target bg-surface-container-high text-on-surface-variant font-headline-md rounded-xl" onclick="hideConfirmDialog()">
+                    Hủy
+                </button>
+</div>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        function showConfirmDialog() {
+            document.getElementById('confirmDialog').classList.remove('hidden');
+        }
+
+        function hideConfirmDialog() {
+            document.getElementById('confirmDialog').classList.add('hidden');
+        }
+
+        function completeRound() {
+            const btn = document.querySelector('#confirmDialog button');
+            btn.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span>';
+            setTimeout(() => {
+                window.location.reload(); // Simulate completion redirect
+            }, 1500);
+        }
+
+        function toggleTournament() {
+            const section = document.getElementById('tournamentSection');
+            const cta = document.getElementById('mainCta');
+            section.classList.toggle('hidden');
+            
+            if (!section.classList.contains('hidden')) {
+                cta.innerText = "Xác nhận kết quả thi đấu";
+                section.scrollIntoView({ behavior: 'smooth' });
+            } else {
+                cta.innerText = "Xác nhận kết thúc";
+            }
+        }
+
+        function toggleReviewDialog() {
+            // Simplified alert to simulate a review action
+            alert("Đang mở trình kiểm tra lỗi Hố 12...");
+        }
+    </script>
+</body></html>

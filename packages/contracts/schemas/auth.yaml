@@ -1,0 +1,421 @@
+# Authentication schemas for the Vietnam Smart Golf Platform API
+
+LoginRequest:
+  type: object
+  required:
+    - identifier
+    - password
+  properties:
+    identifier:
+      type: string
+      description: Phone number or email address
+      example: golfer@example.com
+    password:
+      type: string
+      format: password
+      minLength: 8
+      description: User password
+      example: secretPassword123
+
+LoginResponse:
+  type: object
+  required:
+    - accessToken
+    - refreshToken
+    - expiresIn
+  properties:
+    accessToken:
+      type: string
+      description: JWT access token
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    refreshToken:
+      type: string
+      description: JWT refresh token
+      example: dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4...
+    expiresIn:
+      type: integer
+      description: Access token lifetime in seconds
+      example: 3600
+    tokenType:
+      type: string
+      description: Token type
+      example: Bearer
+    userId:
+      type: integer
+      format: int64
+      description: User identifier
+      example: 1
+    displayName:
+      type: string
+      description: User display name
+      example: John Doe
+    status:
+      type: string
+      description: Account status (PENDING, ACTIVE, SUSPENDED, DELETED)
+      example: ACTIVE
+
+RegisterRequest:
+  type: object
+  required:
+    - email
+    - password
+    - displayName
+  properties:
+    email:
+      type: string
+      format: email
+      description: User email address
+      example: golfer@example.com
+    password:
+      type: string
+      format: password
+      minLength: 8
+      description: User password
+      example: secretPassword123
+    displayName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: User display name
+      example: John Doe
+    phone:
+      type: string
+      description: Phone number (optional)
+      example: "+84-90-123-4567"
+
+PhoneRegisterRequest:
+  type: object
+  required:
+    - phone
+    - password
+    - displayName
+  properties:
+    phone:
+      type: string
+      description: Phone number in international format
+      example: "+84-90-123-4567"
+    password:
+      type: string
+      format: password
+      minLength: 8
+      description: User password
+      example: secretPassword123
+    displayName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: User display name
+      example: John Doe
+
+EmailRegisterRequest:
+  type: object
+  required:
+    - email
+    - password
+    - displayName
+  properties:
+    email:
+      type: string
+      format: email
+      description: User email address
+      example: golfer@example.com
+    password:
+      type: string
+      format: password
+      minLength: 8
+      description: User password
+      example: secretPassword123
+    displayName:
+      type: string
+      minLength: 2
+      maxLength: 100
+      description: User display name
+      example: John Doe
+
+TokenRefreshRequest:
+  type: object
+  required:
+    - refreshToken
+  properties:
+    refreshToken:
+      type: string
+      description: JWT refresh token
+      example: dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4...
+
+TokenRefreshResponse:
+  type: object
+  required:
+    - accessToken
+    - expiresIn
+  properties:
+    accessToken:
+      type: string
+      description: New JWT access token
+      example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+    expiresIn:
+      type: integer
+      description: Access token lifetime in seconds
+      example: 3600
+    tokenType:
+      type: string
+      description: Token type
+      example: Bearer
+
+ChangePasswordRequest:
+  type: object
+  required:
+    - currentPassword
+    - newPassword
+  properties:
+    currentPassword:
+      type: string
+      format: password
+      description: Current password
+    newPassword:
+      type: string
+      format: password
+      minLength: 8
+      description: New password
+
+LogoutRequest:
+  type: object
+  properties:
+    refreshToken:
+      type: string
+      description: Refresh token to invalidate
+
+# OTP schemas
+OtpSendRequest:
+  type: object
+  required:
+    - identifier
+    - type
+  properties:
+    identifier:
+      type: string
+      description: Phone number or email address
+      example: "+84-90-123-4567"
+    type:
+      type: string
+      enum: [PHONE_VERIFY, EMAIL_VERIFY, PASSWORD_RECOVERY]
+      description: Type of OTP to send
+      example: PHONE_VERIFY
+
+OtpSendResponse:
+  type: object
+  properties:
+    message:
+      type: string
+      description: Success message
+      example: Verification code sent
+    expiresIn:
+      type: string
+      description: OTP expiration time
+      example: "10 minutes"
+
+OtpVerifyRequest:
+  type: object
+  required:
+    - identifier
+    - code
+    - type
+  properties:
+    identifier:
+      type: string
+      description: Phone number or email address
+      example: "+84-90-123-4567"
+    code:
+      type: string
+      description: 6-digit OTP code
+      minLength: 6
+      maxLength: 6
+      example: "123456"
+    type:
+      type: string
+      enum: [PHONE_VERIFY, EMAIL_VERIFY, PASSWORD_RECOVERY]
+      description: Type of OTP being verified
+      example: PHONE_VERIFY
+
+# Password recovery schemas
+PasswordRecoverRequest:
+  type: object
+  required:
+    - identifier
+  properties:
+    identifier:
+      type: string
+      description: Phone number or email address
+      example: "+84-90-123-4567"
+
+PasswordResetRequest:
+  type: object
+  required:
+    - token
+    - newPassword
+  properties:
+    token:
+      type: string
+      description: Password recovery token
+    newPassword:
+      type: string
+      format: password
+      minLength: 8
+      description: New password
+
+# Profile schemas
+GolferProfileResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Account identifier
+      example: 1
+    phone:
+      type: string
+      description: Phone number (if set)
+      example: "+84-90-123-4567"
+    email:
+      type: string
+      format: email
+      description: Email address (if set)
+      example: golfer@example.com
+    displayName:
+      type: string
+      description: User display name
+      example: John Doe
+    status:
+      type: string
+      description: Account status
+      example: ACTIVE
+    verified:
+      type: boolean
+      description: Whether the account is verified
+      example: true
+    createdAt:
+      type: string
+      format: date-time
+      description: Account creation timestamp
+      example: "2026-08-01T10:00:00Z"
+
+# Social authentication schemas
+GoogleAuthRequest:
+  type: object
+  required:
+    - idToken
+  properties:
+    idToken:
+      type: string
+      description: Google ID token obtained from Google Sign-In SDK
+      example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+    displayName:
+      type: string
+      description: Optional display name override from the client
+      example: "John Doe"
+
+AppleAuthRequest:
+  type: object
+  required:
+    - idToken
+  properties:
+    idToken:
+      type: string
+      description: Apple identity token obtained from Sign In with Apple
+      example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+    authorizationCode:
+      type: string
+      description: Optional Apple authorization code (used for server-side verification)
+      example: "xxxx.xxxxx.xxxxxxxx"
+    displayName:
+      type: string
+      description: Optional display name override from the client
+      example: "John Doe"
+
+SocialAuthResponse:
+  type: object
+  required:
+    - accessToken
+    - refreshToken
+    - expiresIn
+  properties:
+    accessToken:
+      type: string
+      description: JWT access token
+      example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+    refreshToken:
+      type: string
+      description: JWT refresh token
+      example: "dGhpcyBpcyBhIHJlZnJlc2ggdG9rZW4..."
+    expiresIn:
+      type: integer
+      description: Access token lifetime in seconds
+      example: 3600
+    tokenType:
+      type: string
+      description: Token type
+      example: Bearer
+    userId:
+      type: integer
+      format: int64
+      description: User identifier
+      example: 1
+    displayName:
+      type: string
+      description: User display name
+      example: John Doe
+    status:
+      type: string
+      description: Account status (PENDING, ACTIVE, SUSPENDED, DELETED)
+      example: ACTIVE
+    provider:
+      type: string
+      description: OAuth provider used (GOOGLE or APPLE)
+      example: GOOGLE
+    isNewAccount:
+      type: boolean
+      description: Whether this is a newly created account (vs an existing account that was linked)
+      example: true
+
+# Session management schemas
+SessionResponse:
+  type: object
+  properties:
+    sessionId:
+      type: integer
+      format: int64
+      description: Unique session identifier
+      example: 42
+    deviceInfo:
+      type: string
+      description: Client-reported device identifier or device model
+      example: "iPhone 15 Pro"
+    userAgent:
+      type: string
+      description: HTTP User-Agent string
+      example: "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)"
+    ipAddress:
+      type: string
+      description: Client IP address at time of session creation
+      example: "203.0.113.42"
+    createdAt:
+      type: string
+      format: date-time
+      description: Session creation timestamp
+      example: "2026-08-01T10:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: Session expiration timestamp
+      example: "2026-08-08T10:00:00Z"
+    currentSession:
+      type: boolean
+      description: Whether this session is the one making the current request
+      example: true
+
+SessionListResponse:
+  type: object
+  properties:
+    sessions:
+      type: array
+      items:
+        $ref: '#/SessionResponse'

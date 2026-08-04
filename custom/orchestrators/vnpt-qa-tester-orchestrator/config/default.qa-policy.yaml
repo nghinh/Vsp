@@ -1,0 +1,77 @@
+orchestrator: vnpt-qa-tester-orchestrator
+version: 1.0.1
+
+context:
+  require_zero_to_eof_reading: true
+  max_context_candidates: 300
+  record_unread_files: true
+
+test_design:
+  require_risk_map_before_tests: true
+  require_test_oracle_before_automation: true
+  require_negative_or_boundary_for_each_critical_area: true
+  require_state_model_for_workflow_features: true
+  require_property_invariants_for_validation_or_state_logic: true
+  require_api_fuzz_plan_when_schema_exists: true
+  require_exploratory_charter_for_ambiguous_or_ux_heavy_areas: true
+  require_regression_plan_for_known_bugs_or_recent_changes: true
+  require_test_data_plan: true
+
+execution:
+  run_tests_when_environment_allows: true
+  capture_command_exit_code_and_output: true
+  record_skipped_tests_with_reason: true
+
+quality_thresholds:
+  pass_score: 85
+  conditional_pass_score: 70
+  mutation_score_default: 60
+  mutation_score_critical: 75
+  branch_coverage_default: 70
+  branch_coverage_critical: 85
+
+hard_fail_conditions:
+  p0_risk_without_executable_test: true
+  p1_critical_state_without_executable_test: true
+  missing_test_oracle: true
+  missing_failure_triage: true
+  only_shallow_tests: true
+  missing_negative_or_boundary_for_critical_area: true
+  mutation_below_critical_threshold_when_run: true
+
+qa_role:
+  fix_product_code_by_default: false
+  generate_fix_briefs: true
+
+medium_model_guardrails:
+  enabled: true
+  profile_file: config/medium-model-guardrails.yaml
+  require_phase_order: true
+  require_traceability_table_for_each_phase: true
+  require_self_review_before_final_report: true
+  forbid_generic_placeholders_as_final: true
+  forbid_silent_assumptions: true
+  forbid_shallow_tests_to_count: true
+
+minimum_per_p0_risk:
+  happy_path: 1
+  negative_tests: 2
+  boundary_or_edge_tests: 2
+  recovery_or_error_tests: 1
+  state_machine_tests_when_applicable: 1
+  property_tests_when_applicable: 1
+  api_or_e2e_tests_when_visible: 1
+
+minimum_per_p1_risk:
+  main_path_tests: 1
+  negative_tests: 1
+  boundary_or_edge_tests: 1
+  state_property_api_or_e2e_when_applicable: 1
+
+uncertainty_labels:
+  - SPEC_AMBIGUITY
+  - ORACLE_GAP
+  - ENV_GAP
+  - DATA_GAP
+  - TOOL_GAP
+  - JUSTIFIED_EXCEPTION

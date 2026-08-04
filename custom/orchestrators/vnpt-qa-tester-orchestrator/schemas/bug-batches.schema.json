@@ -1,0 +1,148 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vnpt-qa-tester-orchestrator bug batches",
+  "type": "object",
+  "required": [
+    "bugs"
+  ],
+  "properties": {
+    "bugs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "severity",
+          "type",
+          "summary",
+          "risk_id",
+          "failed_tests",
+          "reproduction_steps",
+          "expected",
+          "actual",
+          "tests_to_rerun"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^QA-BUG-[0-9]{3,}$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "description": "Bug classification type. Extended in v2.0 to include concurrency, security, and state corruption bugs.",
+            "enum": [
+              "PRODUCT_BUG",
+              "TEST_BUG",
+              "FLAKY_TEST",
+              "ENVIRONMENT_ISSUE",
+              "SPEC_AMBIGUITY",
+              "DATA_SETUP_ISSUE",
+              "RACE_CONDITION",
+              "SECURITY_ISSUE",
+              "DEADLOCK_OR_LIVELOCK",
+              "MEMORY_LEAK",
+              "TIMING_ISSUE",
+              "DATA_RACE",
+              "ATOMICITY_VIOLATION",
+              "ORDERING_VIOLATION",
+              "CONSISTENCY_ISSUE",
+              "IDEMPOTENCY_VIOLATION",
+              "AUTHORIZATION_BYPASS",
+              "INPUT_VALIDATION_BYPASS",
+              "STATE_CORRUPTION"
+            ]
+          },
+          "sub_type": {
+            "type": "string",
+            "description": "Optional sub-classification for enhanced tracking"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "area": {
+            "type": "string"
+          },
+          "risk_id": {
+            "type": "string"
+          },
+          "failed_tests": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "reproduction_steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected": {
+            "type": "string"
+          },
+          "actual": {
+            "type": "string"
+          },
+          "suspected_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fix_hint": {
+            "type": "string"
+          },
+          "forbidden_shortcuts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Implementation approaches that should NOT be used as fixes"
+          },
+          "evidence": {
+            "type": "string"
+          },
+          "tests_to_rerun": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "regression_tests_to_keep": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Existing tests that should be kept and not broken by the fix"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "bug_type_descriptions": {
+      "RACE_CONDITION": "Concurrent operations produce wrong result due to timing",
+      "SECURITY_ISSUE": "Security vulnerability or permission boundary violation",
+      "DEADLOCK_OR_LIVELOCK": "Process stuck in deadlock or livelock waiting for resources",
+      "MEMORY_LEAK": "Memory or resource not properly released",
+      "TIMING_ISSUE": "Race between operations causing inconsistent state",
+      "DATA_RACE": "Simultaneous access to shared data without proper synchronization",
+      "ATOMICITY_VIOLATION": "Operation that should be atomic is not",
+      "ORDERING_VIOLATION": "Operations executed in wrong order causing incorrect result",
+      "CONSISTENCY_ISSUE": "Data or state inconsistent between operations",
+      "IDEMPOTENCY_VIOLATION": "Repeated operation produces different result than single execution",
+      "AUTHORIZATION_BYPASS": "User can perform actions without proper authorization",
+      "INPUT_VALIDATION_BYPASS": "Invalid input not properly validated before processing",
+      "STATE_CORRUPTION": "System reaches an invalid or corrupt state"
+    }
+  }
+}

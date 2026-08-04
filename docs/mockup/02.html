@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vietnam Smart Golf — Xác thực OTP</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts: Fira Sans for brand/body, Fira Code for metrics/data -->
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&amp;family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "inverse-primary": "#a73a00",
+                  "tertiary": "#68dba9",
+                  "error-container": "#93000a",
+                  "surface-container": "#171f33",
+                  "tertiary-fixed-dim": "#68dba9",
+                  "surface-variant": "#2d3449",
+                  "surface-container-low": "#131b2e",
+                  "surface": "#0b1326",
+                  "surface-container-high": "#222a3d",
+                  "on-primary": "#5a1c00",
+                  "inverse-on-surface": "#283044",
+                  "background": "#0b1326",
+                  "on-secondary-fixed-variant": "#783200",
+                  "surface-dim": "#0b1326",
+                  "surface-container-highest": "#2d3449",
+                  "primary": "#ffb599",
+                  "on-secondary-fixed": "#341100",
+                  "on-primary-fixed-variant": "#7f2b00",
+                  "secondary-fixed-dim": "#ffb690",
+                  "primary-fixed-dim": "#ffb599",
+                  "secondary-container": "#ec6a06",
+                  "primary-fixed": "#ffdbce",
+                  "secondary": "#ffb690",
+                  "on-primary-container": "#4f1700",
+                  "surface-tint": "#ffb599",
+                  "secondary-fixed": "#ffdbca",
+                  "outline": "#a98a7e",
+                  "on-surface": "#dae2fd",
+                  "inverse-surface": "#dae2fd",
+                  "surface-bright": "#31394d",
+                  "surface-container-lowest": "#060e20",
+                  "on-error": "#690005",
+                  "on-secondary-container": "#4a1c00",
+                  "primary-container": "#f66018",
+                  "tertiary-fixed": "#85f8c4",
+                  "on-tertiary-fixed-variant": "#005137",
+                  "on-secondary": "#552100",
+                  "on-surface-variant": "#e2bfb2",
+                  "on-tertiary-container": "#00311f",
+                  "tertiary-container": "#25a475",
+                  "on-background": "#dae2fd",
+                  "on-tertiary-fixed": "#002114",
+                  "on-primary-fixed": "#370e00",
+                  "error": "#ffb4ab",
+                  "on-error-container": "#ffdad6",
+                  "outline-variant": "#5a4138",
+                  "on-tertiary": "#003825"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.125rem",
+                  "lg": "0.25rem",
+                  "xl": "0.5rem",
+                  "full": "0.75rem"
+          },
+          "spacing": {
+                  "unit": "8px",
+                  "gutter": "16px",
+                  "margin-desktop": "32px",
+                  "margin-mobile": "16px",
+                  "touch-target": "44px"
+          },
+          "fontFamily": {
+                  "headline-lg": ["Fira Sans"],
+                  "label-caps": ["Fira Sans"],
+                  "metric-sm": ["Fira Code"],
+                  "body-lg": ["Fira Sans"],
+                  "headline-md": ["Fira Sans"],
+                  "display-metrics": ["Fira Code"],
+                  "body-md": ["Fira Sans"]
+          },
+          "fontSize": {
+                  "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                  "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                  "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                  "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                  "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                  "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .otp-cell:focus {
+      border-color: #ffb599;
+      background-color: #171f33;
+      outline: none;
+    }
+    .otp-error-cell {
+      border-color: #ffb4ab !important;
+      background-color: rgba(147, 0, 10, 0.1);
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .loading-spinner {
+      animation: spin 1s linear infinite;
+    }
+    /* Hide scrollbar for clean mobile look */
+    ::-webkit-scrollbar { display: none; }
+    body { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- Top App Bar (Shared Component Logic) -->
+<header class="bg-surface-container-lowest text-primary flex items-center justify-between px-margin-mobile h-touch-target w-full top-0 border-b border-[rgba(255,255,255,0.08)] z-50">
+<div class="flex items-center gap-4">
+<button aria-label="Quay lại" class="active:scale-95 transition-transform p-2 -ml-2">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md truncate">Xác thực số điện thoại</h1>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col px-margin-mobile pt-10 pb-8 max-w-[390px] mx-auto w-full">
+<!-- Branding Context (Subtle) -->
+<div class="mb-8 text-center opacity-80">
+<div class="w-12 h-12 mx-auto mb-4 bg-primary-container rounded-xl flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-3xl">verified_user</span>
+</div>
+<p class="font-body-md text-on-surface-variant">Vui lòng nhập mã OTP đã được gửi đến số điện thoại</p>
+<p class="font-metric-sm text-on-surface mt-2 text-lg tracking-widest">+84 ••• ••• 468</p>
+</div>
+<!-- OTP Input Group (Error State Shown) -->
+<div class="space-y-6">
+<div class="flex justify-between gap-2" id="otp-container">
+<!-- Error state variant cells -->
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="4"/>
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="2"/>
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="8"/>
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="0"/>
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="9"/>
+<input class="otp-cell otp-error-cell w-12 h-14 bg-surface-container text-center font-display-metrics text-3xl rounded-lg border border-outline-variant transition-all focus:border-primary" maxlength="1" type="text" value="1"/>
+</div>
+<!-- Error Message -->
+<div class="flex items-center gap-2 text-error">
+<span class="material-symbols-outlined text-[18px]">error</span>
+<span class="font-body-md text-sm">Mã OTP không chính xác. Vui lòng thử lại.</span>
+</div>
+</div>
+<!-- Resend Section -->
+<div class="mt-8 flex flex-col items-center gap-4">
+<div class="flex items-center gap-2 font-body-md text-on-surface-variant">
+<span>Gửi lại mã sau</span>
+<span class="font-metric-sm text-secondary font-bold" id="countdown">00:42</span>
+</div>
+<!-- Hidden/Secondary state link (Triggered when countdown hits 0) -->
+<button class="font-label-caps text-primary underline underline-offset-4 hidden" id="resend-btn">
+        Gửi mã mới
+      </button>
+</div>
+<!-- Spacer to push CTA down -->
+<div class="flex-grow"></div>
+<!-- Action Section -->
+<div class="mt-auto space-y-4">
+<!-- Loading State Button Variant -->
+<button class="w-full h-[56px] bg-primary-container text-on-primary-container font-headline-md rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all shadow-lg shadow-primary-container/20">
+<span class="material-symbols-outlined loading-spinner">progress_activity</span>
+<span>Đang xác nhận...</span>
+</button>
+<!-- Primary CTA (Standard State) - Mentioned for UI context -->
+<button class="hidden w-full h-[56px] bg-primary-container text-on-primary-container font-headline-md rounded-xl flex items-center justify-center active:scale-95 transition-all">
+        Xác nhận
+      </button>
+<p class="text-center font-label-caps text-on-surface-variant/60 text-[10px] uppercase tracking-tighter">
+        © 2024 Vietnam Smart Golf • Hệ thống vận hành GPS chính thức
+      </p>
+</div>
+</main>
+<!-- Atmospheric Background Elements -->
+<div class="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+<!-- Subtle gradient glow -->
+<div class="absolute -top-1/4 -right-1/4 w-[500px] h-[500px] bg-primary/5 blur-[120px] rounded-full"></div>
+<div class="absolute -bottom-1/4 -left-1/4 w-[500px] h-[500px] bg-secondary/5 blur-[120px] rounded-full"></div>
+</div>
+<!-- Success Notification (Toast Placeholder) -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 bg-tertiary-container text-on-tertiary-container px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all opacity-0 translate-y-10" id="success-toast">
+<span class="material-symbols-outlined font-bold" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-headline-md text-sm">Xác thực thành công!</span>
+</div>
+<script>
+    // Micro-interactions for OTP inputs
+    const inputs = document.querySelectorAll('.otp-cell');
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.length === 1 && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+
+    // Simple Countdown Mockup
+    let timeLeft = 42;
+    const countdownEl = document.getElementById('countdown');
+    const resendBtn = document.getElementById('resend-btn');
+    
+    const timer = setInterval(() => {
+      timeLeft--;
+      if (timeLeft <= 0) {
+        clearInterval(timer);
+        countdownEl.parentElement.classList.add('hidden');
+        resendBtn.classList.remove('hidden');
+      } else {
+        const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const secs = (timeLeft % 60).toString().padStart(2, '0');
+        countdownEl.innerText = `${mins}:${secs}`;
+      }
+    }, 1000);
+
+    // Interaction Simulation: Clicking button shows success toast
+    document.querySelector('button').addEventListener('click', () => {
+      const toast = document.getElementById('success-toast');
+      toast.classList.remove('opacity-0', 'translate-y-10');
+      toast.classList.add('opacity-100', 'translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-10');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3000);
+    });
+  </script>
+</body></html>

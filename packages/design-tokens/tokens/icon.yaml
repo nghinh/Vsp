@@ -1,0 +1,94 @@
+# Design Tokens — Iconography
+# Source: UX Spec §4.4 — Vietnam Smart Golf Platform
+# Vector icon rules — no emoji as structural icons.
+
+icon:
+  # ─── Family ────────────────────────────────────────────────────────────────
+  # One consistent icon family per product surface.
+  # Family is set at platform level (Flutter: Material Icons / Cupertino;
+  # Web: Phosphor, Lucide, or similar vector set).
+  # This token set defines rules, not the family name itself.
+
+  family:  "vector"   # Placeholder — platform implementations choose the family
+  rule:    "vector-only — no emoji, no bitmap"
+
+  # ─── Size Scale ────────────────────────────────────────────────────────────
+
+  size:
+    xs:    16   # Inline caption icons
+    sm:    20   # Body-small icons, list item prefix
+    md:    24   # Default — standard UI icons
+    lg:    32   # Feature icons, nav item
+    xl:    40   # Large illustration icons
+    "2xl": 48   # Empty-state illustration icons
+
+  # ─── Touch Targets ─────────────────────────────────────────────────────────
+  # UX spec §4.4: icon touch area minimum 44×44pt iOS / 48×48dp Android.
+
+  touchTarget:
+    ios:     44   # Minimum icon touch target on iOS
+    android: 48   # Minimum icon touch target on Android
+    # Note: icon visual size is smaller than touch target.
+    # Touch target is achieved via transparent hitbox padding, not scaling the icon.
+
+  # ─── Stroke ───────────────────────────────────────────────────────────────
+  # Consistent stroke width within a hierarchy level.
+
+  strokeWidth:
+    hairline:  1.0   # Fine decorative lines
+    thin:      1.5   # Standard outline icons
+    medium:    2.0   # Filled icons, medium emphasis
+    thick:     2.5   # Bold navigation icons
+
+  # ─── Color ─────────────────────────────────────────────────────────────────
+  # Icons inherit color from their context (text color token).
+  # Never hardcode icon color — always reference a text or surface token.
+
+  color: "inherit"   # Icon takes foreground color of parent context
+
+  # ─── Usage Rules ───────────────────────────────────────────────────────────
+
+  rules:
+    - label: "vector-only"
+      description: "Use vector (SVG/Path) icons exclusively. No emoji."
+    - label: "consistent-family"
+      description: "Use one icon family per product surface (mobile vs portal)."
+    - label: "accessible-labels"
+      description: "Icon-only controls require accessible/semantic labels for screen readers."
+    - label: "touch-target"
+      description: "Icon touch area must be ≥44×44pt iOS / ≥48×48dp Android via transparent padding."
+    - label: "consistent-stroke"
+      description: "Keep stroke width consistent within a hierarchy level."
+    - label: "no-decorative-emoji"
+      description: "Emoji must not be used as structural icons or status indicators."
+
+  # ─── Icon Tiers (by hierarchy) ─────────────────────────────────────────────
+
+  tier:
+    navigation:
+      size:        24
+      strokeWidth:  2.0
+      # Bottom nav items, tab bar
+
+    action:
+      size:        24
+      strokeWidth:  2.0
+      # Buttons, toggles, form controls
+
+    status:
+      size:        20
+      strokeWidth:  1.5
+      # Inline status indicators, list item prefix
+
+    decorative:
+      size:        40
+      strokeWidth:  1.0
+      # Empty states, illustrations
+
+  # ─── Touch Target Padding ──────────────────────────────────────────────────
+  # Transparent padding added to icon to achieve touch target minimum.
+  # Formula: (touchTarget - iconSize) / 2
+
+  touchPadding:
+    ios:     12   # (44 - 20) / 2 = 12 for status icon
+    android: 14   # (48 - 20) / 2 = 14 for status icon

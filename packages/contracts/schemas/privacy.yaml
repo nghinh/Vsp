@@ -1,0 +1,97 @@
+# Privacy request schemas for the Vietnam Smart Golf Platform API
+# Per Story 2.5 AC-3: Users can request data export, account deletion,
+# round deletion with auditable processing.
+
+PrivacyRequestResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Privacy request identifier
+      example: 1
+    requesterGolferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID of the requester
+      example: 42
+    requestType:
+      type: string
+      enum: [DATA_EXPORT, ACCOUNT_DELETION, ROUND_DELETION]
+      description: Type of privacy request
+      example: DATA_EXPORT
+    status:
+      type: string
+      enum: [PENDING, PROCESSING, COMPLETED, REJECTED]
+      description: Current processing status
+      example: PENDING
+    targetRoundId:
+      type: string
+      format: uuid
+      description: Target round ID for ROUND_DELETION requests
+      example: "770e8400-e29b-41d4-a716-446655440002"
+      nullable: true
+    requestedAt:
+      type: string
+      format: date-time
+      description: When the request was submitted
+      example: "2026-08-02T10:00:00Z"
+    processedAt:
+      type: string
+      format: date-time
+      description: When the request was processed
+      example: "2026-08-02T14:30:00Z"
+      nullable: true
+    processedBy:
+      type: integer
+      format: int64
+      description: Admin account ID that processed the request
+      example: 1
+      nullable: true
+    rejectionReason:
+      type: string
+      maxLength: 500
+      description: Reason for rejection (if rejected)
+      nullable: true
+    createdAt:
+      type: string
+      format: date-time
+      description: Creation timestamp
+      example: "2026-08-02T10:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last update timestamp
+      example: "2026-08-02T12:30:00Z"
+
+CreatePrivacyRequestRequest:
+  type: object
+  required:
+    - requestType
+  properties:
+    requestType:
+      type: string
+      enum: [DATA_EXPORT, ACCOUNT_DELETION, ROUND_DELETION]
+      description: Type of privacy request
+      example: ACCOUNT_DELETION
+    targetRoundId:
+      type: string
+      format: uuid
+      description: Target round ID (required for ROUND_DELETION)
+      example: "770e8400-e29b-41d4-a716-446655440002"
+
+ProcessPrivacyRequestRequest:
+  type: object
+  required:
+    - status
+  properties:
+    status:
+      type: string
+      enum: [PROCESSING, COMPLETED, REJECTED]
+      description: New status for the privacy request
+      example: COMPLETED
+    rejectionReason:
+      type: string
+      maxLength: 500
+      description: Reason for rejection (required if status is REJECTED)
+      example: "Account has active disputes"

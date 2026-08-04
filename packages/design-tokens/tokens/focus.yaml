@@ -1,0 +1,81 @@
+# Design Tokens — Focus
+# Source: UX Spec §4.2, §10 — Vietnam Smart Golf Platform
+# Focus ring tokens and visible focus requirements.
+# Accessibility: focus order matches visual order; visible focus required.
+
+focus:
+  # ─── Focus Ring ────────────────────────────────────────────────────────────
+
+  ring:
+    # Ring color — must meet 4.5:1 contrast ratio on adjacent surface.
+    # Uses color.ring from color tokens.
+    color:          "{color.ring}"
+
+    # Ring style
+    style:          solid        # solid | dashed | dotted
+    width:          2           # dp — minimum 2dp for visibility
+    offset:         2           # dp — gap between ring and component edge
+
+    # Ring radius follows component border radius
+
+  # ─── Contrast Requirements ──────────────────────────────────────────────────
+  # UX spec §10: text contrast at least 4.5:1 (body), 3:1 (secondary).
+
+  contrast:
+    bodyText:      4.5   # Minimum contrast ratio for body text
+    secondaryText: 3.0   # Minimum contrast ratio for secondary/caption text
+    uiComponent:   4.5   # Minimum contrast ratio for UI components and focus indicators
+
+  # ─── Focus Highlight Mode ──────────────────────────────────────────────────
+  # Flutter: FocusHighlightMode.automatic — uses platform setting.
+  # Web: :focus-visible — keyboard focus only, not mouse focus.
+
+  highlightMode:
+    flutter:  "automatic"   # Respects system accessibility settings
+    web:      ":focus-visible"
+
+  # ─── Focus Order ───────────────────────────────────────────────────────────
+  # UX spec §10: focus order must match visual order.
+
+  order:
+    matchesVisual: true   # Focus order follows DOM/ widget tree visual order
+
+  # ─── Keyboard Navigation ──────────────────────────────────────────────────
+
+  keyboard:
+    tabIndex:
+      default:     0     # Focusable by default
+      bypass:      -1     # Programmatic focus only (not in tab order)
+      # Use tabIndex=-1 for programmatic focus; tabIndex=0 for default tab order.
+
+    skipLink:
+      enabled:    true   # Skip-to-content link available (web)
+      target:      "#main-content"
+
+  # ─── Focus Visible States ──────────────────────────────────────────────────
+
+  visible:
+    # Every interactive element must show visible focus indicator.
+    # Components must not rely on color-only indicators (UX spec §10).
+
+    requirement:  "all-interactive-elements"
+    indicator:    "ring"   # ring | underline | outline — ring is preferred
+
+  # ─── Platform-Specific Focus Ring ─────────────────────────────────────────
+
+  platform:
+    mobile:
+      ringWidth:   3       # dp — slightly thicker for touch device visibility
+      ringColor:   "{color.ring}"
+
+    desktop:
+      ringWidth:   2       # dp
+      ringColor:   "{color.ring}"
+
+  # ─── Focus Behavior ───────────────────────────────────────────────────────
+
+  behavior:
+    # Focus ring visible for keyboard navigation, suppressed for mouse/touch
+    # where platform supports it (:focus-visible in CSS).
+    keyboardSuppressMouse:  true
+    touchShowsFocus:        false   # Touch should not show ring; it is replaced by ripple

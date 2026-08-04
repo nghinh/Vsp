@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VNPT QA Artifacts Manifest",
+  "type": "object",
+  "required": [
+    "feature",
+    "risks",
+    "oracles",
+    "tests"
+  ],
+  "properties": {
+    "feature": {
+      "type": "string"
+    },
+    "risks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "risk_id",
+          "priority",
+          "description"
+        ],
+        "properties": {
+          "risk_id": {
+            "type": "string"
+          },
+          "priority": {
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "oracles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "oracle_id",
+          "source",
+          "expected_result"
+        ],
+        "properties": {
+          "oracle_id": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "expected_result": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "test_id",
+          "risk_ids",
+          "oracle_ids",
+          "expected_result",
+          "assertions"
+        ],
+        "properties": {
+          "test_id": {
+            "type": "string"
+          },
+          "risk_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "oracle_ids": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "expected_result": {
+            "type": "string",
+            "minLength": 1
+          },
+          "assertions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

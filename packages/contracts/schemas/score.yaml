@@ -1,0 +1,367 @@
+# Score schemas for the Vietnam Smart Golf Platform API
+
+Score:
+  type: object
+  required:
+    - id
+    - roundId
+    - playerId
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Score unique identifier
+      example: 880e8400-e29b-41d4-a716-446655440003
+    roundId:
+      type: string
+      format: uuid
+      description: Round identifier
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+    playerName:
+      type: string
+      description: Player display name
+      example: John Doe
+    entries:
+      type: array
+      items:
+        $ref: '#/ScoreEntry'
+      description: Score entries per hole
+    totalStrokes:
+      type: integer
+      description: Total strokes
+      example: 85
+    totalPar:
+      type: integer
+      description: Total par for the round
+      example: 72
+    relativeScore:
+      type: integer
+      description: Score relative to par (+/-)
+      example: 13
+    stablefordPoints:
+      type: integer
+      description: Stableford points (if format supports it)
+      example: 32
+    handicapStrokes:
+      type: integer
+      description: Handicap strokes received
+      example: 15
+    netScore:
+      type: integer
+      description: Net score (gross - handicap)
+      example: 70
+    scorecardUrl:
+      type: string
+      format: uri
+      description: URL to generated scorecard image
+    submittedAt:
+      type: string
+      format: date-time
+      description: When the score was submitted
+      example: "2026-08-01T11:45:00Z"
+    verified:
+      type: boolean
+      description: Whether the score has been verified
+      example: false
+
+ScoreEntry:
+  type: object
+  required:
+    - holeNumber
+    - par
+    - strokes
+  properties:
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number
+      example: 1
+    par:
+      type: integer
+      minimum: 3
+      maximum: 6
+      description: Par for the hole
+      example: 4
+    strokes:
+      type: integer
+      minimum: 1
+      description: Strokes taken
+      example: 5
+    putts:
+      type: integer
+      minimum: 0
+      description: Putts taken
+      example: 2
+    fairwayHit:
+      type: boolean
+      description: Fairway hit on par 4/5
+    gir:
+      type: boolean
+      description: Green in regulation
+    penalties:
+      type: integer
+      minimum: 0
+      description: Penalty strokes
+      example: 0
+    approachDistance:
+      type: number
+      description: Distance to pin after approach (meters)
+      example: 12.5
+    club:
+      type: string
+      description: Club used for approach
+      example: "7-iron"
+    notes:
+      type: string
+      description: Optional notes for this hole
+
+Scorecard:
+  type: object
+  required:
+    - roundId
+    - courseName
+    - date
+    - playerName
+  properties:
+    roundId:
+      type: string
+      format: uuid
+      description: Round identifier
+    courseName:
+      type: string
+      description: Course name
+      example: Saigon Golf Club
+    date:
+      type: string
+      format: date
+      description: Date of the round
+      example: "2026-08-01"
+    playerName:
+      type: string
+      description: Player name
+      example: John Doe
+    playerHandicap:
+      type: number
+      description: Player handicap at time of round
+      example: 15.4
+    holes:
+      type: array
+      items:
+        $ref: '#/ScorecardHole'
+      description: Score per hole
+    totalStrokes:
+      type: integer
+      description: Total strokes
+    totalPar:
+      type: integer
+      description: Total par
+    frontNine:
+      type: object
+      properties:
+        strokes:
+          type: integer
+        par:
+          type: integer
+    backNine:
+      type: object
+      properties:
+        strokes:
+          type: integer
+        par:
+          type: integer
+    relativeScore:
+      type: integer
+      description: Score vs par
+    weather:
+      $ref: './weather.yaml#/WeatherSnapshot'
+    signature:
+      type: string
+      description: Base64-encoded signature image
+
+ScorecardHole:
+  type: object
+  required:
+    - number
+    - par
+    - strokes
+  properties:
+    number:
+      type: integer
+      description: Hole number
+    par:
+      type: integer
+      description: Par for the hole
+    strokes:
+      type: integer
+      description: Strokes taken
+    score:
+      type: string
+      description: Score notation (e.g., "Bogey", "Par", "Birdie")
+      example: "Bogey"
+    points:
+      type: integer
+      description: Stableford points
+
+ScoreSubmitRequest:
+  type: object
+  required:
+    - roundId
+    - entries
+  properties:
+    roundId:
+      type: string
+      format: uuid
+      description: Round identifier
+    entries:
+      type: array
+      items:
+        $ref: '#/ScoreEntry'
+      description: Score entries per hole
+
+LeaderboardEntry:
+  type: object
+  properties:
+    rank:
+      type: integer
+      description: Current rank
+      example: 1
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier
+    playerName:
+      type: string
+      description: Player name
+    score:
+      type: object
+      properties:
+        strokes:
+          type: integer
+        relative:
+          type: integer
+    roundsPlayed:
+      type: integer
+      description: Number of rounds played
+      example: 5
+    averageScore:
+      type: number
+      description: Average score
+      example: 82.5
+
+# ─── Score Correction Schemas (Story 5.5 Slice 4) ────────────────────────────
+
+ScoreCorrectionRequest:
+  type: object
+  required:
+    - playerId
+    - corrections
+  properties:
+    playerId:
+      type: string
+      format: uuid
+      description: Player account ID whose score is being corrected
+    corrections:
+      type: array
+      items:
+        $ref: '#/FieldCorrection'
+      description: List of field corrections
+
+FieldCorrection:
+  type: object
+  required:
+    - field
+    - holeNumber
+    - oldValue
+    - newValue
+  properties:
+    field:
+      type: string
+      enum: [strokes, putts, penalties, fairwayHit, gir, bunker, notes]
+      description: Permitted score field to correct
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number
+    oldValue:
+      type: string
+      description: Current value before correction
+    newValue:
+      type: string
+      description: Corrected value
+
+ScoreCorrectionResponse:
+  type: object
+  properties:
+    correctionId:
+      type: string
+      format: uuid
+      description: Identifier for this correction batch
+    appliedAt:
+      type: string
+      format: date-time
+      description: Timestamp when corrections were applied
+    auditId:
+      type: string
+      format: uuid
+      description: First audit entry ID for this correction batch
+
+ScoreCorrectionRequest:
+  type: object
+  required:
+    - playerId
+    - corrections
+  properties:
+    playerId:
+      type: string
+      format: uuid
+      description: Player identifier whose scores are being corrected
+    corrections:
+      type: array
+      items:
+        $ref: '#/FieldCorrection'
+      description: List of field corrections
+
+FieldCorrection:
+  type: object
+  required:
+    - field
+    - holeNumber
+    - oldValue
+    - newValue
+  properties:
+    field:
+      type: string
+      enum: [strokes, putts, penalties, fairwayHit, gir, bunker, notes]
+      description: Name of the field to correct
+    holeNumber:
+      type: integer
+      minimum: 1
+      maximum: 27
+      description: Hole number
+    oldValue:
+      type: string
+      description: Previous value (for audit trail)
+    newValue:
+      type: string
+      description: New corrected value
+
+ScoreCorrectionResponse:
+  type: object
+  properties:
+    correctionId:
+      type: string
+      format: uuid
+      description: Correction batch identifier
+    appliedAt:
+      type: string
+      format: date-time
+      description: Timestamp when corrections were applied
+    auditId:
+      type: string
+      format: uuid
+      description: Audit entry identifier

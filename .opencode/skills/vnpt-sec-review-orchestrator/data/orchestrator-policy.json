@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "ownership": "Skill-layer (LLM agent facing). NOT consumed by any runtime service.",
+    "purpose": "Authoritative source for the LLM agent driving the BMAD security review workflow. Pins lifecycle states, severity classes, and source-order preferences used by steps/ scripts.",
+    "see_also": "references/state-machine.md (workflow state transitions) and data/orchestrator-rules.md (workflow hard stops)."
+  },
+  "statusValues": {
+    "pending": "pending",
+    "preflight": "preflight",
+    "context_discovery": "context_discovery",
+    "security_map": "security_map",
+    "review_pass": "review_pass",
+    "fix_waves": "fix_waves",
+    "validation": "validation",
+    "fresh_review": "fresh_review",
+    "confirmation_pending": "confirmation_pending",
+    "complete": "complete",
+    "stalled": "stalled",
+    "failed": "failed"
+  },
+  "severityValues": {
+    "critical": "critical",
+    "high": "high",
+    "medium": "medium",
+    "low": "low",
+    "info": "info"
+  },
+  "findingStatusValues": {
+    "open": "open",
+    "closed": "closed",
+    "waived": "waived"
+  },
+  "controlFamilies": {
+    "authn_authz_session_token": "auth",
+    "injection_input_handling": "appsec",
+    "secrets_crypto_logging": "devsecops",
+    "api_abuse_rate_limiting_object_authorization": "api",
+    "dependency_supply_chain_provenance_signing": "devsecops",
+    "container_kubernetes_iac_runtime_hardening": "cloud-k8s",
+    "observability_audit_compliance": "compliance"
+  },
+  "stackLanes": [
+    "nodejs",
+    "python",
+    "go",
+    "java-spring",
+    "dotnet",
+    "php",
+    "c-cpp",
+    "frontend-react",
+    "frontend-vue",
+    "frontend-angular",
+    "mobile-flutter",
+    "mobile-react"
+  ],
+  "validationPolicy": {
+    "source_or_config_first": true,
+    "scanners_are_corroboration": true
+  },
+  "stallThreshold": 2,
+  "confirmationMandatory": true,
+  "sourceOrder": [
+    "security-handoff.md",
+    "review-handoff.md",
+    "git-state",
+    "user-arguments"
+  ]
+}

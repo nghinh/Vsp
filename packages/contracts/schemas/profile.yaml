@@ -1,0 +1,154 @@
+# Profile schemas for the Vietnam Smart Golf Platform API
+# Per Story 2.3 AC-1: all golf preference fields supported.
+# Per Story 2.3 AC-2: canonical values stored in meters; distanceUnit is display preference only.
+
+GolferProfileResponse:
+  type: object
+  properties:
+    id:
+      type: integer
+      format: int64
+      description: Profile identifier
+      example: 1
+    golferAccountId:
+      type: integer
+      format: int64
+      description: Golfer account ID
+      example: 42
+    handicap:
+      type: number
+      format: double
+      description: Golfer handicap index (e.g. 12.5)
+      example: 12.5
+    homeClub:
+      type: string
+      maxLength: 255
+      description: Golfer's home club name
+      example: Vietnam Golf & Country Club
+    distanceUnit:
+      type: string
+      enum: [METERS, YARDS]
+      description: Display unit preference. Canonical values are always stored in meters.
+      example: METERS
+    dominantHand:
+      type: string
+      enum: [LEFT, RIGHT]
+      description: Golfer's dominant hand
+      example: RIGHT
+    skillLevel:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED, PRO]
+      description: Golfer's self-assessed skill level
+      example: INTERMEDIATE
+    targetScore:
+      type: integer
+      description: Golfer's target/average score (18–180)
+      example: 90
+    driverDistance:
+      type: integer
+      description: Average driver distance in **meters** (canonical unit — do not convert)
+      example: 220
+    swingSpeed:
+      type: integer
+      description: Average swing speed in mph
+      example: 95
+    gender:
+      type: string
+      enum: [MALE, FEMALE, OTHER]
+      description: Golfer's gender
+      example: MALE
+    birthYear:
+      type: integer
+      description: Golfer's birth year (1900–2010)
+      example: 1985
+    country:
+      type: string
+      maxLength: 100
+      description: Golfer's country
+      example: Vietnam
+    imageUrl:
+      type: string
+      maxLength: 512
+      description: Profile image URL
+      example: https://cdn.vsp.example.com/profiles/42/avatar.jpg
+    createdAt:
+      type: string
+      format: date-time
+      description: Profile creation timestamp
+      example: "2026-08-02T10:00:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      description: Last update timestamp
+      example: "2026-08-02T12:30:00Z"
+
+UpdateGolferProfileRequest:
+  type: object
+  description: |
+    All fields are optional — this is a partial update.
+    Per Story 2.3 AC-2: driverDistance is accepted as canonical meters only.
+  properties:
+    handicap:
+      type: number
+      format: double
+      minimum: -5.0
+      maximum: 54.0
+      description: Golfer handicap index
+      example: 11.0
+    homeClub:
+      type: string
+      maxLength: 255
+      description: Golfer's home club name
+      example: Long Thanh Golf Club
+    distanceUnit:
+      type: string
+      enum: [METERS, YARDS]
+      description: Display unit preference (does not affect stored canonical values)
+      example: YARDS
+    dominantHand:
+      type: string
+      enum: [LEFT, RIGHT]
+      description: Golfer's dominant hand
+      example: RIGHT
+    skillLevel:
+      type: string
+      enum: [BEGINNER, INTERMEDIATE, ADVANCED, PRO]
+      description: Golfer's self-assessed skill level
+      example: ADVANCED
+    targetScore:
+      type: integer
+      minimum: 18
+      maximum: 180
+      description: Target/average score
+      example: 88
+    driverDistance:
+      type: integer
+      minimum: 1
+      description: Average driver distance in **meters** (canonical — do not convert to yards before sending)
+      example: 230
+    swingSpeed:
+      type: integer
+      minimum: 20
+      maximum: 200
+      description: Average swing speed in mph
+      example: 100
+    gender:
+      type: string
+      enum: [MALE, FEMALE, OTHER]
+      description: Golfer's gender
+    birthYear:
+      type: integer
+      minimum: 1900
+      maximum: 2010
+      description: Golfer's birth year
+      example: 1990
+    country:
+      type: string
+      maxLength: 100
+      description: Golfer's country
+      example: Vietnam
+    imageUrl:
+      type: string
+      maxLength: 512
+      description: Profile image URL
+      example: https://cdn.vsp.example.com/profiles/42/avatar.jpg

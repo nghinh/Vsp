@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Vietnam Smart Golf - Theo dõi cú đánh</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Shared Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "inverse-primary": "#a73a00",
+                    "primary": "#ffb599",
+                    "inverse-surface": "#dae2fd",
+                    "on-secondary-fixed": "#341100",
+                    "surface": "#0b1326",
+                    "on-secondary-container": "#4a1c00",
+                    "on-background": "#dae2fd",
+                    "surface-bright": "#31394d",
+                    "outline-variant": "#5a4138",
+                    "tertiary": "#68dba9",
+                    "outline": "#a98a7e",
+                    "on-error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#ffb690",
+                    "on-surface": "#dae2fd",
+                    "tertiary-container": "#25a475",
+                    "inverse-on-surface": "#283044",
+                    "secondary-container": "#ec6a06",
+                    "surface-variant": "#2d3449",
+                    "on-tertiary-fixed": "#002114",
+                    "surface-container-lowest": "#060e20",
+                    "tertiary-fixed": "#85f8c4",
+                    "tertiary-fixed-dim": "#68dba9",
+                    "surface-dim": "#0b1326",
+                    "surface-container-highest": "#2d3449",
+                    "secondary": "#ffb690",
+                    "on-primary-container": "#4f1700",
+                    "primary-fixed": "#ffdbce",
+                    "error": "#ffb4ab",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#005137",
+                    "on-secondary": "#552100",
+                    "surface-tint": "#ffb599",
+                    "on-secondary-fixed-variant": "#783200",
+                    "surface-container-low": "#131b2e",
+                    "primary-container": "#f66018",
+                    "on-primary-fixed": "#370e00",
+                    "surface-container": "#171f33",
+                    "surface-container-high": "#222a3d",
+                    "background": "#0b1326",
+                    "primary-fixed-dim": "#ffb599",
+                    "on-primary": "#5a1c00",
+                    "secondary-fixed": "#ffdbca",
+                    "on-primary-fixed-variant": "#7f2b00",
+                    "on-tertiary": "#003825",
+                    "on-tertiary-container": "#00311f",
+                    "on-surface-variant": "#e2bfb2",
+                    "on-error": "#690005"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "touch-target": "44px",
+                    "unit": "8px",
+                    "gutter": "16px",
+                    "margin-desktop": "32px",
+                    "margin-mobile": "16px"
+            },
+            "fontFamily": {
+                    "body-md": ["Fira Sans"],
+                    "metric-sm": ["Fira Code"],
+                    "label-caps": ["Fira Sans"],
+                    "headline-md": ["Fira Sans"],
+                    "display-metrics": ["Fira Code"],
+                    "body-lg": ["Fira Sans"],
+                    "headline-lg": ["Fira Sans"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #0b1326;
+            color: #dae2fd;
+            -webkit-tap-highlight-color: transparent;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .map-gradient-overlay {
+            background: linear-gradient(to top, #0b1326 0%, transparent 40%, transparent 80%, #0b1326 100%);
+        }
+        .distance-ring {
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            position: absolute;
+            pointer-events: none;
+        }
+        .shot-path-animated {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 1.5s ease-out forwards;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+        .custom-shadow {
+            box-shadow: 0 -4px 24px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md select-none">
+<!-- Top Navigation Header -->
+<header class="fixed top-0 w-full z-[70] bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center justify-between px-margin-mobile h-[64px]">
+<div class="flex items-center gap-2">
+<button class="w-touch-target h-touch-target flex items-center justify-center active:scale-95 transition-transform text-on-surface">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex flex-col">
+<h1 class="font-headline-md text-headline-md leading-none text-on-surface">Hố 7 · Par 4</h1>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary">cloud_done</span>
+<span class="font-label-caps text-[10px] text-tertiary tracking-wider">ĐÃ LƯU NGOẠI TUYẾN</span>
+</div>
+</div>
+<button class="w-touch-target h-touch-target flex items-center justify-center active:scale-95 transition-transform text-on-surface">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+<div class="flex items-center gap-2">
+<div class="bg-surface-container-high px-3 py-1 rounded-full flex items-center gap-1.5 border border-outline-variant">
+<span class="material-symbols-outlined text-[18px] text-primary">gps_fixed</span>
+<span class="font-metric-sm text-metric-sm text-primary">GPS: 2m</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Map Viewport -->
+<main class="relative w-full h-screen overflow-hidden pt-[64px]">
+<!-- Map Background Layer -->
+<div class="absolute inset-0 z-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A professional satellite view of a lush green golf course fairway from directly above. The layout shows a vibrant green fairway surrounded by darker green rough, a white sand bunker to the right, and the putting green in the distance. The lighting is bright and clear like a sunny afternoon, with high contrast. The style is detailed, high-resolution cartography suitable for a premium sports application." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAlQ0LI1ehqCaDiMDny7f71VtBeyNYWKYbGJyLMAgHbJJLO4VFUZA2u4KP_VEX2FD6oBQfgovMPyjGfDJ8zZqd7_OKJaNU0UFUckkbY4AFoLVciR2F3dYSD_ZySnwEak9IaXO-GPXM0ZmK-xs87b-Wsw4UZEnKqAnmZ73GF86SV93pSPV769dBwTSEqpY1mghjr5QcUKYenwptccv24i0m0kTLGrfUUi-rx0L-YBortGHB-glmDxRvCTg')"></div>
+<div class="absolute inset-0 map-gradient-overlay pointer-events-none"></div>
+</div>
+<!-- Strategic Elements Overlay -->
+<div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+<!-- Distance Rings -->
+<div class="distance-ring w-[150px] h-[150px] transform translate-y-[100px]">
+<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container text-[10px] px-1 font-metric-sm">100m</span>
+</div>
+<div class="distance-ring w-[280px] h-[280px] transform translate-y-[100px]">
+<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container text-[10px] px-1 font-metric-sm">150m</span>
+</div>
+<div class="distance-ring w-[420px] h-[420px] transform translate-y-[100px]">
+<span class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface-container text-[10px] px-1 font-metric-sm">200m</span>
+</div>
+<!-- Shot Path SVG Overlay -->
+<svg class="absolute inset-0 w-full h-full">
+<defs>
+<filter id="glow">
+<fegaussianblur result="coloredBlur" stddeviation="2.5"></fegaussianblur>
+<femerge>
+<femergenode in="coloredBlur"></femergenode>
+<femergenode in="SourceGraphic"></femergenode>
+</femerge>
+</filter>
+</defs>
+<!-- Arc shot line -->
+<path class="shot-path-animated" d="M 180 650 Q 200 450 250 350" fill="none" filter="url(#glow)" stroke="#EA580C" stroke-linecap="round" stroke-width="4"></path>
+</svg>
+<!-- Golfer Marker (Tee Box) -->
+<div class="absolute bottom-[20%] left-[45%] flex flex-col items-center">
+<div class="w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-primary">
+<div class="w-2 h-2 bg-primary rounded-full"></div>
+</div>
+</div>
+<!-- Target Marker (End of Path) -->
+<div class="absolute top-[35%] right-[25%] flex flex-col items-center animate-bounce">
+<div class="relative">
+<span class="material-symbols-outlined text-[#EA580C] text-[40px]" style="font-variation-settings: 'FILL' 1;">location_on</span>
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded text-[12px] font-metric-sm font-bold shadow-lg">
+                        184m
+                    </div>
+</div>
+</div>
+</div>
+<!-- Floating Quick Stats -->
+<div class="absolute top-[80px] right-margin-mobile flex flex-col gap-2 z-20">
+<div class="bg-surface-container/90 backdrop-blur-md p-3 rounded-xl border border-outline-variant shadow-xl">
+<div class="text-on-surface-variant font-label-caps text-[10px] mb-1">CÒN LẠI</div>
+<div class="font-display-metrics text-[32px] leading-none text-white">162<span class="text-[16px] ml-0.5 font-metric-sm text-on-surface-variant">m</span></div>
+</div>
+<div class="bg-surface-container/90 backdrop-blur-md p-3 rounded-xl border border-outline-variant shadow-xl flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px]">air</span>
+<div class="flex flex-col">
+<div class="text-on-surface-variant font-label-caps text-[10px]">GIÓ</div>
+<div class="font-metric-sm text-metric-sm text-white">12 km/h <span class="material-symbols-outlined text-[14px] align-middle transform rotate-[45deg]">north</span></div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Interaction Area -->
+<section class="fixed bottom-0 w-full z-[80]">
+<!-- Automatic Suggestion Banner -->
+<div class="px-4 pb-2">
+<div class="bg-tertiary-container/20 backdrop-blur-xl border border-tertiary/30 rounded-2xl p-3 flex items-center justify-between shadow-2xl">
+<div class="flex items-center gap-3">
+<div class="bg-tertiary/20 w-8 h-8 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-[20px]" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-label-caps text-tertiary text-[10px]">TỰ ĐỘNG GỢI Ý</span>
+<span class="w-1.5 h-1.5 bg-tertiary rounded-full animate-pulse"></span>
+</div>
+<p class="text-sm font-medium text-white">Phát hiện cú đánh <span class="font-metric-sm">184m</span> bằng 5i</p>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="bg-tertiary text-on-tertiary px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-transform">Xác nhận</button>
+<button class="bg-white/10 text-white px-3 py-1.5 rounded-lg text-xs font-bold active:scale-95 transition-transform">Sửa</button>
+</div>
+</div>
+</div>
+<!-- Control Panel -->
+<div class="bg-surface-container-high rounded-t-[32px] custom-shadow p-margin-mobile pt-6 space-y-4">
+<!-- Club & Lie Selector -->
+<div class="grid grid-cols-2 gap-3">
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant text-[10px] ml-1">GẬY VỪA DÙNG</label>
+<div class="flex gap-2">
+<button class="flex-1 h-touch-target bg-primary-container text-on-primary-container rounded-xl font-bold flex items-center justify-center active:scale-95 transition-all">Dr</button>
+<button class="flex-1 h-touch-target bg-surface-container-highest text-on-surface rounded-xl font-bold flex items-center justify-center active:scale-95 transition-all">3w</button>
+<button class="flex-1 h-touch-target bg-surface-container-highest text-on-surface rounded-xl font-bold flex items-center justify-center active:scale-95 transition-all border border-outline-variant">5i</button>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-caps text-on-surface-variant text-[10px] ml-1">VỊ TRÍ (LIE)</label>
+<div class="flex gap-2">
+<button class="flex-1 h-touch-target bg-surface-container-highest text-on-surface rounded-xl font-bold flex items-center justify-center active:scale-95 transition-all border-2 border-primary">Tee</button>
+<button class="flex-1 h-touch-target bg-surface-container-highest text-on-surface rounded-xl font-bold flex items-center justify-center active:scale-95 transition-all border border-outline-variant">Fairway</button>
+</div>
+</div>
+</div>
+<!-- Current Shot Card -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 overflow-hidden">
+<div class="p-3 flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 bg-surface-container-high rounded-xl flex flex-col items-center justify-center border border-outline-variant">
+<span class="font-bold text-primary">Dr</span>
+<span class="text-[9px] font-label-caps opacity-60">GẬY</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-display-metrics text-xl">212</span>
+<span class="text-sm font-metric-sm text-on-surface-variant">m</span>
+<span class="bg-tertiary/10 text-tertiary text-[10px] px-2 py-0.5 rounded-full font-bold">FAIRWAY</span>
+</div>
+<div class="flex items-center gap-2 mt-1 text-[11px] text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">edit_note</span> Thủ công</span>
+<span class="text-outline-variant">•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-tertiary">check_circle</span> Độ tin cậy cao</span>
+</div>
+</div>
+</div>
+<button class="w-8 h-8 flex items-center justify-center rounded-full bg-surface-variant">
+<span class="material-symbols-outlined text-on-surface text-[18px]">more_vert</span>
+</button>
+</div>
+<!-- Quick Actions Strip -->
+<div class="flex border-t border-outline-variant/30 divide-x divide-outline-variant/30">
+<button class="flex-1 py-2.5 flex flex-col items-center gap-0.5 active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
+<span class="text-[9px] font-label-caps">Sửa</span>
+</button>
+<button class="flex-1 py-2.5 flex flex-col items-center gap-0.5 active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">call_merge</span>
+<span class="text-[9px] font-label-caps">Gộp</span>
+</button>
+<button class="flex-1 py-2.5 flex flex-col items-center gap-0.5 active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px] text-error">warning</span>
+<span class="text-[9px] font-label-caps text-error">Phạt</span>
+</button>
+<button class="flex-1 py-2.5 flex flex-col items-center gap-0.5 active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">refresh</span>
+<span class="text-[9px] font-label-caps">Mulligan</span>
+</button>
+<button class="flex-1 py-2.5 flex flex-col items-center gap-0.5 active:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">delete</span>
+<span class="text-[9px] font-label-caps">Xoá</span>
+</button>
+</div>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-[64px] bg-[#EA580C] text-white rounded-2xl flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-xl shadow-primary-container/20">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add_circle</span>
+<span class="font-headline-md tracking-wide">GHI CÚ ĐÁNH</span>
+</button>
+<!-- Spacer for SafeArea -->
+<div class="h-6"></div>
+</div>
+</section>
+<!-- Map UI Controls -->
+<div class="fixed left-margin-mobile bottom-[380px] z-[70] flex flex-col gap-3">
+<button class="w-[48px] h-[48px] bg-surface-container-high/90 backdrop-blur-md rounded-full flex items-center justify-center border border-outline-variant shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-on-surface">layers</span>
+</button>
+<button class="w-[48px] h-[48px] bg-surface-container-high/90 backdrop-blur-md rounded-full flex items-center justify-center border border-outline-variant shadow-lg active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-on-surface">my_location</span>
+</button>
+</div>
+<!-- Script for micro-interactions -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.addEventListener('touchstart', function() {
+                    this.classList.add('opacity-80');
+                });
+                btn.addEventListener('touchend', function() {
+                    this.classList.remove('opacity-80');
+                });
+            });
+        });
+    </script>
+</body></html>

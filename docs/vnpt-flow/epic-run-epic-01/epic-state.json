@@ -1,0 +1,22 @@
+{
+  "run_id": "run_2026_08_02_009",
+  "epic_count": 1,
+  "current_epic_index": 0,
+  "status": "done",
+  "created_at": "2026-08-02T05:18:21+07:00",
+  "updated_at": "2026-08-02T05:47:00+07:00",
+  "epics": [
+    {
+      "epic_id": "epic-01",
+      "epic_name": "Epic Inventory",
+      "status": "done",
+      "story_count": 5,
+      "completed_stories": 5,
+      "failed_stories": 0
+    }
+  ],
+  "review_pass_count": 1,
+  "last_review_actionable_issues": 0,
+  "non_progress_streak": 0,
+  "resume_pointer": null
+}

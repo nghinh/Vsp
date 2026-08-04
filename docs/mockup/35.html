@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>35 — Hàng đợi hiệu chỉnh | GolfOps Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #131b2e; }
+        ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ffb599; }
+        .map-grid-overlay {
+            background-image: radial-gradient(rgba(255, 181, 153, 0.1) 1px, transparent 0);
+            background-size: 24px 24px;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#783200",
+                        "surface-tint": "#ffb599",
+                        "on-error": "#690005",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "on-secondary-container": "#4a1c00",
+                        "surface-bright": "#31394d",
+                        "on-surface-variant": "#e2bfb2",
+                        "outline-variant": "#5a4138",
+                        "on-secondary-fixed": "#341100",
+                        "on-tertiary-container": "#00311f",
+                        "on-primary": "#5a1c00",
+                        "surface-container-highest": "#2d3449",
+                        "surface-variant": "#2d3449",
+                        "on-tertiary-fixed": "#002114",
+                        "error-container": "#93000a",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#ffdbca",
+                        "primary": "#ffb599",
+                        "on-primary-fixed": "#370e00",
+                        "tertiary": "#68dba9",
+                        "background": "#0b1326",
+                        "inverse-primary": "#a73a00",
+                        "secondary-container": "#ec6a06",
+                        "primary-fixed": "#ffdbce",
+                        "outline": "#a98a7e",
+                        "on-background": "#dae2fd",
+                        "primary-container": "#f66018",
+                        "secondary": "#ffb690",
+                        "on-secondary": "#552100",
+                        "surface": "#0b1326",
+                        "secondary-fixed-dim": "#ffb690",
+                        "on-surface": "#dae2fd",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "surface-container-lowest": "#060e20",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-tertiary": "#003825",
+                        "on-primary-container": "#4f1700",
+                        "surface-dim": "#0b1326",
+                        "tertiary-fixed": "#85f8c4",
+                        "inverse-on-surface": "#283044",
+                        "tertiary-container": "#25a475",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-container": "#171f33",
+                        "surface-container-low": "#131b2e",
+                        "surface-container-high": "#222a3d",
+                        "inverse-surface": "#dae2fd"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "margin-mobile": "16px",
+                        "touch-target": "44px",
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "headline-lg": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "body-lg": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "label-caps": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary/30 min-h-screen flex">
+<!-- Sidebar (SideNavBar) -->
+<aside class="w-[280px] h-full fixed left-0 top-0 border-r border-white/10 bg-surface-container-low flex flex-col py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary">GolfOps Portal</h1>
+<p class="text-on-surface-variant text-sm">Course Operations</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="golf_course">golf_course</span>
+<span class="font-body-md text-body-md">Courses</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="edit_location_alt">edit_location_alt</span>
+<span class="font-body-md text-body-md">Map Editor</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-body-md text-body-md">Pin Positions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container/10 text-primary border-l-4 border-primary" href="#">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span class="font-body-md text-body-md">Corrections</span>
+</a>
+</nav>
+<div class="px-4 mb-6">
+<button class="w-full bg-primary-container text-on-primary-container font-semibold py-3 px-4 rounded flex items-center justify-center gap-2 hover:bg-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+<span>New Course</span>
+</button>
+</div>
+<div class="border-t border-white/5 pt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<main class="flex-1 ml-[280px] flex flex-col h-screen overflow-hidden">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center h-16 px-margin-desktop sticky top-0 z-40 bg-surface-container border-b border-white/10 shadow-sm shrink-0">
+<div class="flex items-center gap-4">
+<nav class="flex text-on-surface-variant text-sm gap-2">
+<span>Portal</span>
+<span>/</span>
+<span class="text-primary">Corrections</span>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center bg-surface-container-low border border-white/10 rounded-lg px-3 py-1.5 w-64">
+<span class="material-symbols-outlined text-on-surface-variant text-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm text-on-surface placeholder:text-on-surface-variant/50 w-full" placeholder="Tìm khóa, người báo cáo..." type="text"/>
+</div>
+<div class="flex gap-4">
+<button class="relative text-on-surface-variant hover:text-primary transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+</button>
+</div>
+<div class="flex items-center gap-3 border-l border-white/10 pl-6">
+<div class="text-right">
+<p class="text-sm font-semibold">Administrator</p>
+<p class="text-xs text-on-surface-variant">Course Management</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden border-2 border-primary/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a golf operations manager in a dark blue polo shirt, looking confident and smiling slightly. The background is a blurred office environment with modern technical equipment, consistent with a high-end command center aesthetic using a dark theme with soft orange accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAspdGSmHiFzI-x7FG7LxW_WNyIFZ6X06-C4naP48qxnHw9iK77wnNZSDr5jGZ3FKKJhHpNcfvzZ0L_TPFeIw5DoK6ltcWGW4jkGqQEI3tpe3p6BpDCiGegCJ-1EPH38tAfGIDo0rLrLXmuuFge8ojQCSJdvFxEmAYOzAOdzvy28hwN-LvMtQZqiuRxF5oQYC1yX_7BFs5cmqr-HL3Ht-t8ydohsDnP5TpGgifl9tGQc1hCUAmiihXJag"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="flex-1 flex overflow-hidden">
+<!-- Left Column: Table & Filters (60%) -->
+<section class="w-[60%] flex flex-col border-r border-white/10 overflow-hidden">
+<!-- Page Header & Summary -->
+<div class="px-margin-desktop py-6 bg-surface-container-low shrink-0">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Hàng đợi hiệu chỉnh</h2>
+<p class="text-on-surface-variant">Quản lý và phê duyệt các phản hồi thực địa từ người dùng.</p>
+</div>
+<div class="flex gap-4">
+<div class="bg-surface-container border border-white/10 px-4 py-2 rounded-lg text-center">
+<span class="block text-xs font-label-caps text-on-surface-variant mb-1">CHỜ XỬ LÝ</span>
+<span class="font-display-metrics text-headline-md text-primary">24</span>
+</div>
+<div class="bg-surface-container border border-white/10 px-4 py-2 rounded-lg text-center">
+<span class="block text-xs font-label-caps text-on-surface-variant mb-1">ĐANG XEM XÉT</span>
+<span class="font-display-metrics text-headline-md text-tertiary">12</span>
+</div>
+<div class="bg-surface-container border border-white/10 px-4 py-2 rounded-lg text-center">
+<span class="block text-xs font-label-caps text-on-surface-variant mb-1">ĐÃ XỬ LÝ</span>
+<span class="font-display-metrics text-headline-md text-on-surface-variant">142</span>
+</div>
+</div>
+</div>
+<!-- Filters -->
+<div class="flex flex-wrap gap-2">
+<select class="bg-surface border-white/10 rounded px-3 py-1.5 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Tất cả Sân Golf</option>
+<option>BRG Legend Hill</option>
+<option>Phoenix Golf Resort</option>
+</select>
+<select class="bg-surface border-white/10 rounded px-3 py-1.5 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Tất cả Lỗ</option>
+<option>Hole 1</option>
+<option>Hole 7</option>
+</select>
+<select class="bg-surface border-white/10 rounded px-3 py-1.5 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Loại lỗi</option>
+<option>Thiếu Bunker</option>
+<option>Sai hình dáng Green</option>
+</select>
+<select class="bg-surface border-white/10 rounded px-3 py-1.5 text-xs text-on-surface focus:border-primary focus:ring-1 focus:ring-primary">
+<option>Độ tin cậy</option>
+<option>&gt; 80%</option>
+<option>&gt; 50%</option>
+</select>
+<button class="bg-surface border border-white/10 px-3 py-1.5 rounded text-xs flex items-center gap-2 hover:bg-surface-container-highest">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_today">calendar_today</span>
+                            7 ngày qua
+                        </button>
+<button class="ml-auto text-primary text-xs font-semibold hover:underline">Xóa lọc</button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="flex-1 overflow-auto px-6 py-4">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-background z-10">
+<tr class="text-xs font-label-caps text-on-surface-variant border-b border-white/5">
+<th class="py-4 px-2">PRI</th>
+<th class="py-4 px-2">LOẠI LỖI</th>
+<th class="py-4 px-2">SÂN / LỖ</th>
+<th class="py-4 px-2">ĐỘ TIN CẬY</th>
+<th class="py-4 px-2 text-right">BẰNG CHỨNG</th>
+<th class="py-4 px-2">TRẠNG THÁI</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-white/5">
+<!-- Selected Row -->
+<tr class="bg-primary/5 border-l-2 border-primary group cursor-pointer hover:bg-primary/10 transition-colors">
+<td class="py-4 px-2">
+<span class="material-symbols-outlined text-error" data-icon="priority_high">priority_high</span>
+</td>
+<td class="py-4 px-2">
+<p class="font-semibold text-sm">Thiếu Bunker</p>
+<p class="text-xs text-on-surface-variant">Báo cáo bởi: Quang Minh</p>
+</td>
+<td class="py-4 px-2">
+<p class="text-sm">BRG Legend Hill</p>
+<p class="text-xs font-metric-sm text-primary">Hole 7</p>
+</td>
+<td class="py-4 px-2">
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-sm">92%</span>
+<div class="w-16 h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-tertiary h-full" style="width: 92%"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="image">image</span>
+<span class="text-xs">2</span>
+</div>
+</td>
+<td class="py-4 px-2">
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-secondary-container">ĐANG XEM XÉT</span>
+</td>
+</tr>
+<!-- Other Rows -->
+<tr class="hover:bg-white/5 transition-colors cursor-pointer">
+<td class="py-4 px-2">
+<span class="material-symbols-outlined text-on-tertiary-container" data-icon="low_priority">low_priority</span>
+</td>
+<td class="py-4 px-2">
+<p class="font-semibold text-sm">Sai hình dáng Green</p>
+<p class="text-xs text-on-surface-variant">Báo cáo bởi: Thùy Linh</p>
+</td>
+<td class="py-4 px-2">
+<p class="text-sm">Phoenix Golf Resort</p>
+<p class="text-xs font-metric-sm text-primary">Hole 14</p>
+</td>
+<td class="py-4 px-2">
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-sm">45%</span>
+<div class="w-16 h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-error h-full" style="width: 45%"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="photo_camera">photo_camera</span>
+<span class="text-xs">1</span>
+</div>
+</td>
+<td class="py-4 px-2">
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">CHỜ XỬ LÝ</span>
+</td>
+</tr>
+<!-- Repeat standard rows... -->
+<tr class="hover:bg-white/5 transition-colors cursor-pointer">
+<td class="py-4 px-2">
+<span class="material-symbols-outlined text-tertiary" data-icon="drag_handle">drag_handle</span>
+</td>
+<td class="py-4 px-2">
+<p class="font-semibold text-sm">Điểm Tee không khớp</p>
+<p class="text-xs text-on-surface-variant">Báo cáo bởi: Anh Đức</p>
+</td>
+<td class="py-4 px-2">
+<p class="text-sm">Long Bien Golf Course</p>
+<p class="text-xs font-metric-sm text-primary">Hole 3</p>
+</td>
+<td class="py-4 px-2">
+<div class="flex items-center gap-2">
+<span class="font-metric-sm text-sm">78%</span>
+<div class="w-16 h-1 bg-surface-container rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 78%"></div>
+</div>
+</div>
+</td>
+<td class="py-4 px-2 text-right">
+<div class="flex items-center justify-end gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="image">image</span>
+<span class="text-xs">4</span>
+</div>
+</td>
+<td class="py-4 px-2">
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-surface-container-highest text-on-surface-variant">CHỜ XỬ LÝ</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Right Column: Review Workspace (40%) -->
+<section class="w-[40%] bg-surface-container-low flex flex-col overflow-y-auto">
+<!-- Workspace Header -->
+<div class="p-6 border-b border-white/10 flex justify-between items-center bg-surface-container">
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">Chi tiết hiệu chỉnh</h3>
+<p class="text-xs text-on-surface-variant uppercase tracking-wider font-bold">Mã Case: #COR-88219</p>
+</div>
+<button class="p-2 hover:bg-white/10 rounded-full">
+<span class="material-symbols-outlined" data-icon="close">close</span>
+</button>
+</div>
+<div class="p-6 space-y-8">
+<!-- Reporter Data Section -->
+<div class="space-y-4">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center border border-white/10">
+<span class="material-symbols-outlined text-primary" data-icon="person">person</span>
+</div>
+<div class="flex-1">
+<p class="text-sm font-semibold">Báo cáo từ Quang Minh <span class="text-xs font-normal text-on-surface-variant ml-2">2 giờ trước</span></p>
+<blockquote class="mt-2 bg-surface p-3 rounded italic text-sm text-on-surface border-l-4 border-primary">
+                                    "Bunker on the left is larger than shown. It has been expanded during recent course renovation."
+                                </blockquote>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="aspect-video bg-surface-container rounded-lg overflow-hidden relative group">
+<img class="w-full h-full object-cover" data-alt="A clear, high-resolution smartphone photo taken on a golf course. It shows a large, freshly sculpted sand bunker with distinct grass edges. The lighting is bright afternoon sun, casting sharp shadows. The style is professional and documentary-like, used as evidence for a map correction." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ckqjwKdPZLW_ItiAmn3GaLd5a1Kjr9_pmMf5HJ9Lth5RQOHQ1BArz40KAMq5zFo1IcvTGJLR5vCLPyAgikayAsJVXTdOrJsZWNPIHgWJN5ojfjEGP6P7Wy99SnKJpqdB34KNUyZHBR02do3k0zPUbL0BoDjfxCKfXtOdHsgxUesSnWJ-PqpO5EGk-1Z9Z78qrKLrShgzoutnO1U4GJKlRSzw70tBrCtl18C43ux6imNcYnmtN9ET8w"/>
+<div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white" data-icon="zoom_in">zoom_in</span>
+</div>
+</div>
+<div class="bg-surface-container p-4 rounded-lg flex flex-col justify-center">
+<p class="text-[10px] font-label-caps text-on-surface-variant mb-1">GPS COORDINATES</p>
+<p class="font-metric-sm text-sm text-primary">21.28472° N</p>
+<p class="font-metric-sm text-sm text-primary">105.74831° E</p>
+<div class="mt-3 flex items-center gap-2">
+<span class="material-symbols-outlined text-xs text-tertiary" data-icon="gps_fixed" style="font-variation-settings: 'FILL' 1;">gps_fixed</span>
+<span class="text-xs text-tertiary font-metric-sm">Độ chính xác: ±3m</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Comparative Map -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<h4 class="text-xs font-label-caps text-on-surface-variant">BẢN ĐỒ SO SÁNH</h4>
+<div class="flex gap-4">
+<span class="flex items-center gap-1 text-[10px] text-tertiary">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span> HIỆN TẠI
+                                </span>
+<span class="flex items-center gap-1 text-[10px] text-primary">
+<span class="w-2 h-2 rounded-full bg-primary"></span> BÁO CÁO
+                                </span>
+</div>
+</div>
+<div class="h-48 bg-surface-container rounded-lg border border-white/10 relative overflow-hidden map-grid-overlay">
+<!-- Mock Map Visualization -->
+<div class="absolute inset-0 flex items-center justify-center">
+<!-- Blue current geometry -->
+<svg class="absolute transform translate-x-2 translate-y-1" height="80" viewbox="0 0 120 80" width="120">
+<path d="M10,40 Q25,10 50,20 T110,40 T50,70 Z" fill="rgba(104, 219, 169, 0.2)" stroke="#68dba9" stroke-width="2"></path>
+</svg>
+<!-- Orange reported location/point -->
+<svg class="absolute" height="100" viewbox="0 0 150 100" width="150">
+<path d="M5,45 Q20,5 60,15 T130,45 T60,95 Z" fill="none" stroke="#ffb599" stroke-dasharray="4 2" stroke-width="2"></path>
+<circle cx="75" cy="50" fill="#ffb599" r="4"></circle>
+</svg>
+</div>
+<div class="absolute bottom-2 right-2 flex flex-col gap-1">
+<button class="w-8 h-8 bg-surface rounded shadow flex items-center justify-center hover:bg-surface-bright"><span class="material-symbols-outlined text-sm" data-icon="add">add</span></button>
+<button class="w-8 h-8 bg-surface rounded shadow flex items-center justify-center hover:bg-surface-bright"><span class="material-symbols-outlined text-sm" data-icon="remove">remove</span></button>
+</div>
+</div>
+</div>
+<!-- Timeline & Official Data -->
+<div class="grid grid-cols-2 gap-6">
+<div>
+<h4 class="text-xs font-label-caps text-on-surface-variant mb-3">TIẾN ĐỘ XỬ LÝ</h4>
+<div class="relative pl-6 space-y-4 before:absolute before:left-[5px] before:top-1 before:bottom-1 before:w-[2px] before:bg-white/10">
+<div class="relative">
+<div class="absolute -left-[25px] w-3 h-3 rounded-full bg-tertiary"></div>
+<p class="text-xs font-bold">Báo cáo thành công</p>
+<p class="text-[10px] text-on-surface-variant font-metric-sm">10:45, 24/10</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[25px] w-3 h-3 rounded-full bg-tertiary"></div>
+<p class="text-xs font-bold">Đã tiếp nhận</p>
+<p class="text-[10px] text-on-surface-variant font-metric-sm">11:20, 24/10</p>
+</div>
+<div class="relative">
+<div class="absolute -left-[25px] w-3 h-3 rounded-full bg-primary animate-pulse"></div>
+<p class="text-xs font-bold text-primary">Đang xem xét</p>
+<p class="text-[10px] text-on-surface-variant font-metric-sm">Hiện tại</p>
+</div>
+</div>
+</div>
+<div class="bg-surface p-4 rounded border border-white/5">
+<h4 class="text-xs font-label-caps text-on-surface-variant mb-2">DỮ LIỆU HIỆN TẠI</h4>
+<ul class="text-[11px] space-y-2">
+<li class="flex justify-between border-b border-white/5 pb-1">
+<span class="text-on-surface-variant">ID Đối tượng:</span>
+<span class="font-metric-sm">OBJ-BK-702</span>
+</li>
+<li class="flex justify-between border-b border-white/5 pb-1">
+<span class="text-on-surface-variant">Loại:</span>
+<span>Sand Bunker</span>
+</li>
+<li class="flex justify-between border-b border-white/5 pb-1">
+<span class="text-on-surface-variant">Diện tích:</span>
+<span class="font-metric-sm">42.5 m²</span>
+</li>
+<li class="flex justify-between">
+<span class="text-on-surface-variant">Cập nhật cuối:</span>
+<span>12/2023</span>
+</li>
+</ul>
+</div>
+</div>
+<!-- Decision Logic -->
+<div class="space-y-4 pt-4 border-t border-white/10">
+<div class="space-y-2">
+<label class="text-xs font-label-caps text-on-surface-variant">LÝ DO QUYẾT ĐỊNH (BẮT BUỘC)</label>
+<textarea class="w-full bg-surface border-white/10 rounded-lg text-sm text-on-surface focus:ring-primary focus:border-primary h-24 p-3" placeholder="Nhập lý do phê duyệt hoặc từ chối..."></textarea>
+</div>
+<div class="flex items-center gap-2 text-xs text-on-surface-variant bg-surface-container-high p-2 rounded">
+<span class="material-symbols-outlined text-sm" data-icon="info">info</span>
+<span>Trạng thái thông báo: Sẵn sàng gửi tin nhắn cho người báo cáo.</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="bg-tertiary-container text-white py-2 rounded font-semibold text-sm hover:bg-tertiary hover:text-on-tertiary transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="check_circle">check_circle</span>
+                                Chấp thuận
+                            </button>
+<button class="border border-error text-error py-2 rounded font-semibold text-sm hover:bg-error hover:text-on-error transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="cancel">cancel</span>
+                                Từ chối
+                            </button>
+<button class="col-span-2 bg-primary text-on-primary py-3 rounded font-bold text-sm hover:bg-primary-container transition-colors flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-lg" data-icon="drawing">mic_detect_auto</span>
+                                Chuyển thành bản nháp chỉnh sửa
+                            </button>
+<button class="col-span-2 border border-white/10 text-on-surface-variant py-2 rounded text-xs hover:bg-white/5 transition-colors">
+                                Yêu cầu thêm thông tin
+                            </button>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Visual Link Animation (Micro-interaction Script) -->
+<script>
+        // Simple visual feedback for table row selection
+        const rows = document.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            row.addEventListener('click', () => {
+                rows.forEach(r => r.classList.remove('bg-primary/5', 'border-l-2', 'border-primary'));
+                row.classList.add('bg-primary/5', 'border-l-2', 'border-primary');
+            });
+        });
+
+        // Toggle hover effect for draft conversion button to show connection
+        const draftBtn = document.querySelector('[data-icon="drawing"]').parentElement;
+        draftBtn.addEventListener('mouseenter', () => {
+            draftBtn.style.transform = 'translateY(-2px)';
+            draftBtn.style.boxShadow = '0 10px 25px -5px rgba(255, 181, 153, 0.4)';
+        });
+        draftBtn.addEventListener('mouseleave', () => {
+            draftBtn.style.transform = 'translateY(0)';
+            draftBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+        });
+    </script>
+</body></html>

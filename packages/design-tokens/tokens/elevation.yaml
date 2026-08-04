@@ -1,0 +1,83 @@
+# Design Tokens — Elevation
+# Source: UX Spec §4.1 — Soft UI Evolution
+# Soft UI shadow and opacity layers.
+# Subtle depth — avoids heavy neumorphism and low-contrast surfaces.
+
+elevation:
+  # ─── Soft UI Shadow Layers ─────────────────────────────────────────────────
+
+  shadow:
+    # Formula: Soft UI uses ambient shadow + directional shadow.
+    # Each layer increases depth perception without harsh edges.
+
+    level0:
+      # No shadow — flat surface
+      ambient:  "none"
+      directional: "none"
+
+    level1:
+      # Subtle lift — cards at rest
+      ambient:   "0 1px 2px rgba(0,0,0,0.04)"
+      directional: "0 1px 3px rgba(0,0,0,0.08)"
+
+    level2:
+      # Default card elevation
+      ambient:   "0 2px 4px rgba(0,0,0,0.06)"
+      directional: "0 2px 6px rgba(0,0,0,0.10)"
+
+    level3:
+      # Raised elements — dropdowns, popovers
+      ambient:   "0 4px 8px rgba(0,0,0,0.08)"
+      directional: "0 4px 12px rgba(0,0,0,0.12)"
+
+    level4:
+      # Modal, dialog
+      ambient:   "0 8px 16px rgba(0,0,0,0.10)"
+      directional: "0 8px 24px rgba(0,0,0,0.14)"
+
+    level5:
+      # Maximum elevation — full-screen overlays
+      ambient:   "0 16px 32px rgba(0,0,0,0.12)"
+      directional: "0 16px 48px rgba(0,0,0,0.16)"
+
+  # ─── Semantic Elevation Aliases ───────────────────────────────────────────
+
+  semantic:
+    card:          "{elevation.shadow.level1}"
+    cardHover:     "{elevation.shadow.level2}"
+    cardPressed:   "{elevation.shadow.level0}"
+    dropdown:      "{elevation.shadow.level3}"
+    modal:         "{elevation.shadow.level4}"
+    overlay:       "{elevation.shadow.level5}"
+
+  # ─── Surface Tint/Overlay (for depth) ─────────────────────────────────────
+  # Light tint overlay on dark surfaces; dark tint on light surfaces.
+  # Creates soft depth illusion without heavy shadows.
+
+  surfaceTint:
+    light:
+      tintColor:   "rgba(255,255,255,0.05)"   # Subtle white tint on light surface
+      hoverColor:  "rgba(255,255,255,0.08)"
+
+    dark:
+      tintColor:   "rgba(255,255,255,0.04)"   # Subtle light tint on dark surface
+      hoverColor:  "rgba(255,255,255,0.08)"
+      pressedColor: "rgba(0,0,0,0.16)"
+
+  # ─── Border / Divide ──────────────────────────────────────────────────────
+  # Soft UI prefers subtle border to shadow for card divide.
+  # See spacing.yaml for border token values.
+
+  borderPreference: "subtle-border-over-shadow"
+
+  # ─── Opacity Layers (for disabled / muted states) ─────────────────────────
+
+  opacity:
+    fullyOpaque:    1.0
+    nearOpaque:     0.95
+    semiOpaque:     0.88
+    disabled:       0.50   # Disabled interactive element
+    disabledText:   0.62   # Disabled label text
+    hidden:         0.00
+    scrim:          0.32   # Modal backdrop scrim
+    scrimHeavy:     0.72   # Full-screen overlay scrim

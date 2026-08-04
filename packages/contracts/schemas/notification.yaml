@@ -1,0 +1,81 @@
+# Notification schemas for the Vietnam Smart Golf Platform API
+
+# ─── Push Notification (Story 8.6 SEND-COURSE-ALERTS Slice 5) ─────────────────────
+# Contract only — actual FCM/APNs integration is deferred to a later epic.
+
+PushNotification:
+  type: object
+  description: >
+    Push notification payload for delivering course alerts to mobile clients.
+    This is the contract between the backend NotificationService and the mobile push gateway.
+    Actual FCM/APNs implementation is deferred — this schema defines the payload shape.
+  properties:
+    notificationId:
+      type: string
+      format: uuid
+      description: Unique notification identifier
+      example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+    # Alert context (mirrored from CourseAlert for mobile rendering)
+    alertId:
+      type: integer
+      format: int64
+      description: Source CourseAlert ID this push relates to
+      example: 42
+    alertType:
+      type: string
+      enum: [SAFETY, PROMOTION]
+      description: >
+        Alert type — SAFETY triggers visual warning treatment (red/warning banner)
+        on the mobile device; PROMOTION renders as informational.
+      example: SAFETY
+    title:
+      type: string
+      description: Notification title (mirrored from CourseAlert.title, max 120 chars)
+      example: Lightning Advisory
+      maxLength: 120
+    body:
+      type: string
+      description: Notification body text (mirrored from CourseAlert.body, max 500 chars)
+      example: Lightning detected within 10km. Seek shelter immediately.
+      maxLength: 500
+    # Targeting (AC-1)
+    targetType:
+      type: string
+      enum: [FACILITY, COURSE, HOLE, FLIGHT, GROUP]
+      description: Target scope this notification applies to
+      example: COURSE
+    targetId:
+      type: string
+      format: uuid
+      description: Target entity ID
+      example: 550e8400-e29b-41d4-a716-446655440000
+    # Priority and timing
+    priority:
+      type: string
+      enum: [LOW, NORMAL, HIGH, CRITICAL]
+      default: NORMAL
+      description: Notification priority — affects push delivery ordering
+      example: HIGH
+    effectiveAt:
+      type: string
+      format: date-time
+      description: When the alert becomes active
+      example: "2026-08-02T14:00:00Z"
+    expiresAt:
+      type: string
+      format: date-time
+      description: When the alert expires (null = never)
+      example: "2026-08-02T18:00:00Z"
+    # Acknowledgment (AC-3)
+    acknowledgmentRequired:
+      type: boolean
+      default: false
+      description: Whether the golfer must explicitly acknowledge this notification
+      example: true
+  required:
+    - notificationId
+    - alertId
+    - alertType
+    - title
+    - body
+    - targetType

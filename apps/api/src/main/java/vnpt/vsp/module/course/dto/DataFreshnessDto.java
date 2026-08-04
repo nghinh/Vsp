@@ -1,0 +1,78 @@
+package vnpt.vsp.module.course.dto;
+
+import java.math.BigDecimal;
+
+/**
+ * Data freshness metadata returned in every search result.
+ * Per Story 3.2 SD-BACK-1: AC-3 (verification, data freshness, download, update state).
+ */
+public class DataFreshnessDto {
+
+    /** When this data version was published. */
+    private String publishedAt;
+
+    /** Version number of the latest published data version. */
+    private Integer versionNumber;
+
+    /** Entity that published this data. */
+    private String publisher;
+
+    /** Verification status (VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED). */
+    private String verificationStatus;
+
+    /** When the data was last verified by an authoritative source. */
+    private String lastVerifiedAt;
+
+    public DataFreshnessDto() {}
+
+    public DataFreshnessDto(String publishedAt, Integer versionNumber, String publisher,
+                            String verificationStatus, String lastVerifiedAt) {
+        this.publishedAt = publishedAt;
+        this.versionNumber = versionNumber;
+        this.publisher = publisher;
+        this.verificationStatus = verificationStatus;
+        this.lastVerifiedAt = lastVerifiedAt;
+    }
+
+    // ─── Getters and Setters ────────────────────────────────────────────────
+
+    public String getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(String publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
+    public Integer getVersionNumber() {
+        return versionNumber;
+    }
+
+    public void setVersionNumber(Integer versionNumber) {
+        this.versionNumber = versionNumber;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public String getVerificationStatus() {
+        return verificationStatus;
+    }
+
+    public void setVerificationStatus(String verificationStatus) {
+        this.verificationStatus = verificationStatus;
+    }
+
+    public String getLastVerifiedAt() {
+        return lastVerifiedAt;
+    }
+
+    public void setLastVerifiedAt(String lastVerifiedAt) {
+        this.lastVerifiedAt = lastVerifiedAt;
+    }
+}

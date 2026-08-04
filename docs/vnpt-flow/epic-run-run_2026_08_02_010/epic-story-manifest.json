@@ -1,0 +1,34 @@
+{
+  "runId": "run_2026_08_02_010",
+  "epicId": "epic-01",
+  "epicTitle": "Epic Inventory",
+  "manifestHash": "0e50ba7287afc8e10bf99b57cab3a67b598f05bafe1b845265c395d539980b6d",
+  "stories": [
+    {
+      "storyId": "1.1",
+      "storyTitle": "Initialize Repository and Delivery Environments",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-1-initialize-repository-and-delivery-environments.md"
+    },
+    {
+      "storyId": "1.2",
+      "storyTitle": "Establish Backend Modular Monolith",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-2-establish-backend-modular-monolith.md"
+    },
+    {
+      "storyId": "1.3",
+      "storyTitle": "Establish API Contracts and Error Standards",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-3-establish-api-contracts-and-error-standards.md"
+    },
+    {
+      "storyId": "1.4",
+      "storyTitle": "Establish Design System Foundations",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-4-establish-design-system-foundations.md"
+    },
+    {
+      "storyId": "1.5",
+      "storyTitle": "Establish Observability and Security Baseline",
+      "sourcePath": "docs/implementation-artifacts/epic-01/1-5-establish-observability-and-security-baseline.md"
+    }
+  ],
+  "createdAt": "2026-08-02T06:39:00.000000Z"
+}

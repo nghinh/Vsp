@@ -1,0 +1,5713 @@
+openapi: 3.1.0
+info:
+  title: Vietnam Smart Golf Platform API
+  description: |
+    REST API for the Vietnam Smart Golf Platform.
+    Covers identity, course catalog, geospatial, round/score, weather, correction workflow, and audit.
+  version: 0.1.0
+  contact:
+    name: VSP Platform Team
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.vsp.local
+    description: Local development
+  - url: https://api.vsp-staging.example.com
+    description: Staging environment
+  - url: https://api.vsp.example.com
+    description: Production environment
+
+paths:
+  # ========================
+  # Auth endpoints
+  # ========================
+  /auth/login:
+    post:
+      operationId: login
+      summary: Authenticate user
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      operationId: register
+      summary: Register new user
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      operationId: refreshToken
+      summary: Refresh access token and rotate refresh token
+      description: |
+        Refreshes the access token using the refresh token.
+        Per Story 2.2 AC-1: refresh tokens rotate on each use.
+        The old refresh token is marked revoked and a new one is issued.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequest'
+      responses:
+        '200':
+          description: Token refreshed with rotation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/sessions:
+    get:
+      operationId: listSessions
+      summary: List active sessions
+      description: Returns all active (non-revoked, non-expired) sessions for the authenticated golfer.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: currentSessionId
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int64
+          description: Marks the session with this ID as "current" in the response
+      responses:
+        '200':
+          description: List of active sessions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/sessions/{sessionId}:
+    delete:
+      operationId: revokeSession
+      summary: Revoke a specific session
+      description: |
+        Revokes the specified session. The revoked session's refresh token will no longer work.
+        Per Story 2.2 AC-3: revoked sessions cannot refresh.
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: The session ID to revoke
+      responses:
+        '204':
+          description: Session revoked
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/logout:
+    post:
+      operationId: logout
+      summary: Logout user
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+      responses:
+        '204':
+          description: Logged out successfully
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register/phone:
+    post:
+      operationId: registerWithPhone
+      summary: Register golfer account with phone number
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PhoneRegisterRequest'
+      responses:
+        '201':
+          description: Account created and OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '409':
+          description: Phone number already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register/email:
+    post:
+      operationId: registerWithEmail
+      summary: Register golfer account with email
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailRegisterRequest'
+      responses:
+        '201':
+          description: Account created and OTP sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/otp/send:
+    post:
+      operationId: sendOtp
+      summary: Send OTP code to phone or email
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpSendRequest'
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpSendResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/otp/verify:
+    post:
+      operationId: verifyOtp
+      summary: Verify OTP code and activate account
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OtpVerifyRequest'
+      responses:
+        '200':
+          description: OTP verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid or expired OTP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/password/recover:
+    post:
+      operationId: initiatePasswordRecovery
+      summary: Initiate password recovery
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordRecoverRequest'
+      responses:
+        '200':
+          description: Recovery OTP sent if account exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OtpSendResponse'
+
+  /auth/password/reset:
+    post:
+      operationId: resetPassword
+      summary: Reset password using recovery token
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Password reset successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid or expired recovery token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me:
+    get:
+      operationId: getCurrentProfile
+      summary: Get current authenticated golfer profile
+      tags: [Auth]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Current profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolferProfileResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/google:
+    post:
+      operationId: authenticateWithGoogle
+      summary: Authenticate using Google Sign-In
+      description: |
+        Exchanges a Google ID token for a VSP access token.
+        If the Google email matches an existing VSP account, the Google subject
+        is linked to that canonical account (account linking).
+        Otherwise, a new VSP account is created and linked to the Google subject.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoogleAuthRequest'
+      responses:
+        '200':
+          description: Google authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialAuthResponse'
+        '400':
+          description: Invalid or expired Google ID token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Social account already linked to another account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/apple:
+    post:
+      operationId: authenticateWithApple
+      summary: Authenticate using Apple Sign-In
+      description: |
+        Exchanges an Apple identity token for a VSP access token.
+        If the Apple email matches an existing VSP account, the Apple subject
+        is linked to that canonical account (account linking).
+        Otherwise, a new VSP account is created and linked to the Apple subject.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AppleAuthRequest'
+      responses:
+        '200':
+          description: Apple authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SocialAuthResponse'
+        '400':
+          description: Invalid or expired Apple identity token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Social account already linked to another account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Profiles endpoints
+  # ========================
+  /profiles/me:
+    get:
+      operationId: getMyProfile
+      summary: Get the authenticated golfer's profile
+      description: |
+        Returns the golfer's golf-preference profile.
+        Auto-creates a default profile with sensible defaults (unit=METERS, hand=RIGHT, skill=INTERMEDIATE)
+        on first access if no profile exists.
+        Per Story 2.3 AC-1: returns all profile fields.
+        Per Story 2.3 AC-2: returns canonical values (meters) and display-unit preference.
+      tags: [Profiles]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Golfer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolferProfileResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateMyProfile
+      summary: Update the authenticated golfer's profile
+      description: |
+        Updates the golfer's golf-preference profile. All fields are optional for partial update.
+        Per Story 2.3 AC-1: all golf preference fields are updatable.
+        Per Story 2.3 AC-2: canonical meters values are preserved; only display-unit field changes.
+      tags: [Profiles]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGolferProfileRequest'
+      responses:
+        '200':
+          description: Updated golfer profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolferProfileResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # User Course endpoints (Story 3.2 SD-BACK-2)
+  # ========================
+  /users/me/favorites:
+    get:
+      operationId: listMyFavorites
+      summary: List favorited courses for the authenticated user
+      description: |
+        Returns all favorited courses for the authenticated golfer.
+        Per Story 3.2 AC-1: favorites support.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of favorited courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FavoriteCourseDto'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addFavorite
+      summary: Add a course to favorites
+      description: |
+        Adds a course to the authenticated golfer's favorites.
+        Per Story 3.2 AC-1: favorites support.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID to add to favorites
+      responses:
+        '201':
+          description: Course added to favorites
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me/favorites/{courseId}:
+    delete:
+      operationId: removeFavorite
+      summary: Remove a course from favorites
+      description: |
+        Removes a course from the authenticated golfer's favorites.
+        Per Story 3.2 AC-1: favorites support.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID to remove from favorites
+      responses:
+        '204':
+          description: Course removed from favorites
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Favorite not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me/recent:
+    get:
+      operationId: listMyRecentCourses
+      summary: List recently viewed courses for the authenticated user
+      description: |
+        Returns the most recently viewed courses for the authenticated golfer.
+        Returns up to 'limit' most recent entries (default 10).
+        Per Story 3.2 AC-1: recent support.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 10
+          description: Maximum number of recent courses to return
+      responses:
+        '200':
+          description: List of recently viewed courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecentCourseDto'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: recordRecentView
+      summary: Record a course view
+      description: |
+        Records a course view for the authenticated golfer.
+        Updates viewedAt if the course was already recently viewed.
+        Enforces the 10-entry per-user cap by trimming oldest entries.
+        Per Story 3.2 AC-1: recent support.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID to record as viewed
+      responses:
+        '201':
+          description: Course view recorded
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Bags endpoints
+  # ========================
+  /bags:
+    get:
+      operationId: listBags
+      summary: List all bags for the authenticated golfer
+      description: |
+        Returns all golf bags for the authenticated golfer.
+        Auto-creates a default bag on first access if none exist.
+        Per Story 2.4 AC-1: lists all bags.
+        Per Story 2.4 AC-2: exactly one bag is active at a time.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of golf bags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GolfBagResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createBag
+      summary: Create a new golf bag
+      description: |
+        Creates a new golf bag for the authenticated golfer.
+        Per Story 2.4 AC-1: creates a new bag with a given name.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGolfBagRequest'
+      responses:
+        '201':
+          description: Bag created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolfBagResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bags/{bagId}:
+    get:
+      operationId: getBag
+      summary: Get a specific bag by ID
+      description: |
+        Returns a specific golf bag by ID.
+        Per Story 2.4 AC-1: returns bag with all fields and clubs.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+      responses:
+        '200':
+          description: Golf bag details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolfBagResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateBag
+      summary: Update a bag
+      description: |
+        Updates a golf bag (partial update — all fields optional).
+        Per Story 2.4 AC-1: editable fields include name and isActive.
+        Per Story 2.4 AC-2: setting isActive to true activates this bag and deactivates all others.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateGolfBagRequest'
+      responses:
+        '200':
+          description: Bag updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolfBagResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteBag
+      summary: Delete a bag
+      description: |
+        Deletes a golf bag. All clubs in the bag are also deleted.
+        Per Story 2.4 AC-1: bags can be deleted.
+        Fails if it is the last remaining bag (BAG_002).
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+      responses:
+        '204':
+          description: Bag deleted
+        '400':
+          description: Cannot delete last bag
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bags/{bagId}/activate:
+    post:
+      operationId: activateBag
+      summary: Set a bag as the active bag
+      description: |
+        Sets the specified bag as the active bag, deactivating all other bags for this golfer.
+        Per Story 2.4 AC-2: exactly one bag is active at a time — transactional enforcement.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID to activate
+      responses:
+        '200':
+          description: Bag activated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GolfBagResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bags/{bagId}/clubs:
+    get:
+      operationId: listClubs
+      summary: List all clubs in a bag
+      description: |
+        Returns all clubs belonging to a specific golf bag.
+        Per Story 2.4 AC-1: clubs with loft, carry, total, dispersion, shaft, useDate.
+        Per PRD Phase 2: dispersion stored but not used in MVP recommendations.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+      responses:
+        '200':
+          description: List of clubs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ClubResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createClub
+      summary: Add a club to a bag
+      description: |
+        Creates a new club in the specified golf bag.
+        Per Story 2.4 AC-1: all club fields supported — clubType, loft, carryDistance, totalDistance, dispersion, shaft, useDate.
+        Distances accepted as canonical meters.
+        Dispersion stored (Phase 2 scope) but not used in MVP recommendations.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateClubRequest'
+      responses:
+        '201':
+          description: Club created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /bags/{bagId}/clubs/{clubId}:
+    put:
+      operationId: updateClub
+      summary: Update a club
+      description: |
+        Updates a club (partial update — all fields optional).
+        Per Story 2.4 AC-1: all club fields updatable.
+        Per PRD Phase 2: dispersion stored but not used in MVP recommendations.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+        - name: clubId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Club ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateClubRequest'
+      responses:
+        '200':
+          description: Club updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClubResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag or club not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: deleteClub
+      summary: Delete a club
+      description: |
+        Deletes a club from a bag.
+        Per Story 2.4 AC-1: clubs can be deleted.
+      tags: [Bags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bagId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Bag ID
+        - name: clubId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Club ID
+      responses:
+        '204':
+          description: Club deleted
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Bag or club not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Courses endpoints
+  # ========================
+  /courses:
+    get:
+      operationId: listCourses
+      summary: List all courses
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+          description: Pagination cursor token
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search filter
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createCourse
+      summary: Create a new course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/{courseId}:
+    get:
+      operationId: getCourse
+      summary: Get course by ID
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: Entity version hash
+        '304':
+          description: Not modified
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      operationId: updateCourse
+      summary: Update course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpdateRequest'
+      responses:
+        '200':
+          description: Course updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/search:
+    get:
+      operationId: searchCourses
+      summary: Search courses by text and/or geographic location
+      description: |
+        Supports three modes: text-only (q), nearby-only (lat/lng/radius), or combined.
+        Enriches each result with DataFreshnessDto, hasPackage, and updateAvailable.
+        Per Story 3.2 AC-1: text and geographic filters with paginated results.
+        Per Story 3.2 AC-2: ST_DWithin for nearby searches.
+        Per Story 3.2 AC-3: verification, data freshness, download, and update state.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Text search query (facility name, course name, address)
+        - name: lat
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+          description: Latitude of search center (WGS84)
+        - name: lng
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+          description: Longitude of search center (WGS84)
+        - name: radius
+          in: query
+          required: false
+          schema:
+            type: number
+            format: double
+            minimum: 1
+            maximum: 50000
+          description: Search radius in meters (max 50km)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number (0-indexed)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Page size
+        - name: downloadedVersion
+          in: query
+          required: false
+          schema:
+            type: integer
+          description: Mobile-reported downloaded version number — if provided, response includes updateAvailable
+      responses:
+        '200':
+          description: Paginated search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseSearchResultDto'
+                  page:
+                    type: integer
+                    example: 0
+                  size:
+                    type: integer
+                    example: 20
+                  totalElements:
+                    type: integer
+                    format: int64
+                    example: 150
+                  totalPages:
+                    type: integer
+                    example: 8
+                  first:
+                    type: boolean
+                    example: true
+                  last:
+                    type: boolean
+                    example: false
+        '400':
+          description: Invalid coordinates or radius exceeds maximum
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/nearby:
+    get:
+      operationId: findNearbyCourses
+      summary: Find courses within radius of a location
+      description: |
+        Pure nearby search — returns courses ordered by distance from the provided coordinates.
+        Uses ST_DWithin with GIST spatial index for efficient filtering.
+        Per Story 3.2 AC-2: index-aware spatial filtering.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -90
+            maximum: 90
+          description: Latitude of search center (WGS84)
+        - name: lng
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: -180
+            maximum: 180
+          description: Longitude of search center (WGS84)
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+            minimum: 1
+            maximum: 50000
+          description: Search radius in meters (max 50km)
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number (0-indexed)
+        - name: size
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Page size
+      responses:
+        '200':
+          description: Paginated nearby courses ordered by distance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseSearchResultDto'
+                  page:
+                    type: integer
+                    example: 0
+                  size:
+                    type: integer
+                    example: 20
+                  totalElements:
+                    type: integer
+                    format: int64
+                    example: 12
+                  totalPages:
+                    type: integer
+                    example: 1
+                  first:
+                    type: boolean
+                    example: true
+                  last:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid coordinates or radius exceeds maximum
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/{courseId}/versions:
+    get:
+      operationId: listCourseVersions
+      summary: List course version history
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+      responses:
+        '200':
+          description: Course version history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseVersionListResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/{courseId}/packages:
+    get:
+      operationId: listCoursePackages
+      summary: List packages for a course
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+          description: ETag of previous response for caching
+      responses:
+        '200':
+          description: List of packages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePackageListResponse'
+          headers:
+            ETag:
+              schema:
+                type: string
+        '304':
+          description: Not modified
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/{courseId}/packages/current:
+    get:
+      operationId: getCurrentPackageManifest
+      summary: Get the currently active package manifest for a course
+      description: |
+        Returns the manifest for the package that is currently effective
+        (effectiveDate <= now < expiresAt). Used by the mobile app to
+        check for available updates (Story 4.4).
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+          description: ETag of previously known manifest version
+      responses:
+        '200':
+          description: Current active manifest
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePackageManifest'
+          headers:
+            ETag:
+              schema:
+                type: string
+              description: ETag with manifest version hash for conditional fetch
+        '304':
+          description: Not modified — client has latest version
+        '404':
+          description: No active package for this course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: PACKAGE_NOT_FOUND
+              message: No active package found for this course
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /courses/{courseId}/packages/{version}:
+    get:
+      operationId: getPackageManifestByVersion
+      summary: Get a specific package manifest by version
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d+\\.\\d+\\.\\d+$"
+          description: Semantic version (e.g. "1.0.0")
+        - name: If-None-Match
+          in: header
+          schema:
+            type: string
+          description: ETag of previously known manifest version
+      responses:
+        '200':
+          description: Package manifest for the specified version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePackageManifest'
+          headers:
+            ETag:
+              schema:
+                type: string
+        '304':
+          description: Not modified
+        '404':
+          description: Package version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: PACKAGE_NOT_FOUND
+              message: No package found for course with version 1.0.0
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+        '410':
+          description: Package no longer effective (expired)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: PACKAGE_NO_LONGER_EFFECTIVE
+              message: This package version has expired and is no longer available
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /courses/{courseId}/packages/{version}/files:
+    get:
+      operationId: listPackageManifestFiles
+      summary: List all file entries for a package manifest
+      description: |
+        Returns the file inventory for a package manifest —
+        paths, checksums, sizes, and content types (Story 4.1 AC-2).
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "^\\d+\\.\\d+\\.\\d+$"
+      responses:
+        '200':
+          description: List of file entries in this package
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  files:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PackageFileEntry'
+                  packageVersion:
+                    type: string
+        '404':
+          description: Package version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Package Build Job endpoints (Story 4.2 PKG-PUBLISH-3) ─────────────────
+
+  /courses/{courseId}/packages/build:
+    post:
+      operationId: triggerPackageBuild
+      summary: Trigger a package build for a course
+      description: |
+        Creates and queues a PackageBuildJob for the given course and data version.
+        Idempotent: if a non-terminal job already exists for this course, returns
+        that job ID without creating a duplicate (HTTP 200, not 201).
+        Requires COURSE_ADMIN or higher role.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerBuildRequest'
+      responses:
+        '200':
+          description: Build already in progress — returns existing job ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerBuildResponse'
+        '201':
+          description: Build job created and queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TriggerBuildResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or higher required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course or data version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Course not published — cannot build package
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: COURSE_NOT_PUBLISHED
+              message: Cannot build a package for an unpublished course
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /courses/{courseId}/packages/build/jobs:
+    get:
+      operationId: listPackageBuildJobs
+      summary: List build jobs for a course
+      description: |
+        Returns all build jobs for a course, newest first.
+        Used by the portal to display job history and polling.
+        Requires COURSE_ADMIN or higher role.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+          description: Page number (0-indexed)
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+          description: Page size
+      responses:
+        '200':
+          description: Paginated list of build jobs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageBuildJobListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or higher required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /courses/{courseId}/packages/build/jobs/{jobId}:
+    get:
+      operationId: getPackageBuildJob
+      summary: Get a specific build job
+      description: |
+        Returns details for a specific build job.
+        Used by the portal for polling and retry.
+        Requires COURSE_ADMIN or higher role.
+      tags: [Courses]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Build job ID
+      responses:
+        '200':
+          description: Build job details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackageBuildJobDto'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or higher required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Build job not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: BUILD_NOT_FOUND
+              message: Build job not found
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  # ========================
+  # Packages endpoints
+  # ========================
+  /packages:
+    get:
+      operationId: listPackages
+      summary: List all available packages
+      tags: [Packages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+        - name: validOn
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Check validity on specific date
+      responses:
+        '200':
+          description: List of packages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePackageListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /packages/{packageId}:
+    get:
+      operationId: getPackage
+      summary: Get package by ID
+      tags: [Packages]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: packageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Package details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePackage'
+        '404':
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Rounds endpoints
+  # ========================
+  /rounds:
+    get:
+      operationId: listRounds
+      summary: List rounds for the current user
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [in_progress, completed, abandoned, cancelled]
+          description: Filter by status
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter from date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter to date
+      responses:
+        '200':
+          description: List of rounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoundListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createRound
+      summary: Start a new round
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoundCreate'
+      responses:
+        '201':
+          description: Round created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rounds/{roundId}:
+    get:
+      operationId: getRound
+      summary: Get round by ID
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Round details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateRound
+      summary: Update round
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoundUpdate'
+      responses:
+        '200':
+          description: Round updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Round'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Round cannot be modified
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Shots (Story 10.3) ───────────────────────────────────────────────────
+
+  /rounds/{roundId}/shots:
+    get:
+      operationId: listShots
+      summary: List shots for a round with sync cursor
+      description: |
+        Returns all shots for the specified round belonging to the authenticated player.
+        Supports delta sync via optional `cursor` query parameter.
+        Per Story 10.3 Slice 1.
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: cursor
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Sync cursor from previous response for delta sync
+      responses:
+        '200':
+          description: Shot list with sync cursor
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShotListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      operationId: createShot
+      summary: Create (start) a new shot
+      description: |
+        Records the start of a new shot. Idempotent: if the same idempotencyKey
+        is submitted twice, returns the existing shot without creating a duplicate.
+        Per Story 10.3 Slice 1.
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Client-generated UUID v4 for idempotent shot creation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateShotRequest'
+      responses:
+        '201':
+          description: Shot created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShotResponse'
+          headers:
+            X-Idempotent-Replay:
+              schema:
+                type: boolean
+              description: 'true if this request was deduplicated (already existed)'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /shots/{shotId}:
+    get:
+      operationId: getShot
+      summary: Get a shot by ID
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Shot details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Shot'
+        '404':
+          description: Shot not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      operationId: updateShot
+      summary: Update (edit) a shot
+      description: |
+        Partial update for a shot. All fields are optional — only those present
+        in the request body are updated.
+        Idempotent: submitting the same idempotencyKey twice returns the current
+        shot state without error.
+        Per Story 10.3 Slice 1.
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Client-generated UUID v4 for idempotent update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateShotRequest'
+      responses:
+        '200':
+          description: Shot updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShotResponse'
+          headers:
+            X-Idempotent-Replay:
+              schema:
+                type: boolean
+              description: 'true if this request was deduplicated'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shot not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      operationId: deleteShot
+      summary: Delete a shot
+      description: |
+        Soft-deletes a shot (sets deletedAt timestamp). Idempotent: if already
+        deleted, returns 200 without error.
+        Per Story 10.3 Slice 1.
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: shotId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Client-generated UUID v4 for idempotent deletion
+      responses:
+        '200':
+          description: Shot deleted (or already deleted)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShotResponse'
+        '404':
+          description: Shot not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rounds/{roundId}/shots/merge:
+    post:
+      operationId: mergeShots
+      summary: Merge two shots
+      description: |
+        Marks the source shot as merged into the target shot.
+        The source shot's mergedIntoShotId is set to targetShotId.
+        Both shots must belong to the same round and player.
+        Idempotent: if already merged, returns 200.
+        Per Story 10.3 Slice 1.
+      tags: [Shots]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Client-generated UUID v4 for idempotent merge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MergeShotsRequest'
+      responses:
+        '200':
+          description: Shots merged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShotResponse'
+        '400':
+          description: Validation error (shots not in same round/player)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Shot or round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rounds/{roundId}/complete:
+    post:
+      operationId: completeRound
+      summary: Complete an in-progress round
+      description: |
+        Marks a round as completed. Idempotent: if the round is already COMPLETED,
+        returns 200 without error.
+        Validates that the round exists and belongs to the authenticated golfer.
+        Sets status=COMPLETED and endedAt=now() if not already set.
+        Per Story 5.5 Slice 1.
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Round UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoundCompleteRequest'
+      responses:
+        '200':
+          description: Round completed (or already completed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoundCompleteResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /rounds/{roundId}/corrections:
+    post:
+      operationId: submitScoreCorrections
+      summary: Submit score corrections for a completed round
+      description: |
+        Applies field-level corrections to score entries for a completed round.
+        Validates that the round is COMPLETED, corrections target permitted fields only,
+        and creates audit entries for each change.
+        Per Story 5.5 Slice 4.
+      tags: [Rounds]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Round UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreCorrectionRequest'
+      responses:
+        '200':
+          description: Corrections applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreCorrectionResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Round not completed — corrections only allowed on completed rounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error — field not permitted or invalid value
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Scores endpoints
+  # ========================
+  /scores:
+    get:
+      operationId: listScores
+      summary: List scores for the current user
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: roundId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by round
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+      responses:
+        '200':
+          description: List of scores
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: submitScore
+      summary: Submit a score
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreSubmitRequest'
+      responses:
+        '201':
+          description: Score submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Score already exists for this round
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scores/{scoreId}:
+    get:
+      operationId: getScore
+      summary: Get score by ID
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scoreId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Score details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Score'
+        '404':
+          description: Score not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scores/{scoreId}/scorecard:
+    get:
+      operationId: getScorecard
+      summary: Get scorecard for a score
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: scoreId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Scorecard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scorecard'
+        '404':
+          description: Score not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /scores/leaderboard:
+    get:
+      operationId: getLeaderboard
+      summary: Get leaderboard
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Leaderboard
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LeaderboardResponse'
+
+  /scores/rounds/{roundId}/corrections:
+    post:
+      operationId: submitScoreCorrections
+      summary: Submit score corrections for a completed round
+      description: |
+        Applies field-level corrections to score entries for a completed round.
+        Creates audit entries for each field changed.
+        Corrections are allowed only on COMPLETED rounds and only for permitted fields.
+        Per Story 5.5 Slice 4.
+      tags: [Scores]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Round UUID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScoreCorrectionRequest'
+      responses:
+        '200':
+          description: Corrections applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoreCorrectionResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Round not completed or corrections not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error — non-permitted field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Weather endpoints
+  # ========================
+  /weather:
+    get:
+      operationId: getCurrentWeather
+      summary: Get current weather
+      tags: [Weather]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+          description: Latitude in SRID 4326
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+          description: Longitude in SRID 4326
+      responses:
+        '200':
+          description: Current weather
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherSnapshot'
+        '400':
+          description: Invalid coordinates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /weather/forecast:
+    get:
+      operationId: getWeatherForecast
+      summary: Get weather forecast
+      tags: [Weather]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: latitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: longitude
+          in: query
+          required: true
+          schema:
+            type: number
+            format: double
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Forecast date
+      responses:
+        '200':
+          description: Weather forecast
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherForecast'
+        '400':
+          description: Invalid coordinates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /weather/alerts:
+    get:
+      operationId: getWeatherAlerts
+      summary: Get weather alerts
+      tags: [Weather]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+      responses:
+        '200':
+          description: Weather alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeatherAlertListResponse'
+
+  # ========================
+  # Corrections endpoints
+  # ========================
+  /corrections:
+    get:
+      operationId: listCorrections
+      summary: List corrections
+      tags: [Corrections]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - name: courseId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by course
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, under_review, approved, rejected, implemented]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [hole_location, yardage, hazard, bunker, water, out_of_bounds, course_info, scoring, Other]
+      responses:
+        '200':
+          description: List of corrections
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CorrectionListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createCorrection
+      summary: Submit a correction
+      tags: [Corrections]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectionCreate'
+      responses:
+        '201':
+          description: Correction submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Correction'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /corrections/{correctionId}:
+    get:
+      operationId: getCorrection
+      summary: Get correction by ID
+      tags: [Corrections]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: correctionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Correction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Correction'
+        '404':
+          description: Correction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /corrections/{correctionId}/review:
+    patch:
+      operationId: reviewCorrection
+      summary: Review a correction
+      tags: [Corrections]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: correctionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CorrectionReview'
+      responses:
+        '200':
+          description: Correction reviewed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Correction'
+        '404':
+          description: Correction not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Correction cannot be reviewed in current state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Admin endpoints
+  # ========================
+  /admin/courses/{courseId}/publish:
+    post:
+      operationId: publishCourse
+      summary: Publish a course version
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: Course published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Version already published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/courses/{courseId}/rollback:
+    post:
+      operationId: rollbackCourse
+      summary: Rollback course to previous version
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollbackRequest'
+      responses:
+        '200':
+          description: Course rolled back
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollbackResponse'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Cannot rollback to specified version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/audit-log:
+    get:
+      operationId: getAuditLog
+      summary: Get audit log
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+        - name: entityType
+          in: query
+          schema:
+            type: string
+          description: Filter by entity type
+        - name: entityId
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by entity ID
+        - name: performedBy
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: Filter by user
+        - name: action
+          in: query
+          schema:
+            type: string
+          description: Filter by action
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter from timestamp
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter to timestamp
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditLogResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/courses/{courseId}:
+    get:
+      operationId: getCourseManagementSummary
+      summary: Get course management summary
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course management summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseManagementSummary'
+        '404':
+          description: Course not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Role & MFA endpoints (per Story 2.5 AC-1, AC-2)
+  # ========================
+  /admin/roles:
+    get:
+      operationId: listRoles
+      summary: List all defined RBAC roles
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of all roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoleResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users:
+    get:
+      operationId: listAdminAccounts
+      summary: List all admin accounts with their roles
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of admin accounts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminAccountResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users/{golferAccountId}/roles:
+    post:
+      operationId: assignRole
+      summary: Assign a role to a golfer account
+      description: |
+        Assigns a role to a golfer account.
+        Requires SUPER_ADMIN. SUPER_ADMIN role can only be assigned by an existing SUPER_ADMIN.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: golferAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignRoleRequest'
+      responses:
+        '201':
+          description: Role assigned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAccountResponse'
+        '400':
+          description: Role already assigned (ROLE_003) or invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Admin account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users/{golferAccountId}/roles/{roleName}:
+    delete:
+      operationId: revokeRole
+      summary: Revoke a role from a golfer account
+      description: |
+        Revokes a role from a golfer account.
+        Requires SUPER_ADMIN. Cannot revoke the last SUPER_ADMIN (ROLE_004).
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: golferAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: roleName
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [SUPER_ADMIN, COURSE_ADMIN, GREENKEEPER, TOURNAMENT_DIRECTOR, CADDIE_MASTER, AUDITOR]
+      responses:
+        '200':
+          description: Role revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAccountResponse'
+        '400':
+          description: Cannot revoke last SUPER_ADMIN (ROLE_004)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Admin account or role not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users/{golferAccountId}/mfa/enable:
+    post:
+      operationId: enableMfa
+      summary: Enable MFA for an admin account
+      description: |
+        Enables TOTP MFA for an admin account.
+        Per RFC 6238: SHA-1, 6-digit TOTP, 30-second window.
+        Returns the provisioning URI for QR code generation.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: golferAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnableMfaRequest'
+      responses:
+        '200':
+          description: MFA enabled, returns provisioning URI
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnableMfaResponse'
+        '400':
+          description: Invalid TOTP code (MFA_002)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users/{golferAccountId}/mfa/disable:
+    post:
+      operationId: disableMfa
+      summary: Disable MFA for an admin account
+      description: |
+        Disables MFA. Requires the account owner or SUPER_ADMIN.
+        MFA must have been previously verified before it can be disabled.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: golferAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: MFA disabled
+        '400':
+          description: MFA not enabled or not previously verified (MFA_001, MFA_004)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — account owner or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/users/{golferAccountId}/mfa/verify:
+    post:
+      operationId: verifyMfa
+      summary: Verify a TOTP code for an admin account
+      description: |
+        Verifies a TOTP code. Used during admin login or to validate MFA setup.
+        Allows ±1 time window for clock drift.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: golferAccountId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyMfaRequest'
+      responses:
+        '200':
+          description: Verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyMfaResponse'
+        '400':
+          description: MFA not enabled (MFA_001) or invalid TOTP code (MFA_002)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Privacy endpoints
+  # ========================
+  /privacy/requests:
+    get:
+      operationId: listMyPrivacyRequests
+      summary: List all privacy requests for the authenticated golfer
+      description: |
+        Returns all privacy requests submitted by the authenticated golfer.
+        Per Story 2.5 AC-3: DATA_EXPORT, ACCOUNT_DELETION, ROUND_DELETION.
+      tags: [Privacy]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of privacy requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrivacyRequestResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createPrivacyRequest
+      summary: Submit a new privacy request
+      description: |
+        Submits a new privacy request.
+        Per Story 2.5 AC-3: DATA_EXPORT, ACCOUNT_DELETION, ROUND_DELETION.
+        ROUND_DELETION requires targetRoundId.
+        ACCOUNT_DELETION fails if golfer has active (non-deleted) rounds (PRIVACY_004).
+      tags: [Privacy]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePrivacyRequestRequest'
+      responses:
+        '201':
+          description: Privacy request created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyRequestResponse'
+        '400':
+          description: Validation error or ACCOUNT_DELETION with active rounds
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /privacy/requests/{id}:
+    get:
+      operationId: getMyPrivacyRequest
+      summary: Get a specific privacy request for the authenticated golfer
+      description: |
+        Returns a specific privacy request by ID.
+        Per Story 2.5 AC-3: only returns requests owned by the authenticated golfer.
+      tags: [Privacy]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Privacy request ID
+      responses:
+        '200':
+          description: Privacy request details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyRequestResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Privacy request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /privacy/requests/{id}/export:
+    get:
+      operationId: getPrivacyDataExport
+      summary: Download data export for a privacy request
+      description: |
+        Generates and returns a JSON data export for the authenticated golfer.
+        Per Story 2.5 AC-3: includes GolferProfile, bags, rounds, scores.
+      tags: [Privacy]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Privacy request ID
+      responses:
+        '200':
+          description: JSON data export
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Privacy request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Admin Privacy endpoints
+  # ========================
+  /admin/privacy-requests:
+    get:
+      operationId: listPrivacyRequestsByStatus
+      summary: List all privacy requests filtered by status (admin only)
+      description: |
+        Returns all privacy requests with the specified status.
+        Per Story 2.5 AC-3: admin processes privacy requests with auditable workflow.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, PROCESSING, COMPLETED, REJECTED]
+          description: Filter by status
+      responses:
+        '200':
+          description: List of privacy requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PrivacyRequestResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/privacy-requests/{id}:
+    put:
+      operationId: processPrivacyRequest
+      summary: Process (complete or reject) a privacy request (admin only)
+      description: |
+        Processes a privacy request: transitions PENDING→PROCESSING/REJECTED,
+        PROCESSING→COMPLETED/REJECTED.
+        Per Story 2.5 AC-3: triggers data export generation, account anonymization,
+        or round deletion on COMPLETED; stores rejection reason on REJECTED.
+        All transitions are audit-logged.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Privacy request ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessPrivacyRequestRequest'
+      responses:
+        '200':
+          description: Updated privacy request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrivacyRequestResponse'
+        '400':
+          description: Invalid status transition
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Privacy request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Privacy request already processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Admin Alerts endpoints (Story 8.6 SEND-COURSE-ALERTS)
+  # ========================
+  /admin/alerts:
+    get:
+      operationId: listAlerts
+      summary: List course alerts with optional filtering
+      description: |
+        Returns course alerts for the authenticated operator's scope.
+        Supports filtering by alertType, targetType, targetId, deliveryStatus, and date range.
+        Results are ordered by effectiveAt descending (newest first).
+        Requires COURSE_ADMIN or SUPER_ADMIN role.
+        Per Story 8.6 AC-1: targeting filter via targetType + targetId.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+          description: Pagination cursor token
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+        - name: alertType
+          in: query
+          schema:
+            type: string
+            enum: [SAFETY, PROMOTION]
+          description: Filter by alert type
+        - name: targetType
+          in: query
+          schema:
+            type: string
+            enum: [FACILITY, COURSE, HOLE, FLIGHT, GROUP]
+          description: Filter by target scope (AC-1 targeting filter)
+        - name: targetId
+          in: query
+          schema:
+            type: string
+          description: Filter by target ID (use with targetType) — facilityId/courseId/holeId/flightId/groupId
+        - name: deliveryStatus
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, DELIVERED, FAILED, EXPIRED]
+          description: Filter by delivery status
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter effectiveAt >= from
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Filter effectiveAt <= to
+      responses:
+        '200':
+          description: Paginated list of alerts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlertListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: createAlert
+      summary: Create and send a course alert
+      description: |
+        Creates and dispatches a new course alert to golfers at the specified target scope.
+        At least one targeting field must be provided (facilityId, courseId, holeId, flightId, or groupId).
+        Sets deliveryStatus to PENDING; the notification service transitions it to DELIVERED or FAILED.
+        Requires COURSE_ADMIN or SUPER_ADMIN role.
+        Per Story 8.6 AC-1: targeting; AC-2: alertType; AC-3: delivery/expiry/acknowledge/audit.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseAlertCreate'
+      responses:
+        '201':
+          description: Alert created and dispatched
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlert'
+        '400':
+          description: Validation error — no targeting field set, or title/body too long
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/alerts/{alertId}:
+    get:
+      operationId: getAlert
+      summary: Get a course alert by ID
+      description: |
+        Returns full alert detail including targeting, delivery status, and audit fields.
+        Requires COURSE_ADMIN or SUPER_ADMIN role.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Alert ID
+      responses:
+        '200':
+          description: Alert detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlert'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      operationId: updateAlert
+      summary: Update a course alert
+      description: |
+        Updates mutable alert fields before effectiveAt.
+        After effectiveAt, only acknowledgmentRequired can be updated.
+        Fails if alert has already expired.
+        Requires COURSE_ADMIN or SUPER_ADMIN role.
+        Per Story 8.6 AC-3: update only before effective — audit tracked via version.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Alert ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseAlertUpdate'
+      responses:
+        '200':
+          description: Alert updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlert'
+        '400':
+          description: Validation error — cannot update after effectiveAt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict — alert has expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      operationId: cancelAlert
+      summary: Cancel a course alert
+      description: |
+        Cancels an alert — marks it as no longer active and sets expiresAt to now.
+        No push notification is sent for cancellation; mobile clients expire the alert on next sync.
+        Requires COURSE_ADMIN or SUPER_ADMIN role.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Alert ID
+      responses:
+        '204':
+          description: Alert cancelled
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/alerts/{alertId}/acknowledge:
+    post:
+      operationId: acknowledgeAlert
+      summary: Acknowledge a course alert (mobile flow)
+      description: |
+        Records golfer acknowledgment of an alert that has acknowledgmentRequired=true.
+        Called by the mobile app when the golfer dismisses the alert.
+        Also available as a mobile API endpoint (see Slice 5 contract).
+        Per Story 8.6 AC-3: acknowledgment tracking.
+      tags: [Alerts]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Alert ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - golferAccountId
+              properties:
+                golferAccountId:
+                  type: integer
+                  format: int64
+                  description: Golfer account ID acknowledging the alert
+                  example: 99
+      responses:
+        '200':
+          description: Alert acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseAlert'
+        '400':
+          description: Alert does not require acknowledgment
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Alert not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ─── Admin Course Version endpoints (Story 8.3 PUBLISH-CONTRACT) ─────────────────
+
+  /admin/courses/{courseId}/versions/{versionId}/validate:
+    post:
+      operationId: validateCourseVersion
+      summary: Validate a course data version before publishing
+      description: |
+        Runs pre-publish validation checks on a draft DataVersion.
+        Checks geometry validity (ST_IsValid), required metadata fields,
+        source/license presence, and data quality class.
+        Returns field-level errors and warnings.
+        Per Story 8.3 AC-1.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: DataVersion ID to validate
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: VERSION_NOT_FOUND
+              message: DataVersion 99 not found for course 42
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /admin/courses/{courseId}/versions/{versionId}/diff:
+    get:
+      operationId: getCourseVersionDiff
+      summary: Get diff between a draft version and the latest published version
+      description: |
+        Compares a draft DataVersion against the latest published version for the same course.
+        Returns added, removed, and changed entities with field-level detail.
+        Per Story 8.3 AC-2.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Draft DataVersion ID to compare
+      responses:
+        '200':
+          description: Version diff summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionDiff'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: VERSION_NOT_FOUND
+              message: DataVersion 99 not found for course 42
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  /admin/courses/{courseId}/versions/{versionId}/publish:
+    post:
+      operationId: publishCourseVersion
+      summary: Publish a course data version
+      description: |
+        Publishes a draft DataVersion, making it immutable and available to mobile clients.
+        Orchestrates: validate → diff (for audit) → create immutable snapshot →
+        audit log → queue package build job.
+        Returns the new version ID, audit entry ID, and build job ID.
+        Per Story 8.3 AC-3.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: Course ID
+        - name: versionId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: DataVersion ID to publish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishRequest'
+      responses:
+        '200':
+          description: Version published successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublishResponse'
+        '400':
+          description: Validation failed — version has blocking errors
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: VALIDATION_FAILED
+              message: Cannot publish version with blocking validation errors
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden — COURSE_ADMIN or SUPER_ADMIN required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Course or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: VERSION_NOT_FOUND
+              message: DataVersion 99 not found for course 42
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+        '409':
+          description: Version already published or not in DRAFT status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+            example:
+              code: PUBLISH_FORBIDDEN
+              message: Version 99 is already PUBLISHED and cannot be republished
+              correlationId: "550e8400-e29b-41d4-a716-446655440000"
+
+  # ========================
+  # Analytics endpoints (Story 11.2)
+  # ========================
+  /analytics/driving-zone:
+    get:
+      operationId: getDrivingZoneStats
+      summary: Get driving zone statistics filtered by time, club, tee, and wind
+      description: |
+        Returns aggregated landing zone statistics per club per hole-zone.
+        Per AC1: supports time, club, tee, and wind filters.
+        Falls back to local SQLite when API is unavailable.
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: playerId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Player account ID
+        - name: timeRangeStart
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: Start of time range filter
+        - name: timeRangeEnd
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: End of time range filter
+        - name: clubIds
+          in: query
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+          description: Club IDs to filter (empty = all clubs)
+        - name: teeSetId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Tee set ID to filter by
+        - name: windCondition
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [any, calm, light, moderate, windy, headwind, tailwind, crosswind_left, crosswind_right]
+          description: Wind condition filter
+        - name: minimumShotCount
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+          description: Minimum shots required for statistically meaningful data
+      responses:
+        '200':
+          description: Driving zone statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DrivingZoneStatisticsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analytics/rounds/{roundId}/review:
+    get:
+      operationId: getRoundReviewMetrics
+      summary: Get round review combining scoring and shot metrics
+      description: |
+        Returns scoring summary and shot metrics for a completed round.
+        Per AC2: includes incomplete-data warnings when sample size is insufficient.
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: roundId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Round ID
+        - name: playerId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Player account ID
+      responses:
+        '200':
+          description: Round review metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoundReviewMetricsResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Round not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Booking endpoints (Story 12.2)
+  # ========================
+  /booking/courses/{courseId}/slots:
+    get:
+      operationId: getAvailableSlots
+      summary: Get available booking slots for a course
+      tags: [Booking]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Available booking slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BookingSlot'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /booking/bookings:
+    post:
+      operationId: createBooking
+      summary: Create a new booking
+      tags: [Booking]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingCreate'
+      responses:
+        '201':
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /booking/bookings/{bookingId}:
+    get:
+      operationId: getBooking
+      summary: Get a booking by ID
+      tags: [Booking]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Booking details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Booking'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /booking/bookings/{bookingId}/status:
+    patch:
+      operationId: updateBookingStatus
+      summary: Update booking status
+      tags: [Booking]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingUpdate'
+      responses:
+        '200':
+          description: Booking updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /booking/bookings/{bookingId}:
+    delete:
+      operationId: cancelBooking
+      summary: Cancel a booking
+      tags: [Booking]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Booking cancelled
+        '404':
+          description: Booking not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Membership endpoints (Story 12.2)
+  # ========================
+  /membership/memberships/{membershipId}:
+    get:
+      operationId: getMembership
+      summary: Get a membership by ID
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: membershipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Membership details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Membership'
+        '404':
+          description: Membership not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /membership/users/me/memberships:
+    get:
+      operationId: getMyMemberships
+      summary: Get current user's memberships
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's memberships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipListResponse'
+
+  /membership/plans:
+    get:
+      operationId: getAvailablePlans
+      summary: Get available membership plans
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available plans
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlanListResponse'
+
+  /membership/plans/{planId}:
+    get:
+      operationId: getPlan
+      summary: Get a membership plan by ID
+      tags: [Membership]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Plan details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MembershipPlan'
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Loyalty endpoints (Story 12.2)
+  # ========================
+  /loyalty/accounts/{accountId}:
+    get:
+      operationId: getAccount
+      summary: Get a loyalty account by ID
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Loyalty account details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /loyalty/users/me/account:
+    get:
+      operationId: getMyLoyaltyAccount
+      summary: Get current user's loyalty account
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's loyalty account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+        '404':
+          description: No loyalty account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /loyalty/accounts/{accountId}/transactions:
+    get:
+      operationId: getTransactionHistory
+      summary: Get transaction history for an account
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: accountId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionListResponse'
+
+  /loyalty/users/me/points/earn:
+    post:
+      operationId: earnPoints
+      summary: Earn loyalty points
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyEarnRequest'
+      responses:
+        '200':
+          description: Points earned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+
+  /loyalty/users/me/points/redeem:
+    post:
+      operationId: redeemPoints
+      summary: Redeem loyalty points
+      tags: [Loyalty]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoyaltyRedeemRequest'
+      responses:
+        '200':
+          description: Points redeemed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoyaltyAccount'
+
+  # ========================
+  # Sponsorship endpoints (Story 12.2)
+  # ========================
+  /sponsorship/sponsorships/{sponsorshipId}:
+    get:
+      operationId: getSponsorship
+      summary: Get a sponsorship by ID
+      tags: [Sponsorship]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sponsorshipId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sponsorship details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sponsorship'
+        '404':
+          description: Sponsorship not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /sponsorship/courses/{courseId}/sponsorships:
+    get:
+      operationId: getCourseSponsorships
+      summary: Get sponsorships for a course
+      tags: [Sponsorship]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course sponsorships
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SponsorshipListResponse'
+
+  # ========================
+  # Payment endpoints (Story 12.3)
+  # ========================
+  /payments/intent:
+    post:
+      operationId: createPaymentIntent
+      summary: Create a payment intent
+      description: |
+        Creates a new payment intent and returns a provider reference.
+        The payment is not confirmed until confirmPayment is called or a provider webhook fires.
+        Idempotency key required via Idempotency-Key header.
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePaymentIntentRequest'
+      responses:
+        '201':
+          description: Payment intent created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePaymentIntentResponse'
+        '400':
+          description: Missing idempotency key or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Duplicate idempotency key with different request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/{paymentId}:
+    get:
+      operationId: getPayment
+      summary: Get payment status
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/{paymentId}/confirm:
+    post:
+      operationId: confirmPayment
+      summary: Confirm a payment (provider webhook/callback)
+      description: |
+        Called by provider webhook or client callback to confirm payment state.
+        Idempotency key required via Idempotency-Key header.
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConfirmPaymentRequest'
+      responses:
+        '200':
+          description: Payment confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentStatusResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/{paymentId}/refund:
+    post:
+      operationId: refundPayment
+      summary: Refund a payment
+      description: |
+        Issues a full or partial refund for a succeeded or partially_refunded payment.
+        Idempotency key required via Idempotency-Key header.
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefundPaymentRequest'
+      responses:
+        '200':
+          description: Refund processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefundResponse'
+        '400':
+          description: Payment not in refundable state or amount exceeds available
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/{paymentId}/audit:
+    get:
+      operationId: getPaymentAuditLog
+      summary: Get payment audit log
+      description: Returns the full audit trail for a payment transaction.
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: pageToken
+          in: query
+          schema:
+            type: string
+          description: Pagination cursor token
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAuditLogResponse'
+        '404':
+          description: Payment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /payments/reconciliation:
+    post:
+      operationId: runReconciliation
+      summary: Trigger daily reconciliation job
+      description: |
+        Triggers the daily reconciliation job that compares platform payment state
+        with provider state and flags discrepancies.
+        Admin-only endpoint.
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      responses:
+        '202':
+          description: Reconciliation job accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReconciliationReport'
+        '403':
+          description: Forbidden — admin role required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ========================
+  # Market endpoints (Story 12.4)
+  # ========================
+  /markets:
+    get:
+      operationId: listMarkets
+      summary: List all markets
+      description: Returns all markets, optionally filtered by active status.
+      tags: [Markets]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: active
+          in: query
+          schema:
+            type: boolean
+          description: Filter by active status
+      responses:
+        '200':
+          description: List of markets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketListResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /markets/{marketId}:
+    get:
+      operationId: getMarket
+      summary: Get a market by code
+      tags: [Markets]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: marketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ISO 3166-1 alpha-2 market code
+      responses:
+        '200':
+          description: Market details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Market'
+        '404':
+          description: Market not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /markets/{marketId}/config:
+    get:
+      operationId: getMarketConfig
+      summary: Get resolved market config
+      description: Returns the fully resolved market config with Vietnam defaults filled in for unset fields.
+      tags: [Markets]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: marketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ISO 3166-1 alpha-2 market code
+      responses:
+        '200':
+          description: Resolved market configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketConfigResponse'
+        '404':
+          description: Market not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/markets:
+    get:
+      operationId: listMarketsAdmin
+      summary: List all markets (admin)
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: active
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of markets
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketListResponse'
+
+  /admin/markets/{marketId}:
+    put:
+      operationId: upsertMarket
+      summary: Create or update a market
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: marketId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ISO 3166-1 alpha-2 market code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Market'
+      responses:
+        '200':
+          description: Market updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Market'
+        '201':
+          description: Market created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Market'
+
+  /admin/markets/{marketId}/config:
+    put:
+      operationId: upsertMarketConfig
+      summary: Create or update market config
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: marketId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarketConfig'
+      responses:
+        '200':
+          description: Market config updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketConfig'
+        '201':
+          description: Market config created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarketConfig'
+        '404':
+          description: Market not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/licenses:
+    get:
+      operationId: listLicenses
+      summary: List all data licenses
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of data licenses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DataLicense'
+    post:
+      operationId: createLicense
+      summary: Create a data license
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataLicenseCreateRequest'
+      responses:
+        '201':
+          description: License created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataLicense'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /admin/licenses/validate-redistribution:
+    post:
+      operationId: validateRedistribution
+      summary: Validate license redistribution for a market
+      description: Checks whether the given licenses permit redistribution in the target market.
+      tags: [Admin]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateRedistributionRequest'
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseValidationResult'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token
+
+  schemas:
+    # Common schemas
+    Error:
+      $ref: './schemas/common.yaml#/Error'
+    Pagination:
+      $ref: './schemas/common.yaml#/Pagination'
+    PageToken:
+      $ref: './schemas/common.yaml#/PageToken'
+    IdempotencyKey:
+      $ref: './schemas/common.yaml#/IdempotencyKey'
+    Location:
+      $ref: './schemas/common.yaml#/Location'
+
+    # Auth schemas
+    LoginRequest:
+      $ref: './schemas/auth.yaml#/LoginRequest'
+    LoginResponse:
+      $ref: './schemas/auth.yaml#/LoginResponse'
+    RegisterRequest:
+      $ref: './schemas/auth.yaml#/RegisterRequest'
+    PhoneRegisterRequest:
+      $ref: './schemas/auth.yaml#/PhoneRegisterRequest'
+    EmailRegisterRequest:
+      $ref: './schemas/auth.yaml#/EmailRegisterRequest'
+    TokenRefreshRequest:
+      $ref: './schemas/auth.yaml#/TokenRefreshRequest'
+    TokenRefreshResponse:
+      $ref: './schemas/auth.yaml#/TokenRefreshResponse'
+    ChangePasswordRequest:
+      $ref: './schemas/auth.yaml#/ChangePasswordRequest'
+    LogoutRequest:
+      $ref: './schemas/auth.yaml#/LogoutRequest'
+    OtpSendRequest:
+      $ref: './schemas/auth.yaml#/OtpSendRequest'
+    OtpSendResponse:
+      $ref: './schemas/auth.yaml#/OtpSendResponse'
+    OtpVerifyRequest:
+      $ref: './schemas/auth.yaml#/OtpVerifyRequest'
+    PasswordRecoverRequest:
+      $ref: './schemas/auth.yaml#/PasswordRecoverRequest'
+    PasswordResetRequest:
+      $ref: './schemas/auth.yaml#/PasswordResetRequest'
+    GolferProfileResponse:
+      $ref: './schemas/auth.yaml#/GolferProfileResponse'
+    GoogleAuthRequest:
+      $ref: './schemas/auth.yaml#/GoogleAuthRequest'
+    AppleAuthRequest:
+      $ref: './schemas/auth.yaml#/AppleAuthRequest'
+    SocialAuthResponse:
+      $ref: './schemas/auth.yaml#/SocialAuthResponse'
+    SessionResponse:
+      $ref: './schemas/auth.yaml#/SessionResponse'
+    SessionListResponse:
+      $ref: './schemas/auth.yaml#/SessionListResponse'
+
+    # Course schemas
+    Course:
+      $ref: './schemas/course.yaml#/Course'
+    CourseSummary:
+      $ref: './schemas/course.yaml#/CourseSummary'
+    CourseVersion:
+      $ref: './schemas/course.yaml#/CourseVersion'
+    CoursePackage:
+      $ref: './schemas/course.yaml#/CoursePackage'
+    Facility:
+      $ref: './schemas/course.yaml#/Facility'
+    CourseChange:
+      $ref: './schemas/course.yaml#/CourseChange'
+    CourseCreateRequest:
+      type: object
+      required:
+        - name
+        - holes
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        location:
+          $ref: '#/components/schemas/Location'
+        address:
+          type: string
+        holes:
+          type: integer
+          minimum: 9
+          maximum: 27
+        par:
+          type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Facility'
+    CourseUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        address:
+          type: string
+        par:
+          type: integer
+        facilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/Facility'
+        isActive:
+          type: boolean
+    CourseListResponse:
+      type: object
+      properties:
+        courses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseSummary'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    CourseVersionListResponse:
+      type: object
+      properties:
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseVersion'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    CoursePackageListResponse:
+      type: object
+      properties:
+        packages:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoursePackage'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    CoursePackageManifest:
+      $ref: './schemas/course.yaml#/CoursePackageManifest'
+    PackageManifestListResponse:
+      $ref: './schemas/course.yaml#/PackageManifestListResponse'
+    PackageFileEntry:
+      $ref: './schemas/course.yaml#/PackageFileEntry'
+
+    # Package build job schemas (Story 4.2 PKG-PUBLISH-3)
+    PackageBuildJobDto:
+      $ref: './schemas/course.yaml#/PackageBuildJobDto'
+    TriggerBuildRequest:
+      $ref: './schemas/course.yaml#/TriggerBuildRequest'
+    TriggerBuildResponse:
+      $ref: './schemas/course.yaml#/TriggerBuildResponse'
+    PackageBuildJobListResponse:
+      $ref: './schemas/course.yaml#/PackageBuildJobListResponse'
+
+    # Course version publish schemas (Story 8.3 PUBLISH-CONTRACT)
+    ValidationResult:
+      $ref: './schemas/course.yaml#/ValidationResult'
+    ValidationError:
+      $ref: './schemas/course.yaml#/ValidationError'
+    ValidationWarning:
+      $ref: './schemas/course.yaml#/ValidationWarning'
+    ValidationResponse:
+      $ref: './schemas/course.yaml#/ValidationResponse'
+    VersionDiffEntry:
+      $ref: './schemas/course.yaml#/VersionDiffEntry'
+    VersionDiff:
+      $ref: './schemas/course.yaml#/VersionDiff'
+    PublishRequest:
+      $ref: './schemas/course.yaml#/PublishRequest'
+    PublishResponse:
+      $ref: './schemas/course.yaml#/PublishResponse'
+
+    # Course Alert schemas (Story 8.6 SEND-COURSE-ALERTS)
+    AlertTargetType:
+      $ref: './schemas/course.yaml#/AlertTargetType'
+    CourseAlert:
+      $ref: './schemas/course.yaml#/CourseAlert'
+    CourseAlertCreate:
+      $ref: './schemas/course.yaml#/CourseAlertCreate'
+    CourseAlertUpdate:
+      $ref: './schemas/course.yaml#/CourseAlertUpdate'
+    CourseAlertListResponse:
+      $ref: './schemas/course.yaml#/CourseAlertListResponse'
+
+    # Round schemas
+    Round:
+      $ref: './schemas/round.yaml#/Round'
+    RoundCreate:
+      $ref: './schemas/round.yaml#/RoundCreate'
+    RoundUpdate:
+      $ref: './schemas/round.yaml#/RoundUpdate'
+    HoleScore:
+      $ref: './schemas/round.yaml#/HoleScore'
+    RoundListResponse:
+      $ref: './schemas/round.yaml#/RoundListResponse'
+
+    # Score schemas
+    Score:
+      $ref: './schemas/score.yaml#/Score'
+    ScoreEntry:
+      $ref: './schemas/score.yaml#/ScoreEntry'
+    Scorecard:
+      $ref: './schemas/score.yaml#/Scorecard'
+    ScorecardHole:
+      $ref: './schemas/score.yaml#/ScorecardHole'
+    ScoreSubmitRequest:
+      $ref: './schemas/score.yaml#/ScoreSubmitRequest'
+    LeaderboardEntry:
+      $ref: './schemas/score.yaml#/LeaderboardEntry'
+    ScoreListResponse:
+      type: object
+      properties:
+        scores:
+          type: array
+          items:
+            $ref: '#/components/schemas/Score'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    LeaderboardResponse:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/LeaderboardEntry'
+        period:
+          type: string
+          enum: [daily, weekly, monthly, all_time]
+
+    # Weather schemas
+    WeatherSnapshot:
+      $ref: './schemas/weather.yaml#/WeatherSnapshot'
+    WindData:
+      $ref: './schemas/weather.yaml#/WindData'
+    WeatherForecast:
+      $ref: './schemas/weather.yaml#/WeatherForecast'
+    WeatherAlert:
+      $ref: './schemas/weather.yaml#/WeatherAlert'
+    WeatherAlertListResponse:
+      type: object
+      properties:
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeatherAlert'
+
+    # Correction schemas
+    Correction:
+      $ref: './schemas/correction.yaml#/Correction'
+    CorrectionCreate:
+      $ref: './schemas/correction.yaml#/CorrectionCreate'
+    CorrectionReview:
+      $ref: './schemas/correction.yaml#/CorrectionReview'
+    CorrectionListResponse:
+      $ref: './schemas/correction.yaml#/CorrectionListResponse'
+    CorrectionStats:
+      $ref: './schemas/correction.yaml#/CorrectionStats'
+
+    # Privacy schemas (per Story 2.5 AC-3)
+    PrivacyRequestResponse:
+      $ref: './schemas/privacy.yaml#/PrivacyRequestResponse'
+    CreatePrivacyRequestRequest:
+      $ref: './schemas/privacy.yaml#/CreatePrivacyRequestRequest'
+    ProcessPrivacyRequestRequest:
+      $ref: './schemas/privacy.yaml#/ProcessPrivacyRequestRequest'
+
+    # Admin schemas
+    PublishRequest:
+      $ref: './schemas/admin.yaml#/PublishRequest'
+    PublishResponse:
+      $ref: './schemas/admin.yaml#/PublishResponse'
+    RollbackRequest:
+      $ref: './schemas/admin.yaml#/RollbackRequest'
+    RollbackResponse:
+      $ref: './schemas/admin.yaml#/RollbackResponse'
+    AuditEntry:
+      $ref: './schemas/admin.yaml#/AuditEntry'
+    AuditLogResponse:
+      $ref: './schemas/admin.yaml#/AuditLogResponse'
+    CourseManagementSummary:
+      $ref: './schemas/admin.yaml#/CourseManagementSummary'
+
+    # Analytics schemas (Story 11.2)
+    DrivingZoneStatisticsResponse:
+      $ref: './schemas/shot.yaml#/DrivingZoneStatisticsResponse'
+    RoundReviewMetricsResponse:
+      $ref: './schemas/shot.yaml#/RoundReviewMetricsResponse'
+
+    # Booking schemas (Story 12.2)
+    Booking:
+      $ref: './schemas/booking.yaml#/Booking'
+    BookingPlayer:
+      $ref: './schemas/booking.yaml#/BookingPlayer'
+    BookingSlot:
+      $ref: './schemas/booking.yaml#/BookingSlot'
+    BookingCreate:
+      $ref: './schemas/booking.yaml#/BookingCreate'
+    BookingUpdate:
+      $ref: './schemas/booking.yaml#/BookingUpdate'
+    BookingResponse:
+      $ref: './schemas/booking.yaml#/BookingResponse'
+
+    # Membership schemas (Story 12.2)
+    Membership:
+      $ref: './schemas/membership.yaml#/Membership'
+    MembershipPlan:
+      $ref: './schemas/membership.yaml#/MembershipPlan'
+    MembershipListResponse:
+      $ref: './schemas/membership.yaml#/MembershipListResponse'
+    MembershipPlanListResponse:
+      $ref: './schemas/membership.yaml#/MembershipPlanListResponse'
+
+    # Loyalty schemas (Story 12.2)
+    LoyaltyAccount:
+      $ref: './schemas/loyalty.yaml#/LoyaltyAccount'
+    LoyaltyTransaction:
+      $ref: './schemas/loyalty.yaml#/LoyaltyTransaction'
+    LoyaltyEarnRequest:
+      $ref: './schemas/loyalty.yaml#/LoyaltyEarnRequest'
+    LoyaltyRedeemRequest:
+      $ref: './schemas/loyalty.yaml#/LoyaltyRedeemRequest'
+    TransactionListResponse:
+      $ref: './schemas/loyalty.yaml#/TransactionListResponse'
+
+    # Sponsorship schemas (Story 12.2)
+    Sponsorship:
+      $ref: './schemas/sponsorship.yaml#/Sponsorship'
+    SponsorshipListResponse:
+      $ref: './schemas/sponsorship.yaml#/SponsorshipListResponse'
+    ConsentRequest:
+      $ref: './schemas/sponsorship.yaml#/ConsentRequest'
+
+    # WhiteLabel schema (Story 12.2)
+    WhiteLabelConfig:
+      $ref: './schemas/whitelabel.yaml#/WhiteLabelConfig'
+    RoundBehavior:
+      $ref: './schemas/whitelabel.yaml#/RoundBehavior'
+    WhiteLabelValidation:
+      $ref: './schemas/whitelabel.yaml#/WhiteLabelValidation'
+
+    # Payment schemas (Story 12.3)
+    PaymentTransaction:
+      $ref: './schemas/payment.yaml#/PaymentTransaction'
+    RefundRequest:
+      $ref: './schemas/payment.yaml#/RefundRequest'
+    PaymentAuditEntry:
+      $ref: './schemas/payment.yaml#/PaymentAuditEntry'
+    PaymentState:
+      $ref: './schemas/payment.yaml#/PaymentState'
+    PaymentFailureReason:
+      $ref: './schemas/payment.yaml#/PaymentFailureReason'
+    RefundReason:
+      $ref: './schemas/payment.yaml#/RefundReason'
+    CreatePaymentIntentRequest:
+      $ref: './schemas/payment.yaml#/CreatePaymentIntentRequest'
+    CreatePaymentIntentResponse:
+      $ref: './schemas/payment.yaml#/CreatePaymentIntentResponse'
+    ConfirmPaymentRequest:
+      $ref: './schemas/payment.yaml#/ConfirmPaymentRequest'
+    PaymentStatusResponse:
+      $ref: './schemas/payment.yaml#/PaymentStatusResponse'
+    RefundPaymentRequest:
+      $ref: './schemas/payment.yaml#/RefundPaymentRequest'
+    RefundResponse:
+      $ref: './schemas/payment.yaml#/RefundResponse'
+    PaymentAuditLogResponse:
+      $ref: './schemas/payment.yaml#/PaymentAuditLogResponse'
+    ReconciliationReport:
+      $ref: './schemas/payment.yaml#/ReconciliationReport'
+    ReconciliationDiscrepancy:
+      $ref: './schemas/payment.yaml#/ReconciliationDiscrepancy'
+
+    # Profile schemas
+    GolferProfileResponse:
+      $ref: './schemas/profile.yaml#/GolferProfileResponse'
+    UpdateGolferProfileRequest:
+      $ref: './schemas/profile.yaml#/UpdateGolferProfileRequest'
+
+    # Bag schemas
+    GolfBagResponse:
+      $ref: './schemas/bag.yaml#/GolfBagResponse'
+    CreateGolfBagRequest:
+      $ref: './schemas/bag.yaml#/CreateGolfBagRequest'
+    UpdateGolfBagRequest:
+      $ref: './schemas/bag.yaml#/UpdateGolfBagRequest'
+    ClubResponse:
+      $ref: './schemas/bag.yaml#/ClubResponse'
+    CreateClubRequest:
+      $ref: './schemas/bag.yaml#/CreateClubRequest'
+    UpdateClubRequest:
+      $ref: './schemas/bag.yaml#/UpdateClubRequest'
+
+    # Role schemas (per Story 2.5 AC-1, AC-2)
+    RoleResponse:
+      $ref: './schemas/role.yaml#/RoleResponse'
+    AdminAccountResponse:
+      $ref: './schemas/role.yaml#/AdminAccountResponse'
+    AssignRoleRequest:
+      $ref: './schemas/role.yaml#/AssignRoleRequest'
+    RevokeRoleRequest:
+      $ref: './schemas/role.yaml#/RevokeRoleRequest'
+    EnableMfaRequest:
+      $ref: './schemas/role.yaml#/EnableMfaRequest'
+    EnableMfaResponse:
+      $ref: './schemas/role.yaml#/EnableMfaResponse'
+    VerifyMfaRequest:
+      $ref: './schemas/role.yaml#/VerifyMfaRequest'
+    VerifyMfaResponse:
+      $ref: './schemas/role.yaml#/VerifyMfaResponse'
+
+    # Shot schemas (Story 10.3)
+    Shot:
+      $ref: './schemas/shot.yaml#/Shot'
+    ShotLie:
+      $ref: './schemas/shot.yaml#/ShotLie'
+    ShotResult:
+      $ref: './schemas/shot.yaml#/ShotResult'
+    ShotSource:
+      $ref: './schemas/shot.yaml#/ShotSource'
+    ShotSyncStatus:
+      $ref: './schemas/shot.yaml#/ShotSyncStatus'
+    ShotEvent:
+      $ref: './schemas/shot.yaml#/ShotEvent'
+    GeoJSONPoint:
+      $ref: './schemas/shot.yaml#/GeoJSONPoint'
+    CreateShotRequest:
+      $ref: './schemas/shot.yaml#/CreateShotRequest'
+    UpdateShotRequest:
+      $ref: './schemas/shot.yaml#/UpdateShotRequest'
+    MergeShotsRequest:
+      $ref: './schemas/shot.yaml#/MergeShotsRequest'
+    ShotResponse:
+      $ref: './schemas/shot.yaml#/ShotResponse'
+    ShotListResponse:
+      $ref: './schemas/shot.yaml#/ShotListResponse'
+    ShotSyncResponse:
+      $ref: './schemas/shot.yaml#/ShotSyncResponse'
+
+    # Market schemas (Story 12.4)
+    Market:
+      $ref: './schemas/market.yaml#/Market'
+    MarketConfig:
+      $ref: './schemas/market.yaml#/MarketConfig'
+    DataLicense:
+      $ref: './schemas/market.yaml#/DataLicense'
+    LicenseValidationResult:
+      $ref: './schemas/market.yaml#/LicenseValidationResult'
+    LicenseValidationError:
+      $ref: './schemas/market.yaml#/LicenseValidationError'
+    MarketConfigResponse:
+      $ref: './schemas/market.yaml#/MarketConfigResponse'
+    MarketListResponse:
+      $ref: './schemas/market.yaml#/MarketListResponse'
+    DataLicenseCreateRequest:
+      $ref: './schemas/market.yaml#/DataLicenseCreateRequest'
+    ValidateRedistributionRequest:
+      $ref: './schemas/market.yaml#/ValidateRedistributionRequest'
+    LicenseSpdxEntry:
+      $ref: './schemas/market.yaml#/LicenseSpdxEntry'
+
+tags:
+  - name: Auth
+    description: Authentication and authorization
+  - name: Profiles
+    description: Golfer profile and preference management
+  - name: Bags
+    description: Golf bag and club management
+  - name: Courses
+    description: Course catalog management
+  - name: Packages
+    description: Course package management
+  - name: Rounds
+    description: Golf round management
+  - name: Shots
+    description: Manual shot tracking — start, edit, delete, merge shots per Story 10.3
+  - name: Scores
+    description: Score tracking and leaderboards
+  - name: Weather
+    description: Weather information
+  - name: Corrections
+    description: Course data correction workflow
+  - name: Privacy
+    description: Privacy requests for data export, account deletion, round deletion (per Story 2.5 AC-3)
+  - name: Alerts
+    description: Course alert management — send, track, and acknowledge targeted safety and promotion alerts (per Story 8.6)
+  - name: Admin
+    description: Admin RBAC role management, MFA, and privacy request processing (per Story 2.5)
+  - name: Analytics
+    description: Driving zone and round analytics (per Story 11.2)
+  - name: Booking
+    description: Tee time booking and reservation management (per Story 12.2)
+  - name: Membership
+    description: Membership plans and entitlements (per Story 12.2)
+  - name: Loyalty
+    description: Loyalty points and rewards program (per Story 12.2)
+  - name: Sponsorship
+    description: Sponsorship and advertising management (per Story 12.2)
+  - name: Payments
+    description: Payment intents, confirmations, refunds, and reconciliation (per Story 12.3)
+  - name: Markets
+    description: Market configuration and license management for international expansion (per Story 12.4)

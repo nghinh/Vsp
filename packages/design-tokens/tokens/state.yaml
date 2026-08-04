@@ -1,0 +1,171 @@
+# Design Tokens — State
+# Source: UX Spec §4.2, §6.4 — Vietnam Smart Golf Platform
+# GPS / sync / data-confidence state colors and behaviors.
+# Color must not be the only indicator — pair with icon and label.
+
+state:
+  # ─── GPS / Location States ─────────────────────────────────────────────────
+
+  gps:
+    ready:
+      color:    "{color.accent}"
+      icon:     "gps-fixed"     # Vector icon — checkmark or location pin
+      label:    "GPS Ready"
+      description: "GPS has high accuracy fix"
+
+    lowAccuracy:
+      color:    "{color.secondary}"
+      icon:     "gps-not-fixed" # Vector icon — warning triangle
+      label:    "GPS Low Accuracy"
+      description: "Manual hole switch recommended"
+
+    searching:
+      color:    "{color.muted}"
+      icon:     "gps-searching" # Vector icon — searching animation
+      label:    "Searching GPS"
+      description: "Attempting to acquire GPS fix"
+
+    unavailable:
+      color:    "{color.destructive}"
+      icon:     "gps-off"       # Vector icon
+      label:    "GPS Unavailable"
+      description: "Location services are off or unavailable"
+
+  # ─── Connectivity / Sync States ────────────────────────────────────────────
+
+  connectivity:
+    online:
+      color:     "{color.accent}"
+      icon:      "wifi"         # Vector icon
+      label:     "Online"
+      description: "Connected to network"
+
+    offline:
+      color:     "{color.muted}"
+      icon:      "wifi-off"
+      label:     "Offline"
+      description: "No network connection"
+
+    syncPending:
+      color:     "#3B82F6"      # Blue — progress indicator
+      icon:      "sync"          # Vector icon — animated
+      label:     "Sync Pending"
+      description: "Changes saved offline, will sync when online"
+
+    syncInProgress:
+      color:     "#3B82F6"
+      icon:      "sync"          # Animated spinner variant
+      label:     "Syncing"
+      description: "Synchronization in progress"
+
+    syncFailed:
+      color:     "{color.destructive}"
+      icon:      "sync-problem"  # Vector icon
+      label:     "Sync Failed"
+      description: "Sync failed — tap to retry"
+
+    syncComplete:
+      color:     "{color.accent}"
+      icon:      "cloud-done"    # Vector icon
+      label:     "Synced"
+      description: "All data synchronized"
+
+  # ─── Data Confidence ───────────────────────────────────────────────────────
+
+  dataConfidence:
+    official:
+      color:     "{color.accent}"
+      icon:      "verified"      # Vector icon — checkmark badge
+      label:     "Official"
+      badgeStyle: "filled"       # Filled badge — official/verified
+      description: "Verified by course authority"
+
+    estimated:
+      color:     "{color.secondary}"
+      icon:      "estimate"      # Vector icon — outlined badge or estimate marker
+      label:     "Estimated"
+      badgeStyle: "outlined"     # Outlined badge — estimated/community data
+      description: "Community or algorithm estimate"
+
+    stale:
+      color:     "{color.destructive}"
+      icon:      "clock-warning" # Vector icon
+      label:     "Stale"
+      badgeStyle: "filled"      # Filled badge with red — expired/stale
+      description: "Data is outdated — verify before use"
+
+    pending:
+      color:     "{color.muted}"
+      icon:      "pending"       # Vector icon
+      label:     "Pending"
+      badgeStyle: "outlined"
+      description: "Awaiting review or confirmation"
+
+  # ─── Course Download Status ─────────────────────────────────────────────────
+
+  courseStatus:
+    downloaded:
+      color:     "{color.accent}"
+      icon:      "download-done" # Vector icon
+      label:     "Downloaded"
+      description: "Course is available offline"
+
+    updateAvailable:
+      color:     "{color.secondary}"
+      icon:      "system-update" # Vector icon
+      label:     "Update Available"
+      description: "A newer course version is available"
+
+    notDownloaded:
+      color:     "{color.textTertiary}"
+      icon:      "download"      # Vector icon
+      label:     "Not Downloaded"
+      description: "Course data not yet downloaded"
+
+    downloading:
+      color:     "#3B82F6"
+      icon:      "downloading"   # Vector icon — animated
+      label:     "Downloading"
+      description: "Course download in progress"
+
+    downloadFailed:
+      color:     "{color.destructive}"
+      icon:      "error-outline" # Vector icon
+      label:     "Download Failed"
+      description: "Download failed — tap to retry"
+
+  # ─── General UI States ──────────────────────────────────────────────────────
+
+  ui:
+    enabled:
+      opacity:  1.0
+      behavior: "fully interactive"
+
+    disabled:
+      opacity:  0.50
+      behavior: "non-interactive — cursor not-allowed"
+
+    loading:
+      opacity:  0.88
+      behavior: "receiving data — spinner or skeleton shown"
+
+    error:
+      color:    "{color.destructive}"
+      behavior: "error message visible near field"
+
+    success:
+      color:    "{color.accent}"
+      behavior: "success feedback visible"
+
+    warning:
+      color:    "{color.secondary}"
+      behavior: "warning message visible"
+
+  # ─── Accessibility Rule ────────────────────────────────────────────────────
+  # UX spec §10: color must not be the only indicator.
+  # Every state token includes icon + color + label as a complete set.
+
+  accessibilityRule:
+    label:    "color-not-only-indicator"
+    requires: ["color", "icon", "label"]
+    description: "Every state must communicate via color + icon + text label together."

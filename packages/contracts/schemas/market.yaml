@@ -1,0 +1,294 @@
+# Market schemas for the Vietnam Smart Golf Platform API
+#
+# Story 12.4 — Slice 2: OpenAPI Contracts
+
+# ─── Market Entity ───────────────────────────────────────────────────────────
+
+Market:
+  type: object
+  description: A supported geographic market for the platform
+  properties:
+    marketId:
+      type: string
+      description: ISO 3166-1 alpha-2 country code
+      example: "VN"
+      readOnly: true
+    name:
+      type: string
+      description: Human-readable market name
+      example: "Vietnam"
+    currencyCode:
+      type: string
+      description: ISO 4217 currency code
+      example: "VND"
+      nullable: true
+    dateFormat:
+      type: string
+      description: Date format pattern for this market
+      example: "dd/MM/yyyy"
+      nullable: true
+    measurementUnit:
+      type: string
+      enum: [METRIC, IMPERIAL]
+      description: Distance measurement unit
+      nullable: true
+    timezone:
+      type: string
+      description: IANA timezone identifier
+      example: "Asia/Ho_Chi_Minh"
+      nullable: true
+    defaultLanguage:
+      type: string
+      description: Default language code for this market
+      example: "vi"
+      nullable: true
+    active:
+      type: boolean
+      description: Whether this market is currently active
+      default: true
+
+# ─── Market Config Entity ────────────────────────────────────────────────────
+
+MarketConfig:
+  type: object
+  description: Per-market configuration overrides
+  properties:
+    marketId:
+      type: string
+      description: ISO 3166-1 alpha-2 country code
+      example: "VN"
+    forkGpsBehavior:
+      type: boolean
+      description: GPS fork behavior override
+      default: false
+      nullable: true
+    forkScoreBehavior:
+      type: boolean
+      description: Score fork behavior override
+      default: false
+      nullable: true
+    redistributionRequiresLicense:
+      type: boolean
+      description: Whether data redistribution requires explicit license validation
+      nullable: true
+
+# ─── Data License Entity ───────────────────────────────────────────────────────
+
+DataLicense:
+  type: object
+  description: A data license with redistribution market permissions
+  properties:
+    licenseId:
+      type: string
+      format: uuid
+      description: Unique license identifier
+      example: "660e8400-e29b-41d4-a716-446655440001"
+      readOnly: true
+    name:
+      type: string
+      description: Human-readable license name
+      example: "CC BY 4.0"
+    spdxId:
+      type: string
+      description: SPDX license identifier
+      example: "CC-BY-4.0"
+    licensee:
+      type: string
+      description: Name of the licensee
+      nullable: true
+    redistributionMarkets:
+      type: array
+      items:
+        type: string
+      description: Market codes where redistribution is allowed
+      example: ["VN", "TH"]
+    issuedAt:
+      type: string
+      format: date-time
+      description: When this license was issued
+      readOnly: true
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this license expires (null = never)
+      nullable: true
+      readOnly: true
+    valid:
+      type: boolean
+      description: Whether this license is currently valid (not expired)
+      readOnly: true
+
+# ─── License Validation ───────────────────────────────────────────────────────
+
+LicenseValidationResult:
+  type: object
+  description: Result of license redistribution validation
+  properties:
+    isValid:
+      type: boolean
+      description: True if all license redistribution checks passed
+    errors:
+      type: array
+      items:
+        $ref: '#/LicenseValidationError'
+      description: List of validation errors (empty if isValid is true)
+
+LicenseValidationError:
+  type: object
+  description: Single license validation error
+  properties:
+    licenseId:
+      type: string
+      description: The license that failed validation
+    spdxId:
+      type: string
+      description: SPDX ID of the failing license
+    code:
+      type: string
+      enum: [LICENSE_REDISTRIBUTION_NOT_ALLOWED, LICENSE_NOT_FOUND, LICENSE_EXPIRED]
+      description: Machine-readable error code
+    message:
+      type: string
+      description: Human-readable error message
+    targetMarket:
+      type: string
+      description: The market code that was rejected
+
+# ─── Market Config DTOs ───────────────────────────────────────────────────────
+
+MarketConfigResponse:
+  type: object
+  description: Fully resolved market config with Vietnam defaults filled in
+  properties:
+    marketId:
+      type: string
+      example: "VN"
+    locale:
+      type: string
+      example: "vi-VN"
+    language:
+      type: string
+      example: "vi"
+    units:
+      type: string
+      enum: [METRIC, IMPERIAL]
+      example: "METRIC"
+    timezone:
+      type: string
+      example: "Asia/Ho_Chi_Minh"
+    currency:
+      type: string
+      example: "VND"
+    dateFormat:
+      type: string
+      example: "dd/MM/yyyy"
+    rulesUrl:
+      type: string
+      format: uri
+      nullable: true
+    enabledProviderIds:
+      type: array
+      items:
+        type: string
+      nullable: true
+    requiredLicenseIds:
+      type: array
+      items:
+        type: string
+      nullable: true
+    retentionPolicyDays:
+      type: integer
+      example: 365
+    forkGpsBehavior:
+      type: boolean
+      example: false
+    forkScoreBehavior:
+      type: boolean
+      example: false
+    redistributionRequiresLicense:
+      type: boolean
+      example: false
+
+MarketListResponse:
+  type: object
+  description: Paginated list of markets
+  properties:
+    content:
+      type: array
+      items:
+        $ref: '#/Market'
+    page:
+      type: integer
+      description: Current page number (0-indexed)
+    size:
+      type: integer
+      description: Page size
+    totalElements:
+      type: integer
+      format: int64
+      description: Total number of markets
+    totalPages:
+      type: integer
+      description: Total number of pages
+
+DataLicenseCreateRequest:
+  type: object
+  required:
+    - name
+    - spdxId
+    - redistributionMarkets
+  properties:
+    name:
+      type: string
+      description: Human-readable license name
+      example: "CC BY 4.0"
+    spdxId:
+      type: string
+      description: SPDX license identifier
+      example: "CC-BY-4.0"
+    licensee:
+      type: string
+      description: Name of the licensee
+      nullable: true
+    redistributionMarkets:
+      type: array
+      items:
+        type: string
+      description: Market codes where redistribution is allowed
+      minItems: 1
+    expiresAt:
+      type: string
+      format: date-time
+      description: When this license expires (null = never)
+      nullable: true
+
+ValidateRedistributionRequest:
+  type: object
+  required:
+    - targetMarket
+    - licenses
+  properties:
+    targetMarket:
+      type: string
+      description: The market code to validate redistribution for
+      example: "TH"
+    licenses:
+      type: array
+      items:
+        $ref: '#/LicenseSpdxEntry'
+      description: List of license SPDX IDs to validate
+
+LicenseSpdxEntry:
+  type: object
+  required:
+    - spdxId
+  properties:
+    spdxId:
+      type: string
+      description: SPDX license identifier
+      example: "CC-BY-4.0"
+    licenseId:
+      type: string
+      format: uuid
+      description: Optional license ID for lookup
+      nullable: true

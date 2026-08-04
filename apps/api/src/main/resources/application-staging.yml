@@ -1,0 +1,71 @@
+# Staging environment observability config
+# PII fields must not appear in logs; log level is WARN by default
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: vsp-api-staging
+
+logging:
+  level:
+    root: WARN
+    vnpt.vsp: INFO
+    org.springframework.web: WARN
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    org.apache.catalina: WARN
+    io.opentelemetry: INFO
+  # PII redaction — logstash encoder custom fields handle structured output;
+  # additionally pattern-based filter applied via Logback MDC clearing
+  # on sensitive operation boundaries (login, profile updates).
+  # NOTE: application code must NOT place raw PII in log messages.
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [correlationId=%X{correlationId:-—}] - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: when_authorized
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    db:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: staging
+  tracing:
+    sampling:
+      probability: 0.5
+    propagation:
+      produce: B3
+      consume: B3
+
+# Staging alert thresholds (AlertRules.java reads these)
+alert:
+  thresholds:
+    api:
+      latency-p99-ms: 2000
+      error-rate-percent: 2.0
+    sync:
+      queue-depth-warning: 100
+      queue-depth-critical: 500
+    gps:
+      accuracy-warning-m: 10
+      accuracy-critical-m: 25
+    package:
+      download-failure-rate-percent: 5.0

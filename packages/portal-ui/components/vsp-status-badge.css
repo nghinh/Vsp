@@ -1,0 +1,105 @@
+/**
+ * VSP Status Badge — vsp-status-badge.css
+ * Variants: official | estimated | stale | pending
+ * Uses state tokens for color — color + icon + label (never color alone).
+ *
+ * No emoji icons. Use vector icons only.
+ */
+
+.vsp-status-badge {
+  /* ─── Base ──────────────────────────────────────────────────────────────── */
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vsp-space-1);
+  vertical-align: middle;
+
+  /* Typography */
+  font-family: var(--vsp-font-body);
+  font-size: var(--vsp-font-size-xs);
+  font-weight: var(--vsp-font-weight-medium);
+  letter-spacing: var(--vsp-letter-spacing-wide);
+  line-height: 1;
+
+  /* Layout — min touch target 44px */
+  min-height: var(--vsp-touch-target-min);
+  padding: var(--vsp-space-1) var(--vsp-space-2);
+
+  /* Appearance */
+  border-radius: var(--vsp-radius-full);
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+/* ─── Icon (vector only — no emoji) ───────────────────────────────────────── */
+
+.vsp-status-badge__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
+}
+
+/* ─── Filled Variants (official / stale) ─────────────────────────────────── */
+
+/* Official — filled green badge */
+.vsp-status-badge--official {
+  background-color: color-mix(in srgb, var(--vsp-color-official) 15%, transparent);
+  border-color: var(--vsp-color-official);
+  color: var(--vsp-color-official);
+}
+
+/* Stale — filled destructive badge */
+.vsp-status-badge--stale {
+  background-color: color-mix(in srgb, var(--vsp-color-stale) 15%, transparent);
+  border-color: var(--vsp-color-stale);
+  color: var(--vsp-color-stale);
+}
+
+/* ─── Outlined Variants (estimated / pending) ─────────────────────────────── */
+
+/* Estimated — outlined amber badge */
+.vsp-status-badge--estimated {
+  background-color: transparent;
+  border-color: var(--vsp-color-estimated);
+  color: var(--vsp-color-estimated);
+}
+
+/* Pending — outlined muted badge */
+.vsp-status-badge--pending {
+  background-color: transparent;
+  border-color: var(--vsp-color-border-strong);
+  color: var(--vsp-color-text-secondary);
+}
+
+/* ─── Size Variants ───────────────────────────────────────────────────────── */
+
+.vsp-status-badge--sm {
+  font-size: var(--vsp-font-size-xs);
+  min-height: 20px;
+  padding: var(--vsp-space-0-5) var(--vsp-space-1-5);
+  gap: var(--vsp-space-0-5);
+}
+
+.vsp-status-badge--md {
+  font-size: var(--vsp-font-size-sm);
+  min-height: var(--vsp-touch-target-min);
+  padding: var(--vsp-space-1) var(--vsp-space-2);
+}
+
+.vsp-status-badge--lg {
+  font-size: var(--vsp-font-size-base);
+  min-height: 36px;
+  padding: var(--vsp-space-2) var(--vsp-space-3);
+  gap: var(--vsp-space-1-5);
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .vsp-status-badge {
+    transition-duration: var(--vsp-duration-instant);
+  }
+}

@@ -1,0 +1,50 @@
+# ─── Secrets / local env ──────────────────────────────────────────────────────
+.env.local
+.env*.local
+*.pem
+*.key
+# (keep .env.local.example — it is a template)
+
+# ─── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# ─── Node / Vite (portal) ─────────────────────────────────────────────────────
+node_modules/
+dist/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+
+# ─── Java / Maven (api) ───────────────────────────────────────────────────────
+target/
+*.class
+
+# ─── Flutter / Dart (mobile, watch_apple) ─────────────────────────────────────
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+.packages
+*.lock.tmp
+ios/Pods/
+ios/.symlinks/
+android/.gradle/
+android/local.properties
+
+# ─── Gradle / Kotlin (wear-os) ────────────────────────────────────────────────
+.gradle/
+local.properties
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ─── Tooling caches / regenerable indexes ─────────────────────────────────────
+.gitnexus/
+.runtime/
+.serena/

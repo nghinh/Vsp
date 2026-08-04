@@ -1,0 +1,371 @@
+orchestrator: vnpt-qa-tester-orchestrator
+profile: medium_model_strict
+version: 2.0.0
+
+# =============================================================================
+# Section 1: Operating Contract (consolidated from STRICT_QA_RULES_FOR_MEDIUM_MODELS.md)
+# =============================================================================
+
+phase_order_is_mandatory: true
+allow_phase_skip: false
+allow_automation_before_oracle: false
+allow_generic_placeholders_as_final: false
+allow_silent_assumptions: false
+allow_shallow_tests_to_count: false
+
+# =============================================================================
+# Section 2: Response Style (consolidated from MODEL_BEHAVIOR_CONTRACT.md)
+# =============================================================================
+
+response_style:
+  required_sections:
+    - Inputs Read
+    - Decisions
+    - Artifacts Written
+    - Gaps / Ambiguities
+    - Exit Criteria Check
+    - Next Phase
+  forbidden_behaviors:
+    - skip_phases_because_task_feels_simple
+    - write_executable_tests_from_memory_or_partial_snippets
+    - use_generic_placeholder_as_final_output
+    - mark_risk_covered_without_assertion_tied_to_risk
+    - silently_drop_strategy_because_tool_unavailable
+    - treat_mocks_as_product_correctness_proof
+    - fix_product_code_unless_explicitly_instructed
+
+# =============================================================================
+# Section 3: Traceability Requirements (consolidated)
+# =============================================================================
+
+traceability:
+  require_test_id: true
+  require_risk_id: true
+  require_oracle_id: true
+  require_requirement_id_when_available: true
+  require_generated_from: true
+
+test_id_prefixes:
+  QA-EX-: example-based (happy, negative, boundary, error, recovery, regression)
+  QA-COMB-: combinatorial (PICT/ACTS-style)
+  QA-SM-: state-machine (workflow, allowed/forbidden transitions)
+  QA-PROP-: property-based (invariants)
+  QA-API-: API schema/fuzz (Schemathesis)
+  QA-E2E-: UI/E2E (Playwright)
+  QA-REG-: regression (known bugs, recent changes)
+  QA-EXP-: exploratory/manual (charter-based)
+
+# =============================================================================
+# Section 4: Minimum Coverage per Risk
+# =============================================================================
+
+minimum_per_risk:
+  P0:
+    happy_path: 1
+    negative_tests: 2
+    boundary_or_edge_tests: 2
+    recovery_or_error_tests: 1
+    state_machine_tests_when_applicable: 1
+    property_tests_when_applicable: 1
+    api_or_e2e_tests_when_visible: 1
+  P1:
+    main_path_tests: 1
+    negative_tests: 1
+    boundary_or_edge_tests: 1
+    state_property_api_or_e2e_when_applicable: 1
+
+# =============================================================================
+# Section 5: Required Bug Classes to Consider
+# =============================================================================
+
+required_bug_classes_to_consider:
+  - wrong_state_transition
+  - missing_validation
+  - boundary_off_by_one
+  - null_empty_missing_field
+  - duplicate_action_event_request
+  - timeout_retry_cancel
+  - concurrency_or_rapid_repeat
+  - persistence_mismatch
+  - stale_or_wrong_ui_state
+  - api_contract_mismatch
+  - poor_error_handling
+  - regression_around_changed_files
+  - security_permission_boundary_when_relevant
+  - offline_online_network_when_relevant
+  - performance_large_data_when_relevant
+  # Extended classes for nuanced classification
+  - race_condition
+  - deadlock_or_livelock
+  - data_race
+  - atomicity_violation
+  - ordering_violation
+  - memory_leak
+  - authorization_bypass
+  - input_validation_bypass
+  - state_corruption
+  - idempotency_violation
+
+# =============================================================================
+# Section 6: Uncertainty Labels
+# =============================================================================
+
+labels_for_uncertainty:
+  - SPEC_AMBIGUITY        # Requirement is unclear
+  - ORACLE_GAP            # Expected result cannot be proven from docs/code/API
+  - ENV_GAP               # Test cannot run due to missing env command/data/service
+  - DATA_GAP              # Fixture or seed data is missing
+  - TOOL_GAP              # Optional tool is unavailable
+  - JUSTIFIED_EXCEPTION   # Required coverage cannot be automated or is outside scope
+
+# =============================================================================
+# Section 7: Anti-Shallow-Test Rules
+# =============================================================================
+
+patterns_that_do_not_count:
+  - only_checks_page_renders
+  - only_checks_status_code_200
+  - only_checks_snapshot_without_business_assertion
+  - only_mocks_core_logic_without_behavior_verification
+  - only_verifies_implementation_details_unrelated_to_behavior
+  - tests_duplicate_existing_tests_with_renamed_titles
+  - tests_happy_path_only
+  - no_negative_boundary_cases
+  - no_state_side_effect_verification
+
+what_counts_as_coverage:
+  - domain_state_change
+  - persisted_data
+  - emitted_event
+  - api_response_schema_and_semantics
+  - ui_state_visible_to_user
+  - error_handling_behavior
+  - invariant_preservation
+  - forbidden_transition_action_rejection
+
+# =============================================================================
+# Section 8: Self-Review Requirements
+# =============================================================================
+
+self_review_required_before_final_report: true
+
+self_review_checklist:
+  - Did every P0/P1 risk receive executable coverage or JUSTIFIED_EXCEPTION?
+  - Does every executable test have an oracle?
+  - Are negative and boundary cases present for critical behavior?
+  - Are workflow states and forbidden transitions covered?
+  - Are property/invariant tests present where data/state logic exists?
+  - Is API fuzzing planned or run when schema exists?
+  - Are E2E critical journeys covered?
+  - Are failures triaged, not merely listed?
+  - Are bug briefs actionable for a dev agent?
+  - Are shallow tests excluded from scoring?
+
+# =============================================================================
+# Section 9: Phase Trace Table Requirement
+# =============================================================================
+
+require_phase_trace_table: true
+
+phase_trace_table_format: |
+  | Input checked | Decision made | Output artifact | Open gap | Next action |
+
+# =============================================================================
+# Section 10: Medium-Model Decomposition Rule
+# =============================================================================
+
+medium_model_decomposition:
+  enabled: true
+  table_per_phase: true
+  purpose: Reduce drift and make skipped steps obvious
+  max_gap_unresolved: 3  # Warn if more than 3 gaps unresolved
+
+# =============================================================================
+# Deprecation Notice for v1.x configs
+# =============================================================================
+
+deprecated_versions:
+  - "1.0.0"
+  - "1.1.0"
+migration_guide: |
+  This file (v2.0.0) consolidates content from:
+  - STRICT_QA_RULES_FOR_MEDIUM_MODELS.md (now a reference summary)
+  - MODEL_BEHAVIOR_CONTRACT.md (now a reference summary)
+  Please update references in ORCHESTRATOR.md and agent files.
+
+# =============================================================================
+# Section 11: MiniMax M2.7 Specific Constraints (added v2.1.0)
+# =============================================================================
+
+minimax_m2_7_constraints:
+  # M2.7 cannot process images
+  no_visual_evidence: true
+  forbidden_evidence_types:
+    - screenshots
+    - image_captures
+    - browser_screenshots
+    - visual_inspection_output
+    - canvas_renders
+    - pdf_visual_diff
+  required_evidence_types:
+    - command_stdout_stderr
+    - log_snippets
+    - assertion_output
+    - dom_text_snapshot
+    - api_json_response
+    - test_runner_output
+    - coverage_report_text
+  visual_fallback_label: TOOL_GAP
+  visual_fallback_required: write exact command that would capture visual evidence and note why it cannot run
+
+  # M2.7 needs explicit step-by-step commands per stack
+  explicit_commands_required: true
+  command_templates:
+    typescript_node:
+      test: "npm test -- --coverage --reporters=text 2>&1"
+      lint: "npx eslint . --ext .ts,.tsx 2>&1 | head -100"
+      build: "npm run build 2>&1"
+      e2e: "npx playwright test --reporter=list 2>&1"
+      mutation: "npx stryker run 2>&1"
+    python:
+      test: "pytest -v --tb=short --cov=. --cov-report=term-missing 2>&1"
+      lint: "python -m flake8 . 2>&1 | head -100 || ruff check . 2>&1 | head -100"
+      type_check: "mypy . 2>&1 | head -100"
+      mutation: "mutmut run 2>&1 && mutmut results 2>&1"
+    golang:
+      test: "go test ./... -v -cover 2>&1"
+      lint: "go vet ./... 2>&1"
+      build: "go build ./... 2>&1"
+      race: "go test -race ./... 2>&1"
+    rust:
+      test: "cargo test 2>&1"
+      lint: "cargo clippy -- -D warnings 2>&1"
+      build: "cargo build 2>&1"
+    java_kotlin:
+      test: "./gradlew test 2>&1 || mvn test 2>&1"
+      build: "./gradlew build 2>&1 || mvn package 2>&1"
+    php:
+      test: "vendor/bin/phpunit --testdox 2>&1"
+      lint: "vendor/bin/phpstan analyse 2>&1 | head -100"
+    vue_react_angular:
+      test: "npm test -- --watchAll=false --coverage 2>&1"
+      e2e: "npx playwright test --reporter=list 2>&1 || npx cypress run 2>&1"
+
+  # M2.7 decision tree for each phase
+  phase_decision_tree:
+    phase_00:
+      - if: "scope is unclear"
+        then: "infer from git diff --name-only HEAD~1..HEAD and docs/** structure"
+      - if: "scope is clear"
+        then: "proceed to Phase 01"
+    phase_01:
+      - if: "docs/ directory exists"
+        then: "run: find docs -type f -name '*.md' -o -name '*.yaml' -o -name '*.json' | sort"
+      - if: "no docs/ directory"
+        then: "record DATA_GAP, read source files directly, write SPEC_AMBIGUITY for missing PRD"
+      - if: "file > 200 lines"
+        then: "read in 200-line chunks: head -200, sed -n '201,400p', etc."
+    phase_02:
+      - if: "PRD exists"
+        then: "extract P0/P1 risks from acceptance criteria and functional requirements"
+      - if: "no PRD"
+        then: "derive risks from source code, API routes, DB schema, and existing tests"
+    phase_06:
+      - if: "oracle exists for test"
+        then: "generate executable test using templates below"
+      - if: "no oracle"
+        then: "stop, go back to Phase 05, write oracle first"
+      - if: "stack not detected"
+        then: "run: ls package.json go.mod requirements.txt Cargo.toml pom.xml build.gradle"
+    phase_07:
+      - if: "test runner available"
+        then: "run the exact command from explicit_commands_required section above"
+      - if: "test runner NOT available"
+        then: "write TOOL_GAP, write exact command as fallback artifact"
+      - if: "test fails"
+        then: "capture full stderr, classify as PRODUCT_BUG or TEST_BUG, proceed to Phase 08"
+
+  # M2.7 code templates for Phase 06
+  automation_code_templates:
+    jest_typescript: |
+      import { describe, it, expect, beforeEach } from '@jest/globals';
+      // Replace with actual imports
+      describe('<FeatureName>', () => {
+        // Test: QA-EX-001 | Risk: RISK-001 | Oracle: ORACLE-001
+        it('should <expected behavior>', () => {
+          // Arrange
+          // Act
+          // Assert
+          expect(result).toBe(expected);
+        });
+        // Negative: QA-EX-002 | Risk: RISK-001 | Oracle: ORACLE-001
+        it('should reject when <invalid input>', () => {
+          expect(() => fn(invalidInput)).toThrow('<expected error message>');
+        });
+      });
+    pytest_python: |
+      import pytest
+      # Replace with actual imports
+      class TestFeatureName:
+          # QA-EX-001 | Risk: RISK-001 | Oracle: ORACLE-001
+          def test_happy_path(self):
+              # Arrange
+              # Act
+              # Assert
+              assert result == expected
+          # QA-EX-002 | Risk: RISK-001 | Oracle: ORACLE-001
+          def test_negative_invalid_input(self):
+              with pytest.raises(ValueError, match="<expected message>"):
+                  fn(invalid_input)
+    go_test: |
+      package featurename_test
+      import (
+          "testing"
+          // add actual imports
+      )
+      // QA-EX-001 | Risk: RISK-001 | Oracle: ORACLE-001
+      func TestFeatureName_HappyPath(t *testing.T) {
+          // Arrange
+          // Act
+          // Assert
+          if got != want {
+              t.Errorf("got %v want %v", got, want)
+          }
+      }
+      // QA-EX-002 | Risk: RISK-001 | Oracle: ORACLE-001
+      func TestFeatureName_NegativeInvalidInput(t *testing.T) {
+          _, err := Fn(invalidInput)
+          if err == nil {
+              t.Error("expected error but got nil")
+          }
+      }
+    playwright_e2e: |
+      import { test, expect } from '@playwright/test';
+      // QA-E2E-001 | Risk: RISK-001 | Oracle: ORACLE-001
+      test('<feature> - <scenario>', async ({ page }) => {
+        // Navigate
+        await page.goto('/path');
+        // Act
+        await page.getByRole('button', { name: 'Submit' }).click();
+        // Assert — text-based, no screenshots
+        await expect(page.getByText('Success message')).toBeVisible();
+        // Assert business state
+        const response = await page.waitForResponse('/api/endpoint');
+        expect(response.status()).toBe(200);
+      });
+
+  # Required output JSON schema for quality gate report
+  gate_report_json_schema:
+    path: "docs/qa/<scope>/10-quality-gate-report.json"
+    required_fields:
+      gate_result: "pass | conditional_pass | fail"
+      score: "integer 0-100"
+      critical_bugs: "array of bug objects"
+      p0_uncovered_risks: "array of risk IDs"
+      fix_brief_paths: "array of file paths"
+    bug_object_schema:
+      bug_id: "string e.g. QA-BUG-001"
+      title: "short description"
+      severity: "critical | high | medium | low"
+      signature: "short unique identifier for no-progress detection"
+      fix_brief_ref: "path to fix brief markdown file"

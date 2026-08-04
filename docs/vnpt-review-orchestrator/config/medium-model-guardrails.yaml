@@ -1,0 +1,77 @@
+model_family: minimax
+model_name: MiniMax-M2.7
+strict_mode: true
+required_phase_order:
+  - scope_and_mode
+  - docs_inventory
+  - context_map
+  - risk_map
+  - review_pass
+  - findings_aggregation
+  - fix_waves
+  - validation
+  - fresh_rereview
+  - confirmation_rereview
+disallow:
+  - phase_skipping
+  - silent_assumptions
+  - early_success_claims
+  - closure_without_evidence_after
+  - edits_outside_owned_scope
+  - trusting_pasted_trees
+  - trusting_handoff_prose_without_source_backing
+  - skipping_confirmation_pass
+allow_generic_placeholders_as_final: false
+
+# =============================================================================
+# Validator Policy (consumed by tools/validate_review_artifacts.py)
+# =============================================================================
+validator_policy:
+  strict_mode_default: false
+  placeholders:
+    - "\\bTODO\\b"
+    - "\\bTBD\\b"
+    - "\\bFIXME\\b"
+    - "\\bXXX\\b"
+    - "\\blorem\\s+ipsum\\b"
+    - "\\bplaceholder\\b"
+    - "\\bfill\\s+in\\b"
+    - "\\bto\\s+be\\s+done\\b"
+    - "\\bto\\s+do\\b"
+  severity_enum: [info, low, medium, high, critical]
+  category_enum:
+    - workflow/review
+    - workflow/fix
+    - code/style
+    - code/logic
+    - code/security
+    - code/performance
+    - config/build
+    - config/ci
+    - docs/missing
+    - test/coverage
+    - test/quality
+  state_enum_finding: [open, fixed, closed, waived, deferred]
+  state_enum_backlog: [open, in_progress, stalled, fixed, closed, waived, deferred]
+  status_enum_run: [in_progress, stalled, complete, failed]
+  mode_enum: [diff, full, path-arg, handoff, manual]
+  scope_source_enum: [workspace-diff, path-arg, review-handoff, manual, agent]
+  validated_command_prefixes:
+    - python
+    - pytest
+    - "go test"
+    - "go vet"
+    - "npm test"
+    - "npm run"
+    - npx
+    - yarn
+    - pnpm
+    - make
+    - bash
+    - sh
+    - "cargo test"
+    - mvn
+    - vendor/bin/phpunit
+    - dotnet
+    - playwright
+    - cypress

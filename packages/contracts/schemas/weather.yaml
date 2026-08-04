@@ -1,0 +1,158 @@
+# Weather schemas for the Vietnam Smart Golf Platform API
+
+WeatherSnapshot:
+  type: object
+  properties:
+    timestamp:
+      type: string
+      format: date-time
+      description: When the weather data was captured
+      example: "2026-08-01T10:30:00Z"
+    location:
+      $ref: './common.yaml#/Location'
+    temperature:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Temperature value
+          example: 32.5
+        unit:
+          type: string
+          enum: [C, F]
+          description: Temperature unit
+          example: C
+    humidity:
+      type: integer
+      minimum: 0
+      maximum: 100
+      description: Humidity percentage
+      example: 75
+    condition:
+      type: string
+      enum: [sunny, partly_cloudy, cloudy, overcast, light_rain, rain, heavy_rain, thunderstorm, fog, windy]
+      description: Weather condition
+      example: partly_cloudy
+    wind:
+      $ref: '#/WindData'
+    visibility:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Visibility distance in kilometers
+          example: 10.0
+        unit:
+          type: string
+          description: Unit of measurement
+          example: km
+    pressure:
+      type: object
+      properties:
+        value:
+          type: number
+          description: Pressure in hPa
+          example: 1013.25
+        unit:
+          type: string
+          description: Unit of measurement
+          example: hPa
+    uvIndex:
+      type: integer
+      minimum: 0
+      maximum: 11
+      description: UV index
+      example: 8
+    feelsLike:
+      type: number
+      description: Feels-like temperature
+      example: 36.0
+    precipitationProbability:
+      type: integer
+      minimum: 0
+      maximum: 100
+      description: Probability of precipitation
+      example: 20
+
+WindData:
+  type: object
+  properties:
+    speed:
+      type: number
+      description: Wind speed
+      example: 15.5
+    unit:
+      type: string
+      enum: [kmh, mph, ms, knots]
+      description: Speed unit
+      example: kmh
+    direction:
+      type: string
+      description: Wind direction as compass point
+      enum: [N, NE, E, SE, S, SW, W, NW]
+      example: SE
+    degrees:
+      type: integer
+      minimum: 0
+      maximum: 360
+      description: Wind direction in degrees
+      example: 135
+    gusts:
+      type: number
+      description: Wind gusts speed
+      example: 25.0
+
+WeatherForecast:
+  type: object
+  properties:
+    date:
+      type: string
+      format: date
+      description: Forecast date
+      example: "2026-08-02"
+    hourly:
+      type: array
+      items:
+        $ref: '#/WeatherSnapshot'
+      description: Hourly forecasts
+    summary:
+      type: string
+      description: Day summary
+      example: Partly cloudy with chance of afternoon rain
+
+WeatherAlert:
+  type: object
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Alert identifier
+    type:
+      type: string
+      enum: [storm, heavy_rain, high_wind, extreme_heat, lightning, Other]
+      description: Alert type
+    severity:
+      type: string
+      enum: [advisory, watch, warning, emergency]
+      description: Alert severity
+    headline:
+      type: string
+      description: Alert headline
+      example: "Heat Advisory in effect until 6:00 PM"
+    description:
+      type: string
+      description: Detailed description
+    effectiveFrom:
+      type: string
+      format: date-time
+      description: When the alert becomes effective
+    effectiveTo:
+      type: string
+      format: date-time
+      description: When the alert expires
+    affectedCourses:
+      type: array
+      items:
+        type: string
+        format: uuid
+      description: Course IDs potentially affected

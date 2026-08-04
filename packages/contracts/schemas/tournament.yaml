@@ -1,0 +1,511 @@
+# Tournament schemas for the Vietnam Smart Golf Platform API
+#
+# Per Story 12.1: Operate Tournament and Live Leaderboard
+# Supports: stroke play, match play, stableford formats
+# Features: registration/import, flights, tee times, starting tees,
+# score confirmation, tie-break, result publication, live leaderboard
+
+Tournament:
+  type: object
+  required:
+    - id
+    - name
+    - format
+    - status
+    - courseId
+    - startDate
+    - endDate
+    - createdAt
+    - createdBy
+  properties:
+    id:
+      type: string
+      format: uuid
+      description: Tournament unique identifier
+    name:
+      type: string
+      description: Tournament name
+      example: "Vietnam Open 2026"
+    format:
+      type: string
+      enum: [STROKE_PLAY, MATCH_PLAY, STABLEFORD]
+      description: Tournament format
+    status:
+      type: string
+      enum: [DRAFT, REGISTRATION_OPEN, IN_PROGRESS, COMPLETED, CANCELLED]
+      description: Tournament status
+    courseId:
+      type: integer
+      format: int64
+      description: Course identifier
+    startDate:
+      type: string
+      format: date-time
+      description: Tournament start date
+    endDate:
+      type: string
+      format: date-time
+      description: Tournament end date
+    tournamentPolicyId:
+      type: string
+      format: uuid
+      description: Associated tournament policy (owned by tournament)
+    registrationDeadline:
+      type: string
+      format: date-time
+      description: Player registration deadline
+    maxPlayers:
+      type: integer
+      description: Maximum number of players
+    description:
+      type: string
+      description: Tournament description
+    leaderboardVersion:
+      type: integer
+      format: int64
+      description: Incremented on each score update — mobile can detect stale data
+    createdAt:
+      type: string
+      format: date-time
+      description: Creation timestamp
+    createdBy:
+      type: integer
+      format: int64
+      description: Creator account ID
+    version:
+      type: integer
+      description: Optimistic lock version
+
+TournamentCreate:
+  type: object
+  required:
+    - name
+    - format
+    - courseId
+    - startDate
+    - endDate
+  properties:
+    name:
+      type: string
+      description: Tournament name
+    format:
+      type: string
+      enum: [STROKE_PLAY, MATCH_PLAY, STABLEFORD]
+    courseId:
+      type: integer
+      format: int64
+    startDate:
+      type: string
+      format: date-time
+    endDate:
+      type: string
+      format: date-time
+    tournamentPolicyId:
+      type: string
+      format: uuid
+    registrationDeadline:
+      type: string
+      format: date-time
+    maxPlayers:
+      type: integer
+    description:
+      type: string
+
+TournamentUpdate:
+  type: object
+  properties:
+    name:
+      type: string
+    format:
+      type: string
+      enum: [STROKE_PLAY, MATCH_PLAY, STABLEFORD]
+    startDate:
+      type: string
+      format: date-time
+    endDate:
+      type: string
+      format: date-time
+    tournamentPolicyId:
+      type: string
+      format: uuid
+    registrationDeadline:
+      type: string
+      format: date-time
+    maxPlayers:
+      type: integer
+    description:
+      type: string
+
+TournamentListResponse:
+  type: object
+  properties:
+    tournaments:
+      type: array
+      items:
+        $ref: '#/Tournament'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+# ─── Tournament Player ─────────────────────────────────────────────────────────
+
+TournamentPlayer:
+  type: object
+  required:
+    - id
+    - tournamentId
+    - playerId
+    - registrationTime
+    - status
+  properties:
+    id:
+      type: string
+      format: uuid
+    tournamentId:
+      type: string
+      format: uuid
+    playerId:
+      type: integer
+      format: int64
+      description: Golfer account ID
+    handicap:
+      type: number
+      format: double
+    flightId:
+      type: string
+      format: uuid
+    registrationTime:
+      type: string
+      format: date-time
+    status:
+      type: string
+      enum: [REGISTERED, CONFIRMED, WITHDRAWN, DISQUALIFIED]
+
+TournamentPlayerCreate:
+  type: object
+  required:
+    - playerId
+  properties:
+    playerId:
+      type: integer
+      format: int64
+    handicap:
+      type: number
+      format: double
+
+TournamentPlayerBulkImport:
+  type: object
+  required:
+    - players
+  properties:
+    players:
+      type: array
+      items:
+        $ref: '#/TournamentPlayerCreate'
+
+TournamentPlayerListResponse:
+  type: object
+  properties:
+    players:
+      type: array
+      items:
+        $ref: '#/TournamentPlayer'
+    pagination:
+      $ref: './common.yaml#/Pagination'
+
+# ─── Flight ───────────────────────────────────────────────────────────────────
+
+Flight:
+  type: object
+  required:
+    - id
+    - tournamentId
+    - flightNumber
+    - startingTee
+  properties:
+    id:
+      type: string
+      format: uuid
+    tournamentId:
+      type: string
+      format: uuid
+    flightNumber:
+      type: integer
+    playerIds:
+      type: array
+      items:
+        type: integer
+        format: int64
+      description: Player IDs in this flight
+    teeTimeId:
+      type: string
+      format: uuid
+    startingTee:
+      type: string
+      enum: [FRONT, BACK]
+    confirmedAt:
+      type: string
+      format: date-time
+    confirmedBy:
+      type: integer
+      format: int64
+
+FlightCreate:
+  type: object
+  required:
+    - flightNumber
+    - startingTee
+  properties:
+    flightNumber:
+      type: integer
+    startingTee:
+      type: string
+      enum: [FRONT, BACK]
+
+FlightUpdate:
+  type: object
+  properties:
+    playerIds:
+      type: array
+      items:
+        type: integer
+        format: int64
+      description: Player IDs to assign to this flight
+    teeTimeId:
+      type: string
+      format: uuid
+    startingTee:
+      type: string
+      enum: [FRONT, BACK]
+
+FlightListResponse:
+  type: object
+  properties:
+    flights:
+      type: array
+      items:
+        $ref: '#/Flight'
+
+# ─── Tee Time ─────────────────────────────────────────────────────────────────
+
+TeeTime:
+  type: object
+  required:
+    - id
+    - tournamentId
+    - teeTime
+    - courseId
+  properties:
+    id:
+      type: string
+      format: uuid
+    tournamentId:
+      type: string
+      format: uuid
+    teeTime:
+      type: string
+      format: date-time
+    courseId:
+      type: integer
+      format: int64
+    startingTeeBoxId:
+      type: integer
+      format: int64
+    flightId:
+      type: string
+      format: uuid
+
+TeeTimeCreate:
+  type: object
+  required:
+    - teeTime
+    - courseId
+  properties:
+    teeTime:
+      type: string
+      format: date-time
+    courseId:
+      type: integer
+      format: int64
+    startingTeeBoxId:
+      type: integer
+      format: int64
+
+TeeTimeUpdate:
+  type: object
+  properties:
+    flightId:
+      type: string
+      format: uuid
+      description: Assign flight to this tee time slot
+    startingTeeBoxId:
+      type: integer
+      format: int64
+
+TeeTimeListResponse:
+  type: object
+  properties:
+    teeTimes:
+      type: array
+      items:
+        $ref: '#/TeeTime'
+
+# ─── Tie-Break Rules ──────────────────────────────────────────────────────────
+
+TieBreakRule:
+  type: object
+  required:
+    - id
+    - tournamentId
+    - order
+    - ruleType
+  properties:
+    id:
+      type: string
+      format: uuid
+    tournamentId:
+      type: string
+      format: uuid
+    order:
+      type: integer
+      description: Order of application (1 = first)
+    ruleType:
+      type: string
+      enum: [SCORECARD_PLAYOFF, EXACT_HANDICAP, LOWEST_ROUND, MOST_BIRDIES, DRAW]
+
+TieBreakRuleCreate:
+  type: object
+  required:
+    - order
+    - ruleType
+  properties:
+    order:
+      type: integer
+    ruleType:
+      type: string
+      enum: [SCORECARD_PLAYOFF, EXACT_HANDICAP, LOWEST_ROUND, MOST_BIRDIES, DRAW]
+
+# ─── Leaderboard ──────────────────────────────────────────────────────────────
+
+LeaderboardEntry:
+  type: object
+  required:
+    - rank
+    - playerId
+    - playerName
+    - score
+  properties:
+    rank:
+      type: integer
+    playerId:
+      type: integer
+      format: int64
+    playerName:
+      type: string
+    score:
+      type: integer
+      description: Total strokes (or points for stableford)
+    scoreToPar:
+      type: integer
+      description: Score relative to par
+    thru:
+      type: integer
+      description: Holes completed
+    status:
+      type: string
+      enum: [in_progress, completed, withdrawn, disqualified]
+    flightId:
+      type: string
+      format: uuid
+    isTied:
+      type: boolean
+
+LeaderboardResponse:
+  type: object
+  required:
+    - tournamentId
+    - version
+    - entries
+  properties:
+    tournamentId:
+      type: string
+      format: uuid
+    version:
+      type: integer
+      format: int64
+      description: Leaderboard version for staleness detection
+    updatedAt:
+      type: string
+      format: date-time
+    entries:
+      type: array
+      items:
+        $ref: '#/LeaderboardEntry'
+
+# ─── Tournament Results ───────────────────────────────────────────────────────
+
+TournamentResult:
+  type: object
+  required:
+    - id
+    - tournamentId
+    - playerId
+    - rank
+    - score
+  properties:
+    id:
+      type: string
+      format: uuid
+    tournamentId:
+      type: string
+      format: uuid
+    playerId:
+      type: integer
+      format: int64
+    rank:
+      type: integer
+    score:
+      type: integer
+    scoreToPar:
+      type: integer
+    prize:
+      type: number
+      format: double
+    tieBreakApplied:
+      type: boolean
+    publishedAt:
+      type: string
+      format: date-time
+
+TournamentResultListResponse:
+  type: object
+  properties:
+    results:
+      type: array
+      items:
+        $ref: '#/TournamentResult'
+
+# ─── Error Responses ──────────────────────────────────────────────────────────
+
+TournamentError:
+  type: object
+  required:
+    - code
+    - message
+  properties:
+    code:
+      type: string
+      enum:
+        - TOURNAMENT_001  # Tournament not found
+        - TOURNAMENT_002  # Tournament not modifiable (in progress/completed)
+        - TOURNAMENT_003  # Registration deadline passed
+        - TOURNAMENT_004  # Max players reached
+        - TOURNAMENT_005  # Flight not found
+        - TOURNAMENT_006  # Tee time conflict
+        - TOURNAMENT_007  # All flights must be confirmed before completing
+        - TOURNAMENT_008  # Player not registered
+        - PLAYER_001      # Player already registered
+        - FLIGHT_001      # Invalid flight size (must be 2-4)
+    message:
+      type: string
+    field:
+      type: string

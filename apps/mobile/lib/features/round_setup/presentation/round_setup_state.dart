@@ -1,0 +1,342 @@
+// Round Setup State — VSP Mobile App
+//
+// State classes for RoundSetupBloc covering all selection states,
+// package status, validation errors, and round start result.
+//
+// Story 5.1 — Slice C: Round Setup BLoC
+
+import 'package:equatable/equatable.dart';
+
+import '../../../domain/models/round_format.dart';
+import '../../../domain/models/round_mode.dart';
+import '../../../domain/models/player.dart';
+import 'round_setup_event.dart';
+
+/// Package readiness status.
+enum PackageStatus {
+  /// Not yet checked.
+  notChecked,
+
+  /// Package is ready for offline play.
+  valid,
+
+  /// Package is invalid (checksum mismatch).
+  invalid,
+
+  /// Package has expired.
+  expired,
+
+  /// Package not downloaded for this course.
+  notDownloaded,
+}
+
+/// Package readiness result with reason.
+class PackageReadiness {
+  final PackageStatus status;
+  final String? reason;
+  final String? manifestVersion;
+  final DateTime? expiresAt;
+
+  const PackageReadiness({
+    required this.status,
+    this.reason,
+    this.manifestVersion,
+    this.expiresAt,
+  });
+
+  bool get isReady => status == PackageStatus.valid;
+}
+
+/// Base state for round setup.
+class RoundSetupState extends Equatable {
+  const RoundSetupState();
+
+  @override
+  List<Object?> get props => [];
+}
+
+// ─── Initial State ────────────────────────────────────────────────────────────
+
+/// Initial state — loading primary player and active bag.
+class RoundSetupInitial extends RoundSetupState {
+  const RoundSetupInitial();
+}
+
+// ─── Loading State ─────────────────────────────────────────────────────────────
+
+/// Loading data (initial load or course lookup).
+class RoundSetupLoading extends RoundSetupState {
+  const RoundSetupLoading();
+}
+
+// ─── Ready State (main working state) ────────────────────────────────────────
+
+/// Main working state with all selections.
+class RoundSetupReady extends RoundSetupState {
+  // Course
+  final int? courseId;
+  final String? courseName;
+  final String? packageId;
+
+  // Course layouts (populated after course selected)
+  final List<LayoutOption> layouts;
+  final int? selectedLayoutId;
+
+  // Tee sets (populated after course selected)
+  final List<TeeOption> tees;
+  final int? selectedTeeId;
+
+  // Players
+  final List<Player> players; // 1-4 players
+  final Player? primaryPlayer; // self from profile
+
+  // Format / Mode
+  final RoundFormat format;
+  final RoundMode mode;
+
+  // Bag
+  final int? selectedBagId;
+  final BagOption? activeBag;
+
+  // Start hole
+  final int startHole;
+  final String? holes; // 'front9' or 'back9'
+
+  // Package status
+  final PackageReadiness? packageReadiness;
+  final bool warningAcknowledged;
+
+  // Tournament policy
+  final String? tournamentPolicyId;
+
+  // Nearby suggestions
+  final List<NearbyCourseSuggestion> nearbyCourses;
+  final List<RecentCourseSuggestion> recentCourses;
+
+  // Validation
+  final List<String> validationErrors;
+
+  // Submitting
+  final bool isSubmitting;
+
+  const RoundSetupReady({
+    this.courseId,
+    this.courseName,
+    this.packageId,
+    this.layouts = const [],
+    this.selectedLayoutId,
+    this.tees = const [],
+    this.selectedTeeId,
+    this.players = const [],
+    this.primaryPlayer,
+    this.format = RoundFormat.casual,
+    this.mode = RoundMode.strokePlay,
+    this.selectedBagId,
+    this.activeBag,
+    this.startHole = 1,
+    this.holes,
+    this.packageReadiness,
+    this.warningAcknowledged = false,
+    this.tournamentPolicyId,
+    this.nearbyCourses = const [],
+    this.recentCourses = const [],
+    this.validationErrors = const [],
+    this.isSubmitting = false,
+  });
+
+  /// True if a course is selected.
+  bool get hasCourse => courseId != null && courseName != null;
+
+  /// True if a valid package is ready (or warning was acknowledged).
+  bool get canStartRound =>
+      hasCourse &&
+      players.isNotEmpty &&
+      players.length <= 4 &&
+      (packageReadiness?.isReady == true || warningAcknowledged);
+
+  /// True if Start Round CTA should be enabled.
+  bool get isStartEnabled =>
+      canStartRound && validationErrors.isEmpty && !isSubmitting;
+
+  /// Suggested start hole based on time of day.
+  /// Hole 1 if before noon, hole 10 if noon or after.
+  static int suggestedStartHole() {
+    final hour = DateTime.now().hour;
+    return hour < 12 ? 1 : 10;
+  }
+
+  RoundSetupReady copyWith({
+    int? courseId,
+    String? courseName,
+    String? packageId,
+    List<LayoutOption>? layouts,
+    int? selectedLayoutId,
+    List<TeeOption>? tees,
+    int? selectedTeeId,
+    List<Player>? players,
+    Player? primaryPlayer,
+    RoundFormat? format,
+    RoundMode? mode,
+    int? selectedBagId,
+    BagOption? activeBag,
+    int? startHole,
+    String? holes,
+    PackageReadiness? packageReadiness,
+    bool? warningAcknowledged,
+    String? tournamentPolicyId,
+    List<NearbyCourseSuggestion>? nearbyCourses,
+    List<RecentCourseSuggestion>? recentCourses,
+    List<String>? validationErrors,
+    bool? isSubmitting,
+  }) {
+    return RoundSetupReady(
+      courseId: courseId ?? this.courseId,
+      courseName: courseName ?? this.courseName,
+      packageId: packageId ?? this.packageId,
+      layouts: layouts ?? this.layouts,
+      selectedLayoutId: selectedLayoutId ?? this.selectedLayoutId,
+      tees: tees ?? this.tees,
+      selectedTeeId: selectedTeeId ?? this.selectedTeeId,
+      players: players ?? this.players,
+      primaryPlayer: primaryPlayer ?? this.primaryPlayer,
+      format: format ?? this.format,
+      mode: mode ?? this.mode,
+      selectedBagId: selectedBagId ?? this.selectedBagId,
+      activeBag: activeBag ?? this.activeBag,
+      startHole: startHole ?? this.startHole,
+      holes: holes ?? this.holes,
+      packageReadiness: packageReadiness ?? this.packageReadiness,
+      warningAcknowledged: warningAcknowledged ?? this.warningAcknowledged,
+      tournamentPolicyId: tournamentPolicyId ?? this.tournamentPolicyId,
+      nearbyCourses: nearbyCourses ?? this.nearbyCourses,
+      recentCourses: recentCourses ?? this.recentCourses,
+      validationErrors: validationErrors ?? this.validationErrors,
+      isSubmitting: isSubmitting ?? this.isSubmitting,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    courseId,
+    courseName,
+    packageId,
+    layouts,
+    selectedLayoutId,
+    tees,
+    selectedTeeId,
+    players,
+    primaryPlayer,
+    format,
+    mode,
+    selectedBagId,
+    activeBag,
+    startHole,
+    holes,
+    packageReadiness,
+    warningAcknowledged,
+    tournamentPolicyId,
+    nearbyCourses,
+    recentCourses,
+    validationErrors,
+    isSubmitting,
+  ];
+}
+
+/// Layout option from course manifest.
+class LayoutOption extends Equatable {
+  final int id;
+  final String name;
+  final int holeCount;
+
+  const LayoutOption({
+    required this.id,
+    required this.name,
+    required this.holeCount,
+  });
+
+  @override
+  List<Object?> get props => [id, name, holeCount];
+}
+
+/// Tee option from course manifest.
+class TeeOption extends Equatable {
+  final int id;
+  final String name;
+  final String? gender;
+  final double? courseRating;
+  final double? slopeRating;
+
+  const TeeOption({
+    required this.id,
+    required this.name,
+    this.gender,
+    this.courseRating,
+    this.slopeRating,
+  });
+
+  @override
+  List<Object?> get props => [id, name, gender, courseRating, slopeRating];
+}
+
+/// Bag option for selection.
+class BagOption extends Equatable {
+  final int id;
+  final String name;
+  final bool isActive;
+
+  const BagOption({
+    required this.id,
+    required this.name,
+    required this.isActive,
+  });
+
+  @override
+  List<Object?> get props => [id, name, isActive];
+}
+
+// ─── Round Start Result States ────────────────────────────────────────────────
+
+/// Round created and guard recorded — navigate to active round.
+class RoundSetupRoundStarted extends RoundSetupState {
+  final int roundId;
+  final int courseId;
+  final String courseName;
+
+  const RoundSetupRoundStarted({
+    required this.roundId,
+    required this.courseId,
+    required this.courseName,
+  });
+
+  @override
+  List<Object?> get props => [roundId, courseId, courseName];
+}
+
+/// Round saved locally (offline) — navigate to active round with sync badge.
+class RoundSetupLocalRoundSaved extends RoundSetupState {
+  final int courseId;
+  final String courseName;
+  final String localRoundId;
+
+  const RoundSetupLocalRoundSaved({
+    required this.courseId,
+    required this.courseName,
+    required this.localRoundId,
+  });
+
+  @override
+  List<Object?> get props => [courseId, courseName, localRoundId];
+}
+
+// ─── Error State ─────────────────────────────────────────────────────────────
+
+/// Error state.
+class RoundSetupError extends RoundSetupState {
+  final String message;
+  final RoundSetupReady? lastState;
+
+  const RoundSetupError({required this.message, this.lastState});
+
+  @override
+  List<Object?> get props => [message, lastState];
+}

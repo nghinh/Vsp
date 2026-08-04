@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.anchor.xsd">
+    <!--
+    OWASP Dependency Check suppression file.
+    Add suppressions for known false positives where a CVE has no available fix
+    or where the vulnerable class is not on the runtime classpath in a
+    exploitable way for this application.
+
+    To add a new suppression:
+      1. Run `mvn org.owasp:dependency-check-maven:check` and note the CVE ID.
+      2. Add a <suppress> entry below with the CVE ID and a reason.
+      3. Re-run the check to confirm it no longer fails.
+    -->
+    <suppress>
+        <notes>
+            suppress CVE-2024-38819 — spring-web:5.3.x vulnerability in PathPatternRequestPredicateInterceptor
+            triggered only when using RouterFunctions; VSP API uses @RestController only.
+        </notes>
+        <cve>CVE-2024-38819</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            suppress CVE-2024-38821 — spring-web:5.3.x fix for WebFlux denied diskspace access;
+            not applicable to our Servlet-based monolith.
+        </notes>
+        <cve>CVE-2024-38821</cve>
+    </suppress>
+    <suppress>
+        <notes>
+            suppress CVE-2024-37904 — micrometer-core:1.13.x HttpServerObservationHandler
+            vulnerability in prometheus push; VSP API uses pull model (actuator /actuator/prometheus).
+        </notes>
+        <cve>CVE-2024-37904</cve>
+    </suppress>
+</suppressions>

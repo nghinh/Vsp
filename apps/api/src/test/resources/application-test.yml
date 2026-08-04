@@ -1,0 +1,50 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: vsp-api-test
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  flyway:
+    enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  jdbc:
+    h2:
+      console:
+        enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    db:
+      enabled: true
+    # Redis is not provisioned in the test profile (tests run against H2 only),
+    # so exclude its health indicator from the aggregate status.
+    redis:
+      enabled: false
+
+security:
+  jwt:
+    secret: test-secret-key-for-unit-testing-must-be-at-least-256-bits-long
+    access-token-expiration-ms: 3600000
+    refresh-token-expiration-ms: 604800000

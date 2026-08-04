@@ -1,0 +1,77 @@
+# Membership schemas for the Vietnam Smart Golf Platform API
+
+Membership:
+  type: object
+  properties:
+    membershipId:
+      type: string
+      description: Membership unique identifier
+    userId:
+      type: string
+      format: uuid
+      description: Member user identifier
+    planId:
+      type: string
+      description: Membership plan identifier
+    courseId:
+      type: string
+      format: uuid
+      description: Course this membership applies to (null for global)
+    status:
+      type: string
+      enum: [active, suspended, cancelled, expired]
+      description: Membership status
+      example: active
+    effectiveDate:
+      type: string
+      format: date-time
+      description: When membership became active
+    expiryDate:
+      type: string
+      format: date-time
+      description: When membership expires
+    entitlements:
+      type: array
+      items:
+        type: string
+      description: List of entitlement identifiers
+
+MembershipPlan:
+  type: object
+  properties:
+    planId:
+      type: string
+      description: Plan unique identifier
+    name:
+      type: string
+      description: Plan display name
+      example: Premium Golf Club
+    tier:
+      type: string
+      description: Tier level
+      example: gold
+    entitlements:
+      type: array
+      items:
+        type: string
+      description: List of entitlement identifiers
+    bookingDiscountPercent:
+      type: number
+      description: Discount percentage for bookings
+      example: 15.0
+
+MembershipListResponse:
+  type: object
+  properties:
+    memberships:
+      type: array
+      items:
+        $ref: '#/Membership'
+
+MembershipPlanListResponse:
+  type: object
+  properties:
+    plans:
+      type: array
+      items:
+        $ref: '#/MembershipPlan'

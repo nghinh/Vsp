@@ -1,0 +1,73 @@
+# Design Tokens — Spacing
+# Source: UX Spec §4.5 — Vietnam Smart Golf Platform
+# Platform-agnostic spacing tokens in 4/8dp rhythm.
+# All values in dp (device-independent pixels / points).
+
+spacing:
+  # ─── Base Unit ─────────────────────────────────────────────────────────────
+  # 4dp base unit — all spacing values are multiples of 4.
+
+  unit:  4    # dp per base unit
+  quad:  8    # dp — 2× base unit, primary rhythm
+  half:   0.5 # multiplier reference (2dp — minimum micro gap)
+
+  # ─── Scale ─────────────────────────────────────────────────────────────────
+
+  scale:
+    # Micro gaps
+    "0":         0
+    "0.5":       2    # half-unit — tight internal padding
+    "1":         4    # 1 unit
+    "1.5":       6    # 1.5 units — between icon and label
+    "2":         8    # 2 units — quad, primary rhythm
+
+    # Standard gaps
+    "3":         12   # 3 units
+    "4":         16   # 4 units — mobile page gutter minimum (UX spec §4.5)
+    "5":         20   # 5 units
+    "6":         24   # 6 units
+    "8":         32   # 8 units — large section gap
+    "10":        40   # 10 units
+    "12":        48   # 12 units — max comfortable touch separation
+    "16":        64   # 16 units — generous section padding
+    "20":        80   # 20 units — page-level padding on tablet
+    "24":        96   # 24 units
+    "32":        128  # 32 units — max spacing
+
+  # ─── Semantic Aliases ─────────────────────────────────────────────────────
+
+  semantic:
+    # Touch targets (minimum 44×44pt iOS / 48×48dp Android — UX spec §4.4 & §10)
+    touchTargetMin:          44   # iOS minimum
+    touchTargetMinAndroid:   48   # Android minimum
+    touchTargetRecommended:  48   # Recommended for primary actions
+
+    # Gutters
+    gutterMobile:             16   # UX spec §4.5 — mobile page gutters minimum
+    gutterTablet:            24
+    gutterDesktop:           32
+
+    # Safe area (mobile)
+    safeAreaTop:             44   # Respects status bar
+    safeAreaBottom:          34   # Respects home indicator
+    safeAreaHorizontal:      16
+
+    # Component internal padding
+    paddingIconLabel:         6    # Gap between icon and text in buttons
+    paddingCard:              16   # Card content padding
+    paddingCardDense:        12   # Dense card padding (portal)
+    paddingInput:             12   # Input field horizontal padding
+    paddingButton:            16   # Button horizontal padding
+
+    # Stack gaps
+    gapStack:                 8    # Vertical stack between list items
+    gapStackDense:           4    # Dense list (portal tables)
+    gapSection:              24   # Section separator
+
+    # Navigation
+    bottomNavHeight:         64   # Mobile bottom nav height
+    bottomNavSafeArea:       34    # Extra for safe area
+    portalSidebarWidth:      240  # Portal persistent sidebar
+
+    # Focus ring
+    focusRingOutset:         2    # Outset from component edge

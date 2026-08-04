@@ -1,0 +1,98 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: vsp-api
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vhgp}
+    username: ${POSTGRES_USER:vhgp}
+    password: ${POSTGRES_PASSWORD:vhgp}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 10
+      minimum-idle: 2
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+    db:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        api.latency: true
+      percentiles:
+        http.server.requests: 0.5,0.90,0.95,0.99
+  tracing:
+    sampling:
+      probability: 1.0
+
+audit:
+  retention-days: 2555  # 7-year compliance per NFR10
+
+security:
+  jwt:
+    secret: ${JWT_SECRET:}  # Must be set in environment; min 256 bits (32 bytes) for HS256
+    access-token-expiration-ms: 3600000    # 1 hour
+    refresh-token-expiration-ms: 604800000 # 7 days
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
+# Data quality stale record cache TTL (5 minutes per Story 9.4 Slice Plan)
+cache:
+  stale-records:
+    ttl-minutes: 5
+
+# Weather module configuration
+weather:
+  provider: ${WEATHER_PROVIDER:mock}  # mock | openweathermap | tomorrow_io
+  cache:
+    ttl-minutes: 30
+  openweathermap:
+    api-key: ${OPENWEATHERMAP_API_KEY:}
+    base-url: https://api.openweathermap.org/data/2.5
+  tomorrow-io:
+    api-key: ${TOMORROW_IO_API_KEY:}
+    base-url: https://api.tomorrow.io/v4
+
+# Resilience4j circuit breaker configuration for weather provider
+resilience4j:
+  circuitbreaker:
+    instances:
+      weather-provider:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        event-consumer-buffer-size: 10

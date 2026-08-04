@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>29 — Nhập dữ liệu sân | Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .map-grid {
+            background-image: radial-gradient(circle, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        .stepper-line {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .stepper-line-active {
+            background: #f66018;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#ffdbce",
+                        "on-secondary": "#552100",
+                        "surface-container-high": "#222a3d",
+                        "on-primary-fixed": "#370e00",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "error": "#ffb4ab",
+                        "on-surface-variant": "#e2bfb2",
+                        "inverse-surface": "#dae2fd",
+                        "background": "#0b1326",
+                        "on-error": "#690005",
+                        "surface-bright": "#31394d",
+                        "on-background": "#dae2fd",
+                        "on-tertiary-fixed": "#002114",
+                        "tertiary-fixed": "#85f8c4",
+                        "tertiary-container": "#25a475",
+                        "on-tertiary": "#003825",
+                        "surface": "#0b1326",
+                        "secondary-container": "#ec6a06",
+                        "surface-dim": "#0b1326",
+                        "on-tertiary-container": "#00311f",
+                        "tertiary": "#68dba9",
+                        "on-surface": "#dae2fd",
+                        "secondary-fixed": "#ffdbca",
+                        "inverse-on-surface": "#283044",
+                        "primary": "#ffb599",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-container-low": "#131b2e",
+                        "secondary-fixed-dim": "#ffb690",
+                        "on-secondary-fixed-variant": "#783200",
+                        "on-secondary-fixed": "#341100",
+                        "surface-container-lowest": "#060e20",
+                        "primary-fixed-dim": "#ffb599",
+                        "inverse-primary": "#a73a00",
+                        "on-primary": "#5a1c00",
+                        "on-secondary-container": "#4a1c00",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "surface-tint": "#ffb599",
+                        "primary-container": "#f66018",
+                        "on-primary-container": "#4f1700",
+                        "error-container": "#93000a",
+                        "outline": "#a98a7e",
+                        "surface-container": "#171f33",
+                        "outline-variant": "#5a4138",
+                        "surface-container-highest": "#2d3449",
+                        "surface-variant": "#2d3449",
+                        "secondary": "#ffb690",
+                        "on-error-container": "#ffdad6"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "gutter": "16px",
+                        "margin-mobile": "16px",
+                        "unit": "8px",
+                        "touch-target": "44px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "headline-lg": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "headline-md": ["Fira Sans"],
+                        "body-md": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- Navigation Drawer (Shared Anchor) -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col h-full w-[280px] bg-surface-container-high shadow-lg">
+<div class="p-6 flex flex-col gap-6 h-full">
+<div class="flex flex-col gap-2">
+<span class="font-headline-lg text-headline-lg text-primary">Smart Golf</span>
+<div class="flex items-center gap-3 p-3 rounded-xl bg-surface-container">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">NV</div>
+<div class="flex flex-col">
+<span class="font-body-md text-on-surface font-semibold">Nguyễn Văn A</span>
+<span class="text-xs text-on-surface-variant">Course Admin</span>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1 overflow-y-auto scrollbar-hide">
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md">Lịch sử vòng chơi</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-body-md">Quản lý sân</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md">Hỗ trợ</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-[280px] flex-1 flex flex-col h-screen overflow-hidden">
+<!-- Top App Bar -->
+<header class="flex items-center justify-between px-8 h-touch-target w-full bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">arrow_back</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">BRG Legend Hill</h1>
+<div class="px-2 py-0.5 bg-surface-variant rounded-full flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Live System</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="text-right">
+<div class="text-xs font-bold text-on-surface uppercase opacity-60">Role</div>
+<div class="text-sm font-semibold text-primary">Course Admin</div>
+</div>
+<span class="material-symbols-outlined text-on-surface cursor-pointer p-2 hover:bg-surface-variant rounded-full transition-colors">account_circle</span>
+</div>
+</header>
+<!-- Page Header & Stepper -->
+<section class="bg-surface-container-low px-8 pt-6 pb-4 shadow-md z-10">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="font-headline-md text-on-surface">Nhập dữ liệu sân</h2>
+<p class="text-on-surface-variant text-sm">Cập nhật tọa độ GPS và thuộc tính không gian của sân golf</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-lg">info</span>
+<span class="text-sm text-tertiary italic">Mẹo: Nhấn vào lỗi để xác định vị trí trên bản đồ</span>
+</div>
+</div>
+<!-- Stepper -->
+<div class="flex items-center w-full max-w-4xl mx-auto mb-4">
+<div class="flex flex-1 items-center">
+<div class="w-8 h-8 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center font-bold">1</div>
+<div class="ml-3 font-semibold text-sm text-on-surface">Upload</div>
+<div class="flex-1 mx-4 stepper-line stepper-line-active"></div>
+</div>
+<div class="flex flex-1 items-center">
+<div class="w-8 h-8 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center font-bold">2</div>
+<div class="ml-3 font-semibold text-sm text-on-surface">Map fields</div>
+<div class="flex-1 mx-4 stepper-line stepper-line-active"></div>
+</div>
+<div class="flex flex-1 items-center relative">
+<div class="w-10 h-10 rounded-full border-4 border-primary bg-primary-container text-on-primary-container flex items-center justify-center font-bold animate-pulse">3</div>
+<div class="ml-3 font-bold text-sm text-primary">Validate</div>
+<div class="flex-1 mx-4 stepper-line"></div>
+</div>
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-bold">4</div>
+<div class="ml-3 font-semibold text-sm text-on-surface-variant opacity-50">Review</div>
+</div>
+</div>
+</section>
+<!-- Content Canvas -->
+<section class="flex-1 flex overflow-hidden">
+<!-- Left Panel: Forms & Settings -->
+<aside class="w-1/3 border-r border-[rgba(255,255,255,0.08)] flex flex-col bg-surface overflow-y-auto scrollbar-hide">
+<div class="p-6 space-y-8">
+<!-- File Upload -->
+<div>
+<h3 class="font-label-caps text-label-caps text-on-surface-variant mb-3 uppercase">Tệp dữ liệu</h3>
+<div class="border-2 border-dashed border-primary-container bg-surface-container rounded-xl p-4 flex items-center gap-4">
+<div class="w-12 h-12 bg-primary-container/20 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-3xl">data_object</span>
+</div>
+<div class="flex-1">
+<p class="text-on-surface font-semibold truncate">legend_hill_geometry.geojson</p>
+<p class="text-xs text-on-surface-variant">2.4 MB • GeoJSON Format</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-error">close</span>
+</div>
+</div>
+<!-- Metadata -->
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-2">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block uppercase">Nguồn dữ liệu</label>
+<select class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-2 text-on-surface focus:ring-2 focus:ring-primary outline-none appearance-none">
+<option>Drone Survey (RTK)</option>
+<option>Satellite Imagery</option>
+<option>Manual Drawing</option>
+</select>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block uppercase">Giấy phép</label>
+<select class="w-full bg-surface-container border border-outline-variant rounded-lg px-4 py-2 text-on-surface focus:ring-2 focus:ring-primary outline-none">
+<option>Chính thức</option>
+<option>Cộng đồng</option>
+</select>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-2 block uppercase">Hệ tọa độ</label>
+<div class="w-full bg-surface-container-highest border border-outline-variant rounded-lg px-4 py-2 text-primary font-display-metrics text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">gps_fixed</span>
+                                WGS84 / SRID 4326
+                            </div>
+</div>
+</div>
+<!-- Layer Mapping -->
+<div>
+<div class="flex items-center justify-between mb-3">
+<h3 class="font-label-caps text-label-caps text-on-surface-variant uppercase">Layer Mapping</h3>
+<button class="text-xs text-primary font-bold hover:underline">Auto-detect</button>
+</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2 p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex-1 font-display-metrics text-xs text-on-surface-variant italic">type</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant">arrow_forward</span>
+<div class="flex-1 font-semibold text-sm text-tertiary">Fairway</div>
+</div>
+<div class="flex items-center gap-2 p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex-1 font-display-metrics text-xs text-on-surface-variant italic">id</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant">arrow_forward</span>
+<div class="flex-1 font-semibold text-sm text-tertiary">Hole ID</div>
+</div>
+<div class="flex items-center gap-2 p-3 bg-surface-container-low rounded-lg border border-outline-variant">
+<div class="flex-1 font-display-metrics text-xs text-on-surface-variant italic">elev</div>
+<span class="material-symbols-outlined text-xs text-on-surface-variant">arrow_forward</span>
+<div class="flex-1 font-semibold text-sm text-tertiary">Elevation</div>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Right Panel: Map & Validation -->
+<section class="flex-1 flex flex-col relative bg-surface-container-lowest">
+<!-- Map Preview Area -->
+<div class="flex-1 relative overflow-hidden group">
+<div class="absolute inset-0 map-grid"></div>
+<!-- Simulated Map Content -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="relative w-[500px] h-[500px]">
+<!-- Mock Polygon Vector Shapes -->
+<svg class="w-full h-full drop-shadow-2xl" viewbox="0 0 100 100">
+<!-- Fairway -->
+<path d="M20,50 Q30,20 50,20 T80,50 Q70,80 50,80 T20,50" fill="rgba(104, 219, 169, 0.15)" stroke="#68dba9" stroke-width="0.5"></path>
+<!-- Green -->
+<circle cx="75" cy="50" fill="rgba(37, 164, 117, 0.3)" r="8" stroke="#25a475" stroke-width="0.5"></circle>
+<!-- Bunker -->
+<path d="M45,45 Q50,40 55,45 T45,45" fill="rgba(255, 219, 206, 0.3)" stroke="#ffdbce" stroke-width="0.5"></path>
+<!-- Self Intersecting Error (Active) -->
+<path class="animate-pulse" d="M30,30 L50,50 L30,50 L50,30 Z" fill="rgba(147, 0, 10, 0.4)" id="error-polygon" stroke="#ffb4ab" stroke-width="1" style="cursor: pointer;"></path>
+</svg>
+</div>
+</div>
+<!-- Map Controls -->
+<div class="absolute right-4 top-4 flex flex-col gap-2">
+<button class="w-12 h-12 bg-surface-container-high text-on-surface rounded-full shadow-lg flex items-center justify-center hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-high text-on-surface rounded-full shadow-lg flex items-center justify-center hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined">zoom_out</span>
+</button>
+<button class="w-12 h-12 bg-surface-container-high text-on-surface rounded-full shadow-lg flex items-center justify-center hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined">layers</span>
+</button>
+</div>
+<!-- Floating Map Labels -->
+<div class="absolute bottom-6 left-6 flex items-center gap-4">
+<div class="bg-surface-container-high/80 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-xs text-primary">mouse</span>
+<span class="text-xs font-display-metrics">21.1524, 105.8239</span>
+</div>
+<div class="bg-surface-container-high/80 backdrop-blur px-3 py-1.5 rounded-lg border border-outline-variant flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="text-xs font-semibold">Scale: 1:500</span>
+</div>
+</div>
+</div>
+<!-- Validation Results Panel (Draggable/Sticky at bottom) -->
+<div class="h-1/3 bg-surface-container border-t border-[rgba(255,255,255,0.08)] flex flex-col shadow-2xl">
+<div class="px-6 py-3 border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center gap-3">
+<h3 class="font-bold text-on-surface">Kết quả kiểm tra (9)</h3>
+<div class="flex items-center gap-2">
+<span class="bg-error-container text-on-error-container text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">8 Lỗi</span>
+<span class="bg-secondary-container/20 text-secondary-fixed text-[10px] px-2 py-0.5 rounded-full font-bold uppercase border border-secondary-fixed/30">1 Cảnh báo</span>
+</div>
+</div>
+<button class="text-xs text-primary font-bold flex items-center gap-1 hover:bg-primary/10 p-2 rounded">
+<span class="material-symbols-outlined text-sm">refresh</span>
+                            Re-validate
+                        </button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 grid grid-cols-2 gap-4 scrollbar-hide">
+<!-- Error Cards -->
+<div class="cursor-pointer group flex items-start gap-4 p-4 bg-error-container/10 border border-error/20 rounded-xl hover:border-error transition-all" onclick="document.getElementById('error-polygon').classList.toggle('animate-pulse')">
+<span class="material-symbols-outlined text-error mt-1">error</span>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-on-error-container text-sm">Polygon tự giao nhau</h4>
+<span class="text-[10px] font-display-metrics px-2 py-0.5 bg-error-container text-on-error-container rounded">1 object</span>
+</div>
+<p class="text-xs text-on-surface-variant opacity-80">Xảy ra tại Fairway Hole 4. Vui lòng kiểm tra lại đỉnh điểm.</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">gps_fixed</span>
+</div>
+<div class="cursor-pointer group flex items-start gap-4 p-4 bg-error-container/10 border border-error/20 rounded-xl hover:border-error transition-all">
+<span class="material-symbols-outlined text-error mt-1">warning</span>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-on-error-container text-sm">Lỗi tọa độ không hợp lệ</h4>
+<span class="text-[10px] font-display-metrics px-2 py-0.5 bg-error-container text-on-error-container rounded">2 objects</span>
+</div>
+<p class="text-xs text-on-surface-variant opacity-80">Tọa độ nằm ngoài ranh giới sân được cấp phép (SRID mismatch).</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant opacity-0 group-hover:opacity-100 transition-opacity">gps_fixed</span>
+</div>
+<div class="cursor-pointer group flex items-start gap-4 p-4 bg-error-container/10 border border-error/20 rounded-xl hover:border-error transition-all">
+<span class="material-symbols-outlined text-error mt-1">label_off</span>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-on-error-container text-sm">Thiếu thuộc tính bắt buộc</h4>
+<span class="text-[10px] font-display-metrics px-2 py-0.5 bg-error-container text-on-error-container rounded">5 objects</span>
+</div>
+<p class="text-xs text-on-surface-variant opacity-80">Trường 'Hole_ID' đang bị bỏ trống cho lớp Green.</p>
+</div>
+</div>
+<div class="cursor-pointer group flex items-start gap-4 p-4 bg-secondary-container/5 border border-secondary/20 rounded-xl hover:border-secondary transition-all">
+<span class="material-symbols-outlined text-secondary mt-1">layers</span>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<h4 class="font-bold text-secondary text-sm">Chồng lấn topo</h4>
+<span class="text-[10px] font-display-metrics px-2 py-0.5 bg-secondary-container text-on-secondary-container rounded">1 warning</span>
+</div>
+<p class="text-xs text-on-surface-variant opacity-80">Fairway và Water Hazard đang có diện tích chồng lấn nhỏ.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<!-- Bottom Action Bar -->
+<footer class="h-20 bg-surface-container-high border-t border-[rgba(255,255,255,0.08)] px-8 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-sm text-on-surface-variant">Dữ liệu nhập sẽ được lưu ở trạng thái <strong class="text-on-surface">Bản nháp</strong>. Cần kiểm tra lại trước khi Xuất bản.</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 rounded-lg font-bold text-on-surface hover:bg-surface-variant transition-colors border border-outline-variant">
+                    Quay lại
+                </button>
+<button class="px-8 py-2.5 bg-primary-container text-on-primary-container font-bold rounded-lg hover:brightness-110 active:scale-95 transition-all shadow-lg flex items-center gap-2">
+<span class="material-symbols-outlined">save</span>
+                    Tạo bản nháp
+                </button>
+</div>
+</footer>
+</main>
+<!-- Overlay Micro-interactions -->
+<script>
+        // Simple micro-interaction for visual feedback
+        document.querySelectorAll('.cursor-pointer').forEach(item => {
+            item.addEventListener('mousedown', () => {
+                item.style.transform = 'scale(0.98)';
+            });
+            item.addEventListener('mouseup', () => {
+                item.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

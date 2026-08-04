@@ -1,0 +1,205 @@
+{
+  "_meta": {
+    "ownership": "Skill-layer (LLM agent facing).",
+    "purpose": "Authoritative source for the LLM agent driving the BMAD QA workflow. Pins the QA phase lifecycle states, the gate result values, the uncertainty label vocabulary, the test ID prefixes, the bug-type taxonomy, and the failure reason classes used by steps/ scripts to classify QA outcomes.",
+    "see_also": "references/qa-state-machine.md (phase-level workflow) and data/qa-orchestrator-rules.md (workflow hard stops)."
+  },
+  "phaseStatusValues": {
+    "mission_setup": "mission_setup",
+    "context_reading": "context_reading",
+    "risk_modeling": "risk_modeling",
+    "test_strategy_planning": "test_strategy_planning",
+    "test_case_design": "test_case_design",
+    "test_oracle_design": "test_oracle_design",
+    "test_automation_generation": "test_automation_generation",
+    "test_execution": "test_execution",
+    "failure_triage": "failure_triage",
+    "fix_briefs": "fix_briefs",
+    "quality_gate": "quality_gate",
+    "done": "done",
+    "failed": "failed"
+  },
+  "qaRunStatusValues": {
+    "pending": "pending",
+    "in_progress": "in_progress",
+    "blocked": "blocked",
+    "done": "done",
+    "failed": "failed",
+    "stalled_partial": "stalled_partial"
+  },
+  "gateResultValues": [
+    "pass",
+    "conditional_pass",
+    "fail"
+  ],
+  "gateThresholds": {
+    "pass": 85,
+    "conditional_pass": 70,
+    "fail_below": 70,
+    "score_floor": 50
+  },
+  "scoreWeights": {
+    "risk_coverage": 20,
+    "requirement_coverage": 15,
+    "negative_boundary_coverage": 15,
+    "state_transition_coverage": 15,
+    "property_invariant_coverage": 10,
+    "api_contract_fuzz_coverage": 10,
+    "e2e_critical_path_coverage": 10,
+    "mutation_quality": 5
+  },
+  "priorityValues": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "riskPriorities": [
+    "P0",
+    "P1",
+    "P2",
+    "P3"
+  ],
+  "testIdPrefixes": {
+    "QA-EX-": "example-based (happy, negative, boundary, error, recovery, regression)",
+    "QA-COMB-": "combinatorial (PICT/ACTS-style)",
+    "QA-SM-": "state-machine (workflow, allowed/forbidden transitions)",
+    "QA-PROP-": "property-based (invariants)",
+    "QA-API-": "API schema/fuzz (Schemathesis)",
+    "QA-E2E-": "UI/E2E (Playwright)",
+    "QA-REG-": "regression (known bugs, recent changes)",
+    "QA-EXP-": "exploratory/manual (charter-based)"
+  },
+  "uncertaintyLabels": [
+    "SPEC_AMBIGUITY",
+    "ORACLE_GAP",
+    "ENV_GAP",
+    "DATA_GAP",
+    "TOOL_GAP",
+    "JUSTIFIED_EXCEPTION"
+  ],
+  "bugTypeTaxonomy": {
+    "core": [
+      "PRODUCT_BUG",
+      "TEST_BUG",
+      "FLAKY_TEST",
+      "ENVIRONMENT_ISSUE",
+      "SPEC_AMBIGUITY",
+      "DATA_SETUP_ISSUE"
+    ],
+    "extended_v2": [
+      "RACE_CONDITION",
+      "SECURITY_ISSUE",
+      "DEADLOCK_OR_LIVELOCK",
+      "MEMORY_LEAK",
+      "TIMING_ISSUE",
+      "DATA_RACE",
+      "ATOMICITY_VIOLATION",
+      "ORDERING_VIOLATION",
+      "CONSISTENCY_ISSUE",
+      "IDEMPOTENCY_VIOLATION",
+      "AUTHORIZATION_BYPASS",
+      "INPUT_VALIDATION_BYPASS",
+      "STATE_CORRUPTION"
+    ]
+  },
+  "bugClassificationMatrix": {
+    "PRODUCT_BUG": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "severity" },
+    "RACE_CONDITION": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "SECURITY_ISSUE": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0" },
+    "DEADLOCK_OR_LIVELOCK": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "MEMORY_LEAK": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P1/P2" },
+    "STATE_CORRUPTION": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "INPUT_VALIDATION_BYPASS": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "AUTHORIZATION_BYPASS": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0" },
+    "ATOMICITY_VIOLATION": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "ORDERING_VIOLATION": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "CONSISTENCY_ISSUE": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "IDEMPOTENCY_VIOLATION": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "DATA_RACE": { "requires_fix": true, "requires_fix_brief": true, "priority_basis": "P0/P1" },
+    "TEST_BUG": { "requires_fix": true, "requires_fix_brief": false, "priority_basis": "P3" },
+    "FLAKY_TEST": { "requires_fix": true, "requires_fix_brief": false, "priority_basis": "P2" },
+    "ENVIRONMENT_ISSUE": { "requires_fix": true, "requires_fix_brief": false, "priority_basis": "depends" },
+    "SPEC_AMBIGUITY": { "requires_fix": true, "requires_fix_brief": false, "priority_basis": "depends" },
+    "DATA_SETUP_ISSUE": { "requires_fix": true, "requires_fix_brief": false, "priority_basis": "P2" }
+  },
+  "riskFamilies": [
+    "R1_business_critical_flow",
+    "R2_data_corruption_or_loss",
+    "R3_state_transition_bug",
+    "R4_permission_or_security_boundary",
+    "R5_invalid_input_or_boundary_value",
+    "R6_offline_online_network_failure",
+    "R7_concurrency_duplicate_event_or_race",
+    "R8_integration_or_api_contract_failure",
+    "R9_ui_misoperation_or_ux_state_error",
+    "R10_regression_prone_area",
+    "R11_performance_load_or_timeout_risk",
+    "R12_observability_or_diagnosability_gap"
+  ],
+  "failureReasonClasses": [
+    "missing_prd_context_evidence",
+    "missing_context_evidence",
+    "missing_bmad_docs_recursive_scan",
+    "missing_bmad_docs_zero_eof_reading",
+    "missing_risk_coverage",
+    "missing_oracle",
+    "missing_business_assertion",
+    "missing_negative_boundary_for_critical",
+    "missing_state_transition_test",
+    "missing_api_fuzz_plan_or_justification",
+    "missing_e2e_plan_or_justification",
+    "untriaged_failures",
+    "mutation_score_below_threshold",
+    "shallow_only_test_suite",
+    "duplicate_detection_failed",
+    "gate_json_invalid"
+  ],
+  "antiGamingPenalty": {
+    "shallow_test_pattern": { "deduction": -15, "floor": 50 },
+    "duplicate_test_pair": { "deduction": -5 },
+    "invalid_justified_exception": { "deduction": -10 },
+    "tests_per_risk_flag_threshold": 30,
+    "assertions_per_test_min": 2,
+    "unique_assertions_ratio_min": 0.3
+  },
+  "evidenceAllowedStatuses": [
+    "READ_0_EOF",
+    "NOT_FOUND",
+    "NOT_RELEVANT_WITH_REASON",
+    "TOO_LARGE_READ_IN_CHUNKS",
+    "BLOCKED_WITH_REASON"
+  ],
+  "bmadHardGateFlags": [
+    "BMAD_DOCS_RECURSIVE_SCAN_DONE",
+    "BMAD_DOCS_SCAN_DONE",
+    "BMAD_RELEVANT_DOCS_READ_0_EOF"
+  ],
+  "releaseRecommendations": {
+    "pass": "GO",
+    "conditional_pass": "CONDITIONAL_GO",
+    "fail": "NO_GO"
+  },
+  "minimaxM27Constraints": {
+    "no_visual_evidence": true,
+    "forbidden_evidence_types": [
+      "screenshots",
+      "image_captures",
+      "browser_screenshots",
+      "visual_inspection_output",
+      "canvas_renders",
+      "pdf_visual_diff"
+    ],
+    "required_evidence_types": [
+      "command_stdout_stderr",
+      "log_snippets",
+      "assertion_output",
+      "dom_text_snapshot",
+      "api_json_response",
+      "test_runner_output",
+      "coverage_report_text"
+    ],
+    "visual_fallback_label": "TOOL_GAP",
+    "explicit_commands_required": true
+  }
+}

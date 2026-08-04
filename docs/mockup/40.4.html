@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #000000;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Apple Watch 45mm Physical Constraint Simulation */
+        .watch-face {
+            width: 396px;
+            height: 484px;
+            background-color: #0b1326;
+            border-radius: 80px;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #1a1a1a;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8), 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .screen-content {
+            padding: 44px 28px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.5s ease-in-out, filter 0.5s ease-in-out;
+        }
+
+        /* Always-on Mode Overlay */
+        #always-on-overlay {
+            position: absolute;
+            inset: 0;
+            background: #000000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .watch-face.always-on #always-on-overlay {
+            opacity: 1;
+        }
+
+        .watch-face.always-on .screen-content {
+            opacity: 0.2;
+            filter: grayscale(1) blur(4px);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+
+        /* Pulsing GPS animation */
+        @keyframes pulse-green {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .gps-active {
+            animation: pulse-green 2s infinite ease-in-out;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#2d3449",
+                        "background": "#0b1326",
+                        "primary-container": "#f66018",
+                        "on-primary-container": "#4f1700",
+                        "surface-variant": "#2d3449",
+                        "primary": "#ffb599",
+                        "tertiary": "#68dba9",
+                        "on-surface": "#dae2fd",
+                        "on-surface-variant": "#e2bfb2",
+                        "outline": "#a98a7e"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"],
+                        "metric-sm": ["Fira Code"],
+                        "label-caps": ["Fira Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<!-- Main Watch Container -->
+<div class="watch-face" id="watchBody">
+<!-- Always-On Preview Layer -->
+<div id="always-on-overlay">
+<div class="text-on-surface/60 font-display-metrics text-[32px] mb-8">14:45</div>
+<div class="flex flex-col items-center">
+<div class="font-display-metrics text-tertiary font-light text-[64px]">142m</div>
+<div class="font-label-caps text-on-surface/40 tracking-widest mt-2 uppercase">Hole 14</div>
+</div>
+</div>
+<!-- Interactive Screen Content -->
+<div class="screen-content">
+<!-- Shared TopAppBar -->
+<header class="flex justify-between items-center w-full px-2 h-touch-target mb-6">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings: 'FILL' 1;">gps_fixed</span>
+<span class="font-headline-md text-headline-md text-primary">Hole 14</span>
+</div>
+<span class="material-symbols-outlined text-primary text-2xl">battery_charging_full</span>
+</header>
+<!-- Main Status Grid (Bento Style) -->
+<div class="grid grid-cols-1 gap-3 flex-grow">
+<!-- Status Row 1: GPS (The "Ready" Hero) -->
+<div class="bg-surface-container-highest/40 border border-white/5 rounded-full p-4 flex items-center gap-4 transition-transform active:scale-95">
+<div class="w-12 h-12 rounded-full bg-tertiary/20 flex items-center justify-center gps-active">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">gps_fixed</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-on-surface-variant uppercase opacity-70">GPS Status</span>
+<span class="font-headline-md text-tertiary">Ready</span>
+</div>
+</div>
+<!-- Status Row 2: Mode -->
+<div class="bg-surface-container-highest/40 border border-white/5 rounded-full p-4 flex items-center gap-4 transition-transform active:scale-95">
+<div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface text-3xl">cloud_off</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-on-surface-variant uppercase opacity-70">Data Mode</span>
+<span class="font-headline-md text-on-surface">Offline</span>
+</div>
+</div>
+<!-- Status Row 3: Battery -->
+<div class="bg-surface-container-highest/40 border border-white/5 rounded-full p-4 flex items-center gap-4 transition-transform active:scale-95">
+<div class="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface text-3xl">battery_6_bar</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-caps text-on-surface-variant uppercase opacity-70">Device Power</span>
+<span class="font-headline-md text-on-surface">85%</span>
+</div>
+</div>
+</div>
+<!-- Interaction Prompt -->
+<div class="mt-4 flex justify-center">
+<div class="px-4 py-2 bg-primary/10 rounded-full border border-primary/20">
+<span class="font-label-caps text-primary text-[10px] uppercase">Tap to Toggle Dim Mode</span>
+</div>
+</div>
+</div>
+<!-- Shared BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-1 pb-4 bg-background/80 backdrop-blur-sm">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">sports_golf</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">list_alt</span>
+</div>
+<div class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 haptic-feedback-simulated scale-95 shadow-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">error_outline</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:bg-surface-container-highest rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</div>
+</nav>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        const watchBody = document.getElementById('watchBody');
+        
+        // Simple toggle for "Always-on" mode demonstration
+        watchBody.addEventListener('click', () => {
+            watchBody.classList.toggle('always-on');
+        });
+
+        // Optional: Auto-dim after 10 seconds to simulate real behavior
+        let dimTimeout;
+        const resetDim = () => {
+            clearTimeout(dimTimeout);
+            dimTimeout = setTimeout(() => {
+                watchBody.classList.add('always-on');
+            }, 10000);
+        };
+
+        watchBody.addEventListener('mousemove', resetDim);
+        resetDim();
+    </script>
+</body></html>

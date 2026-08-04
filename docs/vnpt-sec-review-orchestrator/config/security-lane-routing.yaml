@@ -1,0 +1,25 @@
+control_families:
+  authn_authz_session_token: auth
+  injection_input_handling: appsec
+  secrets_crypto_logging: devsecops
+  api_abuse_rate_limiting_object_authorization: api
+  dependency_supply_chain_provenance_signing: devsecops
+  container_kubernetes_iac_runtime_hardening: cloud-k8s
+  observability_audit_compliance: compliance
+stack_lanes:
+  nodejs: nodejs
+  python: python
+  go: go
+  java-spring: java-spring
+  dotnet: dotnet
+  php: php
+  c-cpp: c-cpp
+  frontend-react: frontend-react
+  frontend-vue: frontend-vue
+  frontend-angular: frontend-angular
+  mobile-flutter: mobile-flutter
+  mobile-react: mobile-react
+fallback_lane: appsec
+corroboration_policy:
+  source_or_config_first: true
+  scanners_are_corroboration: true

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>28 — Chi tiết &amp; Metadata sân | Vietnam Smart Golf</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&amp;family=Fira+Code:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #171f33; }
+        ::-webkit-scrollbar-thumb { background: #2d3449; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #ffb599; }
+        .focus-ring:focus-within { ring-offset-2 ring-offset-[#0b1326] ring-2 ring-primary; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#a98a7e",
+                        "outline-variant": "#5a4138",
+                        "surface-container-high": "#222a3d",
+                        "secondary": "#ffb690",
+                        "on-secondary-fixed-variant": "#783200",
+                        "tertiary-fixed-dim": "#68dba9",
+                        "surface-dim": "#0b1326",
+                        "tertiary": "#68dba9",
+                        "on-surface": "#dae2fd",
+                        "inverse-surface": "#dae2fd",
+                        "surface-variant": "#2d3449",
+                        "on-secondary-container": "#4a1c00",
+                        "error-container": "#93000a",
+                        "inverse-on-surface": "#283044",
+                        "on-primary-fixed": "#370e00",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container": "#171f33",
+                        "secondary-container": "#ec6a06",
+                        "on-primary-fixed-variant": "#7f2b00",
+                        "secondary-fixed-dim": "#ffb690",
+                        "on-tertiary": "#003825",
+                        "on-surface-variant": "#e2bfb2",
+                        "on-error-container": "#ffdad6",
+                        "inverse-primary": "#a73a00",
+                        "surface-tint": "#ffb599",
+                        "surface-bright": "#31394d",
+                        "on-secondary": "#552100",
+                        "tertiary-container": "#25a475",
+                        "on-tertiary-fixed-variant": "#005137",
+                        "on-tertiary-container": "#00311f",
+                        "surface-container-highest": "#2d3449",
+                        "surface": "#0b1326",
+                        "primary": "#ffb599",
+                        "background": "#0b1326",
+                        "on-tertiary-fixed": "#002114",
+                        "primary-fixed": "#ffdbce",
+                        "primary-fixed-dim": "#ffb599",
+                        "on-error": "#690005",
+                        "on-primary": "#5a1c00",
+                        "error": "#ffb4ab",
+                        "secondary-fixed": "#ffdbca",
+                        "surface-container-low": "#131b2e",
+                        "on-background": "#dae2fd",
+                        "on-primary-container": "#4f1700",
+                        "primary-container": "#f66018",
+                        "tertiary-fixed": "#85f8c4",
+                        "on-secondary-fixed": "#341100"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "touch-target": "44px",
+                        "gutter": "16px",
+                        "unit": "8px",
+                        "margin-desktop": "32px",
+                        "margin-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Fira Sans"],
+                        "headline-md": ["Fira Sans"],
+                        "body-md": ["Fira Sans"],
+                        "label-caps": ["Fira Sans"],
+                        "metric-sm": ["Fira Code"],
+                        "headline-lg": ["Fira Sans"],
+                        "display-metrics": ["Fira Code"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                        "metric-sm": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "display-metrics": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden flex h-screen">
+<!-- NavigationDrawer (Persistent Left Sidebar) -->
+<aside class="fixed inset-y-0 left-0 z-[60] flex flex-col bg-surface-container-high w-[280px] shadow-lg">
+<div class="p-6 flex flex-col gap-6">
+<div class="font-headline-lg text-headline-lg text-primary">Vietnam Smart Golf</div>
+<div class="flex items-center gap-4 bg-surface-container p-4 rounded-xl border border-outline-variant/20">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up professional portrait of a Vietnamese man in his early 40s wearing a clean white golf polo shirt. He is smiling warmly against a blurred background of a sunny green golf course. The lighting is bright and natural, capturing a premium and professional athletic mood consistent with an executive golf management platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBJ-Nwqk4nZCFccxty6YRjl_UmH47ADHatuqtB2GDJvsvBpvAXgWoTDHYQ7kUkYdkyvwjOilODHdD-58DdXnBPhBUTR0FWxDYgkOUu4o8jl54se1OeeUV5xQtW9rI2OtAswrmBWSA785IbXyAfBsQbsH7N_lTngIgyZTkJVb3dKoM1L578GSGrDTS-cXyJjG9ArE_scCFOvrplcATz0i3SI2dlH6vFKVdt_jUZL0POgpQ2J4DdRQqGtQ"/>
+</div>
+<div>
+<div class="font-body-md text-on-surface font-bold">Nguyễn Văn A</div>
+<div class="text-[12px] text-on-surface-variant">HCP: 12.4 • Premium</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body-md">Trang chủ</span>
+</a>
+<a class="flex items-center gap-4 bg-primary-container text-on-primary-container border-l-4 border-secondary rounded-r-full py-3 px-4 transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings_suggest</span>
+<span class="font-body-md">Quản lý sân</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="font-body-md">Lịch sử vòng chơi</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md">Cài đặt</span>
+</a>
+<a class="flex items-center gap-4 text-on-surface-variant py-3 px-4 hover:bg-surface-variant transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md">Hỗ trợ</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-6 text-[10px] text-outline opacity-50 uppercase tracking-widest font-bold">
+            Portal v2.8.4-stable
+        </div>
+</aside>
+<!-- Main Workspace -->
+<main class="ml-[280px] flex-1 flex flex-col h-full overflow-hidden">
+<!-- TopAppBar (Breadcrumbs & Actions) -->
+<header class="flex items-center justify-between px-margin-desktop h-16 w-full bg-surface-container-lowest border-b border-[rgba(255,255,255,0.08)]">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-label-caps font-label-caps text-on-surface-variant">
+<span>Portal</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Cơ sở &amp; Sân golf</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary">BRG Legend Hill</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-on-surface-variant font-label-caps hover:bg-surface-bright active:scale-95 transition-all rounded-lg">Save Draft</button>
+<button class="px-4 py-2 bg-surface-variant text-on-surface font-label-caps hover:bg-surface-bright active:scale-95 transition-all rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">verified</span> Validate
+                </button>
+<button class="px-4 py-2 bg-surface-variant text-on-surface font-label-caps hover:bg-surface-bright active:scale-95 transition-all rounded-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">visibility</span> Preview Mobile
+                </button>
+<button class="px-6 py-2 bg-[#EA580C] text-white font-label-caps hover:brightness-110 active:scale-95 transition-all rounded-lg shadow-lg">Publish</button>
+</div>
+</header>
+<!-- Sub-header (Title & Badges) -->
+<div class="px-margin-desktop py-6 bg-surface-container-lowest flex items-end justify-between border-b border-[rgba(255,255,255,0.04)]">
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg leading-none">BRG Legend Hill Golf Resort</h1>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-[11px] font-bold tracking-wider uppercase">
+<span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                        DRAFT - Unsaved changes
+                    </div>
+</div>
+<div class="text-on-surface-variant font-body-md">Sóc Sơn, Hà Nội, Việt Nam • Nicklaus Design</div>
+</div>
+<!-- Tab Bar -->
+<div class="flex gap-8">
+<a class="pb-2 border-b-2 border-primary text-primary font-bold text-label-caps px-1" href="#">Tổng quan</a>
+<a class="pb-2 border-b-2 border-transparent text-on-surface-variant font-medium text-label-caps px-1 hover:text-on-surface" href="#">Layouts &amp; Hố</a>
+<a class="pb-2 border-b-2 border-transparent text-on-surface-variant font-medium text-label-caps px-1 hover:text-on-surface" href="#">Tee &amp; Scorecard</a>
+<a class="pb-2 border-b-2 border-transparent text-on-surface-variant font-medium text-label-caps px-1 hover:text-on-surface" href="#">Luật địa phương</a>
+<a class="pb-2 border-b-2 border-transparent text-on-surface-variant font-medium text-label-caps px-1 hover:text-on-surface" href="#">Dịch vụ</a>
+<a class="pb-2 border-b-2 border-transparent text-on-surface-variant font-medium text-label-caps px-1 hover:text-on-surface" href="#">Nguồn &amp; Giấy phép</a>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto bg-surface p-margin-desktop">
+<div class="max-w-[1400px] mx-auto grid grid-cols-12 gap-8 items-start">
+<!-- Left Column: Form -->
+<div class="col-span-8 space-y-8">
+<!-- Basic Information Card -->
+<section class="bg-surface-container p-8 rounded-xl border border-[rgba(255,255,255,0.08)] shadow-sm">
+<div class="flex items-center gap-3 mb-8 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<h2 class="font-headline-md text-headline-md">Thông tin cơ bản</h2>
+</div>
+<div class="grid grid-cols-2 gap-x-8 gap-y-6">
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Facility Name</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none transition-all" type="text" value="BRG Legend Hill Golf Resort"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Address</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none transition-all" type="text" value="Phù Linh, Sóc Sơn, Hà Nội"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Course Type</label>
+<select class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none appearance-none transition-all">
+<option>Parkland</option>
+<option>Links</option>
+<option>Desert</option>
+<option>Heathland</option>
+</select>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Total Holes</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none transition-all" type="number" value="18"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Contact Phone</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none transition-all" type="tel" value="+84 24 6262 9220"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Website</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface focus:border-primary focus:ring-0 outline-none transition-all" type="url" value="http://brglegendhillgolf.vn"/>
+</div>
+</div>
+</section>
+<!-- Technical Coordinates Card -->
+<section class="bg-surface-container p-8 rounded-xl border border-[rgba(255,255,255,0.08)] shadow-sm">
+<div class="flex items-center gap-3 mb-8 border-b border-outline-variant/30 pb-4">
+<span class="material-symbols-outlined text-primary">location_on</span>
+<h2 class="font-headline-md text-headline-md">Tọa độ GPS &amp; Bản đồ</h2>
+</div>
+<div class="grid grid-cols-2 gap-8">
+<div class="space-y-6">
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Latitude (Vĩ độ)</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-metric-sm focus:border-primary focus:ring-0 outline-none transition-all" type="text" value="21.284723"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-caps text-on-surface-variant uppercase">Longitude (Kinh độ)</label>
+<input class="bg-surface-dim border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-metric-sm focus:border-primary focus:ring-0 outline-none transition-all" type="text" value="105.823945"/>
+</div>
+<div class="p-4 bg-primary-container/10 border border-primary/20 rounded-lg flex items-start gap-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-[13px] text-on-surface-variant">Hệ tọa độ WGS84 được sử dụng cho tất cả dữ liệu GPS sân golf. Đảm bảo sai số dưới 1m cho các điểm green.</p>
+</div>
+</div>
+<div class="relative group h-full min-h-[200px] rounded-xl overflow-hidden border border-outline-variant">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Satellite imagery map view of a high-end golf course in Vietnam featuring lush green fairways, strategic sand bunkers, and a luxury clubhouse. The map is overlaid with a digital GPS crosshair and coordinate data in a professional geospatial interface style. Minimalist and high-tech map rendering." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAkkxh9rS2lptS8GFOAGmHDu1NFJo1Ap2uhcygyNraFiUaNVjvaEUtIxkTu1gW1bNhGEBErucjTVu3X2oF7-QLIQhArXsgTp2rh01zCoHiYQ6_i9EYbUF9TN_TSRxhiw7YSJ2dZhGjUtNbNUPOPQcMLCYbOJ3XFVteltDbOexJ43KzSWsxw3NQqgDTkE4xbfpSw2BrisDmJHgQaCk3dDTCHbIIJWqlAljFQWN44RNfmRrvKGMWPW2VH9w')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<button class="absolute bottom-4 right-4 bg-primary text-on-primary-container px-3 py-1.5 rounded-lg text-[12px] font-bold flex items-center gap-2 hover:brightness-110">
+<span class="material-symbols-outlined text-[16px]">map</span> Edit Map Pins
+                                </button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Rail: Metadata & Quality -->
+<aside class="col-span-4 space-y-6">
+<!-- Validation & Completeness -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant/30 shadow-lg">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-label-caps text-on-surface uppercase tracking-wider">Validation &amp; Completeness</h3>
+<span class="font-metric-sm text-primary text-[18px]">85%</span>
+</div>
+<div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden mb-6">
+<div class="bg-primary h-full w-[85%]" style="box-shadow: 0 0 12px rgba(255, 181, 153, 0.4)"></div>
+</div>
+<div class="space-y-3">
+<div class="flex items-start gap-3 p-3 bg-error-container/20 border border-error/20 rounded-lg">
+<span class="material-symbols-outlined text-error text-[20px]">warning</span>
+<div class="text-[13px] text-on-surface">
+<p class="font-bold">Missing Green Coordinates</p>
+<p class="text-on-surface-variant opacity-80">Hole 7, Hole 12 require pinpoint survey data.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 p-3 bg-surface-bright/50 border border-outline-variant/20 rounded-lg">
+<span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+<div class="text-[13px] text-on-surface">
+<p class="font-bold">Tee Data Verified</p>
+<p class="text-on-surface-variant opacity-80">All 4 tee boxes calibrated.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Data Quality -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant/30 shadow-lg space-y-4">
+<h3 class="font-label-caps text-on-surface uppercase tracking-wider mb-2">Data Quality Indicators</h3>
+<div class="flex flex-col gap-4">
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
+<span class="text-on-surface-variant text-[13px]">Source</span>
+<span class="px-2 py-0.5 bg-green-500 text-white text-[11px] font-bold rounded">CHÍNH THỨC</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
+<span class="text-on-surface-variant text-[13px]">License</span>
+<span class="text-on-surface text-[13px] font-medium">Proprietary (BRG Group)</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
+<span class="text-on-surface-variant text-[13px]">Quality Class</span>
+<span class="text-tertiary text-[13px] font-bold">Class A (High Precision)</span>
+</div>
+<div class="flex justify-between items-center border-b border-outline-variant/20 pb-2">
+<span class="text-on-surface-variant text-[13px]">Confidence</span>
+<div class="flex items-center gap-2">
+<div class="flex gap-0.5">
+<div class="w-1.5 h-3 bg-primary"></div>
+<div class="w-1.5 h-3 bg-primary"></div>
+<div class="w-1.5 h-3 bg-primary"></div>
+<div class="w-1.5 h-3 bg-primary"></div>
+<div class="w-1.5 h-3 bg-surface-dim"></div>
+</div>
+<span class="text-primary text-[11px] font-bold">High</span>
+</div>
+</div>
+<div class="pt-2 text-[12px] text-on-surface-variant italic">
+                                Verified by <span class="text-on-surface font-medium">Nguyễn Văn A</span> on 12/05/2026
+                            </div>
+</div>
+</div>
+<!-- Version Control -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant/30 shadow-lg space-y-4">
+<h3 class="font-label-caps text-on-surface uppercase tracking-wider mb-2">Version Control</h3>
+<div class="flex flex-col gap-3">
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-[13px]">Current Version</span>
+<span class="font-metric-sm text-secondary bg-secondary/10 px-2 py-0.5 rounded border border-secondary/20">v2.4.2</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-[13px]">Effective Date</span>
+<span class="text-on-surface text-[13px] font-metric-sm">01/01/2026</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-on-surface-variant text-[13px]">Expiry Date</span>
+<span class="text-on-surface text-[13px] font-metric-sm">31/12/2026</span>
+</div>
+<button class="w-full mt-2 py-2 border border-outline-variant text-on-surface-variant text-label-caps rounded-lg hover:bg-surface-variant transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">history</span> View Full History
+                            </button>
+</div>
+</div>
+</aside>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions and focus states
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('focus', () => {
+                el.parentElement.querySelector('label').classList.add('text-primary');
+            });
+            el.addEventListener('blur', () => {
+                el.parentElement.querySelector('label').classList.remove('text-primary');
+            });
+        });
+
+        // Simple tab switching logic (visual only for this demo)
+        document.querySelectorAll('nav a, .tab-bar a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Logic to handle state would go here
+            });
+        });
+    </script>
+</body></html>
