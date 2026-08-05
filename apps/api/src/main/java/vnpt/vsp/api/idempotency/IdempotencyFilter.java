@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import vnpt.vsp.api.error.VspApiException;
@@ -35,7 +36,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *   <li>Resolve the target {@link HandlerMethod}, if any.</li>
  *   <li>If the handler is not annotated with {@link Idempotent}, pass through immediately.</li>
  *   <li>If the handler is annotated but the {@code Idempotency-Key} header is absent,
- *       throw {@link VspApiException} with {@code VALIDATION_006}.</li>
+ *       render {@link VspApiException} with {@code VALIDATION_006} as a 400.</li>
  *   <li>If the key is present and a cached response exists, write the cached body, status,
  *       content-type, and headers to the real response and set
  *       {@code X-Idempotent-Replay: true}; then stop the filter chain.</li>
@@ -46,6 +47,19 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>
  * The filter runs after {@link vnpt.vsp.api.error.CorrelationIdFilter}
  * ({@code Order 1}) so correlation IDs are available for error responses.
+ * <p>
+ * <strong>Errors are rendered here, not thrown.</strong> A servlet filter sits
+ * outside {@code DispatcherServlet}, so an exception thrown from one never
+ * reaches {@link vnpt.vsp.api.error.GlobalExceptionHandler}. It unwinds through
+ * the Spring Security chain instead and ends up as a container error dispatch
+ * to {@code /error}; that dispatch does not carry the authenticated principal
+ * (Spring's {@code OncePerRequestFilter} skips error dispatches by default, so
+ * the JWT is never re-read), so security answers it with a bare 403 and no
+ * body. A client asking "why was I forbidden?" was in fact missing a header.
+ * The missing-key error is therefore handed to the MVC
+ * {@code handlerExceptionResolver}, which routes it through the very same
+ * {@code @RestControllerAdvice} a controller-thrown exception would use and
+ * produces the documented 400 {@code VSP-ERR-VALIDATION-006} body.
  *
  * @see Idempotent
  * @see IdempotencyService
@@ -61,11 +75,14 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
     private final IdempotencyService idempotencyService;
     private final RequestMappingHandlerMapping handlerMapping;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     public IdempotencyFilter(IdempotencyService idempotencyService,
-                             @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping handlerMapping) {
+                             @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping handlerMapping,
+                             @Qualifier("handlerExceptionResolver") HandlerExceptionResolver handlerExceptionResolver) {
         this.idempotencyService = idempotencyService;
         this.handlerMapping = handlerMapping;
+        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
@@ -88,10 +105,11 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
         String key = request.getHeader(HEADER_IDEMPOTENCY_KEY);
         if (key == null || key.isBlank()) {
-            throw new VspApiException(
+            renderError(request, response, new VspApiException(
                     vnpt.vsp.api.error.VspErrorCode.VALIDATION_006,
                     HEADER_IDEMPOTENCY_KEY
-            );
+            ));
+            return;
         }
 
         CachedResponse cached = idempotencyService.getCachedResponse(key);
@@ -114,6 +132,24 @@ public class IdempotencyFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, wrappedResponse);
         } finally {
             wrappedResponse.runResponseCallback();
+        }
+    }
+
+    /**
+     * Renders an error raised inside this filter through the MVC exception
+     * resolvers, so the client gets the same {@code ErrorResponse} body — code,
+     * message, correlation ID, field — it would get had the exception come from
+     * a controller. Falls back to a bare status only if no resolver claims it,
+     * which the catch-all handler in {@code GlobalExceptionHandler} prevents.
+     */
+    private void renderError(HttpServletRequest request, HttpServletResponse response, VspApiException ex)
+            throws IOException {
+        if (handlerExceptionResolver.resolveException(request, response, null, ex) == null) {
+            log.warn("No exception resolver handled {}; falling back to a bare status",
+                    ex.getErrorCode().getCode());
+            response.setStatus(ex.getErrorCode().getHttpStatus().value());
+            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+            response.getOutputStream().flush();
         }
     }
 
