@@ -58,8 +58,10 @@ class DownloadStateBadge extends StatelessWidget {
         return _BadgeConfig(
           label: 'Downloaded',
           icon: Icons.check_circle,
+          // Tinted background so the accent label/icon stay legible; a solid
+          // accent fill matched the text color and rendered the pill blank.
           backgroundColor: brightness == Brightness.dark
-              ? VspColorDark.accent
+              ? VspColorDark.accent.withOpacity(0.16)
               : VspColorLight.accent.withOpacity(0.12),
           textColor: brightness == Brightness.dark
               ? VspColorDark.accent
@@ -73,8 +75,10 @@ class DownloadStateBadge extends StatelessWidget {
         return _BadgeConfig(
           label: 'Update',
           icon: Icons.system_update_alt,
+          // Tinted background so the secondary label/icon stay legible; a solid
+          // secondary fill matched the text color and rendered the pill blank.
           backgroundColor: brightness == Brightness.dark
-              ? VspColorDark.secondary
+              ? VspColorDark.secondary.withOpacity(0.16)
               : VspColorLight.secondary.withOpacity(0.12),
           textColor: brightness == Brightness.dark
               ? VspColorDark.secondary

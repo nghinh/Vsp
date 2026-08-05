@@ -109,11 +109,15 @@ export function createUndoRedoManager(): UndoRedoManager {
     },
 
     undo(): EditCommand | undefined {
-      return undoStack.pop();
+      const cmd = undoStack.pop();
+      if (cmd) redoStack.push(cmd); // move onto the redo stack so redo can re-apply
+      return cmd;
     },
 
     redo(): EditCommand | undefined {
-      return redoStack.pop();
+      const cmd = redoStack.pop();
+      if (cmd) undoStack.push(cmd); // move back onto the undo stack
+      return cmd;
     },
 
     get canUndo() { return undoStack.length; },

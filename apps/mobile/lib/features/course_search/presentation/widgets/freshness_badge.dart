@@ -94,8 +94,10 @@ class FreshnessBadge extends StatelessWidget {
           vertical: compact ? VspSpacing.half : VspSpacing.xs,
         ),
         decoration: BoxDecoration(
+          // Tinted background (not solid accent) so the accent-colored label
+          // and icon stay legible in both light and dark modes.
           color: brightness == Brightness.dark
-              ? VspColorDark.accent
+              ? VspColorDark.accent.withOpacity(0.16)
               : VspColorLight.accent.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),

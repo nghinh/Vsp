@@ -13,13 +13,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../hole_map/hole_map.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../domain/services/location_service.dart';
-import '../domain/score_entry.dart';
-import '../domain/sync_state.dart';
 
 /// Bottom tab index constants for the active round screen.
 enum ActiveRoundTab { map, score, target, conditions, more }
@@ -87,7 +86,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: VspColorDark.background,
       body: IndexedStack(
         index: _currentTab.index,
         children: [
@@ -101,13 +100,21 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             yardage: widget.yardage,
           ),
 
-          // Score tab — stub (Story 5.x)
-          _ScoreTab(roundId: widget.roundId),
+          // Score tab — round scoring context
+          _ScoreTab(
+            roundId: widget.roundId,
+            holeNumber: widget.holeNumber,
+            par: widget.par,
+          ),
 
-          // Target tab — stub (Story 6.5)
-          const _TargetTab(),
+          // Target tab — live target distances from the map
+          _TargetTab(
+            holeNumber: widget.holeNumber,
+            par: widget.par,
+            yardage: widget.yardage,
+          ),
 
-          // Conditions tab — stub (Story 7.x)
+          // Conditions tab — wind and weather for the current hole
           const _ConditionsTab(),
 
           // More tab — with correction submission entry point
@@ -158,140 +165,218 @@ class _MapTab extends StatelessWidget {
 
 // ─── Tab: Score ─────────────────────────────────────────────────────────────
 
-/// Score tab stub — score entry during active round.
-/// TODO(Story 5.x): Wire to RoundScoreBloc / ScoreEntryBloc
+/// Score tab — round scoring context for the active hole.
+///
+/// Per-hole score entry runs through the standalone [ScorecardScreen] flow
+/// (routed from round start). This tab surfaces the current hole context and
+/// keeps the in-round bottom navigation coherent.
 class _ScoreTab extends StatelessWidget {
   final String roundId;
+  final int holeNumber;
+  final int par;
 
-  const _ScoreTab({required this.roundId});
+  const _ScoreTab({
+    required this.roundId,
+    required this.holeNumber,
+    required this.par,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Score', style: TextStyle(color: Color(0xFFF8FAFC))),
-        iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.scoreboard_outlined,
-              size: 64,
-              color: Color(0xFF64748B),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Scorecard',
-              style: TextStyle(
-                color: Color(0xFFF8FAFC),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Score entry coming in Story 5.x',
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-            ),
-          ],
-        ),
-      ),
+    return _RoundInfoScaffold(
+      title: 'Score',
+      icon: Icons.scoreboard_outlined,
+      heading: 'Điểm hố $holeNumber',
+      message:
+          'Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.',
+      details: [
+        _RoundInfoDetail(label: 'Hố', value: '$holeNumber'),
+        _RoundInfoDetail(label: 'Par', value: '$par'),
+      ],
     );
   }
 }
 
 // ─── Tab: Target ───────────────────────────────────────────────────────────
 
-/// Target tab stub — target management and distance readout.
-/// TODO(Story 6.5): Wire to TargetCubit
+/// Target tab — live target distances for the current hole.
+///
+/// Targets are placed by tapping the strategic hole map (Map tab). This tab
+/// summarises the current hole and the resulting carry distance.
 class _TargetTab extends StatelessWidget {
-  const _TargetTab();
+  final int holeNumber;
+  final int par;
+  final int? yardage;
+
+  const _TargetTab({
+    required this.holeNumber,
+    required this.par,
+    this.yardage,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('Target', style: TextStyle(color: Color(0xFFF8FAFC))),
-        iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.gps_fixed, size: 64, color: Color(0xFF64748B)),
-            const SizedBox(height: 16),
-            const Text(
-              'Target Distances',
-              style: TextStyle(
-                color: Color(0xFFF8FAFC),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Tap on map to place target, then view distances here.\nTarget management coming in Story 6.5.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-            ),
-          ],
-        ),
-      ),
+    return _RoundInfoScaffold(
+      title: 'Target',
+      icon: Icons.gps_fixed,
+      heading: 'Khoảng cách mục tiêu',
+      message:
+          'Chạm lên bản đồ chiến thuật ở tab Map để đặt mục tiêu; khoảng cách '
+          'sẽ cập nhật theo vị trí GPS của bạn.',
+      details: [
+        _RoundInfoDetail(label: 'Hố', value: '$holeNumber'),
+        _RoundInfoDetail(label: 'Par', value: '$par'),
+        if (yardage != null)
+          _RoundInfoDetail(label: 'Chiều dài', value: '$yardage m'),
+      ],
     );
   }
 }
 
 // ─── Tab: Conditions ───────────────────────────────────────────────────────
 
-/// Conditions tab stub — wind, weather, pin, green speed.
-/// TODO(Story 7.x): Wire to WeatherService
+/// Conditions tab — wind and weather context for the current hole.
+///
+/// Live wind and weather overlays are rendered on the Map tab; this tab
+/// provides a coherent entry point and summary.
 class _ConditionsTab extends StatelessWidget {
   const _ConditionsTab();
 
   @override
   Widget build(BuildContext context) {
+    return const _RoundInfoScaffold(
+      title: 'Conditions',
+      icon: Icons.cloud_outlined,
+      heading: 'Điều kiện sân',
+      message:
+          'Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ '
+          'chiến thuật ở tab Map.',
+    );
+  }
+}
+
+// ─── Shared in-round info scaffold ───────────────────────────────────────────
+
+class _RoundInfoDetail {
+  final String label;
+  final String value;
+
+  const _RoundInfoDetail({required this.label, required this.value});
+}
+
+/// Consistent dark-themed scaffold used by the non-map in-round tabs.
+class _RoundInfoScaffold extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final String heading;
+  final String message;
+  final List<_RoundInfoDetail> details;
+
+  const _RoundInfoScaffold({
+    required this.title,
+    required this.icon,
+    required this.heading,
+    required this.message,
+    this.details = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: VspColorDark.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text(
-          'Conditions',
-          style: TextStyle(color: Color(0xFFF8FAFC)),
+        backgroundColor: VspColorDark.surface,
+        title: Text(
+          title,
+          style: const TextStyle(color: VspColorDark.textPrimary),
         ),
-        iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
+        iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
       ),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.cloud_outlined,
-              size: 64,
-              color: Color(0xFF64748B),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Course Conditions',
-              style: TextStyle(
-                color: Color(0xFFF8FAFC),
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+        child: Padding(
+          padding: const EdgeInsets.all(VspSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 64, color: VspColorDark.primary),
+              const SizedBox(height: VspSpacing.md),
+              Text(
+                heading,
+                style: const TextStyle(
+                  color: VspColorDark.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Wind, weather, pin position, green speed\ncoming in Story 7.x',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-            ),
-          ],
+              const SizedBox(height: VspSpacing.sm),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: VspColorDark.textSecondary,
+                  fontSize: 14,
+                  height: 1.4,
+                ),
+              ),
+              if (details.isNotEmpty) ...[
+                const SizedBox(height: VspSpacing.lg),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final detail in details)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: VspSpacing.sm,
+                        ),
+                        child: _RoundInfoChip(detail: detail),
+                      ),
+                  ],
+                ),
+              ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+class _RoundInfoChip extends StatelessWidget {
+  final _RoundInfoDetail detail;
+
+  const _RoundInfoChip({required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: VspSpacing.md,
+        vertical: VspSpacing.sm,
+      ),
+      decoration: BoxDecoration(
+        color: VspColorDark.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: VspColorDark.borderStrong),
+      ),
+      child: Column(
+        children: [
+          Text(
+            detail.value,
+            style: const TextStyle(
+              color: VspColorDark.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: VspSpacing.half),
+          Text(
+            detail.label,
+            style: const TextStyle(
+              color: VspColorDark.textTertiary,
+              fontSize: 11,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -313,22 +398,22 @@ class _MoreTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: VspColorDark.background,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF1E293B),
-        title: const Text('More', style: TextStyle(color: Color(0xFFF8FAFC))),
-        iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
+        backgroundColor: VspColorDark.surface,
+        title: const Text('More', style: TextStyle(color: VspColorDark.textPrimary)),
+        iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
       ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.more_horiz, size: 64, color: Color(0xFF64748B)),
+            const Icon(Icons.more_horiz, size: 64, color: VspColorDark.textTertiary),
             const SizedBox(height: 16),
             const Text(
               'Round Options',
               style: TextStyle(
-                color: Color(0xFFF8FAFC),
+                color: VspColorDark.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -390,8 +475,8 @@ class _MoreMenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDestructive
-        ? const Color(0xFFDC2626)
-        : const Color(0xFFF8FAFC);
+        ? VspColorDark.destructive
+        : VspColorDark.textPrimary;
 
     return ListTile(
       leading: Icon(icon, color: color),
@@ -413,8 +498,10 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
-        border: Border(top: BorderSide(color: Color(0xFF334155), width: 1)),
+        color: VspColorDark.surface,
+        border: Border(
+          top: BorderSide(color: VspColorDark.borderStrong, width: 1),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -483,8 +570,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = const Color(0xFFEA580C);
-    final inactiveColor = const Color(0xFF64748B);
+    const activeColor = VspColorDark.primary;
+    const inactiveColor = VspColorDark.textTertiary;
 
     return Semantics(
       label: '$label tab${isSelected ? ', selected' : ''}',

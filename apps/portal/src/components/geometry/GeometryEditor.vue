@@ -104,10 +104,16 @@
           :layer-features="layerFeatures"
           :layer-states="layerStates"
           :course-id="courseId"
+          :active-tool="activeTool"
+          :selected-feature-id="selectedFeatureId"
           @map-ready="handleMapReady"
           @feature-click="handleFeatureClick"
           @map-click="(c, z) => emit('map-click', c, z)"
           @map-dblclick="(c, z) => emit('map-dblclick', c, z)"
+          @feature-select="(p) => emit('feature-select', p)"
+          @feature-deselect="() => emit('feature-deselect')"
+          @vertex-move="(p) => emit('vertex-move', p)"
+          @feature-delete="(p) => emit('feature-delete', p)"
         />
       </main>
     </div>
@@ -164,6 +170,8 @@ const props = defineProps<{
   canUndo: boolean;
   /** Whether redo is available. */
   canRedo: boolean;
+  /** Id of the currently selected feature (drives vertex handles). */
+  selectedFeatureId?: string | number | null;
 }>();
 
 const emit = defineEmits<{
@@ -177,6 +185,10 @@ const emit = defineEmits<{
   (e: 'retry'): void;
   (e: 'map-click', coord: GeoCoordinate, zoom: number): void;
   (e: 'map-dblclick', coord: GeoCoordinate, zoom: number): void;
+  (e: 'feature-select', payload: { id: string | number; layerType: LayerType }): void;
+  (e: 'feature-deselect'): void;
+  (e: 'vertex-move', payload: { featureId: string | number; layerType: LayerType; vertexIndex: number; coord: GeoCoordinate; zoom: number }): void;
+  (e: 'feature-delete', payload: { featureId: string | number; layerType: LayerType }): void;
 }>();
 
 // ─── Computed ───────────────────────────────────────────────────────────────

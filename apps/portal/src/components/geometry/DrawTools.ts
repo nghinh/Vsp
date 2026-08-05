@@ -53,6 +53,30 @@ interface SnapResult {
   distancePx: number;
 }
 
+// ─── Feature identity ─────────────────────────────────────────────────────────
+
+let _featureIdCounter = 0;
+
+/**
+ * Generate a stable client-side feature id. Used so newly drawn features (and any
+ * loaded features missing an id) can be reliably matched by the modify/delete
+ * apply* actions and hit-tested on the map.
+ */
+export function nextFeatureId(): string {
+  return `feat-${Date.now()}-${++_featureIdCounter}`;
+}
+
+/**
+ * Ensure a feature carries a stable `id`. Returns the same object if it already
+ * has one, otherwise a shallow clone with a generated id.
+ */
+export function ensureFeatureId(feature: GeometryFeature): GeometryFeature {
+  if (feature.id !== undefined && feature.id !== null && feature.id !== '') {
+    return feature;
+  }
+  return { ...feature, id: nextFeatureId() };
+}
+
 // ─── Snap logic ─────────────────────────────────────────────────────────────
 
 /**
@@ -188,6 +212,20 @@ export interface DrawTools {
   handleClick(lngLat: GeoCoordinate, zoom: number): boolean;
   /** Handle double-click to complete drawing. */
   handleDoubleClick(lngLat: GeoCoordinate, zoom: number): boolean;
+  /**
+   * Apply an in-place vertex move to an existing feature. Computes the modified
+   * geometry (with snapping) and routes it through the `onFeatureModify` seam.
+   * Returns the resulting feature, or null if the geometry type is unsupported.
+   */
+  moveFeatureVertex(
+    feature: GeometryFeature,
+    vertexIndex: number,
+    newCoord: GeoCoordinate,
+    zoom: number,
+    snapCandidates?: GeometryFeature[]
+  ): GeometryFeature;
+  /** Delete an existing feature, routing it through the `onFeatureDelete` seam. */
+  removeFeature(feature: GeometryFeature): void;
   /** Cancel the current drawing session. */
   cancel(): void;
   /** Current in-progress coordinates. */
@@ -282,6 +320,33 @@ export function createDrawTools(options: DrawToolsOptions): DrawTools {
     return true;
   }
 
+  function moveFeatureVertex(
+    feature: GeometryFeature,
+    vertexIndex: number,
+    newCoord: GeoCoordinate,
+    zoom: number,
+    snapCandidates?: GeometryFeature[]
+  ): GeometryFeature {
+    // Snap against everything except the feature being edited so a dragged vertex
+    // does not snap onto its own vertices.
+    const candidates =
+      snapCandidates ?? existingFeatures.filter((f) => f.id !== feature.id);
+    const after = moveVertex({
+      feature,
+      vertexIndex,
+      newCoord,
+      snapCandidates: candidates,
+      zoom,
+      snapTolerancePx,
+    });
+    options.onFeatureModify?.(feature, after);
+    return after;
+  }
+
+  function removeFeature(feature: GeometryFeature) {
+    options.onFeatureDelete?.(feature);
+  }
+
   function cancel() {
     reset();
   }
@@ -292,6 +357,7 @@ export function createDrawTools(options: DrawToolsOptions): DrawTools {
   ): GeometryFeature {
     return {
       type: 'Feature',
+      id: nextFeatureId(),
       geometry: { type, coordinates } as GeoJSONPoint | GeoJSONLineString | GeoJSONPolygon,
       properties: {
         layerType: options.layerType,
@@ -307,6 +373,8 @@ export function createDrawTools(options: DrawToolsOptions): DrawTools {
     get snapPoint() { return snapPoint; },
     handleClick,
     handleDoubleClick,
+    moveFeatureVertex,
+    removeFeature,
     cancel,
   };
 }

@@ -3,6 +3,10 @@ package vnpt.vsp.module.pkg;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import vnpt.vsp.module.course.entity.Course;
+import vnpt.vsp.module.course.entity.GolfFacility;
+import vnpt.vsp.module.course.repository.CourseRepository;
+import vnpt.vsp.module.course.repository.GolfFacilityRepository;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -25,15 +29,32 @@ import java.util.stream.Collectors;
  * - ETag computation: SHA-256(courseId + ";" + version + ";" + generatedAt)
  * - Conditional fetch: If-None-Match header → 304 Not Modified when ETag matches
  * - Per-file metadata endpoint for mobile delta computation
+ *
+ * NOTE on the "package" vs "pkg" naming (G3): there is exactly one manifest
+ * entity, {@link vnpt.vsp.module.pkg.entity.CoursePackageManifest}. Its source
+ * lives under the physical directory {@code module/package/} (the word
+ * {@code package} is a Java reserved keyword and cannot be a package identifier),
+ * while every file inside declares the Java package {@code vnpt.vsp.module.pkg}.
+ * The compiler keys off the declared package, so all classes compile to
+ * {@code vnpt.vsp.module.pkg.*}. The apparent "module.package.entity vs
+ * module.pkg.entity duplication" is a directory-name-vs-package-name artifact,
+ * NOT two classes — this controller and the whole module consistently use
+ * {@code pkg}.
  */
 @RestController
 @RequestMapping("/courses/{courseId}/packages")
 public class PackageController {
 
     private final PackageService packageService;
+    private final CourseRepository courseRepository;
+    private final GolfFacilityRepository facilityRepository;
 
-    public PackageController(PackageService packageService) {
+    public PackageController(PackageService packageService,
+                             CourseRepository courseRepository,
+                             GolfFacilityRepository facilityRepository) {
         this.packageService = packageService;
+        this.courseRepository = courseRepository;
+        this.facilityRepository = facilityRepository;
     }
 
     /**
@@ -159,6 +180,35 @@ public class PackageController {
     // ─── DTOs ─────────────────────────────────────────────────────────────────
 
     private CoursePackageManifestDto toDto(vnpt.vsp.module.pkg.entity.CoursePackageManifest manifest) {
+        // Optional facility/course descriptor fields (G3): populated at request time
+        // from the course + facility so offline nearby/hole detection has facility
+        // coordinates and human-readable names without persisting them on the manifest.
+        String facilityId = null;
+        String facilityName = null;
+        String facilityAddress = null;
+        Double facilityLatitude = null;
+        Double facilityLongitude = null;
+        String courseName = null;
+        Integer holesCount = null;
+        Integer parTotal = null;
+
+        Course course = courseRepository.findById(manifest.getCourseId()).orElse(null);
+        if (course != null) {
+            courseName = course.getName();
+            holesCount = course.getHolesCount();
+            parTotal = course.getParTotal();
+            GolfFacility facility = course.getFacility();
+            if (facility != null && facility.getId() != null) {
+                Long fid = facility.getId();
+                facilityId = fid.toString();
+                facilityName = facility.getName();
+                facilityAddress = facility.getAddress();
+                // Geometry columns are extracted via PostGIS ST_X/ST_Y (WGS84 lng/lat).
+                facilityLatitude = facilityRepository.findLatitudeByFacilityId(fid);
+                facilityLongitude = facilityRepository.findLongitudeByFacilityId(fid);
+            }
+        }
+
         return new CoursePackageManifestDto(
                 manifest.getId().toString(),
                 manifest.getCourseId().toString(),
@@ -183,7 +233,15 @@ public class PackageController {
                 manifest.getAccuracyClass() != null ? manifest.getAccuracyClass().name() : null,
                 manifest.getConfidence(),
                 manifest.getPinSnapshotDate(),
-                manifest.getWeatherSnapshotDate()
+                manifest.getWeatherSnapshotDate(),
+                facilityId,
+                facilityName,
+                facilityAddress,
+                facilityLatitude,
+                facilityLongitude,
+                courseName,
+                holesCount,
+                parTotal
         );
     }
 
@@ -275,6 +333,15 @@ public class PackageController {
         private Double confidence;
         private Instant pinSnapshotDate;
         private Instant weatherSnapshotDate;
+        // Optional facility/course descriptor fields (G3 — offline nearby/hole detection).
+        private String facilityId;
+        private String facilityName;
+        private String facilityAddress;
+        private Double facilityLatitude;
+        private Double facilityLongitude;
+        private String courseName;
+        private Integer holesCount;
+        private Integer parTotal;
 
         public CoursePackageManifestDto(String packageId, String courseId, String version,
                 Instant effectiveDate, Instant expiresAt, String checksum, Long sizeBytes,
@@ -283,7 +350,10 @@ public class PackageController {
                 List<PackageLicenseDto> licenses, String scorecardUrl, String rulesUrl,
                 String conditionsUrl, String metadataUrl, Instant generatedAt,
                 String generatedBy, String accuracyClass, Double confidence,
-                Instant pinSnapshotDate, Instant weatherSnapshotDate) {
+                Instant pinSnapshotDate, Instant weatherSnapshotDate,
+                String facilityId, String facilityName, String facilityAddress,
+                Double facilityLatitude, Double facilityLongitude,
+                String courseName, Integer holesCount, Integer parTotal) {
             this.packageId = packageId;
             this.courseId = courseId;
             this.version = version;
@@ -308,6 +378,14 @@ public class PackageController {
             this.confidence = confidence;
             this.pinSnapshotDate = pinSnapshotDate;
             this.weatherSnapshotDate = weatherSnapshotDate;
+            this.facilityId = facilityId;
+            this.facilityName = facilityName;
+            this.facilityAddress = facilityAddress;
+            this.facilityLatitude = facilityLatitude;
+            this.facilityLongitude = facilityLongitude;
+            this.courseName = courseName;
+            this.holesCount = holesCount;
+            this.parTotal = parTotal;
         }
 
         public String getPackageId() { return packageId; }
@@ -334,5 +412,13 @@ public class PackageController {
         public Double getConfidence() { return confidence; }
         public Instant getPinSnapshotDate() { return pinSnapshotDate; }
         public Instant getWeatherSnapshotDate() { return weatherSnapshotDate; }
+        public String getFacilityId() { return facilityId; }
+        public String getFacilityName() { return facilityName; }
+        public String getFacilityAddress() { return facilityAddress; }
+        public Double getFacilityLatitude() { return facilityLatitude; }
+        public Double getFacilityLongitude() { return facilityLongitude; }
+        public String getCourseName() { return courseName; }
+        public Integer getHolesCount() { return holesCount; }
+        public Integer getParTotal() { return parTotal; }
     }
 }

@@ -30,6 +30,7 @@
       :active-layer="activeLayer"
       :can-undo="undoManager.canUndo > 0"
       :can-redo="undoManager.canRedo > 0"
+      :selected-feature-id="selectedFeatureId"
       @tool-change="handleToolChange"
       @map-click="handleMapClick"
       @map-dblclick="handleMapDblClick"
@@ -40,6 +41,10 @@
       @save-draft="handleSaveDraft"
       @validate="handleValidate"
       @retry="loadDraftGeometry"
+      @feature-select="handleFeatureSelect"
+      @feature-deselect="handleFeatureDeselect"
+      @vertex-move="handleVertexMove"
+      @feature-delete="handleFeatureDeleteRequest"
     />
   </div>
 </template>
@@ -48,7 +53,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import GeometryEditor from '@/components/geometry/GeometryEditor.vue';
 import UnsavedChangesGuard from '@/components/geometry/UnsavedChangesGuard.vue';
-import { createDrawTools } from '@/components/geometry/DrawTools';
+import { createDrawTools, ensureFeatureId } from '@/components/geometry/DrawTools';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
 import { useGeometryApi } from '@/hooks/useGeometryApi';
 import {
@@ -130,6 +135,23 @@ const isDirty = ref(false);
 const activeTool = ref<EditorTool>('select');
 const activeLayer = ref<LayerType>('tee');
 
+// Currently selected feature (select tool) — drives on-map vertex handles.
+const selectedFeatureId = ref<string | number | null>(null);
+
+/** Resolve a feature object by id across all layers. */
+function resolveFeature(id: string | number | null): GeometryFeature | null {
+  if (id == null) return null;
+  for (const features of Object.values(layerFeatures.value)) {
+    const match = features?.find((f) => f.id === id);
+    if (match) return match;
+  }
+  return null;
+}
+
+const selectedFeature = computed<GeometryFeature | null>(() =>
+  resolveFeature(selectedFeatureId.value)
+);
+
 // Per-layer visibility state
 const layerStates = ref<LayerStateMap>(
   Object.fromEntries(ALL_LAYER_TYPES.map((t) => [t, { visible: true, selectedFeatureIds: [] }]))
@@ -152,13 +174,17 @@ async function loadDraftGeometry() {
 function applyDraftGeometryResponse(data: DraftGeometryResponse) {
   isDraft.value = data.state === 'draft';
   const grouped: LayerFeatureMap = {};
-  for (const feature of data.features) {
+  for (const raw of data.features) {
+    // Guarantee a stable id so map hit-tests and modify/delete actions can
+    // reliably match features (Story 8-2).
+    const feature = ensureFeatureId(raw);
     const lt = feature.properties.layerType;
     if (!grouped[lt]) grouped[lt] = [];
     grouped[lt]!.push(feature);
   }
   layerFeatures.value = grouped;
   isDirty.value = false;
+  selectedFeatureId.value = null;
   undoManager.reset();
 }
 
@@ -173,6 +199,10 @@ function handleToolChange(tool: EditorTool) {
     return;
   }
   activeTool.value = tool;
+  // Selection/vertex handles only apply to the select tool.
+  if (tool !== 'select') {
+    selectedFeatureId.value = null;
+  }
   // Prepare the draw-tools engine for the active layer/tool.
   ensureDrawTools();
 }
@@ -194,6 +224,58 @@ function handleMapClick(coord: GeoCoordinate, zoom: number) {
 function handleMapDblClick(coord: GeoCoordinate, zoom: number) {
   if (activeTool.value === 'select') return;
   ensureDrawTools().handleDoubleClick(coord, zoom);
+}
+
+// ─── Select / vertex-edit / delete interaction (Story 8-2) ────────────────────
+
+function handleFeatureSelect(payload: { id: string | number; layerType: LayerType }) {
+  if (activeTool.value !== 'select') return;
+  selectedFeatureId.value = payload.id;
+  screenReaderAnnouncement.value = `Selected ${payload.layerType} feature. Drag a vertex to edit, or press Delete to remove.`;
+}
+
+function handleFeatureDeselect() {
+  if (selectedFeatureId.value != null) {
+    selectedFeatureId.value = null;
+    screenReaderAnnouncement.value = 'Selection cleared';
+  }
+}
+
+function handleVertexMove(payload: {
+  featureId: string | number;
+  layerType: LayerType;
+  vertexIndex: number;
+  coord: GeoCoordinate;
+  zoom: number;
+}) {
+  if (!canEdit.value) return;
+  const before = resolveFeature(payload.featureId);
+  if (!before) return;
+  // Snap against everything except the feature being edited.
+  const candidates = getAllFeatures().filter((f) => f.id !== before.id);
+  ensureDrawTools().moveFeatureVertex(
+    before,
+    payload.vertexIndex,
+    payload.coord,
+    payload.zoom,
+    candidates
+  );
+}
+
+function deleteSelectedFeature() {
+  if (!canEdit.value) return;
+  const feature = selectedFeature.value;
+  if (!feature) return;
+  ensureDrawTools().removeFeature(feature);
+  selectedFeatureId.value = null;
+}
+
+function handleFeatureDeleteRequest(payload: { featureId: string | number; layerType: LayerType }) {
+  if (!canEdit.value) return;
+  const feature = resolveFeature(payload.featureId);
+  if (!feature) return;
+  ensureDrawTools().removeFeature(feature);
+  selectedFeatureId.value = null;
 }
 
 function handleVisibilityToggle(layerType: LayerType) {
@@ -482,7 +564,28 @@ function handleGlobalKeydown(event: KeyboardEvent) {
     if (canEdit.value && !saving.value) {
       handleSaveDraft();
     }
+    return;
   }
+
+  // Delete / Backspace → delete the selected feature (select tool only).
+  if (
+    (event.key === 'Delete' || event.key === 'Backspace') &&
+    activeTool.value === 'select' &&
+    selectedFeatureId.value != null &&
+    canEdit.value &&
+    !isEditableTarget(event.target)
+  ) {
+    event.preventDefault();
+    deleteSelectedFeature();
+  }
+}
+
+/** Guard so Backspace inside a text field is never captured as a delete. */
+function isEditableTarget(target: EventTarget | null): boolean {
+  const el = target as HTMLElement | null;
+  if (!el || !el.tagName) return false;
+  const tag = el.tagName.toUpperCase();
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
 }
 
 // ─── Guard handlers ─────────────────────────────────────────────────────────

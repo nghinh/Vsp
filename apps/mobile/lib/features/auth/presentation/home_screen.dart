@@ -15,6 +15,7 @@ import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
 import '../../privacy/presentation/privacy_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
+import '../../round/presentation/rounds_history_tab.dart';
 import '../../round_setup/presentation/round_setup_screen.dart';
 import 'auth_bloc.dart';
 import 'login_screen.dart';
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: const [
           _PlayTab(),
           CourseSearchScreen(),
-          _RoundsTab(),
+          RoundsHistoryTab(),
           ProfileScreen(),
           _MoreTab(),
         ],
@@ -123,45 +124,6 @@ class _PlayTab extends StatelessWidget {
                   MaterialPageRoute(builder: (_) => const RoundSetupScreen()),
                 );
               },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RoundsTab extends StatelessWidget {
-  const _RoundsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.scoreboard_outlined,
-              size: 80,
-              color: colorScheme.primary.withOpacity(0.5),
-            ),
-            const SizedBox(height: VspSpacing.md),
-            Text(
-              'Your Rounds',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: VspFontWeight.semibold,
-              ),
-            ),
-            const SizedBox(height: VspSpacing.sm),
-            Text(
-              'View your round history',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
             ),
           ],
         ),

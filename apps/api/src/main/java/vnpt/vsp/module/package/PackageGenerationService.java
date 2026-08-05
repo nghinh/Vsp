@@ -7,17 +7,23 @@ import vnpt.vsp.module.operations.OperationsService;
 import vnpt.vsp.module.operations.dto.CourseConditionDto;
 import vnpt.vsp.module.operations.dto.GreenConditionDto;
 import vnpt.vsp.module.operations.dto.PinPositionDto;
+import vnpt.vsp.module.pkg.entity.CoursePackageManifest;
 import vnpt.vsp.module.pkg.entity.PackageBuildJob;
 import vnpt.vsp.module.pkg.entity.PackageBuildStatus;
+import vnpt.vsp.module.pkg.entity.PackageFileEntry;
 import vnpt.vsp.module.pkg.repository.PackageBuildJobRepository;
+import vnpt.vsp.module.pkg.repository.PackageManifestRepository;
 import vnpt.vsp.module.pkg.storage.ObjectStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,19 +53,27 @@ public class PackageGenerationService {
 
     private static final Logger log = LoggerFactory.getLogger(PackageGenerationService.class);
 
+    // CDN URL pattern (immutable, versioned) — mirrors ObjectStorageService docs.
+    private static final String CDN_BASE = "https://cdn.vnptgolf.vn/packages";
+    private static final String DEFAULT_MINIMUM_CLIENT_VERSION = "1.0.0";
+
     private final PackageBuildJobRepository jobRepository;
+    private final PackageManifestRepository manifestRepository;
     private final ObjectStorageService storageService;
     private final OperationsService operationsService;
     private final ObjectMapper objectMapper;
 
-    // Temporary storage for assembled files (populated in assemblePackageFiles, consumed in uploadToStorage)
+    // Temporary storage for assembled files (populated in assemblePackageFiles,
+    // consumed in uploadToStorage/persistManifest)
     private final Map<UUID, List<AssembledFile>> assembledFiles = new java.util.concurrent.ConcurrentHashMap<>();
 
     public PackageGenerationService(
             PackageBuildJobRepository jobRepository,
+            PackageManifestRepository manifestRepository,
             ObjectStorageService storageService,
             OperationsService operationsService) {
         this.jobRepository = jobRepository;
+        this.manifestRepository = manifestRepository;
         this.storageService = storageService;
         this.operationsService = operationsService;
         this.objectMapper = new ObjectMapper();
@@ -133,6 +147,11 @@ public class PackageGenerationService {
             jobRepository.save(job);
             publishToCDN(job);
 
+            // Stage 6: Persist the CoursePackageManifest row so
+            // GET /courses/{id}/packages/current resolves. Idempotent on
+            // (courseId, version) — an existing manifest for this version is reused.
+            persistManifest(job, manifestVersion);
+
             // Mark complete with the already-computed manifest version
             job.markCompleted(manifestVersion);
             jobRepository.save(job);
@@ -189,9 +208,63 @@ public class PackageGenerationService {
             throw new AssemblyException("Failed to assemble conditions.json", e.getMessage());
         }
 
+        // Assemble manifest.json — the manifest descriptor the mobile persists locally.
+        // Previously assemblePackageFiles only emitted conditions.json (G3).
+        try {
+            AssembledFile manifestFile = assembleManifestJson(job, manifestVersion, files);
+            if (manifestFile != null) {
+                files.add(manifestFile);
+            }
+        } catch (Exception e) {
+            throw new AssemblyException("Failed to assemble manifest.json", e.getMessage());
+        }
+
         // Store assembled files for this job (uploadToStorage will consume them)
         assembledFiles.put(job.getId(), files);
         log.info("Assembled {} files for job {}", files.size(), job.getId());
+    }
+
+    /**
+     * Assemble manifest.json — a self-describing descriptor of the package
+     * (course/version identifiers, generation metadata, CDN URLs, and the file
+     * inventory known so far). This is the file the mobile client persists as
+     * {@code manifest.json} after download.
+     */
+    private AssembledFile assembleManifestJson(PackageBuildJob job, String manifestVersion,
+            List<AssembledFile> priorFiles) {
+        Long courseId = job.getCourseId();
+        Instant now = Instant.now();
+
+        Map<String, Object> manifest = new LinkedHashMap<>();
+        manifest.put("courseId", courseId);
+        manifest.put("version", manifestVersion);
+        manifest.put("dataVersion", job.getDataVersionId());
+        manifest.put("generatedAt", now.toString());
+        manifest.put("generatedBy", job.getTriggeredBy());
+        manifest.put("minimumClientVersion", DEFAULT_MINIMUM_CLIENT_VERSION);
+        manifest.put("tilesFormat", CoursePackageManifest.TilesFormat.PMTILES.name());
+        manifest.put("tilesUrl", cdnUrl(courseId, manifestVersion, "tiles", "tiles.pmtiles"));
+        manifest.put("geoJsonUrl", cdnUrl(courseId, manifestVersion, "geometry", "geometry.geojson"));
+        manifest.put("conditionsUrl", cdnUrl(courseId, manifestVersion, "conditions", "conditions.json"));
+
+        List<Map<String, Object>> fileList = new ArrayList<>();
+        for (AssembledFile f : priorFiles) {
+            Map<String, Object> entry = new LinkedHashMap<>();
+            entry.put("path", f.path);
+            entry.put("checksum", sha256Hex(f.data));
+            entry.put("sizeBytes", (long) f.data.length);
+            entry.put("contentType", f.contentType.name());
+            fileList.add(entry);
+        }
+        manifest.put("files", fileList);
+
+        try {
+            byte[] jsonBytes = objectMapper.writeValueAsBytes(manifest);
+            return new AssembledFile("manifest.json", jsonBytes,
+                    ObjectStorageService.ContentType.METADATA, null);
+        } catch (Exception e) {
+            throw new AssemblyException("Failed to serialize manifest.json", e.getMessage());
+        }
     }
 
     /**
@@ -247,7 +320,8 @@ public class PackageGenerationService {
     }
 
     void uploadToStorage(PackageBuildJob job, String manifestVersion) {
-        List<AssembledFile> files = assembledFiles.remove(job.getId());
+        // Peek (do not remove) — persistManifest consumes the same list afterwards.
+        List<AssembledFile> files = assembledFiles.get(job.getId());
         if (files == null || files.isEmpty()) {
             log.debug("uploadToStorage for job {} — no files to upload", job.getId());
             return;
@@ -274,6 +348,83 @@ public class PackageGenerationService {
         // TODO: Trigger CDN cache warming/publish for the package prefix
         // For MVP: stub — CDN warming is a no-op without actual CDN integration
         log.debug("publishToCDN for job {}", job.getId());
+    }
+
+    /**
+     * Persist (or reuse) the {@link CoursePackageManifest} row for this build so
+     * that {@code GET /courses/{courseId}/packages/current} resolves. The row is
+     * marked effective immediately (effectiveFrom = now). Idempotent on
+     * (courseId, version): if a manifest already exists for this course+version
+     * (e.g. seeded, or a re-run), it is reused and no duplicate is created.
+     */
+    void persistManifest(PackageBuildJob job, String manifestVersion) {
+        List<AssembledFile> files = assembledFiles.remove(job.getId());
+        Long courseId = job.getCourseId();
+
+        if (manifestRepository.findByCourseIdAndVersion(courseId, manifestVersion).isPresent()) {
+            log.info("Manifest already exists for course {} version {} — reusing", courseId, manifestVersion);
+            return;
+        }
+
+        Instant now = Instant.now();
+        long totalSize = 0L;
+        if (files != null) {
+            for (AssembledFile f : files) {
+                totalSize += f.data.length;
+            }
+        }
+
+        String tilesUrl = cdnUrl(courseId, manifestVersion, "tiles", "tiles.pmtiles");
+        String geoJsonUrl = cdnUrl(courseId, manifestVersion, "geometry", "geometry.geojson");
+        String manifestChecksum = sha256Hex((courseId + ":" + manifestVersion + ":" + totalSize)
+                .getBytes(StandardCharsets.UTF_8));
+
+        CoursePackageManifest manifest = new CoursePackageManifest(
+                courseId,
+                job.getDataVersionId(),
+                manifestVersion,
+                totalSize,
+                manifestChecksum,
+                now,
+                DEFAULT_MINIMUM_CLIENT_VERSION,
+                CoursePackageManifest.TilesFormat.PMTILES,
+                tilesUrl,
+                geoJsonUrl,
+                now,
+                job.getTriggeredBy() != null ? job.getTriggeredBy() : "system");
+
+        if (files != null) {
+            for (AssembledFile f : files) {
+                PackageFileEntry.ContentType entryType =
+                        PackageFileEntry.ContentType.valueOf(f.contentType.name());
+                if (entryType == PackageFileEntry.ContentType.CONDITIONS) {
+                    manifest.setConditionsUrl(cdnUrl(courseId, manifestVersion, "conditions", f.path));
+                }
+                manifest.addFile(new PackageFileEntry(
+                        f.path,
+                        sha256Hex(f.data),
+                        (long) f.data.length,
+                        entryType));
+            }
+        }
+
+        manifestRepository.save(manifest);
+        log.info("Persisted CoursePackageManifest for course {} version {} ({} files, {} bytes)",
+                courseId, manifestVersion, manifest.getFiles().size(), totalSize);
+    }
+
+    private String cdnUrl(Long courseId, String manifestVersion, String contentType, String filename) {
+        return CDN_BASE + "/" + courseId + "/" + manifestVersion + "/" + contentType + "/" + filename;
+    }
+
+    private String sha256Hex(byte[] data) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            return HexFormat.of().formatHex(digest.digest(data));
+        } catch (Exception e) {
+            // SHA-256 is always available in the JDK; fall back to a stable hash.
+            return Integer.toHexString(java.util.Arrays.hashCode(data));
+        }
     }
 
     String computeManifestVersion(PackageBuildJob job) {

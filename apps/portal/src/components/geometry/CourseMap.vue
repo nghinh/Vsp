@@ -44,6 +44,18 @@
       <span class="sat-label">{{ satelliteEnabled ? 'Dark' : 'Satellite' }}</span>
     </button>
 
+    <!-- Delete selected feature (Story 8-2) -->
+    <button
+      v-if="activeTool === 'select' && selectedFeatureId != null"
+      class="delete-selected-btn"
+      aria-label="Delete selected feature"
+      title="Delete selected feature (Del)"
+      @click="handleDeleteSelected"
+    >
+      <span aria-hidden="true">🗑</span>
+      <span class="delete-label">Delete feature</span>
+    </button>
+
     <!-- Attribution (MapLibre requirement) -->
     <div class="map-attribution">
       ©
@@ -68,6 +80,7 @@ import type {
   GeometryFeature,
   GeoJSONGeometry,
   GeoCoordinate,
+  EditorTool,
 } from '@/types/geometry';
 
 // ─── MapLibre dynamic import (SSR-safe) ──────────────────────────────────────
@@ -119,6 +132,10 @@ const props = defineProps<{
   initialZoom?: number;
   /** Course ID for debugging/aria labels. */
   courseId?: number;
+  /** Active editing tool — selection/vertex editing is only active for `select`. */
+  activeTool?: EditorTool;
+  /** Id of the currently selected feature (drives vertex handle rendering). */
+  selectedFeatureId?: string | number | null;
 }>();
 
 const emit = defineEmits<{
@@ -130,6 +147,14 @@ const emit = defineEmits<{
   (e: 'map-click', coord: GeoCoordinate, zoom: number): void;
   /** Fired on map double-click — completes line/polygon drawing. */
   (e: 'map-dblclick', coord: GeoCoordinate, zoom: number): void;
+  /** Fired when a feature is selected in select mode. */
+  (e: 'feature-select', payload: { id: string | number; layerType: LayerType }): void;
+  /** Fired when the user clicks empty map area in select mode. */
+  (e: 'feature-deselect'): void;
+  /** Fired when a vertex handle drag completes. */
+  (e: 'vertex-move', payload: { featureId: string | number; layerType: LayerType; vertexIndex: number; coord: GeoCoordinate; zoom: number }): void;
+  /** Fired when the selected feature should be deleted (delete button). */
+  (e: 'feature-delete', payload: { featureId: string | number; layerType: LayerType }): void;
 }>();
 
 // ─── Template refs ────────────────────────────────────────────────────────────
@@ -171,7 +196,17 @@ const LAYER_PREFIX  = 'lyr-';
 function buildFeatureCollection(features: GeometryFeature[]): GeoJSON.FeatureCollection {
   return {
     type: 'FeatureCollection',
-    features: features.filter((f) => f?.geometry != null),
+    features: features
+      .filter((f) => f?.geometry != null)
+      .map((f) => ({
+        type: 'Feature',
+        // Mirror the feature id into properties (`__fid`) so map click hit-tests
+        // can resolve back to the original feature object regardless of the id
+        // type (MapLibre only surfaces numeric top-level ids reliably).
+        id: typeof f.id === 'number' ? f.id : undefined,
+        geometry: f.geometry as GeoJSON.Geometry,
+        properties: { ...f.properties, __fid: f.id ?? null },
+      })),
   };
 }
 
@@ -328,6 +363,204 @@ function handleFeatureClick(e: any) {
   emit('feature-click', feature);
 }
 
+// ─── Selection + vertex editing (Story 8-2) ──────────────────────────────────
+
+const HANDLE_SOURCE = 'src-vertex-handles';
+const HANDLE_LAYER  = 'lyr-vertex-handles';
+
+/** Ids of the feature layers eligible for selection hit-testing. */
+function editableLayerIds(): string[] {
+  const ids: string[] = [];
+  for (const layerType of ALL_LAYER_TYPES) {
+    const geomType = getLayerGeomType(layerType);
+    if (geomType === 'Polygon') ids.push(LAYER_PREFIX + layerType + '-fill');
+    else if (geomType === 'LineString') ids.push(LAYER_PREFIX + layerType + '-line');
+    else ids.push(LAYER_PREFIX + layerType + '-circle');
+  }
+  return ids.filter((id) => map?.getLayer(id));
+}
+
+/** Resolve the currently selected feature from props by matching its id. */
+function findSelectedFeature(): GeometryFeature | null {
+  if (props.selectedFeatureId == null) return null;
+  for (const features of Object.values(props.layerFeatures)) {
+    const match = features?.find((f) => f.id === props.selectedFeatureId);
+    if (match) return match;
+  }
+  return null;
+}
+
+/**
+ * Build the draggable vertex handle features for a selected feature.
+ * For polygons the closing vertex is skipped (it is kept in sync with vertex 0
+ * by moveVertex), so each rendered handle maps to a distinct editable index.
+ */
+function buildVertexHandles(feature: GeometryFeature): GeoJSON.Feature[] {
+  const handles: GeoJSON.Feature[] = [];
+  const push = (coord: GeoCoordinate, index: number) => {
+    handles.push({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: coord },
+      properties: { vertexIndex: index },
+    });
+  };
+
+  const geom = feature.geometry;
+  if (geom.type === 'Point') {
+    push(geom.coordinates as GeoCoordinate, 0);
+  } else if (geom.type === 'LineString') {
+    geom.coordinates.forEach((c, i) => push(c as GeoCoordinate, i));
+  } else if (geom.type === 'Polygon') {
+    const ring = geom.coordinates[0] ?? [];
+    // Skip the final closing vertex (duplicate of index 0).
+    for (let i = 0; i < ring.length - 1; i++) {
+      push(ring[i] as GeoCoordinate, i);
+    }
+  }
+  return handles;
+}
+
+/** Ensure the handle source + circle layer exist (re-added after style reloads). */
+function ensureHandleLayer() {
+  if (!map) return;
+  if (!map.getSource(HANDLE_SOURCE)) {
+    map.addSource(HANDLE_SOURCE, {
+      type: 'geojson',
+      data: { type: 'FeatureCollection', features: [] },
+    });
+  }
+  if (!map.getLayer(HANDLE_LAYER)) {
+    map.addLayer({
+      id: HANDLE_LAYER,
+      type: 'circle',
+      source: HANDLE_SOURCE,
+      paint: {
+        'circle-radius': 6,
+        'circle-color': '#ffffff',
+        'circle-stroke-width': 2.5,
+        'circle-stroke-color': '#3b82f6',
+      },
+    });
+    // Grab cursor on hover.
+    map.on('mouseenter', HANDLE_LAYER, () => {
+      if (!draggingVertexIndex && map) map.getCanvas().style.cursor = 'grab';
+    });
+    map.on('mouseleave', HANDLE_LAYER, () => {
+      if (!draggingVertexIndex && map) map.getCanvas().style.cursor = '';
+    });
+    map.on('mousedown', HANDLE_LAYER, onHandleMouseDown);
+  }
+}
+
+/** Last handle FeatureCollection pushed to the source (for live drag preview). */
+let currentHandleData: GeoJSON.FeatureCollection = { type: 'FeatureCollection', features: [] };
+
+/** Refresh the handle geometries for the current selection. */
+function syncVertexHandles() {
+  if (!map) return;
+  ensureHandleLayer();
+  const source = map.getSource(HANDLE_SOURCE);
+  if (!source) return;
+  const feature = findSelectedFeature();
+  currentHandleData = {
+    type: 'FeatureCollection',
+    features: feature ? buildVertexHandles(feature) : [],
+  };
+  source.setData(currentHandleData);
+}
+
+// ─── Vertex drag ─────────────────────────────────────────────────────────────
+
+let draggingVertexIndex: number | null = null;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onHandleMouseDown(e: any) {
+  if (props.activeTool !== 'select') return;
+  if (!e.features || e.features.length === 0) return;
+  const idx = e.features[0].properties?.vertexIndex;
+  if (idx == null) return;
+
+  e.preventDefault(); // stop the map from panning
+  draggingVertexIndex = Number(idx);
+  map.dragPan.disable();
+  map.getCanvas().style.cursor = 'grabbing';
+  map.on('mousemove', onHandleMouseMove);
+  map.once('mouseup', onHandleMouseUp);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onHandleMouseMove(e: any) {
+  if (draggingVertexIndex == null || !map) return;
+  const source = map.getSource(HANDLE_SOURCE);
+  if (!source) return;
+  // Live preview: move just the dragged handle.
+  const moved: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: currentHandleData.features.map((f) =>
+      f.properties?.vertexIndex === draggingVertexIndex
+        ? { ...f, geometry: { type: 'Point', coordinates: [e.lngLat.lng, e.lngLat.lat] } }
+        : f
+    ),
+  };
+  source.setData(moved);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function onHandleMouseUp(e: any) {
+  if (!map) return;
+  map.off('mousemove', onHandleMouseMove);
+  map.dragPan.enable();
+  map.getCanvas().style.cursor = '';
+
+  const feature = findSelectedFeature();
+  if (feature && feature.id != null && draggingVertexIndex != null) {
+    emit('vertex-move', {
+      featureId: feature.id,
+      layerType: feature.properties.layerType,
+      vertexIndex: draggingVertexIndex,
+      coord: [e.lngLat.lng, e.lngLat.lat],
+      zoom: map.getZoom(),
+    });
+  }
+  draggingVertexIndex = null;
+}
+
+// ─── Selection click ─────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleSelectClick(e: any) {
+  if (!map) return;
+  const layers = editableLayerIds();
+  if (layers.length === 0) {
+    emit('feature-deselect');
+    return;
+  }
+  const hits = map.queryRenderedFeatures(e.point, { layers });
+  const hit = hits.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (f: any) => f.properties && f.properties.__fid != null
+  );
+  if (hit) {
+    emit('feature-select', {
+      id: hit.properties.__fid,
+      layerType: hit.properties.layerType as LayerType,
+    });
+  } else {
+    emit('feature-deselect');
+  }
+}
+
+/** Delete button overlay handler. */
+function handleDeleteSelected() {
+  const feature = findSelectedFeature();
+  if (feature && feature.id != null) {
+    emit('feature-delete', {
+      featureId: feature.id,
+      layerType: feature.properties.layerType,
+    });
+  }
+}
+
 // ─── Map initialisation ──────────────────────────────────────────────────────
 
 async function initMap() {
@@ -363,14 +596,22 @@ async function initMap() {
     }
 
     syncVisibility();
+    ensureHandleLayer();
+    syncVertexHandles();
     fitToBounds();
     emit('map-ready');
 
     // General map clicks drive the draw-tools engine. Double-click zoom is
     // disabled so a double-click can complete a line/polygon instead.
     map.doubleClickZoom.disable();
-    map.on('click', (e: { lngLat: { lng: number; lat: number } }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    map.on('click', (e: any) => {
       emit('map-click', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
+      // In select mode a click either selects the feature under the cursor or
+      // deselects when clicking empty map area.
+      if (props.activeTool === 'select') {
+        handleSelectClick(e);
+      }
     });
     map.on('dblclick', (e: { lngLat: { lng: number; lat: number } }) => {
       emit('map-dblclick', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
@@ -476,6 +717,8 @@ async function toggleSatellite() {
       }
     }
     syncVisibility();
+    ensureHandleLayer();
+    syncVertexHandles();
   });
 }
 
@@ -536,6 +779,7 @@ watch(
       }
     }
     syncVisibility();
+    syncVertexHandles();
     fitToBounds();
   },
   { deep: true }
@@ -550,6 +794,16 @@ watch(
     syncVisibility();
   },
   { deep: true }
+);
+
+/**
+ * When the selection changes, refresh the vertex handles.
+ */
+watch(
+  () => props.selectedFeatureId,
+  () => {
+    syncVertexHandles();
+  }
 );
 
 // ─── Lifecycle ───────────────────────────────────────────────────────────────
@@ -640,6 +894,47 @@ defineExpose({
 }
 
 .sat-label {
+  line-height: 1;
+}
+
+/* ─── Delete selected button ───────────────────────────────────────────────── */
+
+.delete-selected-btn {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.75rem;
+  background: rgba(13, 17, 23, 0.85);
+  color: #fca5a5;
+  border: 1.5px solid rgba(239, 68, 68, 0.5);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: system-ui, -apple-system, sans-serif;
+  backdrop-filter: blur(6px);
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  min-height: 44px;
+  outline: none;
+}
+
+.delete-selected-btn:hover {
+  background: rgba(127, 29, 29, 0.6);
+  border-color: #ef4444;
+  color: #fecaca;
+}
+
+.delete-selected-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.5);
+  border-color: #ef4444;
+}
+
+.delete-label {
   line-height: 1;
 }
 
