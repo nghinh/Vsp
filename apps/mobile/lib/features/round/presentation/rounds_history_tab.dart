@@ -15,16 +15,30 @@ import '../../../core/network/api_client.dart';
 import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../domain/models/round.dart';
 import '../../../presentation/screens/analytics/round_review_screen.dart';
+import '../../../presentation/screens/score/scorecard_screen.dart';
+import '../data/round_abandon_service.dart';
 import '../data/round_history_repository.dart';
+import '../data/round_resume_service.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Home-screen tab showing the golfer's round history.
 class RoundsHistoryTab extends StatefulWidget {
-  const RoundsHistoryTab({super.key, RoundHistoryRepository? repository})
-    : _repository = repository;
+  const RoundsHistoryTab({
+    super.key,
+    RoundHistoryRepository? repository,
+    RoundResumeService? resumeService,
+    RoundAbandonService? abandonService,
+  }) : _repository = repository,
+       _resumeService = resumeService,
+       _abandonService = abandonService;
 
   final RoundHistoryRepository? _repository;
+
+  /// Injectable so widget tests can resume/abandon without a network or a
+  /// SQLite database. Built on first use otherwise.
+  final RoundResumeService? _resumeService;
+  final RoundAbandonService? _abandonService;
 
   @override
   State<RoundsHistoryTab> createState() => _RoundsHistoryTabState();
@@ -50,8 +64,12 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
     setState(() => _status = _Status.loading);
     try {
       final page = await _repository.fetchRounds();
-      final rounds = [...page.rounds]
-        ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+      // Abandoned rounds are discarded on purpose — keep them out of history so
+      // abandoning a round makes it disappear from the list.
+      final rounds = [
+        for (final r in page.rounds)
+          if (r.status != RoundStatus.abandoned) r,
+      ]..sort((a, b) => b.startedAt.compareTo(a.startedAt));
       if (!mounted) {
         return;
       }
@@ -115,7 +133,12 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
       context: context,
       showDragHandle: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      builder: (_) => _RoundDetailsSheet(round: round),
+      builder: (_) => _RoundDetailsSheet(
+        round: round,
+        onChanged: _load,
+        resumeService: widget._resumeService ?? RoundResumeService(),
+        abandonService: widget._abandonService ?? RoundAbandonService(),
+      ),
     );
   }
 }
@@ -246,7 +269,18 @@ class _StatusPill extends StatelessWidget {
 class _RoundDetailsSheet extends StatelessWidget {
   final Round round;
 
-  const _RoundDetailsSheet({required this.round});
+  /// Called after the round changes (e.g. abandoned) so the list reloads.
+  final VoidCallback onChanged;
+
+  final RoundResumeService resumeService;
+  final RoundAbandonService abandonService;
+
+  const _RoundDetailsSheet({
+    required this.round,
+    required this.onChanged,
+    required this.resumeService,
+    required this.abandonService,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -255,7 +289,9 @@ class _RoundDetailsSheet extends StatelessWidget {
     final statusStyle = _RoundStatusStyle.of(context, round.status, colorScheme.brightness);
 
     return SafeArea(
-      child: Padding(
+      // Scrollable: an in-progress round adds two more buttons, which
+      // overflows the sheet on short screens and in landscape.
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
           VspSpacing.lg,
           VspSpacing.sm,
@@ -293,14 +329,38 @@ class _RoundDetailsSheet extends StatelessWidget {
                 value: AppLocalizations.of(context).roundsTournamentRound,
               ),
             const SizedBox(height: VspSpacing.lg),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.tonalIcon(
-                onPressed: () => _openRoundReview(context),
-                icon: const Icon(Icons.query_stats),
-                label: Text(AppLocalizations.of(context).roundsReview),
+            if (round.isActive) ...[
+              // An in-progress round can be resumed (back to the scorecard) or
+              // abandoned (discarded so it stops cluttering history).
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () => _resumeRound(context),
+                  icon: const Icon(Icons.play_arrow),
+                  label: Text(AppLocalizations.of(context).roundsResume),
+                ),
               ),
-            ),
+              const SizedBox(height: VspSpacing.sm),
+              SizedBox(
+                width: double.infinity,
+                child: TextButton.icon(
+                  onPressed: () => _abandonRound(context),
+                  icon: Icon(Icons.delete_outline, color: colorScheme.error),
+                  label: Text(
+                    AppLocalizations.of(context).roundsAbandon,
+                    style: TextStyle(color: colorScheme.error),
+                  ),
+                ),
+              ),
+            ] else
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: () => _openRoundReview(context),
+                  icon: const Icon(Icons.query_stats),
+                  label: Text(AppLocalizations.of(context).roundsReview),
+                ),
+              ),
             const SizedBox(height: VspSpacing.sm),
             SizedBox(
               width: double.infinity,
@@ -313,6 +373,80 @@ class _RoundDetailsSheet extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Resumes an in-progress round: rebuilds the scorecard from the round's
+  /// locally-stored players and the course's per-hole pars, then reopens it.
+  /// Already-entered scores reload from the local store keyed by the round id.
+  Future<void> _resumeRound(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final navigator = Navigator.of(context);
+
+    final plan = await resumeService.planFor(
+      round,
+      selfPlayerName: l10n.roundsResumeSelf,
+    );
+
+    if (!navigator.mounted) return;
+    navigator.pop(); // close the sheet
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => ScorecardScreen(
+          flightId: round.id,
+          holeIds: plan.holeIds,
+          playerIds: plan.playerIds,
+          playerNames: plan.playerNames,
+          holePars: plan.holePars,
+          isTournamentMode: round.isTournamentRound,
+        ),
+      ),
+    );
+  }
+
+  /// Abandons an in-progress round: confirms, tells the server, mirrors it
+  /// locally, and reloads the list so the round disappears.
+  ///
+  /// A failed server call is reported as a failure and changes nothing —
+  /// the list is rebuilt from GET /rounds, so a device-only abandon would
+  /// simply reappear on the next refresh.
+  Future<void> _abandonRound(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.roundsAbandonConfirmTitle),
+        content: Text(l10n.roundsAbandonConfirmBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.roundsAbandon),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    final outcome = await abandonService.abandon(round);
+
+    if (outcome == RoundAbandonOutcome.failed) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.roundsAbandonFailed)),
+      );
+      return;
+    }
+
+    if (navigator.mounted) {
+      navigator.pop(); // close the sheet
+    }
+    messenger.showSnackBar(SnackBar(content: Text(l10n.roundsAbandoned)));
+    onChanged();
   }
 
   /// Opens the Round Review analytics screen for this round. The player id is

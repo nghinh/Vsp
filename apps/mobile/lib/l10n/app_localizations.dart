@@ -1490,6 +1490,48 @@ abstract class AppLocalizations {
   /// **'Review round'**
   String get roundsReview;
 
+  /// No description provided for @roundsResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume round'**
+  String get roundsResume;
+
+  /// No description provided for @roundsResumeSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'Me'**
+  String get roundsResumeSelf;
+
+  /// No description provided for @roundsAbandon.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandon round'**
+  String get roundsAbandon;
+
+  /// No description provided for @roundsAbandonConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Abandon this round?'**
+  String get roundsAbandonConfirmTitle;
+
+  /// No description provided for @roundsAbandonConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The round stops counting as in progress and leaves your history. Scores already entered stay on this device.'**
+  String get roundsAbandonConfirmBody;
+
+  /// No description provided for @roundsAbandoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Round abandoned'**
+  String get roundsAbandoned;
+
+  /// No description provided for @roundsAbandonFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not abandon the round. Check your connection and try again.'**
+  String get roundsAbandonFailed;
+
   /// No description provided for @roundStatusInProgress.
   ///
   /// In en, this message translates to:

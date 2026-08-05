@@ -754,6 +754,29 @@ class AppLocalizationsVi extends AppLocalizations {
   String get roundsReview => 'Xem lại vòng đấu';
 
   @override
+  String get roundsResume => 'Chơi tiếp vòng đấu';
+
+  @override
+  String get roundsResumeSelf => 'Tôi';
+
+  @override
+  String get roundsAbandon => 'Bỏ dở vòng đấu';
+
+  @override
+  String get roundsAbandonConfirmTitle => 'Bỏ dở vòng đấu này?';
+
+  @override
+  String get roundsAbandonConfirmBody =>
+      'Vòng đấu sẽ không còn ở trạng thái đang chơi và biến mất khỏi lịch sử. Điểm đã ghi vẫn được giữ trên máy này.';
+
+  @override
+  String get roundsAbandoned => 'Đã bỏ dở vòng đấu';
+
+  @override
+  String get roundsAbandonFailed =>
+      'Không bỏ dở được vòng đấu. Kiểm tra kết nối rồi thử lại.';
+
+  @override
   String get roundStatusInProgress => 'Đang chơi';
 
   @override

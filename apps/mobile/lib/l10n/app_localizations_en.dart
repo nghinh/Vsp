@@ -753,6 +753,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roundsReview => 'Review round';
 
   @override
+  String get roundsResume => 'Resume round';
+
+  @override
+  String get roundsResumeSelf => 'Me';
+
+  @override
+  String get roundsAbandon => 'Abandon round';
+
+  @override
+  String get roundsAbandonConfirmTitle => 'Abandon this round?';
+
+  @override
+  String get roundsAbandonConfirmBody =>
+      'The round stops counting as in progress and leaves your history. Scores already entered stay on this device.';
+
+  @override
+  String get roundsAbandoned => 'Round abandoned';
+
+  @override
+  String get roundsAbandonFailed =>
+      'Could not abandon the round. Check your connection and try again.';
+
+  @override
   String get roundStatusInProgress => 'In progress';
 
   @override

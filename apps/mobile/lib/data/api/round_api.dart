@@ -103,4 +103,18 @@ class RoundApi {
     );
     return RoundApiModel.fromJson(json as Map<String, dynamic>);
   }
+
+  /// Abandons an in-progress round so it stops showing as "in progress".
+  /// Safe to call again on an already-abandoned round.
+  Future<RoundApiModel> abandonRound({
+    required String roundId,
+    required String idempotencyKey,
+  }) async {
+    final json = await _apiClient.post(
+      '/rounds/$roundId/abandon',
+      body: const {},
+      idempotencyKey: idempotencyKey,
+    );
+    return RoundApiModel.fromJson(json as Map<String, dynamic>);
+  }
 }
