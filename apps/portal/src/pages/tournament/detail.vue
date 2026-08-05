@@ -3,7 +3,7 @@
 
     <header class="page-header">
       <div class="header-left">
-        <button class="btn-back" @click="$router.push('/tournament')" aria-label="Back to tournaments">
+        <button class="btn-back" @click="$router.push('/tournaments')" aria-label="Back to tournaments">
           ← Back
         </button>
         <div class="header-content">
@@ -23,7 +23,7 @@
         <button
           v-if="canEdit"
           class="btn btn-secondary"
-          @click="showEditForm = !showEditForm"
+          @click="toggleEdit"
         >
           Edit
         </button>
@@ -69,6 +69,37 @@
         <span v-if="tab.count !== undefined" class="tab-count">{{ tab.count }}</span>
       </button>
     </nav>
+
+    <!-- ─── Edit form (overlay, independent of tab chain) ───────────────── -->
+    <div v-if="showEditForm && canEdit && !loading && !error" class="edit-form">
+      <h3 class="card-title">Edit Tournament</h3>
+      <div class="edit-grid">
+        <div class="form-field">
+          <label class="form-label">Name</label>
+          <input v-model="editForm.name" class="form-input" type="text" />
+        </div>
+        <div class="form-field">
+          <label class="form-label">Format</label>
+          <select v-model="editForm.format" class="form-input">
+            <option value="strokePlay">Stroke Play</option>
+            <option value="matchPlay">Match Play</option>
+            <option value="stableford">Stableford</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Max Players</label>
+          <input v-model.number="editForm.maxPlayers" class="form-input" type="number" min="2" />
+        </div>
+        <div class="form-field full-width">
+          <label class="form-label">Description</label>
+          <textarea v-model="editForm.description" class="form-input" rows="2" />
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn btn-secondary" @click="showEditForm = false">Cancel</button>
+        <button class="btn btn-primary" :disabled="actionLoading" @click="handleSaveEdit">Save</button>
+      </div>
+    </div>
 
     <!-- ─── Loading / Error ─────────────────────────────────────────────── -->
     <div v-if="loading" class="loading-state" aria-busy="true">
@@ -136,6 +167,26 @@
         <input v-model="newPlayerHandicap" type="number" step="0.1" placeholder="Handicap" class="form-input" />
         <button class="btn btn-primary" @click="handleAddPlayer" :disabled="addLoading">Add</button>
         <button class="btn btn-secondary" @click="showAddPlayer = false">Cancel</button>
+      </div>
+
+      <!-- Bulk import form -->
+      <div v-if="showImportForm" class="import-form">
+        <label class="form-label">
+          Paste one player per line as <code>playerId,handicap</code> (handicap optional)
+        </label>
+        <textarea
+          v-model="importText"
+          class="form-input import-textarea"
+          rows="5"
+          placeholder="101,12.4&#10;102,8.0&#10;103"
+        />
+        <span v-if="importError" class="field-error">{{ importError }}</span>
+        <div class="import-actions">
+          <button class="btn btn-primary" :disabled="importLoading" @click="handleBulkImport">
+            {{ importLoading ? 'Importing…' : 'Import Players' }}
+          </button>
+          <button class="btn btn-secondary" @click="showImportForm = false">Cancel</button>
+        </div>
       </div>
 
       <div v-if="players.length === 0" class="empty-state">
@@ -351,7 +402,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { tournamentApi } from '@/api/tournament';
 import type {
@@ -361,6 +412,8 @@ import type {
   TournamentPlayerResponse,
   TournamentResultResponse,
   LeaderboardEntryResponse,
+  TournamentUpdateRequest,
+  TournamentBulkImportRequest,
 } from '@/types/tournament';
 
 const route = useRoute();
@@ -392,6 +445,11 @@ const showCreateTeeTime = ref(false);
 const newPlayerId = ref('');
 const newPlayerHandicap = ref('');
 const newTeeTime = ref('');
+
+const editForm = ref<TournamentUpdateRequest>({});
+const importText = ref('');
+const importError = ref<string | null>(null);
+const importLoading = ref(false);
 
 let sseSource: EventSource | null = null;
 
@@ -459,6 +517,14 @@ async function loadLeaderboard() {
   }
 }
 
+async function loadResults() {
+  try {
+    results.value = await tournamentApi.getResults(props.authToken, tournamentId);
+  } catch (_) {
+    // Results may not be published yet — leave empty
+  }
+}
+
 // ─── SSE ────────────────────────────────────────────────────────────────
 
 function connectLeaderboardSSE() {
@@ -493,10 +559,19 @@ onMounted(async () => {
     await loadLeaderboard();
     connectLeaderboardSSE();
   }
+  if (tournament.value?.status === 'COMPLETED') {
+    await loadResults();
+  }
 });
 
 onUnmounted(() => {
   disconnectLeaderboardSSE();
+});
+
+// Lazy-load tab data when the user switches tabs.
+watch(activeTab, (tab) => {
+  if (tab === 'leaderboard') loadLeaderboard();
+  if (tab === 'results' && tournament.value?.status === 'COMPLETED') loadResults();
 });
 
 // ─── Actions ────────────────────────────────────────────────────────────
@@ -563,6 +638,75 @@ async function handleAddPlayer() {
   }
 }
 
+function toggleEdit() {
+  showEditForm.value = !showEditForm.value;
+  if (showEditForm.value && tournament.value) {
+    editForm.value = {
+      name: tournament.value.name,
+      format: tournament.value.format,
+      maxPlayers: tournament.value.maxPlayers,
+      description: tournament.value.description,
+    };
+  }
+}
+
+async function handleSaveEdit() {
+  if (!tournament.value) return;
+  actionLoading.value = true;
+  try {
+    await tournamentApi.updateTournament(props.authToken, tournamentId, editForm.value);
+    showEditForm.value = false;
+    await loadTournament();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Failed to update tournament';
+  } finally {
+    actionLoading.value = false;
+  }
+}
+
+/** Parse the bulk-import textarea into a request. Exposed for unit testing. */
+function parseBulkImport(text: string): TournamentBulkImportRequest {
+  const players = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map((line) => {
+      const [idPart, hcpPart] = line.split(',').map((s) => s.trim());
+      const playerId = Number.parseInt(idPart, 10);
+      if (!Number.isFinite(playerId)) {
+        throw new Error(`Invalid player ID in line: "${line}"`);
+      }
+      const handicap = hcpPart !== undefined && hcpPart !== '' ? Number.parseFloat(hcpPart) : undefined;
+      return { playerId, handicap };
+    });
+  if (players.length === 0) throw new Error('No players to import.');
+  return { players };
+}
+
+async function handleBulkImport() {
+  importError.value = null;
+  let request: TournamentBulkImportRequest;
+  try {
+    request = parseBulkImport(importText.value);
+  } catch (e: unknown) {
+    importError.value = (e as Error).message;
+    return;
+  }
+  importLoading.value = true;
+  try {
+    await tournamentApi.bulkImportPlayers(props.authToken, tournamentId, request);
+    importText.value = '';
+    showImportForm.value = false;
+    await loadTournament();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    importError.value = apiErr?.message ?? 'Failed to import players';
+  } finally {
+    importLoading.value = false;
+  }
+}
+
 async function handleWithdrawPlayer(playerId: number) {
   try {
     await tournamentApi.withdrawPlayer(props.authToken, tournamentId, playerId);
@@ -603,12 +747,14 @@ async function handleAssignFlight(teeTimeId: string, flightId: string) {
   } catch (_) {}
 }
 
-async function handleConfirmFlight(_flightId: string) {
+async function handleConfirmFlight(flightId: string) {
   confirmLoading.value = true;
   try {
-    // Score confirmation would call a dedicated endpoint
-    // For now, we reload the data
+    await tournamentApi.confirmFlight(props.authToken, tournamentId, flightId);
     await loadTournament();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Failed to confirm flight scores';
   } finally {
     confirmLoading.value = false;
   }
@@ -617,8 +763,11 @@ async function handleConfirmFlight(_flightId: string) {
 async function handlePublishResults() {
   try {
     await tournamentApi.publishResults(props.authToken, tournamentId);
-    results.value = await tournamentApi.getResults(props.authToken, tournamentId);
-  } catch (_) {}
+    await loadResults();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Failed to publish results';
+  }
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────
@@ -779,6 +928,43 @@ function playerStatusClass(status?: string): string {
 
 /* Inline form */
 .inline-form { display: flex; gap: 0.5rem; margin-bottom: 1rem; align-items: center; }
+
+/* Edit form */
+.edit-form {
+  background: #171f33;
+  border: 1px solid #2d3449;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+.edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin: 0.75rem 0; }
+.edit-grid .full-width { grid-column: 1 / -1; }
+.edit-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+.form-field { display: flex; flex-direction: column; gap: 0.3rem; }
+.form-label { font-size: 0.8125rem; font-weight: 600; color: #c5cde8; }
+.field-error { font-size: 0.75rem; color: #ffb4ab; }
+
+/* Import form */
+.import-form {
+  background: #171f33;
+  border: 1px solid #2d3449;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.import-textarea { font-family: 'Fira Code', ui-monospace, monospace; }
+.import-form code {
+  font-family: 'Fira Code', ui-monospace, monospace;
+  background: #222a3d;
+  color: #ffb599;
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+}
+.import-actions { display: flex; gap: 0.5rem; }
+textarea.form-input { resize: vertical; }
 
 /* Buttons */
 .btn {

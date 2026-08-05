@@ -69,7 +69,10 @@ public class ShotServiceImpl implements ShotService {
 
         Shot shot = new Shot();
         shot.setRoundId(roundId);
-        shot.setFlightId(roundId); // TODO: resolve actual flightId when Epic 5 flights are implemented
+        // A round maps 1:1 to a flight for solo play; the round id is the flight
+        // grouping key. Tournament multi-player flights supply their own flight id
+        // via the tournament module and do not flow through this manual-entry path.
+        shot.setFlightId(roundId);
         shot.setPlayerId(accountId);
         shot.setHoleNumber(request.holeNumber());
         shot.setShotNumber(request.shotNumber());
@@ -250,6 +253,74 @@ public class ShotServiceImpl implements ShotService {
         );
 
         return ShotResponse.of(ShotDto.fromEntity(targetShot), targetShot.getId());
+    }
+
+    @Override
+    @Transactional
+    public ShotDetectionResponse recordDetection(Long accountId, UUID roundId, String idempotencyKey, ShotDetectionRequest request) {
+        log.info("Recording shot detection for round {} by account {}, confidence={}, idempotencyKey={}",
+                roundId, accountId, request.confidence(), idempotencyKey);
+
+        // Idempotency check — return the disposition of the previously recorded detection.
+        Optional<Shot> existing = shotRepository.findByIdempotencyKey(idempotencyKey);
+        if (existing.isPresent()) {
+            Shot existingShot = existing.get();
+            ShotDetectionDisposition disp = ShotDetectionDisposition.forConfidence(existingShot.getConfidence());
+            return ShotDetectionResponse.persisted(disp, existingShot.getConfidence(),
+                    ShotDto.fromEntity(existingShot), existingShot.getId());
+        }
+
+        // Validate round exists and belongs to player.
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.SHOT_006, "roundId"));
+        if (!round.getGolferAccountId().equals(accountId)) {
+            throw new VspApiException(VspErrorCode.AUTH_010, "roundId");
+        }
+
+        BigDecimal confidence = request.confidence();
+        ShotDetectionDisposition disposition = ShotDetectionDisposition.forConfidence(confidence);
+
+        // Discard band: candidate is not a shot — persist nothing.
+        if (!disposition.shouldPersist()) {
+            log.info("Detection discarded for round {} (confidence={})", roundId, confidence);
+            return ShotDetectionResponse.discarded(confidence);
+        }
+
+        Instant detectedAt = request.detectedAt() != null ? request.detectedAt() : Instant.now();
+
+        Shot shot = new Shot();
+        shot.setRoundId(roundId);
+        shot.setFlightId(roundId);
+        shot.setPlayerId(accountId);
+        shot.setHoleNumber(request.holeNumber());
+        shot.setShotNumber(request.shotNumber());
+        shot.setClubId(request.clubId());
+        shot.setStartedAt(detectedAt);
+        shot.setStartLocation(toGeoJson(request.location()));
+        shot.setConditions(toJson(request.conditions()));
+        shot.setSource(Shot.Source.detected);
+        shot.setConfidence(confidence);
+        shot.setSyncStatus(Shot.SyncStatus.pending);
+        shot.setIdempotencyKey(idempotencyKey);
+        shot.setIsPenalty(false);
+        shot.setIsProvisional(false);
+        shot.setIsMulligan(false);
+
+        Shot saved = shotRepository.save(shot);
+        UUID eventId = saved.getId();
+
+        auditService.log(
+                AuditAction.SHOT_STARTED,
+                "Shot",
+                eventId.toString(),
+                null,
+                toJson(ShotDto.fromEntity(saved)),
+                String.format("{\"roundId\":%s,\"playerId\":%s,\"source\":\"detected\",\"disposition\":\"%s\",\"confidence\":%s}",
+                        roundId, accountId, disposition.name(), confidence)
+        );
+
+        log.info("Detection persisted for round {} with disposition {} (shot {})", roundId, disposition, eventId);
+        return ShotDetectionResponse.persisted(disposition, confidence, ShotDto.fromEntity(saved), eventId);
     }
 
     // ─── Helpers ───────────────────────────────────────────────────────────────

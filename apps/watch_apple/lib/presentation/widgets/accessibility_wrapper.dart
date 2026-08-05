@@ -39,9 +39,9 @@ mixin AccessibilityMixin<T extends StatefulWidget> on State<T> {
     final mediaQuery = MediaQuery.of(context);
 
     _settings = WatchAccessibilitySettings(
-      isVoiceOverRunning: mediaQuery.accessibilityFeatures.accessibleNavigation,
+      isVoiceOverRunning: mediaQuery.accessibleNavigation,
       textScaleFactor: mediaQuery.textScaleFactor,
-      reduceMotion: mediaQuery.accessibilityFeatures.reduceMotion,
+      reduceMotion: mediaQuery.disableAnimations,
     );
   }
 
@@ -114,9 +114,9 @@ class _AccessibilityWrapperState extends State<AccessibilityWrapper> {
     final mediaQuery = MediaQuery.of(context);
     return WatchAccessibilitySettings(
       isVoiceOverRunning:
-          mediaQuery.accessibilityFeatures.accessibleNavigation,
+          mediaQuery.accessibleNavigation,
       textScaleFactor: mediaQuery.textScaleFactor,
-      reduceMotion: mediaQuery.accessibilityFeatures.reduceMotion,
+      reduceMotion: mediaQuery.disableAnimations,
     );
   }
 
@@ -296,7 +296,7 @@ class ReducedMotionAnimatedSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduceMotion =
-        MediaQuery.of(context).accessibilityFeatures.reduceMotion;
+        MediaQuery.of(context).disableAnimations;
 
     return AnimatedSwitcher(
       duration: reduceMotion ? Duration.zero : duration,
@@ -322,7 +322,7 @@ class ReducedMotionProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduceMotion =
-        MediaQuery.of(context).accessibilityFeatures.reduceMotion;
+        MediaQuery.of(context).disableAnimations;
 
     if (reduceMotion) {
       return value != null

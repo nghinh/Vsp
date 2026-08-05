@@ -158,4 +158,33 @@ public class ShotController {
         ShotResponse response = shotService.mergeShots(roundId, accountId, idempotencyKey, request);
         return ResponseEntity.ok(response);
     }
+
+    // ─── Record detection ────────────────────────────────────────────────────
+
+    /**
+     * Record an automatic shot-detection candidate.
+     *
+     * <p>Per Story 10.4: Detect Shots with Confidence. The mobile client runs the
+     * on-device sensor fusion and posts the candidate with its confidence score.
+     * The API applies the confidence-threshold policy and either discards the
+     * candidate or persists a {@code detected} shot, returning the disposition.
+     *
+     * <p>Idempotent: re-submitting the same idempotencyKey returns the disposition
+     * of the previously recorded detection.
+     */
+    @PostMapping("/rounds/{roundId}/shots/detections")
+    @Idempotent(ttlSeconds = 86400)
+    public ResponseEntity<ShotDetectionResponse> recordDetection(
+            Authentication authentication,
+            @PathVariable UUID roundId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey,
+            @Valid @RequestBody ShotDetectionRequest request) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        log.info("POST /rounds/{}/shots/detections – accountId={}, idempotencyKey={}, confidence={}",
+                roundId, accountId, idempotencyKey, request.confidence());
+
+        ShotDetectionResponse response = shotService.recordDetection(accountId, roundId, idempotencyKey, request);
+        return ResponseEntity.status(201).body(response);
+    }
 }

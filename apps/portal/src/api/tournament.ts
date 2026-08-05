@@ -17,6 +17,7 @@
  *   GET    /tournaments/{id}/players    — list players
  *   POST   /tournaments/{id}/flights    — create flight
  *   PATCH  /tournaments/{id}/flights/{flightId} — update flight
+ *   POST   /tournaments/{id}/flights/{flightId}/confirm — confirm flight scores
  *   GET    /tournaments/{id}/flights    — list flights
  *   POST   /tournaments/{id}/tee-times — create tee time
  *   PATCH  /tournaments/{id}/tee-times/{teeTimeId} — assign flight
@@ -213,6 +214,21 @@ export class TournamentApi {
       body: JSON.stringify(request),
     });
     return handleResponse(res);
+  }
+
+  /**
+   * Confirm all scores for a flight (score confirmation gate before completion).
+   * Backend: POST /tournaments/{id}/flights/{flightId}/confirm
+   */
+  async confirmFlight(token: string, tournamentId: string, flightId: string) {
+    const res = await fetch(
+      `${this.baseUrl}/tournaments/${tournamentId}/flights/${flightId}/confirm`,
+      {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    if (!res.ok) throw await res.json().catch(() => ({ code: 'UNKNOWN', message: res.statusText }));
   }
 
   // ─── Tee Times ───────────────────────────────────────────────────────

@@ -78,4 +78,23 @@ public interface ShotService {
      * @return merged shot response
      */
     ShotResponse mergeShots(UUID roundId, Long accountId, String idempotencyKey, MergeShotsRequest request);
+
+    /**
+     * Record an automatic shot-detection candidate.
+     *
+     * <p>Per Story 10.4: Detect Shots with Confidence. The API applies the
+     * confidence-threshold policy (see {@link ShotDetectionDisposition}) to the
+     * candidate. Candidates below the discard threshold are dropped; all others
+     * are persisted as {@code detected} shots and returned with their disposition.
+     *
+     * <p>Idempotent: re-submitting the same idempotencyKey returns the disposition
+     * of the previously recorded detection.
+     *
+     * @param accountId      authenticated golfer account ID
+     * @param roundId        round UUID
+     * @param idempotencyKey client-generated UUID v4
+     * @param request        detection candidate payload with confidence and signals
+     * @return the disposition and, when persisted, the created detected shot
+     */
+    ShotDetectionResponse recordDetection(Long accountId, UUID roundId, String idempotencyKey, ShotDetectionRequest request);
 }

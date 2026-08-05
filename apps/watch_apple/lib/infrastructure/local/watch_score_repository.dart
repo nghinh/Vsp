@@ -27,10 +27,15 @@ class WatchScoreRepository {
   static const String _pendingSyncKey = 'watch_pending_sync';
   static const String _sessionKey = 'watch_session';
 
-  final SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
-  WatchScoreRepository({SharedPreferences? prefs})
-      : _prefs = prefs ?? throw StateError('Must initialize SharedPreferences');
+  WatchScoreRepository({SharedPreferences? prefs}) : _prefs = prefs;
+
+  /// Lazily resolve SharedPreferences so the repository can be constructed
+  /// without an injected instance (production path) while still allowing a
+  /// pre-built instance to be injected in tests.
+  Future<SharedPreferences> _ensurePrefs() async =>
+      _prefs ??= await SharedPreferences.getInstance();
 
   /// Save a score entry locally.
   Future<void> saveScoreEntry(WatchScoreEntry entry) async {

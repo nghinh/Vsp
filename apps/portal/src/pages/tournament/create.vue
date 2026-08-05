@@ -3,7 +3,7 @@
 
     <header class="page-header">
       <div class="header-left">
-        <button class="btn-back" @click="$router.push('/tournament')">← Cancel</button>
+        <button class="btn-back" @click="$router.push('/tournaments')">← Cancel</button>
         <h1 class="page-title">Create Tournament</h1>
       </div>
     </header>
@@ -140,7 +140,7 @@
 
       <!-- ─── Submit ────────────────────────────────────────────────── -->
       <div class="form-actions">
-        <button type="button" class="btn btn-secondary" @click="$router.push('/tournament')">
+        <button type="button" class="btn btn-secondary" @click="$router.push('/tournaments')">
           Cancel
         </button>
         <button type="submit" class="btn btn-primary" :disabled="submitting">

@@ -7,6 +7,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 
 /// Crown input event types.
 enum CrownEventType {
@@ -214,13 +215,36 @@ class _CrownInputWidgetState extends State<CrownInputWidget> {
   KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
     if (!widget.enabled) return KeyEventResult.ignored;
 
-    // Map Flutter key events to crown events
+    // Map Flutter key events to crown events.
+    //
+    // On watchOS the physical Digital Crown surfaces to Flutter as directional
+    // scroll/key events; we translate those here so navigation works with the
+    // crown, a rotary encoder, or a keyboard. A dedicated `DigitalCrown`
+    // platform channel can later feed `CrownInputHandler.processCrownData`
+    // directly for continuous rotation without changing this mapping.
     CrownEvent? crownEvent;
 
     if (event is KeyDownEvent) {
-      if (event.logicalKey == LogicalKeyboardKey.digit0 ||
-          event.logicalKey == LogicalKeyboardKey.digit1) {
-        // Placeholder - actual crown handling would use platform channels
+      final key = event.logicalKey;
+      if (key == LogicalKeyboardKey.arrowUp ||
+          key == LogicalKeyboardKey.pageUp) {
+        crownEvent = _handler.processCrownData(-1.0);
+      } else if (key == LogicalKeyboardKey.arrowDown ||
+          key == LogicalKeyboardKey.pageDown) {
+        crownEvent = _handler.processCrownData(1.0);
+      } else if (key == LogicalKeyboardKey.enter ||
+          key == LogicalKeyboardKey.select ||
+          key == LogicalKeyboardKey.space) {
+        crownEvent = CrownEvent(
+          type: CrownEventType.tap,
+          timestamp: DateTime.now(),
+        );
+      } else if (key == LogicalKeyboardKey.goBack ||
+          key == LogicalKeyboardKey.escape) {
+        crownEvent = CrownEvent(
+          type: CrownEventType.longPress,
+          timestamp: DateTime.now(),
+        );
       }
     }
 
