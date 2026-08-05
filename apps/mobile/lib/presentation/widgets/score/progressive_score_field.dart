@@ -54,13 +54,13 @@ class ProgressiveScoreField extends StatelessWidget {
     return Semantics(
       label: semanticLabel,
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         children: [
-          // Field label
-          SizedBox(
-            width: 72,
+          // Field label — flexes to fill the row so the stepper controls sit
+          // flush right. Ellipsizes rather than overflowing on narrow screens.
+          Expanded(
             child: Text(
               label,
+              overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.7),
               ),

@@ -121,11 +121,12 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
 
             const Divider(height: 1),
 
-            // Putts and Penalties steppers
+            // Putts and Penalties steppers — stacked vertically so each labeled
+            // stepper spans the full row width. Side-by-side overflowed on
+            // narrow phones (both labels + both steppers exceeded the width).
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Column(
                 children: [
                   ProgressiveScoreField(
                     label: AppLocalizations.of(context).scorePutts,
@@ -135,6 +136,7 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                     onClear: onClearPutts,
                     semanticLabel: AppLocalizations.of(context).scorePuttsFor(playerName),
                   ),
+                  const SizedBox(height: 8),
                   ProgressiveScoreField(
                     label: AppLocalizations.of(context).scorePenalties,
                     value: score?.penalties,
