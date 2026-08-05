@@ -3,6 +3,8 @@ package vnpt.vsp.module.correction.dto;
 import jakarta.validation.constraints.NotNull;
 import vnpt.vsp.module.correction.entity.CorrectionStatus;
 import vnpt.vsp.module.correction.entity.CorrectionType;
+import vnpt.vsp.module.correction.entity.GeometryLayer;
+import vnpt.vsp.module.course.entity.VerificationStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -24,6 +26,20 @@ public class CorrectionQueueRequest {
     private Integer holeNumber;
     private CorrectionType type;
     private CorrectionStatus status;
+
+    /**
+     * Data-quality verification state. Filtering on PENDING_REVIEW is how a
+     * reviewer pulls up the corroborated clusters — the reports that enough
+     * independent golfers agreed on to be worth a human's time.
+     */
+    private VerificationStatus verificationStatus;
+
+    /** Restrict to corrections about one geometry layer (green, bunker, …). */
+    private GeometryLayer geometryLayer;
+
+    /** Only corrections corroborated by at least this many reports. */
+    private Integer minCorroborationCount;
+
     private BigDecimal confidenceMin;
     private BigDecimal confidenceMax;
     private Instant fromDate;
@@ -48,6 +64,15 @@ public class CorrectionQueueRequest {
 
     public CorrectionStatus getStatus() { return status; }
     public void setStatus(CorrectionStatus status) { this.status = status; }
+
+    public VerificationStatus getVerificationStatus() { return verificationStatus; }
+    public void setVerificationStatus(VerificationStatus verificationStatus) { this.verificationStatus = verificationStatus; }
+
+    public GeometryLayer getGeometryLayer() { return geometryLayer; }
+    public void setGeometryLayer(GeometryLayer geometryLayer) { this.geometryLayer = geometryLayer; }
+
+    public Integer getMinCorroborationCount() { return minCorroborationCount; }
+    public void setMinCorroborationCount(Integer minCorroborationCount) { this.minCorroborationCount = minCorroborationCount; }
 
     public BigDecimal getConfidenceMin() { return confidenceMin; }
     public void setConfidenceMin(BigDecimal confidenceMin) { this.confidenceMin = confidenceMin; }

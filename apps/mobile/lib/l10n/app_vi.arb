@@ -768,6 +768,53 @@
   "weatherConditionsLabel": "Điều kiện thời tiết",
   "weatherTemperatureLabel": "Nhiệt độ {value} {unit}",
   "msgEmptyPackage": "Gói dữ liệu sân rỗng — không có gì để tải. Hãy báo bộ phận hỗ trợ nếu sân này cần dùng được ngoại tuyến.",
+  "correctionReportTitle": "Báo lỗi dữ liệu",
+  "correctionLayer": "Phần nào của hố bị sai?",
+  "correctionLayerGreen": "Green",
+  "correctionLayerFairway": "Fairway",
+  "correctionLayerBunker": "Hố cát",
+  "correctionLayerWater": "Chướng ngại nước",
+  "correctionLayerOb": "Ngoài biên (OB)",
+  "correctionLayerHint": "Ứng dụng ghi lại đúng vị trí bạn đang đứng. Hãy đi tới phần bị sai rồi mới gửi.",
+  "correctionSubmitCorrection": "Gửi báo lỗi",
+  "correctionSavesOfflineHint": "Lưu ngoại tuyến và tự đồng bộ khi có mạng",
+  "correctionCapturingGps": "Đang lấy vị trí GPS…",
+  "correctionAccuracyNoFix": "Chưa có tín hiệu GPS",
+  "correctionAccuracyHigh": "Cao ({meters} m)",
+  "@correctionAccuracyHigh": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyGood": "Tốt ({meters} m)",
+  "@correctionAccuracyGood": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyModerate": "Trung bình ({meters} m)",
+  "@correctionAccuracyModerate": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyPoor": "Kém ({meters} m)",
+  "@correctionAccuracyPoor": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionNeedsGpsFix": "Đang chờ tín hiệu GPS — báo lỗi cần vị trí của bạn.",
+  "correctionAccuracyTooPoor": "Độ chính xác GPS quá thấp để ghi nhận báo lỗi. Hãy ra chỗ thoáng và thử lại.",
+  "msgCorrectionLayerRequired": "Hãy chọn phần nào của hố bị sai.",
   "measureTitle": "Đo khoảng cách",
   "measureTooltip": "Công cụ đo",
   "measureHint": "Chạm vào bản đồ để đặt điểm. Chạm lại vào điểm để xoá.",

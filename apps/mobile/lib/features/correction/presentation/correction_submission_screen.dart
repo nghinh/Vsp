@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/models/qualified_location.dart';
 import '../domain/course_correction.dart';
+import '../domain/geometry_layer.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../domain/services/location_service.dart';
 import 'correction_submission_bloc.dart';
@@ -48,8 +49,16 @@ class _CorrectionSubmissionScreenState
 
   // Form state.
   CorrectionIssueType _selectedIssueType = CorrectionIssueType.pinPosition;
+
+  /// Which geometry layer the golfer says is wrong. Null until they pick one —
+  /// there is no sensible default, and guessing would file the report against
+  /// the wrong feature.
+  GeometryLayer? _selectedLayer;
   final _noteController = TextEditingController();
   bool _isSubmitting = false;
+
+  /// Coarsest fix the API will accept (`gpsAccuracyMeters` <= 100).
+  static const double _maxUsableAccuracyMeters = 100;
 
   @override
   void initState() {
@@ -79,30 +88,52 @@ class _CorrectionSubmissionScreenState
     return const Color(0xFFDC2626); // red
   }
 
-  String _accuracyLabel(double? accuracy) {
-    if (accuracy == null) return 'No GPS fix';
-    if (accuracy <= 5) return 'High ($accuracy m)';
-    if (accuracy <= 10) return 'Good ($accuracy m)';
-    if (accuracy <= 20) return 'Moderate ($accuracy m)';
-    return 'Poor ($accuracy m)';
+  String _accuracyLabel(BuildContext context, double? accuracy) {
+    final l10n = AppLocalizations.of(context);
+    if (accuracy == null) return l10n.correctionAccuracyNoFix;
+    final meters = accuracy.toStringAsFixed(0);
+    if (accuracy <= 5) return l10n.correctionAccuracyHigh(meters);
+    if (accuracy <= 10) return l10n.correctionAccuracyGood(meters);
+    if (accuracy <= 20) return l10n.correctionAccuracyModerate(meters);
+    return l10n.correctionAccuracyPoor(meters);
   }
 
   // ─── Submit ───────────────────────────────────────────────────────────────
 
-  Future<void> _submit(QualifiedLocation? location) async {
+  /// A correction is a claim about a place, so it is only worth sending with a
+  /// position good enough to identify the feature. Without that, the report
+  /// would be filed at 0,0 or at a fix too coarse for a reviewer to act on.
+  String? _blockingReason(BuildContext context, QualifiedLocation? location) {
+    final l10n = AppLocalizations.of(context);
+    if (_selectedLayer == null) return l10n.msgCorrectionLayerRequired;
+    if (location == null) return l10n.correctionNeedsGpsFix;
+    final accuracy = location.accuracyMeters;
+    // A fix with no reported accuracy is unusable as evidence: the API cannot
+    // weigh it and a reviewer cannot tell how far off the claim might be.
+    if (accuracy == null) return l10n.correctionNeedsGpsFix;
+    if (accuracy > _maxUsableAccuracyMeters) {
+      return l10n.correctionAccuracyTooPoor;
+    }
+    return null;
+  }
+
+  Future<void> _submit(QualifiedLocation location) async {
     if (_isSubmitting) return;
+    final accuracy = location.accuracyMeters;
+    if (accuracy == null) return;
 
     setState(() => _isSubmitting = true);
 
     _bloc.add(
       SubmitCorrection(
         issueType: _selectedIssueType,
+        layer: _selectedLayer,
         note: _noteController.text.trim(),
         courseId: widget.courseId,
         holeId: widget.holeId,
-        reporterLat: location?.latitude ?? 0,
-        reporterLng: location?.longitude ?? 0,
-        gpsAccuracy: location?.accuracyMeters ?? -1,
+        reporterLat: location.latitude,
+        reporterLng: location.longitude,
+        gpsAccuracy: accuracy,
       ),
     );
   }
@@ -117,9 +148,9 @@ class _CorrectionSubmissionScreenState
         backgroundColor: const Color(0xFF0F172A),
         appBar: AppBar(
           backgroundColor: const Color(0xFF1E293B),
-          title: const Text(
-            'Report Correction',
-            style: TextStyle(color: Color(0xFFF8FAFC)),
+          title: Text(
+            AppLocalizations.of(context).correctionReportTitle,
+            style: const TextStyle(color: Color(0xFFF8FAFC)),
           ),
           iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
         ),
@@ -154,6 +185,7 @@ class _CorrectionSubmissionScreenState
                 : null;
             final isLoading =
                 state is CorrectionSubmissionLoading || _isSubmitting;
+            final blockingReason = _blockingReason(context, location);
 
             return SingleChildScrollView(
               padding: const EdgeInsets.all(16),
@@ -171,13 +203,34 @@ class _CorrectionSubmissionScreenState
                   ),
                   const SizedBox(height: 24),
 
+                  // ── Geometry layer selector ──────────────────────────────
+                  _SectionLabel(label: AppLocalizations.of(context).correctionLayer),
+                  const SizedBox(height: 8),
+                  _LayerSelector(
+                    selected: _selectedLayer,
+                    onChanged: (layer) {
+                      setState(() => _selectedLayer = layer);
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    AppLocalizations.of(context).correctionLayerHint,
+                    style: const TextStyle(
+                      color: Color(0xFF94A3B8),
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
                   // ── Location display ───────────────────────────────────
                   _SectionLabel(label: AppLocalizations.of(context).correctionYourLocation),
                   const SizedBox(height: 8),
                   _LocationCard(
                     location: location,
                     accuracyColor: _accuracyColor(location?.accuracyMeters),
-                    accuracyLabel: _accuracyLabel(location?.accuracyMeters),
+                    accuracyLabel: _accuracyLabel(context, location?.accuracyMeters),
+                    capturingLabel:
+                        AppLocalizations.of(context).correctionCapturingGps,
                   ),
                   const SizedBox(height: 24),
 
@@ -216,7 +269,9 @@ class _CorrectionSubmissionScreenState
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: isLoading ? null : () => _submit(location),
+                      onPressed: isLoading || blockingReason != null
+                          ? null
+                          : () => _submit(location!),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFEA580C),
                         foregroundColor: Colors.white,
@@ -233,9 +288,11 @@ class _CorrectionSubmissionScreenState
                                 color: Colors.white,
                               ),
                             )
-                          : const Text(
-                              'Submit Correction',
-                              style: TextStyle(
+                          : Text(
+                              AppLocalizations.of(
+                                context,
+                              ).correctionSubmitCorrection,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -243,10 +300,19 @@ class _CorrectionSubmissionScreenState
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Center(
+                  Center(
                     child: Text(
-                      'Saves offline and syncs when connected',
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                      blockingReason ??
+                          AppLocalizations.of(
+                            context,
+                          ).correctionSavesOfflineHint,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: blockingReason != null
+                            ? const Color(0xFFEA580C)
+                            : const Color(0xFF64748B),
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ],
@@ -321,15 +387,86 @@ class _IssueTypeSelector extends StatelessWidget {
   }
 }
 
+/// Chips for the five geometry layers a golfer can correct.
+///
+/// Nothing is selected initially — the golfer must say which layer is wrong,
+/// because a report filed against the wrong layer wastes a reviewer's time.
+class _LayerSelector extends StatelessWidget {
+  final GeometryLayer? selected;
+  final ValueChanged<GeometryLayer> onChanged;
+
+  const _LayerSelector({required this.selected, required this.onChanged});
+
+  static String _label(BuildContext context, GeometryLayer layer) {
+    final l10n = AppLocalizations.of(context);
+    switch (layer) {
+      case GeometryLayer.green:
+        return l10n.correctionLayerGreen;
+      case GeometryLayer.fairway:
+        return l10n.correctionLayerFairway;
+      case GeometryLayer.bunker:
+        return l10n.correctionLayerBunker;
+      case GeometryLayer.water:
+        return l10n.correctionLayerWater;
+      case GeometryLayer.ob:
+        return l10n.correctionLayerOb;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: GeometryLayer.values.map((layer) {
+        final isSelected = layer == selected;
+        final label = _label(context, layer);
+        return Semantics(
+          button: true,
+          selected: isSelected,
+          label: label,
+          child: GestureDetector(
+            onTap: () => onChanged(layer),
+            child: Container(
+              key: ValueKey('correction-layer-${layer.wireValue}'),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFFEA580C)
+                    : const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFFEA580C)
+                      : const Color(0xFF334155),
+                ),
+              ),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : const Color(0xFFF8FAFC),
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
 class _LocationCard extends StatelessWidget {
   final QualifiedLocation? location;
   final Color accuracyColor;
   final String accuracyLabel;
+  final String capturingLabel;
 
   const _LocationCard({
     required this.location,
     required this.accuracyColor,
     required this.accuracyLabel,
+    required this.capturingLabel,
   });
 
   @override
@@ -368,9 +505,12 @@ class _LocationCard extends StatelessWidget {
                     ),
                   ),
                 ] else ...[
-                  const Text(
-                    'Capturing GPS…',
-                    style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                  Text(
+                    capturingLabel,
+                    style: const TextStyle(
+                      color: Color(0xFF64748B),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ],

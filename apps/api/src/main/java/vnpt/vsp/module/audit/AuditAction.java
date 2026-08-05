@@ -29,6 +29,8 @@ public enum AuditAction {
     COURSE_VERSION_PUBLISHED,
 
     // Correction workflow
+    CORRECTION_SUBMITTED,
+    CORRECTION_CORROBORATED,
     CORRECTION_APPROVE,
     CORRECTION_REJECT,
     CORRECTION_INFO_REQUESTED,
@@ -66,6 +68,7 @@ public enum AuditAction {
     // Round
     ROUND_CREATE,
     ROUND_COMPLETE,
+    ROUND_ABANDON,
     SCORE_CORRECTION,
 
     // Shot (Story 10.3)

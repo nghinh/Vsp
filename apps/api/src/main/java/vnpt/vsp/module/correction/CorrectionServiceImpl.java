@@ -89,6 +89,17 @@ public class CorrectionServiceImpl implements CorrectionService {
             if (request.getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), request.getStatus()));
             }
+            if (request.getVerificationStatus() != null) {
+                predicates.add(cb.equal(
+                        root.get("metadata").get("verificationStatus"), request.getVerificationStatus()));
+            }
+            if (request.getGeometryLayer() != null) {
+                predicates.add(cb.equal(root.get("geometryLayer"), request.getGeometryLayer()));
+            }
+            if (request.getMinCorroborationCount() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(
+                        root.get("corroborationCount"), request.getMinCorroborationCount()));
+            }
             if (request.getConfidenceMin() != null) {
                 predicates.add(cb.greaterThanOrEqualTo(root.get("confidence"), request.getConfidenceMin()));
             }

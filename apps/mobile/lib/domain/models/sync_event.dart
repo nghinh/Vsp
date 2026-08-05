@@ -8,7 +8,10 @@
 // Each [SyncEvent] is persisted to SQLite before the sync worker attempts
 // delivery, ensuring no score data is lost during backend outage.
 
+import 'dart:convert';
+
 import 'package:equatable/equatable.dart';
+import 'package:uuid/uuid.dart';
 
 import 'sync_status.dart';
 
@@ -302,15 +305,18 @@ class SyncEvent extends Equatable {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-String _encodePayload(Map<String, dynamic> data) {
-  // Using jsonEncode from dart:convert — imported at top.
-  // ignore: avoid_dynamic_calls
-  return data.toString(); // placeholder; replace with json.encode in real impl
-}
+/// Serialises an event payload for storage and for the HTTP request body.
+///
+/// This was a `data.toString()` placeholder, which produces Dart map syntax —
+/// not JSON. Every queued event was therefore unparseable, so `jsonDecode` in
+/// `IdempotencyClient.syncEvent` threw and nothing ever reached the server.
+String _encodePayload(Map<String, dynamic> data) => jsonEncode(data);
 
-String _generateUuid() {
-  // UUID v4 generator. Uses crypto RandomProvider for strong randomness.
-  // Replaced with Uuid class from package:uuid in real implementation.
-  // Placeholder returns a stable-format string for compilation.
-  return '${DateTime.now().toUtc().millisecondsSinceEpoch}-sync-event';
-}
+const Uuid _uuid = Uuid();
+
+/// Generates the event ID, which is also its `Idempotency-Key`.
+///
+/// This was a millisecond timestamp placeholder: two events created in the same
+/// millisecond shared a key, and the server would replay the first event's
+/// response for the second — silently dropping a distinct report.
+String _generateUuid() => _uuid.v4();

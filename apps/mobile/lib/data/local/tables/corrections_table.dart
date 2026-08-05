@@ -12,6 +12,7 @@ const String kCorrectionsTableCreateSql = '''
     course_id TEXT NOT NULL,
     hole_id TEXT,
     issue_type TEXT NOT NULL,
+    layer TEXT,
     reporter_lat REAL NOT NULL,
     reporter_lng REAL NOT NULL,
     gps_accuracy REAL NOT NULL,

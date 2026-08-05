@@ -2547,6 +2547,76 @@ class AppLocalizationsEn extends AppLocalizations {
       'The course package is empty — nothing to download. Contact support if this course should be available offline.';
 
   @override
+  String get correctionReportTitle => 'Report Correction';
+
+  @override
+  String get correctionLayer => 'Which part of the hole?';
+
+  @override
+  String get correctionLayerGreen => 'Green';
+
+  @override
+  String get correctionLayerFairway => 'Fairway';
+
+  @override
+  String get correctionLayerBunker => 'Bunker';
+
+  @override
+  String get correctionLayerWater => 'Water';
+
+  @override
+  String get correctionLayerOb => 'Out of bounds';
+
+  @override
+  String get correctionLayerHint =>
+      'We record the spot you are standing on. Walk to the part that is wrong before you send it.';
+
+  @override
+  String get correctionSubmitCorrection => 'Submit Correction';
+
+  @override
+  String get correctionSavesOfflineHint =>
+      'Saves offline and syncs when connected';
+
+  @override
+  String get correctionCapturingGps => 'Capturing GPS…';
+
+  @override
+  String get correctionAccuracyNoFix => 'No GPS fix';
+
+  @override
+  String correctionAccuracyHigh(String meters) {
+    return 'High ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyGood(String meters) {
+    return 'Good ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyModerate(String meters) {
+    return 'Moderate ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyPoor(String meters) {
+    return 'Poor ($meters m)';
+  }
+
+  @override
+  String get correctionNeedsGpsFix =>
+      'Waiting for a GPS fix — a correction needs your position.';
+
+  @override
+  String get correctionAccuracyTooPoor =>
+      'GPS accuracy is too poor to place a correction. Move to open sky and try again.';
+
+  @override
+  String get msgCorrectionLayerRequired =>
+      'Choose which part of the hole is wrong.';
+
+  @override
   String get measureTitle => 'Measure';
 
   @override

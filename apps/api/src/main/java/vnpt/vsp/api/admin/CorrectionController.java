@@ -82,6 +82,9 @@ public class CorrectionController {
             @RequestParam(required = false) Integer hole,
             @RequestParam(required = false) CorrectionType type,
             @RequestParam(required = false) CorrectionStatus status,
+            @RequestParam(required = false) vnpt.vsp.module.course.entity.VerificationStatus verificationStatus,
+            @RequestParam(required = false) vnpt.vsp.module.correction.entity.GeometryLayer layer,
+            @RequestParam(required = false) Integer minCorroborationCount,
             @RequestParam(required = false) BigDecimal confidenceMin,
             @RequestParam(required = false) BigDecimal confidenceMax,
             @RequestParam(required = false) Instant from,
@@ -100,6 +103,9 @@ public class CorrectionController {
         request.setHoleNumber(hole);
         request.setType(type);
         request.setStatus(status);
+        request.setVerificationStatus(verificationStatus);
+        request.setGeometryLayer(layer);
+        request.setMinCorroborationCount(minCorroborationCount);
         request.setConfidenceMin(confidenceMin);
         request.setConfidenceMax(confidenceMax);
         request.setFromDate(from);

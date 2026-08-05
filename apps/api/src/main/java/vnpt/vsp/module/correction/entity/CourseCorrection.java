@@ -66,10 +66,16 @@ public class CourseCorrection {
     private String reporterEvidenceUrl;
 
     /**
-     * Reporter's GPS position when the correction was submitted, as SRID 4326 WKT.
-     * e.g. "POINT(106.7205 10.8506)"
+     * Reporter's GPS position when the correction was submitted, SRID 4326.
+     *
+     * <p>Read-only through JPA for the same reason as {@link #proposedGeometry}:
+     * PostgreSQL rejects a {@code varchar} bind parameter against a
+     * {@code geometry} column, so an INSERT that carries this field — even as
+     * NULL — fails at statement-parse time. Written via
+     * {@link vnpt.vsp.module.correction.repository.CourseCorrectionRepository#setGeometryColumns}.</p>
      */
-    @Column(name = "reporter_gps_location", columnDefinition = "geometry(Point,4326)")
+    @Column(name = "reporter_gps_location", columnDefinition = "geometry(Point,4326)",
+            insertable = false, updatable = false)
     private String reporterGpsLocation;
 
     // ─── Classification ────────────────────────────────────────────────────────
@@ -85,6 +91,45 @@ public class CourseCorrection {
     /** Reporter's self-assessed confidence 0.00 – 100.00 */
     @Column(name = "confidence", precision = 5, scale = 2)
     private BigDecimal confidence;
+
+    // ─── Geometry correction (golfer-reported layer fix) ───────────────────────
+
+    /**
+     * Which per-hole geometry layer this correction is about.
+     * Null for non-geometry corrections (course condition, green speed, …).
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "geometry_layer", length = 20)
+    private GeometryLayer geometryLayer;
+
+    /**
+     * The shape the reporter believes is correct, as SRID 4326.
+     *
+     * <p><strong>Never written through JPA.</strong> PostgreSQL refuses a
+     * {@code varchar} bind parameter for a {@code geometry} column
+     * ("column is of type geometry but expression is of type character
+     * varying"), and every geometry column in this codebase is mapped as a
+     * {@code String}. The column is therefore declared read-only here — so
+     * Hibernate still creates it under {@code ddl-auto} — and is populated by
+     * {@link vnpt.vsp.module.correction.repository.CourseCorrectionRepository#setGeometryColumns}
+     * which wraps the WKT in {@code ST_GeomFromText}. Read it back as WKT with
+     * {@code findProposedGeometryWkt}; a plain read of this field yields EWKB hex.</p>
+     */
+    @Column(name = "proposed_geometry", columnDefinition = "geometry(Geometry,4326)",
+            insertable = false, updatable = false)
+    private String proposedGeometry;
+
+    /** Reporter's horizontal GPS accuracy in metres at submission time. */
+    @Column(name = "gps_accuracy_meters")
+    private Double gpsAccuracyMeters;
+
+    /**
+     * How many independent reports (including this one) corroborate this
+     * correction — i.e. the size of the spatial cluster it belongs to.
+     * Maintained by the corroboration pass; 1 until a second report lands nearby.
+     */
+    @Column(name = "corroboration_count", nullable = false)
+    private Integer corroborationCount = 1;
 
     // ─── Review fields ────────────────────────────────────────────────────────
 
@@ -273,6 +318,11 @@ public class CourseCorrection {
     public void setReporterEvidenceUrl(String reporterEvidenceUrl) { this.reporterEvidenceUrl = reporterEvidenceUrl; }
 
     public String getReporterGpsLocation() { return reporterGpsLocation; }
+
+    /**
+     * In-memory only — the column is read-only through JPA. Persist the
+     * reporter fix with {@code CourseCorrectionRepository.setGeometryColumns}.
+     */
     public void setReporterGpsLocation(String reporterGpsLocation) { this.reporterGpsLocation = reporterGpsLocation; }
 
     public CorrectionType getCorrectionType() { return correctionType; }
@@ -283,6 +333,18 @@ public class CourseCorrection {
 
     public BigDecimal getConfidence() { return confidence; }
     public void setConfidence(BigDecimal confidence) { this.confidence = confidence; }
+
+    public GeometryLayer getGeometryLayer() { return geometryLayer; }
+    public void setGeometryLayer(GeometryLayer geometryLayer) { this.geometryLayer = geometryLayer; }
+
+    /** @return EWKB hex as stored, not WKT — see the field javadoc. */
+    public String getProposedGeometry() { return proposedGeometry; }
+
+    public Double getGpsAccuracyMeters() { return gpsAccuracyMeters; }
+    public void setGpsAccuracyMeters(Double gpsAccuracyMeters) { this.gpsAccuracyMeters = gpsAccuracyMeters; }
+
+    public Integer getCorroborationCount() { return corroborationCount; }
+    public void setCorroborationCount(Integer corroborationCount) { this.corroborationCount = corroborationCount; }
 
     public Instant getSubmittedAt() { return submittedAt; }
     public void setSubmittedAt(Instant submittedAt) { this.submittedAt = submittedAt; }

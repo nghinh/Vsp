@@ -39,6 +39,18 @@ public class CorrectionQueueResponse {
         private Instant submittedAt;
         private Long reporterId;
 
+        /** Geometry layer for a golfer-reported layer correction; null otherwise. */
+        private String geometryLayer;
+
+        /** Independent reports corroborating this one — cluster size. */
+        private Integer corroborationCount;
+
+        /**
+         * UNVERIFIED until enough reports corroborate, then PENDING_REVIEW.
+         * This is what tells a reviewer the queue row is worth opening.
+         */
+        private String verificationStatus;
+
         public static CorrectionSummary fromEntity(CourseCorrection c, String courseName) {
             CorrectionSummary s = new CorrectionSummary();
             s.setId(c.getId());
@@ -50,10 +62,23 @@ public class CorrectionQueueResponse {
             s.setConfidence(c.getConfidence());
             s.setSubmittedAt(c.getSubmittedAt());
             s.setReporterId(c.getReporterId());
+            s.setGeometryLayer(c.getGeometryLayer() != null ? c.getGeometryLayer().getWireValue() : null);
+            s.setCorroborationCount(c.getCorroborationCount());
+            s.setVerificationStatus(c.getMetadata().getVerificationStatus() != null
+                    ? c.getMetadata().getVerificationStatus().name() : null);
             return s;
         }
 
         // ─── Getters and Setters ───────────────────────────────────────────────
+
+        public String getGeometryLayer() { return geometryLayer; }
+        public void setGeometryLayer(String geometryLayer) { this.geometryLayer = geometryLayer; }
+
+        public Integer getCorroborationCount() { return corroborationCount; }
+        public void setCorroborationCount(Integer corroborationCount) { this.corroborationCount = corroborationCount; }
+
+        public String getVerificationStatus() { return verificationStatus; }
+        public void setVerificationStatus(String verificationStatus) { this.verificationStatus = verificationStatus; }
 
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }

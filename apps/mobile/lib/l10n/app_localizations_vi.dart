@@ -2550,6 +2550,75 @@ class AppLocalizationsVi extends AppLocalizations {
       'Gói dữ liệu sân rỗng — không có gì để tải. Hãy báo bộ phận hỗ trợ nếu sân này cần dùng được ngoại tuyến.';
 
   @override
+  String get correctionReportTitle => 'Báo lỗi dữ liệu';
+
+  @override
+  String get correctionLayer => 'Phần nào của hố bị sai?';
+
+  @override
+  String get correctionLayerGreen => 'Green';
+
+  @override
+  String get correctionLayerFairway => 'Fairway';
+
+  @override
+  String get correctionLayerBunker => 'Hố cát';
+
+  @override
+  String get correctionLayerWater => 'Chướng ngại nước';
+
+  @override
+  String get correctionLayerOb => 'Ngoài biên (OB)';
+
+  @override
+  String get correctionLayerHint =>
+      'Ứng dụng ghi lại đúng vị trí bạn đang đứng. Hãy đi tới phần bị sai rồi mới gửi.';
+
+  @override
+  String get correctionSubmitCorrection => 'Gửi báo lỗi';
+
+  @override
+  String get correctionSavesOfflineHint =>
+      'Lưu ngoại tuyến và tự đồng bộ khi có mạng';
+
+  @override
+  String get correctionCapturingGps => 'Đang lấy vị trí GPS…';
+
+  @override
+  String get correctionAccuracyNoFix => 'Chưa có tín hiệu GPS';
+
+  @override
+  String correctionAccuracyHigh(String meters) {
+    return 'Cao ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyGood(String meters) {
+    return 'Tốt ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyModerate(String meters) {
+    return 'Trung bình ($meters m)';
+  }
+
+  @override
+  String correctionAccuracyPoor(String meters) {
+    return 'Kém ($meters m)';
+  }
+
+  @override
+  String get correctionNeedsGpsFix =>
+      'Đang chờ tín hiệu GPS — báo lỗi cần vị trí của bạn.';
+
+  @override
+  String get correctionAccuracyTooPoor =>
+      'Độ chính xác GPS quá thấp để ghi nhận báo lỗi. Hãy ra chỗ thoáng và thử lại.';
+
+  @override
+  String get msgCorrectionLayerRequired => 'Hãy chọn phần nào của hố bị sai.';
+
+  @override
   String get measureTitle => 'Đo khoảng cách';
 
   @override

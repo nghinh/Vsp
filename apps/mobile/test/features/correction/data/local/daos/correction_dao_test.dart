@@ -20,7 +20,10 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vsp_mobile/data/local/daos/correction_dao.dart';
+import 'package:vsp_mobile/data/local/round_database.dart';
+import 'package:vsp_mobile/data/local/tables/corrections_table.dart';
 import 'package:vsp_mobile/features/correction/domain/course_correction.dart';
+import 'package:vsp_mobile/features/correction/domain/geometry_layer.dart';
 
 /// Fake path provider for sqflite in tests (in-memory).
 class FakePathProvider extends PathProviderPlatform
@@ -49,23 +52,16 @@ void main() {
     db = await databaseFactoryFfi.openDatabase(
       inMemoryDatabasePath,
       options: OpenDatabaseOptions(
-        version: 1,
+        version: kRoundDbVersion,
+        // Build the table from the shared schema constant rather than a copy of
+        // it: a hand-written CREATE TABLE here drifts silently from the real
+        // one, and the DAO then passes tests against a table the app does not
+        // have (which is exactly what happened when `layer` was added).
         onCreate: (db, version) async {
-          await db.execute('''
-            CREATE TABLE corrections (
-              id TEXT PRIMARY KEY,
-              course_id TEXT NOT NULL,
-              hole_id TEXT,
-              issue_type TEXT NOT NULL,
-              reporter_lat REAL NOT NULL,
-              reporter_lng REAL NOT NULL,
-              gps_accuracy REAL NOT NULL,
-              submitted_at TEXT NOT NULL,
-              note TEXT,
-              sync_state TEXT NOT NULL DEFAULT 'pending',
-              idempotency_key TEXT NOT NULL
-            )
-          ''');
+          await db.execute(kCorrectionsTableCreateSql);
+          await db.execute(kCorrectionsTableCourseIndexSql);
+          await db.execute(kCorrectionsTableSyncStateIndexSql);
+          await db.execute(kCorrectionsTableIdempotencyIndexSql);
         },
       ),
     );
@@ -330,6 +326,28 @@ void main() {
 
     test('delete is idempotent — no error when id does not exist', () async {
       await dao.delete('non-existent-id'); // should not throw
+    });
+  });
+
+  group('geometry layer', () {
+    test('round-trips the reported layer through the real schema', () async {
+      final correction = buildCorrection(
+        id: 'corr-layer-1',
+        idempotencyKey: 'idem-layer-1',
+      ).copyWith(layer: GeometryLayer.water, holeId: 'hole-7');
+
+      await dao.upsert(correction);
+      final loaded = await dao.getById('corr-layer-1');
+
+      expect(loaded!.layer, GeometryLayer.water);
+      expect(loaded.holeId, 'hole-7');
+    });
+
+    test('a correction with no layer stores null', () async {
+      await dao.upsert(
+        buildCorrection(id: 'corr-layer-2', idempotencyKey: 'idem-layer-2'),
+      );
+      expect((await dao.getById('corr-layer-2'))!.layer, isNull);
     });
   });
 }

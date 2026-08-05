@@ -43,6 +43,15 @@ public class CorrectionDetailResponse {
     private String status;
     private BigDecimal confidence;
 
+    /** Geometry layer for a golfer-reported layer correction; null otherwise. */
+    private String geometryLayer;
+
+    /** Reporter's horizontal GPS accuracy in metres at submission time. */
+    private Double gpsAccuracyMeters;
+
+    /** Independent reports corroborating this one — cluster size. */
+    private Integer corroborationCount;
+
     // ─── Submission ─────────────────────────────────────────────────────────
 
     private Instant submittedAt;
@@ -81,6 +90,9 @@ public class CorrectionDetailResponse {
         r.setCorrectionType(c.getCorrectionType().name());
         r.setStatus(c.getStatus().name());
         r.setConfidence(c.getConfidence());
+        r.setGeometryLayer(c.getGeometryLayer() != null ? c.getGeometryLayer().getWireValue() : null);
+        r.setGpsAccuracyMeters(c.getGpsAccuracyMeters());
+        r.setCorroborationCount(c.getCorroborationCount());
         r.setSubmittedAt(c.getSubmittedAt());
         r.setReviewedAt(c.getReviewedAt());
         r.setReviewedBy(c.getReviewedBy());
@@ -100,6 +112,15 @@ public class CorrectionDetailResponse {
     }
 
     // ─── Getters and Setters ─────────────────────────────────────────────────
+
+    public String getGeometryLayer() { return geometryLayer; }
+    public void setGeometryLayer(String geometryLayer) { this.geometryLayer = geometryLayer; }
+
+    public Double getGpsAccuracyMeters() { return gpsAccuracyMeters; }
+    public void setGpsAccuracyMeters(Double gpsAccuracyMeters) { this.gpsAccuracyMeters = gpsAccuracyMeters; }
+
+    public Integer getCorroborationCount() { return corroborationCount; }
+    public void setCorroborationCount(Integer corroborationCount) { this.corroborationCount = corroborationCount; }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }

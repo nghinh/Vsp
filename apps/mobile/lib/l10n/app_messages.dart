@@ -70,6 +70,7 @@ abstract final class AppMessages {
   static const roundReviewLoadFailed = 'msg.roundReviewLoadFailed';
   static const drivingZoneLoadFailed = 'msg.drivingZoneLoadFailed';
   static const correctionSubmitFailed = 'msg.correctionSubmitFailed';
+  static const correctionLayerRequired = 'msg.correctionLayerRequired';
   static const correctionsLoadFailed = 'msg.correctionsLoadFailed';
   static const mapGeometryNotFound = 'msg.mapGeometryNotFound';
   static const mapLoadFailed = 'msg.mapLoadFailed';
@@ -166,6 +167,7 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.roundReviewLoadFailed => l10n.msgRoundReviewLoadFailed,
     AppMessages.drivingZoneLoadFailed => l10n.msgDrivingZoneLoadFailed,
     AppMessages.correctionSubmitFailed => l10n.msgCorrectionSubmitFailed,
+    AppMessages.correctionLayerRequired => l10n.msgCorrectionLayerRequired,
     AppMessages.correctionsLoadFailed => l10n.msgCorrectionsLoadFailed,
     AppMessages.mapGeometryNotFound => l10n.mapGeometryNotFound,
     AppMessages.mapLoadFailed => l10n.msgMapLoadFailed,

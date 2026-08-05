@@ -1434,6 +1434,53 @@
     }
   },
   "msgEmptyPackage": "The course package is empty — nothing to download. Contact support if this course should be available offline.",
+  "correctionReportTitle": "Report Correction",
+  "correctionLayer": "Which part of the hole?",
+  "correctionLayerGreen": "Green",
+  "correctionLayerFairway": "Fairway",
+  "correctionLayerBunker": "Bunker",
+  "correctionLayerWater": "Water",
+  "correctionLayerOb": "Out of bounds",
+  "correctionLayerHint": "We record the spot you are standing on. Walk to the part that is wrong before you send it.",
+  "correctionSubmitCorrection": "Submit Correction",
+  "correctionSavesOfflineHint": "Saves offline and syncs when connected",
+  "correctionCapturingGps": "Capturing GPS…",
+  "correctionAccuracyNoFix": "No GPS fix",
+  "correctionAccuracyHigh": "High ({meters} m)",
+  "@correctionAccuracyHigh": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyGood": "Good ({meters} m)",
+  "@correctionAccuracyGood": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyModerate": "Moderate ({meters} m)",
+  "@correctionAccuracyModerate": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionAccuracyPoor": "Poor ({meters} m)",
+  "@correctionAccuracyPoor": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "correctionNeedsGpsFix": "Waiting for a GPS fix — a correction needs your position.",
+  "correctionAccuracyTooPoor": "GPS accuracy is too poor to place a correction. Move to open sky and try again.",
+  "msgCorrectionLayerRequired": "Choose which part of the hole is wrong.",
   "measureTitle": "Measure",
   "measureTooltip": "Measuring tool",
   "measureHint": "Tap the map to drop a point. Tap a point again to remove it.",

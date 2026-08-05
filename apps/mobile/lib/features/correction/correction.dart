@@ -5,3 +5,4 @@
 // Per Story 9.1: Submit Correction Offline.
 
 export 'domain/course_correction.dart';
+export 'domain/geometry_layer.dart';

@@ -18,7 +18,7 @@ import 'app_localizations_vi.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'out/app_localizations.dart';
+/// import 'l10n/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -4705,6 +4705,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The course package is empty — nothing to download. Contact support if this course should be available offline.'**
   String get msgEmptyPackage;
+
+  /// No description provided for @correctionReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Correction'**
+  String get correctionReportTitle;
+
+  /// No description provided for @correctionLayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Which part of the hole?'**
+  String get correctionLayer;
+
+  /// No description provided for @correctionLayerGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get correctionLayerGreen;
+
+  /// No description provided for @correctionLayerFairway.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairway'**
+  String get correctionLayerFairway;
+
+  /// No description provided for @correctionLayerBunker.
+  ///
+  /// In en, this message translates to:
+  /// **'Bunker'**
+  String get correctionLayerBunker;
+
+  /// No description provided for @correctionLayerWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get correctionLayerWater;
+
+  /// No description provided for @correctionLayerOb.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of bounds'**
+  String get correctionLayerOb;
+
+  /// No description provided for @correctionLayerHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We record the spot you are standing on. Walk to the part that is wrong before you send it.'**
+  String get correctionLayerHint;
+
+  /// No description provided for @correctionSubmitCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit Correction'**
+  String get correctionSubmitCorrection;
+
+  /// No description provided for @correctionSavesOfflineHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Saves offline and syncs when connected'**
+  String get correctionSavesOfflineHint;
+
+  /// No description provided for @correctionCapturingGps.
+  ///
+  /// In en, this message translates to:
+  /// **'Capturing GPS…'**
+  String get correctionCapturingGps;
+
+  /// No description provided for @correctionAccuracyNoFix.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS fix'**
+  String get correctionAccuracyNoFix;
+
+  /// No description provided for @correctionAccuracyHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High ({meters} m)'**
+  String correctionAccuracyHigh(String meters);
+
+  /// No description provided for @correctionAccuracyGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good ({meters} m)'**
+  String correctionAccuracyGood(String meters);
+
+  /// No description provided for @correctionAccuracyModerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate ({meters} m)'**
+  String correctionAccuracyModerate(String meters);
+
+  /// No description provided for @correctionAccuracyPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Poor ({meters} m)'**
+  String correctionAccuracyPoor(String meters);
+
+  /// No description provided for @correctionNeedsGpsFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a GPS fix — a correction needs your position.'**
+  String get correctionNeedsGpsFix;
+
+  /// No description provided for @correctionAccuracyTooPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS accuracy is too poor to place a correction. Move to open sky and try again.'**
+  String get correctionAccuracyTooPoor;
+
+  /// No description provided for @msgCorrectionLayerRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which part of the hole is wrong.'**
+  String get msgCorrectionLayerRequired;
 
   /// No description provided for @measureTitle.
   ///

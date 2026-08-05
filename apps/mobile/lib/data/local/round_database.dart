@@ -36,7 +36,9 @@ const String kRoundDbName = 'vsp_round.db';
 /// Because they all share ONE file, a v1 opener arriving after the v2 opener
 /// triggered a spurious sqflite downgrade error. The shared opener pins the file
 /// to v2 for everyone; [migrateRoundSchema] performs the v1→v2 column adds.
-const int kRoundDbVersion = 2;
+///
+/// v3 adds `corrections.layer` — which geometry layer a golfer is correcting.
+const int kRoundDbVersion = 3;
 
 /// Round-sync queue table (owned historically by `RoundSyncStore`).
 const String kRoundSyncQueueTableName = 'round_sync_queue';
@@ -197,6 +199,10 @@ Future<void> migrateRoundSchema(
       'INTEGER',
     );
     await _addColumnIfMissing(db, 'rounds', 'tournament_policy_json', 'TEXT');
+  }
+  if (oldVersion < 3) {
+    // Geometry corrections: which layer of the hole the golfer is reporting.
+    await _addColumnIfMissing(db, 'corrections', 'layer', 'TEXT');
   }
 }
 

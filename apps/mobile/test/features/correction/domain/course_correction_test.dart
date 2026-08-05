@@ -15,6 +15,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/features/correction/domain/course_correction.dart';
+import 'package:vsp_mobile/features/correction/domain/geometry_layer.dart';
 
 void main() {
   final now = DateTime.now().toUtc();
@@ -345,6 +346,77 @@ void main() {
       final a = buildValidCorrection();
       final b = buildValidCorrection().copyWith(id: 'different-id');
       expect(a, isNot(equals(b)));
+    });
+  });
+
+  group('GeometryLayer', () {
+    test('parses the wire value and the enum name, case-insensitively', () {
+      expect(GeometryLayer.fromString('green'), GeometryLayer.green);
+      expect(GeometryLayer.fromString('GREEN'), GeometryLayer.green);
+      expect(GeometryLayer.fromString('ob'), GeometryLayer.ob);
+      expect(GeometryLayer.fromString('water'), GeometryLayer.water);
+    });
+
+    test('returns null rather than guessing for an unknown layer', () {
+      expect(GeometryLayer.fromString('tee'), isNull);
+      expect(GeometryLayer.fromString(''), isNull);
+      expect(GeometryLayer.fromString(null), isNull);
+    });
+
+    test('wire values match the layers the API accepts', () {
+      expect(
+        GeometryLayer.values.map((l) => l.wireValue).toList(),
+        ['green', 'fairway', 'bunker', 'water', 'ob'],
+      );
+    });
+  });
+
+  group('CourseCorrection geometry layer', () {
+    CourseCorrection withLayer(GeometryLayer? layer) =>
+        buildValidCorrection().copyWith(layer: layer);
+
+    test('survives the SQLite round-trip', () {
+      final correction = withLayer(GeometryLayer.bunker);
+      final restored = CourseCorrection.fromMap(correction.toMap());
+      expect(correction.toMap()['layer'], 'bunker');
+      expect(restored.layer, GeometryLayer.bunker);
+    });
+
+    test('survives the JSON round-trip', () {
+      final correction = withLayer(GeometryLayer.fairway);
+      final restored = CourseCorrection.fromJson(correction.toJson());
+      expect(restored.layer, GeometryLayer.fairway);
+    });
+
+    test('a correction with no layer stays null through both round-trips', () {
+      final correction = buildValidCorrection();
+      expect(correction.layer, isNull);
+      expect(CourseCorrection.fromMap(correction.toMap()).layer, isNull);
+      expect(CourseCorrection.fromJson(correction.toJson()).layer, isNull);
+    });
+
+    test('a layer correction without a hole is invalid', () {
+      final correction = withLayer(GeometryLayer.green).copyWith(clearHoleId: true);
+      expect(correction.isValid, false);
+      expect(correction.validate().join(), contains('holeId'));
+    });
+
+    test('toGeometryCorrectionRequest reports the standing position as a point', () {
+      final body = withLayer(GeometryLayer.green).toGeometryCorrectionRequest();
+      expect(body['holeId'], isNull, reason: 'hole-001 is not numeric');
+      expect(body['layer'], 'green');
+      expect(body['gpsAccuracyMeters'], 3.5);
+      expect(body['geometry'], {
+        'type': 'Point',
+        'coordinates': [106.660020, 10.762622],
+      });
+    });
+
+    test('toGeometryCorrectionRequest omits an empty note', () {
+      final body = withLayer(GeometryLayer.green)
+          .copyWith(clearNote: true)
+          .toGeometryCorrectionRequest();
+      expect(body.containsKey('note'), isFalse);
     });
   });
 }

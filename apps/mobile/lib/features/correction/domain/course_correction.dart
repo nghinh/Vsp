@@ -10,6 +10,8 @@
 
 import 'package:equatable/equatable.dart';
 
+import 'geometry_layer.dart';
+
 /// Issue types for course-data quality corrections.
 /// Covers the full course-data loop per story 9.1 AC.
 enum CorrectionIssueType {
@@ -92,6 +94,10 @@ class CourseCorrection extends Equatable {
   /// What kind of issue is being reported.
   final CorrectionIssueType issueType;
 
+  /// Which geometry layer of the hole is wrong (green, fairway, bunker,
+  /// water, ob). Null for issue types that are not about a geometry layer.
+  final GeometryLayer? layer;
+
   /// Reporter's latitude at time of submission (decimal degrees, WGS84).
   final double reporterLat;
 
@@ -119,6 +125,7 @@ class CourseCorrection extends Equatable {
     required this.courseId,
     this.holeId,
     required this.issueType,
+    this.layer,
     required this.reporterLat,
     required this.reporterLng,
     required this.gpsAccuracy,
@@ -149,6 +156,11 @@ class CourseCorrection extends Equatable {
     final errors = <String>[];
     if (courseId.isEmpty) errors.add('courseId is required');
     if (gpsAccuracy < 0) errors.add('gpsAccuracy must be non-negative');
+    // A geometry-layer report is filed per hole; without one the API cannot
+    // tell which feature the golfer is correcting.
+    if (layer != null && (holeId == null || holeId!.isEmpty)) {
+      errors.add('holeId is required for a geometry layer correction');
+    }
     if (note != null && note!.length > 500) {
       errors.add('Note must be 500 characters or fewer');
     }
@@ -165,6 +177,7 @@ class CourseCorrection extends Equatable {
     String? courseId,
     String? holeId,
     CorrectionIssueType? issueType,
+    GeometryLayer? layer,
     double? reporterLat,
     double? reporterLng,
     double? gpsAccuracy,
@@ -174,12 +187,14 @@ class CourseCorrection extends Equatable {
     String? idempotencyKey,
     bool clearHoleId = false,
     bool clearNote = false,
+    bool clearLayer = false,
   }) {
     return CourseCorrection(
       id: id ?? this.id,
       courseId: courseId ?? this.courseId,
       holeId: clearHoleId ? null : (holeId ?? this.holeId),
       issueType: issueType ?? this.issueType,
+      layer: clearLayer ? null : (layer ?? this.layer),
       reporterLat: reporterLat ?? this.reporterLat,
       reporterLng: reporterLng ?? this.reporterLng,
       gpsAccuracy: gpsAccuracy ?? this.gpsAccuracy,
@@ -199,6 +214,7 @@ class CourseCorrection extends Equatable {
       'course_id': courseId,
       'hole_id': holeId,
       'issue_type': issueType.name,
+      'layer': layer?.wireValue,
       'reporter_lat': reporterLat,
       'reporter_lng': reporterLng,
       'gps_accuracy': gpsAccuracy,
@@ -216,6 +232,7 @@ class CourseCorrection extends Equatable {
       courseId: map['course_id'] as String,
       holeId: map['hole_id'] as String?,
       issueType: CorrectionIssueType.fromString(map['issue_type'] as String),
+      layer: GeometryLayer.fromString(map['layer'] as String?),
       reporterLat: (map['reporter_lat'] as num).toDouble(),
       reporterLng: (map['reporter_lng'] as num).toDouble(),
       gpsAccuracy: (map['gps_accuracy'] as num).toDouble(),
@@ -235,6 +252,7 @@ class CourseCorrection extends Equatable {
       courseId: json['courseId'] as String,
       holeId: json['holeId'] as String?,
       issueType: CorrectionIssueType.fromString(json['issueType'] as String),
+      layer: GeometryLayer.fromString(json['layer'] as String?),
       reporterLat: (json['reporterLat'] as num).toDouble(),
       reporterLng: (json['reporterLng'] as num).toDouble(),
       gpsAccuracy: (json['gpsAccuracy'] as num).toDouble(),
@@ -253,6 +271,7 @@ class CourseCorrection extends Equatable {
     'courseId': courseId,
     'holeId': holeId,
     'issueType': issueType.name,
+    'layer': layer?.wireValue,
     'reporterLat': reporterLat,
     'reporterLng': reporterLng,
     'gpsAccuracy': gpsAccuracy,
@@ -262,12 +281,33 @@ class CourseCorrection extends Equatable {
     'idempotencyKey': idempotencyKey,
   };
 
+  /// Body for `POST /courses/{courseId}/geometry-corrections`.
+  ///
+  /// The reported shape is the golfer's own position as a GeoJSON Point: the
+  /// hole map is a MapLibre GL surface with no polygon-drawing tool, so a
+  /// golfer standing on the misplaced edge marks the spot rather than tracing
+  /// the feature. The endpoint accepts a Polygon too, for when an editor can
+  /// send one.
+  Map<String, dynamic> toGeometryCorrectionRequest() => {
+    'holeId': int.tryParse(holeId ?? ''),
+    'layer': layer?.wireValue,
+    'geometry': {
+      'type': 'Point',
+      'coordinates': [reporterLng, reporterLat],
+    },
+    'gpsAccuracyMeters': gpsAccuracy,
+    'reporterLat': reporterLat,
+    'reporterLng': reporterLng,
+    if (note != null && note!.isNotEmpty) 'note': note,
+  };
+
   @override
   List<Object?> get props => [
     id,
     courseId,
     holeId,
     issueType,
+    layer,
     reporterLat,
     reporterLng,
     gpsAccuracy,

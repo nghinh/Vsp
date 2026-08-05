@@ -13,6 +13,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vsp_mobile/features/correction/domain/course_correction.dart';
+import 'package:vsp_mobile/features/correction/domain/geometry_layer.dart';
 import 'package:vsp_mobile/features/correction/presentation/correction_submission_bloc.dart';
 import 'package:vsp_mobile/data/repositories/course_correction_repository.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
@@ -261,5 +262,52 @@ void main() {
         isA<CorrectionSubmissionFailure>(),
       ],
     );
+
+    test('the selected layer is persisted with the correction', () async {
+      final bloc = CorrectionSubmissionBloc(
+        repository: fakeRepo,
+        locationService: fakeLocationService,
+      );
+
+      bloc.add(
+        const SubmitCorrection(
+          issueType: CorrectionIssueType.greenBoundary,
+          layer: GeometryLayer.green,
+          note: 'Green edge is ~10 m short',
+          courseId: 'course-001',
+          holeId: 'hole-001',
+          reporterLat: 10.762622,
+          reporterLng: 106.660020,
+          gpsAccuracy: 3.5,
+        ),
+      );
+      await bloc.stream.firstWhere((s) => s is CorrectionSubmissionSuccess);
+
+      expect(fakeRepo.lastSubmitted!.layer, GeometryLayer.green);
+      expect(fakeRepo.lastSubmitted!.syncState, CorrectionSyncState.pending);
+      await bloc.close();
+    });
+
+    test('a report with no layer still persists — layer is optional here', () async {
+      final bloc = CorrectionSubmissionBloc(
+        repository: fakeRepo,
+        locationService: fakeLocationService,
+      );
+
+      bloc.add(
+        const SubmitCorrection(
+          issueType: CorrectionIssueType.otherCourseData,
+          courseId: 'course-001',
+          holeId: 'hole-001',
+          reporterLat: 10.762622,
+          reporterLng: 106.660020,
+          gpsAccuracy: 3.5,
+        ),
+      );
+      await bloc.stream.firstWhere((s) => s is CorrectionSubmissionSuccess);
+
+      expect(fakeRepo.lastSubmitted!.layer, isNull);
+      await bloc.close();
+    });
   });
 }

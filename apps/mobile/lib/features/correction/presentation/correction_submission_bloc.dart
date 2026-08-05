@@ -15,6 +15,7 @@ import 'package:uuid/uuid.dart';
 import '../../../domain/models/qualified_location.dart';
 import '../../../domain/services/location_service.dart';
 import '../domain/course_correction.dart';
+import '../domain/geometry_layer.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -41,6 +42,9 @@ class LoadCorrectionForm extends CorrectionSubmissionEvent {
 /// Submit a correction report.
 class SubmitCorrection extends CorrectionSubmissionEvent {
   final CorrectionIssueType issueType;
+
+  /// Which geometry layer of the hole is wrong. Null for non-geometry reports.
+  final GeometryLayer? layer;
   final String? note;
   final String courseId;
   final String? holeId;
@@ -50,6 +54,7 @@ class SubmitCorrection extends CorrectionSubmissionEvent {
 
   const SubmitCorrection({
     required this.issueType,
+    this.layer,
     this.note,
     required this.courseId,
     this.holeId,
@@ -61,6 +66,7 @@ class SubmitCorrection extends CorrectionSubmissionEvent {
   @override
   List<Object?> get props => [
     issueType,
+    layer,
     note,
     courseId,
     holeId,
@@ -188,6 +194,7 @@ class CorrectionSubmissionBloc
         courseId: event.courseId,
         holeId: event.holeId,
         issueType: event.issueType,
+        layer: event.layer,
         reporterLat: event.reporterLat,
         reporterLng: event.reporterLng,
         gpsAccuracy: event.gpsAccuracy,

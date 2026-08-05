@@ -14,6 +14,7 @@ import 'dart:convert';
 
 import '../../core/network/api_client.dart';
 import '../../domain/models/sync_event.dart';
+import '../../features/correction/domain/course_correction.dart';
 import 'sync_worker.dart';
 
 /// Client that sends sync events to the server with idempotency support.
@@ -28,8 +29,9 @@ class IdempotencyClient {
   /// server can deduplicate. Checks for the `X-Idempotent-Replay` header
   /// to detect server-side replays of previously processed events.
   Future<SyncResult> syncEvent(SyncEvent event) async {
-    final path = _eventPath(event);
-    final body = jsonDecode(event.payload) as Map<String, dynamic>;
+    final payload = jsonDecode(event.payload) as Map<String, dynamic>;
+    final path = _eventPath(event, payload);
+    final body = _eventBody(event, payload);
 
     try {
       final response = await _apiClient.postForReplay(
@@ -74,7 +76,10 @@ class IdempotencyClient {
   }
 
   /// Determine the API path for a sync event.
-  String _eventPath(SyncEvent event) {
+  ///
+  /// [payload] is the decoded event payload; correction events route by the
+  /// course they belong to, which only the payload knows.
+  String _eventPath(SyncEvent event, Map<String, dynamic> payload) {
     switch (event.type) {
       case SyncEventType.roundCreate:
       case SyncEventType.roundComplete:
@@ -82,7 +87,9 @@ class IdempotencyClient {
       case SyncEventType.scoreUpdate:
         return '/api/scores/${event.entityId}/sync';
       case SyncEventType.correctionSubmit:
-        return '/api/course-corrections/${event.entityId}/sync';
+        // Real endpoint, not a /sync shim: the API takes the correction itself
+        // and the Idempotency-Key header already makes the replay safe.
+        return '/courses/${payload['courseId']}/geometry-corrections';
       case SyncEventType.shotStarted:
       case SyncEventType.shotEnded:
       case SyncEventType.shotEdited:
@@ -90,5 +97,17 @@ class IdempotencyClient {
       case SyncEventType.shotsMerged:
         return '/api/shots/${event.entityId}/sync';
     }
+  }
+
+  /// Build the request body for a sync event.
+  ///
+  /// Most events post their stored payload verbatim. A correction is stored in
+  /// the app's own shape (local IDs, sync state) and must be translated into
+  /// the geometry-correction request the API accepts.
+  Map<String, dynamic> _eventBody(SyncEvent event, Map<String, dynamic> payload) {
+    if (event.type == SyncEventType.correctionSubmit) {
+      return CourseCorrection.fromJson(payload).toGeometryCorrectionRequest();
+    }
+    return payload;
   }
 }
