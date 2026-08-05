@@ -1,10 +1,16 @@
 # Course digitisation
 
-831 of the 900 holes have no real geometry: OpenStreetMap only covers 69 (the
+839 of the 900 holes have no real geometry: OpenStreetMap covers only 61 (the
 rest of Vietnam's courses are not mapped hole-by-hole). Those holes still carry
 seeded coordinates, so their fairways are derived and labelled unverified.
 
-This directory holds the two ends of the manual pipeline that closes the gap.
+Two pipelines feed the same tables:
+
+* [`osm/`](osm/) — **automatic**, and the source of everything the database
+  currently knows: facility coordinates, 61 real holes, and the OSM greens,
+  bunkers and water hazards around them. Run that first; it is reproducible and
+  idempotent.
+* this directory — **manual**, for the 839 holes OSM cannot supply.
 
 ## 1. `holes_todo.geojson` — the work list
 
@@ -16,7 +22,7 @@ imagery.
 Regenerate it after any import so finished holes drop off:
 
 ```sh
-# see the query in git history for this file's first commit
+python3 make_holes_todo.py
 ```
 
 ## 2. `import_digitized.py` — the way back in

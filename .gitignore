@@ -48,3 +48,7 @@ logs/
 .gitnexus/
 .runtime/
 .serena/
+
+# ─── Python (tools) ────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
