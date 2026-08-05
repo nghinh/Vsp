@@ -20,6 +20,7 @@ import '../../../core/storage/round_setup_store.dart';
 import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
 import '../../../domain/models/player.dart';
+import '../../../presentation/screens/score/scorecard_screen.dart';
 import 'round_setup_bloc.dart';
 import 'round_setup_event.dart';
 import 'round_setup_state.dart';
@@ -32,7 +33,18 @@ import 'widgets/player_card.dart';
 
 /// Main round setup screen.
 class RoundSetupScreen extends StatelessWidget {
-  const RoundSetupScreen({super.key});
+  const RoundSetupScreen({
+    super.key,
+    this.initialCourseId,
+    this.initialCourseName,
+    this.initialPackageId,
+  });
+
+  /// When provided, the round is pre-configured for this course so the golfer
+  /// can start playing in one tap instead of re-picking the course.
+  final int? initialCourseId;
+  final String? initialCourseName;
+  final String? initialPackageId;
 
   @override
   Widget build(BuildContext context) {
@@ -54,15 +66,60 @@ class RoundSetupScreen extends StatelessWidget {
           packageReadinessService: packageReadinessService,
           nearbyCourseService: nearbyCourseService,
           roundSetupStore: roundSetupStore,
-        )..add(const LoadInitialData());
+        )..add(
+          LoadInitialData(
+            initialCourseId: initialCourseId,
+            initialCourseName: initialCourseName,
+            initialPackageId: initialPackageId,
+          ),
+        );
       },
       child: const _RoundSetupScreenBody(),
     );
   }
 }
 
-class _RoundSetupScreenBody extends StatelessWidget {
+class _RoundSetupScreenBody extends StatefulWidget {
   const _RoundSetupScreenBody();
+
+  @override
+  State<_RoundSetupScreenBody> createState() => _RoundSetupScreenBodyState();
+}
+
+class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
+  /// Snapshot of the last configured round, captured so the score-entry screen
+  /// can be opened with the correct players/holes when the round starts.
+  RoundSetupReady? _lastReady;
+
+  void _openScorecard(BuildContext context, String flightId) {
+    final ready = _lastReady;
+    if (ready == null) return;
+
+    final holeIds = _holeIdsFor(ready);
+    final players = ready.players;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => ScorecardScreen(
+          flightId: flightId,
+          holeIds: holeIds,
+          playerIds: players.map((p) => p.id).toList(),
+          playerNames: {for (final p in players) p.id: p.name},
+          holePars: {for (final id in holeIds) id: 4},
+        ),
+      ),
+    );
+  }
+
+  List<String> _holeIdsFor(RoundSetupReady ready) {
+    switch (ready.holes) {
+      case 'front9':
+        return [for (var h = 1; h <= 9; h++) '$h'];
+      case 'back9':
+        return [for (var h = 10; h <= 18; h++) '$h'];
+      default:
+        return [for (var h = 1; h <= 18; h++) '$h'];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,25 +128,29 @@ class _RoundSetupScreenBody extends StatelessWidget {
 
     return BlocConsumer<RoundSetupBloc, RoundSetupState>(
       listener: (context, state) {
+        if (state is RoundSetupReady) {
+          _lastReady = state;
+        } else if (state is RoundSetupError && state.lastState != null) {
+          _lastReady = state.lastState;
+        }
         if (state is RoundSetupRoundStarted) {
-          // Navigate to active round screen
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Round started at ${state.courseName}'),
               backgroundColor: colorScheme.primary,
+              duration: const Duration(seconds: 1),
             ),
           );
-          // TODO: Navigate to ActiveRoundScreen
-          // Navigator.pushNamed(context, '/active-round', arguments: state.roundId);
+          _openScorecard(context, state.roundId.toString());
         } else if (state is RoundSetupLocalRoundSaved) {
-          // Navigate to active round with sync pending badge
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Round saved locally. Will sync when online.'),
               backgroundColor: colorScheme.tertiary,
+              duration: const Duration(seconds: 1),
             ),
           );
-          // TODO: Navigate to ActiveRoundScreen with sync pending
+          _openScorecard(context, state.localRoundId);
         } else if (state is RoundSetupError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -368,20 +429,26 @@ class _CourseSelector extends StatelessWidget {
     // TODO: Navigate to course picker screen or show bottom sheet
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Select Course',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Select Course',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
               const SizedBox(height: 16),
               if (state.nearbyCourses.isNotEmpty) ...[
-                Text('Nearby', style: Theme.of(context).textTheme.labelLarge),
+                Text('Courses', style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 8),
                 ...state.nearbyCourses.map(
                   (c) => ListTile(
@@ -431,10 +498,12 @@ class _CourseSelector extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.all(32),
                   child: Center(
-                    child: Text('No nearby or recent courses found.'),
+                    child: Text('No courses available.'),
                   ),
                 ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
       ),

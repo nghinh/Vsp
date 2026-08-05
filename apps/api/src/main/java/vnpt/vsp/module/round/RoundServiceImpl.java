@@ -2,6 +2,9 @@ package vnpt.vsp.module.round;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
@@ -9,6 +12,7 @@ import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.audit.AuditAction;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.course.CourseService;
+import vnpt.vsp.module.course.dto.PageResponse;
 import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.identity.repository.GolferAccountRepository;
 import vnpt.vsp.module.round.dto.RoundCompleteRequest;
@@ -25,7 +29,9 @@ import vnpt.vsp.module.tournament.entity.Tournament;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -156,6 +162,41 @@ public class RoundServiceImpl implements RoundService {
         );
 
         return toResponse(savedRound, course.getName());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResponse<RoundResponse> listRounds(Long accountId, int page, int size) {
+        log.info("Listing rounds for account {} (page={}, size={})", accountId, page, size);
+
+        Pageable pageable = PageRequest.of(Math.max(page, 0), Math.min(Math.max(size, 1), 100));
+        Page<Round> roundPage =
+                roundRepository.findByGolferAccountIdAndDeletedAtIsNullOrderByStartedAtDesc(accountId, pageable);
+
+        // Resolve course names once per distinct course to avoid repeated lookups.
+        Map<Long, String> courseNames = new HashMap<>();
+        List<RoundResponse> content = new ArrayList<>();
+        for (Round round : roundPage.getContent()) {
+            String courseName = null;
+            Long courseId = round.getCourseId();
+            if (courseId != null) {
+                courseName = courseNames.computeIfAbsent(courseId, this::resolveCourseName);
+            }
+            content.add(toResponse(round, courseName));
+        }
+
+        return new PageResponse<>(content, roundPage.getNumber(), roundPage.getSize(),
+                roundPage.getTotalElements(), roundPage.getTotalPages());
+    }
+
+    private String resolveCourseName(Long courseId) {
+        try {
+            Course course = courseService.getCourse(courseId);
+            return course != null ? course.getName() : null;
+        } catch (Exception e) {
+            log.debug("Could not resolve course name for courseId {}: {}", courseId, e.getMessage());
+            return null;
+        }
     }
 
     @Override

@@ -21,7 +21,8 @@ class HoleSummary extends Equatable {
     return HoleSummary(
       holeNumber: json['holeNumber'] as int,
       par: json['par'] as int,
-      playingLengthMeters: json['playingLengthMeters'] as int?,
+      // API sends this as a decimal (e.g. 362.0) — accept any number.
+      playingLengthMeters: (json['playingLengthMeters'] as num?)?.toInt(),
     );
   }
 

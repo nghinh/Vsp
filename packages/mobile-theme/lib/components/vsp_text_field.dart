@@ -95,6 +95,14 @@ class VspTextField extends StatefulWidget {
   /// Semantic label for screen readers (overrides label when provided).
   final String? semanticLabel;
 
+  /// Autofill hints (e.g. [AutofillHints.email]) so the OS can offer the
+  /// right saved value and stop mis-guessing what the field is for.
+  final Iterable<String>? autofillHints;
+
+  /// Explicit keyboard action button. Falls back to a per-variant default
+  /// (`next` for text, `done` for numeric) when null.
+  final TextInputAction? textInputAction;
+
   const VspTextField({
     super.key,
     required this.label,
@@ -114,6 +122,8 @@ class VspTextField extends StatefulWidget {
     this.obscureText = false,
     this.focusNode,
     this.semanticLabel,
+    this.autofillHints,
+    this.textInputAction,
   });
 
   @override
@@ -124,10 +134,15 @@ class _VspTextFieldState extends State<VspTextField> {
   TextEditingController? _internalController;
   late final FocusNode _focusNode;
   bool _isFocused = false;
+  late bool _obscured;
+
+  /// True when this is a password-style field that should show a reveal toggle.
+  bool get _isPasswordField => widget.obscureText;
 
   @override
   void initState() {
     super.initState();
+    _obscured = widget.obscureText;
     _focusNode = widget.focusNode ?? FocusNode();
     _internalController = widget.controller == null
         ? TextEditingController(text: widget.initialValue)
@@ -167,6 +182,9 @@ class _VspTextFieldState extends State<VspTextField> {
   }
 
   TextInputAction get _textInputAction {
+    if (widget.textInputAction != null) {
+      return widget.textInputAction!;
+    }
     if (widget.maxLines == 1) {
       return widget.variant == VspTextFieldVariant.numeric
           ? TextInputAction.done
@@ -261,7 +279,8 @@ class _VspTextFieldState extends State<VspTextField> {
             inputFormatters: _inputFormatters,
             maxLines: widget.maxLines,
             maxLength: widget.maxLength,
-            obscureText: widget.obscureText,
+            obscureText: _obscured,
+            autofillHints: widget.autofillHints,
             enabled: !widget.isDisabled,
             onChanged: widget.onChanged,
             onSubmitted: widget.onSubmitted,
@@ -284,6 +303,21 @@ class _VspTextFieldState extends State<VspTextField> {
                 vertical: 12,
               ),
               counterText: '',
+              suffixIcon: _isPasswordField
+                  ? IconButton(
+                      icon: Icon(
+                        _obscured
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        color: colorScheme.onSurfaceVariant,
+                        size: 22,
+                      ),
+                      tooltip: _obscured ? 'Show password' : 'Hide password',
+                      onPressed: widget.isDisabled
+                          ? null
+                          : () => setState(() => _obscured = !_obscured),
+                    )
+                  : null,
             ),
           ),
         ),

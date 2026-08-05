@@ -60,8 +60,9 @@ class CourseSearchResult extends Equatable {
       facilityName: json['facilityName'] as String,
       courseName: json['courseName'] as String?,
       address: json['address'] as String?,
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      // Coordinates may be absent for text-search results — tolerate null.
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       holesCount: json['holesCount'] as int,
       parTotal: json['parTotal'] as int?,
       rating: (json['rating'] as num?)?.toDouble(),

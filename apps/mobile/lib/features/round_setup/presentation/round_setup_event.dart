@@ -231,5 +231,22 @@ class RecentCourseSuggestion extends Equatable {
 
 /// Load initial data: active bag, primary player, suggested start hole.
 class LoadInitialData extends RoundSetupEvent {
-  const LoadInitialData();
+  const LoadInitialData({
+    this.initialCourseId,
+    this.initialCourseName,
+    this.initialPackageId,
+  });
+
+  /// When provided, the round is pre-configured for this course as soon as the
+  /// initial state is built (avoids a CourseSelected race against the load).
+  final int? initialCourseId;
+  final String? initialCourseName;
+  final String? initialPackageId;
+
+  @override
+  List<Object?> get props => [
+    initialCourseId,
+    initialCourseName,
+    initialPackageId,
+  ];
 }

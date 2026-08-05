@@ -81,12 +81,19 @@ class ApiClient {
   );
 
   final http.Client _httpClient;
-  String? _accessToken;
+
+  /// Access token shared across every [ApiClient] instance.
+  ///
+  /// Feature screens each build their own [ApiClient], but they all represent
+  /// the same signed-in user, so the bearer token is held statically. Setting
+  /// it once after login/session-restore authenticates every client (and
+  /// clearing it on logout de-authenticates them all).
+  static String? _accessToken;
 
   ApiClient({http.Client? httpClient})
     : _httpClient = httpClient ?? http.Client();
 
-  /// Set the access token for authenticated requests.
+  /// Set the access token for authenticated requests (shared across clients).
   void setAccessToken(String? token) {
     _accessToken = token;
   }

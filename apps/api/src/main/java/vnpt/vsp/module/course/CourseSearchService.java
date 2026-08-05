@@ -25,6 +25,18 @@ public interface CourseSearchService {
      */
     PageResponse<CourseSearchResultDto> searchCourses(CourseSearchRequest request);
 
+    /**
+     * Returns the enriched search-result view of a single course by ID.
+     * Loads the course directly (not via the search index) so it always returns
+     * the requested course, fully populated with data freshness / package metadata.
+     *
+     * @param courseId          the course ID
+     * @param downloadedVersion the mobile-reported downloaded version (optional)
+     * @return the course search result DTO
+     * @throws vnpt.vsp.api.error.VspApiException COURSE_001 if the course does not exist
+     */
+    CourseSearchResultDto getCourseSearchResult(Long courseId, Integer downloadedVersion);
+
     // ─── Favorites ────────────────────────────────────────────────────────
 
     /**

@@ -400,6 +400,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
+                  autofillHints: const [AutofillHints.password],
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
@@ -464,6 +465,9 @@ class _SignInSheetState extends State<_SignInSheet> {
       keyboardType: widget.usePhone
           ? TextInputType.phone
           : TextInputType.emailAddress,
+      autofillHints: widget.usePhone
+          ? const [AutofillHints.telephoneNumber]
+          : const [AutofillHints.username, AutofillHints.email],
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(labelText: label),
       validator: (value) => value == null || value.trim().isEmpty

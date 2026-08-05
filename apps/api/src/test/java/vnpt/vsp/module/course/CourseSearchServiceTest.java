@@ -178,15 +178,21 @@ class CourseSearchServiceTest {
     }
 
     @Test
-    void searchCourses_noFilters_returnsEmptyResult() {
+    void searchCourses_noFilters_browsesAllCourses() {
+        // With no text or geo filters, the service browses the full catalogue
+        // via an empty text query (q="") — the browse-all behavior.
         CourseSearchRequest request = new CourseSearchRequest();
         request.setPage(0);
         request.setSize(20);
 
+        Page<Course> mockPage = new PageImpl<>(List.of(testCourse));
+        when(searchRepository.searchByText(eq(""), any(Pageable.class))).thenReturn(mockPage);
+
         PageResponse<CourseSearchResultDto> result = service.searchCourses(request);
 
         assertNotNull(result);
-        assertTrue(result.getContent().isEmpty());
+        assertFalse(result.getContent().isEmpty());
+        assertEquals(testCourse.getId(), result.getContent().get(0).getCourseId());
     }
 
     @Test

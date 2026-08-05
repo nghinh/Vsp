@@ -17,10 +17,14 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../data/api/course_search_api.dart';
+import '../../../../data/repositories/course_package_repository.dart';
 import '../../../../data/repositories/course_search_repository.dart';
+import '../../../../data/repositories/package_manifest_repository.dart';
 import '../../../../domain/models/course_search_result.dart';
+import '../../../../presentation/screens/course_download_screen.dart';
 import '../../../../domain/models/favorite_course.dart';
 import '../../../../domain/models/recent_course.dart';
+import '../../course_detail/presentation/course_detail_screen.dart';
 import 'course_search_bloc.dart';
 import 'course_search_event.dart';
 import 'course_search_state.dart';
@@ -39,7 +43,9 @@ class CourseSearchScreen extends StatelessWidget {
         final repository = CourseSearchRepository(api: api);
         return CourseSearchBloc(repository: repository)
           ..add(const LoadRecent())
-          ..add(const LoadFavorites());
+          ..add(const LoadFavorites())
+          // Populate the default "All" tab with the full course list.
+          ..add(const SearchSubmitted(''));
       },
       child: const _CourseSearchScreenBody(),
     );
@@ -572,7 +578,12 @@ class _ResultsList extends StatelessWidget {
               context.read<CourseSearchBloc>().add(
                 RecordCourseView(course.courseId),
               );
-              // Navigate to course detail (placeholder)
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      CourseDetailScreen(courseId: course.courseId),
+                ),
+              );
             },
             onFavoriteToggle: () {
               context.read<CourseSearchBloc>().add(
@@ -580,13 +591,17 @@ class _ResultsList extends StatelessWidget {
               );
             },
             onDownloadTap: () {
-              // Navigate to course download screen
-              Navigator.of(context).pushNamed(
-                '/courses/${course.courseId}/download',
-                arguments: {
-                  'courseId': course.courseId,
-                  'courseName': course.displayName,
-                },
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => CourseDownloadScreen(
+                    courseId: course.courseId,
+                    courseName: course.displayName,
+                    manifestRepo: PackageManifestRepository(),
+                    packageRepo: CoursePackageRepository(
+                      apiClient: ApiClient(),
+                    ),
+                  ),
+                ),
               );
             },
           );

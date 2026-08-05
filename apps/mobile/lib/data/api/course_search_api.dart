@@ -37,7 +37,7 @@ class CourseSearchParams {
     if (query != null && query!.isNotEmpty) params['q'] = query!;
     if (latitude != null) params['lat'] = latitude.toString();
     if (longitude != null) params['lng'] = longitude.toString();
-    if (radiusMeters != null) params['radius'] = radiusMeters.toString();
+    if (radiusMeters != null) params['radiusMeters'] = radiusMeters.toString();
     if (downloadedVersion != null) {
       params['downloadedVersion'] = downloadedVersion.toString();
     }
@@ -99,7 +99,7 @@ class CourseSearchApi {
       queryParams: {
         'lat': latitude.toString(),
         'lng': longitude.toString(),
-        'radius': radiusMeters.toString(),
+        'radiusMeters': radiusMeters.toString(),
         'page': page.toString(),
         'size': size.toString(),
       },

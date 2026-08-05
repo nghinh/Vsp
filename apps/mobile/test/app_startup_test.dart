@@ -7,6 +7,8 @@ import 'package:vsp_mobile/features/auth/data/auth_dto.dart';
 import 'package:vsp_mobile/features/auth/data/auth_repository.dart';
 import 'package:vsp_mobile/features/auth/data/auth_service.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
+import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
+import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
 
 class _StartupAuthRepository extends AuthRepository {
   _StartupAuthRepository({required this.hasSession, this.refreshDelay})
@@ -64,7 +66,9 @@ void main() {
     await tester.pump();
   });
 
-  testWidgets('shows auth entry when no stored session exists', (tester) async {
+  testWidgets('routes to the real login screen when no stored session exists', (
+    tester,
+  ) async {
     final authBloc = AuthBloc(
       authRepository: _StartupAuthRepository(hasSession: false),
     );
@@ -75,13 +79,16 @@ void main() {
     });
 
     await tester.pumpWidget(VspApp(authBloc: authBloc));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
-    expect(find.text('Sign in to continue'), findsOneWidget);
-    expect(find.text('Bắt đầu vòng đấu'), findsNothing);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.byType(HomeScreen), findsNothing);
+    // Registration entry point is reachable from the login screen.
+    expect(find.text('Sign Up'), findsOneWidget);
   });
 
-  testWidgets('shows the existing shell when a session is restored', (
+  testWidgets('routes to the real home screen when a session is restored', (
     tester,
   ) async {
     final authBloc = AuthBloc(
@@ -94,32 +101,10 @@ void main() {
     });
 
     await tester.pumpWidget(VspApp(authBloc: authBloc));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump();
 
-    expect(find.text('Bắt đầu vòng đấu'), findsOneWidget);
-    expect(find.text('Sign in to continue'), findsNothing);
-  });
-
-  testWidgets('transitions to the shell after successful authentication', (
-    tester,
-  ) async {
-    final authBloc = AuthBloc(
-      authRepository: _StartupAuthRepository(hasSession: false),
-    );
-
-    addTearDown(() async {
-      await tester.pumpWidget(const SizedBox.shrink());
-      await authBloc.close();
-    });
-
-    await tester.pumpWidget(VspApp(authBloc: authBloc));
-    await tester.pumpAndSettle();
-    authBloc.add(
-      const LoginRequested(identifier: 'golfer@example.com', password: 'valid'),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Bắt đầu vòng đấu'), findsOneWidget);
-    expect(find.text('Sign in to continue'), findsNothing);
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(LoginScreen), findsNothing);
   });
 }

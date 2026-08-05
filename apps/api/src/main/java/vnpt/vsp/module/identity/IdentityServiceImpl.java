@@ -2,6 +2,7 @@ package vnpt.vsp.module.identity;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
@@ -50,6 +51,15 @@ public class IdentityServiceImpl implements IdentityService {
     private final SocialTokenValidatorService socialTokenValidator;
     private final AuditService auditService;
 
+    /**
+     * Optional master OTP for non-production environments. When set (e.g. in the
+     * {@code dev} profile) this code is accepted by {@link #verifyOtp} for any
+     * account, so registration/verification can be completed without a working
+     * SMS/email delivery channel. It is blank by default, so production is
+     * unaffected.
+     */
+    private final String devMasterOtp;
+
     public IdentityServiceImpl(
             GolferAccountRepository golferAccountRepository,
             OtpCodeRepository otpCodeRepository,
@@ -58,7 +68,8 @@ public class IdentityServiceImpl implements IdentityService {
             PasswordService passwordService,
             JwtService jwtService,
             SocialTokenValidatorService socialTokenValidator,
-            AuditService auditService) {
+            AuditService auditService,
+            @Value("${vsp.dev.master-otp:}") String devMasterOtp) {
         this.golferAccountRepository = golferAccountRepository;
         this.otpCodeRepository = otpCodeRepository;
         this.passwordRecoveryTokenRepository = passwordRecoveryTokenRepository;
@@ -67,6 +78,7 @@ public class IdentityServiceImpl implements IdentityService {
         this.jwtService = jwtService;
         this.socialTokenValidator = socialTokenValidator;
         this.auditService = auditService;
+        this.devMasterOtp = devMasterOtp;
     }
 
     // ─── Registration ────────────────────────────────────────────────────────
@@ -161,13 +173,22 @@ public class IdentityServiceImpl implements IdentityService {
             throw VspApiException.forField(VspErrorCode.AUTH_010, "identifier");
         }
 
-        OtpCode otp = otpCodeRepository
-                .findActiveOtpByCode(account.getId(), request.getCode(), otpType, Instant.now())
-                .orElseThrow(() -> VspApiException.forField(VspErrorCode.AUTH_011, "code"));
+        boolean masterMatch = devMasterOtp != null
+                && !devMasterOtp.isBlank()
+                && devMasterOtp.equals(request.getCode());
 
-        // Mark OTP as verified
-        otp.markVerified();
-        otpCodeRepository.save(otp);
+        if (masterMatch) {
+            log.warn("Accepting dev master OTP for account {} (type {}) — must be disabled in production",
+                    account.getId(), otpType);
+        } else {
+            OtpCode otp = otpCodeRepository
+                    .findActiveOtpByCode(account.getId(), request.getCode(), otpType, Instant.now())
+                    .orElseThrow(() -> VspApiException.forField(VspErrorCode.AUTH_011, "code"));
+
+            // Mark OTP as verified
+            otp.markVerified();
+            otpCodeRepository.save(otp);
+        }
 
         // If this was a verification OTP, mark account as verified
         if (otpType == OtpCode.OtpType.PHONE_VERIFY || otpType == OtpCode.OtpType.EMAIL_VERIFY) {
@@ -236,7 +257,7 @@ public class IdentityServiceImpl implements IdentityService {
     // ─── Login ──────────────────────────────────────────────────────────────
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(String identifier, String password) {
         GolferAccount account = resolveAccount(identifier);
 
@@ -604,6 +625,15 @@ public class IdentityServiceImpl implements IdentityService {
     private AuthResponse buildAuthResponse(GolferAccount account) {
         String accessToken = jwtService.generateAccessToken(account.getId());
         String refreshToken = jwtService.generateRefreshToken(account.getId());
+
+        // Persist the refresh token so /auth/refresh (rotateRefreshToken) can find
+        // it — otherwise every session restore fails with "Session not found".
+        RefreshToken stored = new RefreshToken();
+        stored.setGolferAccount(account);
+        stored.setTokenHash(jwtService.hashToken(refreshToken));
+        stored.setExpiresAt(
+                Instant.now().plusMillis(jwtService.getRefreshTokenExpirationMs()));
+        refreshTokenRepository.save(stored);
 
         return AuthResponse.builder()
                 .accessToken(accessToken)

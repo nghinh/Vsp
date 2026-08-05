@@ -79,3 +79,11 @@ security:
     secret: ${JWT_SECRET:dev-only-insecure-signing-key-do-not-use-in-prod-0123456789}
     access-token-expiration-ms: 3600000
     refresh-token-expiration-ms: 604800000
+
+# Dev-only affordances. In dev there is no real SMS/email delivery, so registration
+# OTPs are only written to the logs. This master OTP lets any account complete
+# phone/email verification (and password recovery) by entering 000000. It is unset
+# outside the dev profile, so staging/prod verification is unaffected.
+vsp:
+  dev:
+    master-otp: ${VSP_DEV_MASTER_OTP:000000}

@@ -234,7 +234,7 @@ onMounted(() => loadFacilities());
 
 <style scoped>
 .facilities-page {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: "Fira Sans", ui-sans-serif, system-ui, sans-serif;
   padding: 1.5rem;
   max-width: 800px;
   margin: 0 auto;

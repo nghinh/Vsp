@@ -19,6 +19,7 @@ import '../../../../core/network/api_client.dart';
 import '../../../../data/api/course_detail_api.dart';
 import '../../../../data/repositories/course_detail_repository.dart';
 import '../../../../domain/models/course_detail.dart';
+import '../../round_setup/presentation/round_setup_screen.dart';
 import 'course_detail_bloc.dart';
 import 'course_detail_event.dart';
 import 'course_detail_state.dart';
@@ -90,6 +91,29 @@ class _CourseDetailScreenBody extends StatelessWidget {
           }
 
           return const _LoadingBody();
+        },
+      ),
+      bottomNavigationBar: BlocBuilder<CourseDetailBloc, CourseDetailState>(
+        builder: (context, state) {
+          if (state is! CourseDetailLoaded) return const SizedBox.shrink();
+          final course = state.course;
+          return SafeArea(
+            minimum: const EdgeInsets.all(VspSpacing.md),
+            child: FilledButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => RoundSetupScreen(
+                      initialCourseId: course.courseId,
+                      initialCourseName: course.facilityName,
+                    ),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.golf_course),
+              label: const Text('Bắt đầu vòng đấu'),
+            ),
+          );
         },
       ),
     );

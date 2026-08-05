@@ -191,6 +191,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     errorText: _phoneError,
                     variant: VspTextFieldVariant.phone,
                     autofocus: true,
+                    autofillHints: const [AutofillHints.telephoneNumber],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -208,6 +209,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     errorText: _displayNameError,
                     variant: VspTextFieldVariant.text,
                     maxLength: 100,
+                    autofillHints: const [AutofillHints.name],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -226,6 +228,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscurePassword,
                     helperText: 'Minimum 8 characters',
+                    autofillHints: const [AutofillHints.newPassword],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -243,6 +246,9 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     errorText: _confirmPasswordError,
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscureConfirmPassword,
+                    autofillHints: const [AutofillHints.newPassword],
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _onRegister(),
                   ),
 
                   const SizedBox(height: VspSpacing.xl),

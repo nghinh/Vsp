@@ -343,7 +343,7 @@ void main() {
       expect(qp['q'], 'Saigon Golf');
       expect(qp['lat'], '10.8231');
       expect(qp['lng'], '106.6292');
-      expect(qp['radius'], '10000.0');
+      expect(qp['radiusMeters'], '10000.0');
       expect(qp['page'], '2');
       expect(qp['size'], '10');
       expect(qp['downloadedVersion'], '3');

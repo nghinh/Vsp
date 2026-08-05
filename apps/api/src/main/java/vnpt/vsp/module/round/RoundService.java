@@ -1,5 +1,6 @@
 package vnpt.vsp.module.round;
 
+import vnpt.vsp.module.course.dto.PageResponse;
 import vnpt.vsp.module.round.dto.RoundCompleteRequest;
 import vnpt.vsp.module.round.dto.RoundCreateRequest;
 import vnpt.vsp.module.round.dto.RoundResponse;
@@ -36,6 +37,17 @@ public interface RoundService {
      * @throws vnpt.vsp.api.error.VspApiException with code AUTH_010 if a player account not found
      */
     RoundResponse createRound(Long accountId, RoundCreateRequest request);
+
+    /**
+     * Lists the authenticated golfer's rounds, most recent first, paginated.
+     * Excludes soft-deleted rounds.
+     *
+     * @param accountId the authenticated golfer's account ID
+     * @param page      zero-based page index
+     * @param size      page size
+     * @return a paginated page of the golfer's rounds
+     */
+    PageResponse<RoundResponse> listRounds(Long accountId, int page, int size);
 
     /**
      * Completes a round — marks it as COMPLETED and sets endedAt.

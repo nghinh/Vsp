@@ -19,13 +19,14 @@ import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CourseVersionPublish from '@/components/course-version-publish/CourseVersionPublish.vue';
 import type { PublishResponse } from '@/types/course-version-publish';
+import { getAuthToken } from '@/auth';
 
 const route = useRoute();
 const router = useRouter();
 
-// Auth token — injected by portal shell (stubbed here for type safety)
+// Auth token — from portal shell session (query param overrides for testing).
 const authToken = computed<string>(() =>
-  (route.query.authToken as string) ?? ''
+  (route.query.authToken as string) ?? getAuthToken()
 );
 
 const courseId = computed<number>(() => {

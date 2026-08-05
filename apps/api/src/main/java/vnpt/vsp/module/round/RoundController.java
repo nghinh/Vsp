@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.api.idempotency.Idempotent;
+import vnpt.vsp.module.course.dto.PageResponse;
 import vnpt.vsp.module.round.dto.RoundCompleteRequest;
 import vnpt.vsp.module.round.dto.RoundCreateRequest;
 import vnpt.vsp.module.round.dto.RoundResponse;
@@ -76,6 +77,32 @@ public class RoundController {
         RoundResponse response = roundService.createRound(accountId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * List the authenticated golfer's rounds, most recent first, paginated.
+     *
+     * Used by the mobile app to sync round history for the signed-in golfer.
+     * Returns a standard PageResponse wrapper (content, page, size, totalElements,
+     * totalPages, first, last).
+     *
+     * @param authentication the authenticated golfer
+     * @param page           zero-based page index (default 0)
+     * @param size           page size (default 20, max 100)
+     * @return 200 with a paginated page of the golfer's rounds
+     */
+    @GetMapping
+    public ResponseEntity<PageResponse<RoundResponse>> listRounds(
+            Authentication authentication,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        log.info("GET /rounds - accountId={}, page={}, size={}", accountId, page, size);
+
+        PageResponse<RoundResponse> response = roundService.listRounds(accountId, page, size);
+
+        return ResponseEntity.ok(response);
     }
 
     /**

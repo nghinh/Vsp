@@ -1,5 +1,7 @@
 package vnpt.vsp.module.round.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +16,13 @@ import java.util.UUID;
 public interface RoundRepository extends JpaRepository<Round, UUID> {
 
     List<Round> findByGolferAccountIdAndDeletedAtIsNull(Long golferAccountId);
+
+    /**
+     * Paginated list of a golfer's rounds (most recent first), excluding soft-deleted.
+     * Used by GET /rounds to sync the authenticated golfer's round history.
+     */
+    Page<Round> findByGolferAccountIdAndDeletedAtIsNullOrderByStartedAtDesc(
+            Long golferAccountId, Pageable pageable);
 
     Optional<Round> findByIdAndGolferAccountId(UUID id, Long golferAccountId);
 

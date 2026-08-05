@@ -188,6 +188,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     errorText: _emailError,
                     variant: VspTextFieldVariant.email,
                     autofocus: true,
+                    autofillHints: const [AutofillHints.email],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -205,6 +206,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     errorText: _displayNameError,
                     variant: VspTextFieldVariant.text,
                     maxLength: 100,
+                    autofillHints: const [AutofillHints.name],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -223,6 +225,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscurePassword,
                     helperText: 'Minimum 8 characters',
+                    autofillHints: const [AutofillHints.newPassword],
                   ),
 
                   const SizedBox(height: VspSpacing.md),
@@ -240,6 +243,9 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     errorText: _confirmPasswordError,
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscureConfirmPassword,
+                    autofillHints: const [AutofillHints.newPassword],
+                    textInputAction: TextInputAction.done,
+                    onSubmitted: (_) => _onRegister(),
                   ),
 
                   const SizedBox(height: VspSpacing.xl),

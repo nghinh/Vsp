@@ -13,6 +13,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
+import '../../privacy/presentation/privacy_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../round_setup/presentation/round_setup_screen.dart';
 import 'auth_bloc.dart';
@@ -130,45 +131,6 @@ class _PlayTab extends StatelessWidget {
   }
 }
 
-class _CoursesTab extends StatelessWidget {
-  const _CoursesTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return SafeArea(
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.search,
-              size: 80,
-              color: colorScheme.primary.withOpacity(0.5),
-            ),
-            const SizedBox(height: VspSpacing.md),
-            Text(
-              'Find a Course',
-              style: theme.textTheme.headlineMedium?.copyWith(
-                fontWeight: VspFontWeight.semibold,
-              ),
-            ),
-            const SizedBox(height: VspSpacing.sm),
-            Text(
-              'Search by name, location, or nearby',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 class _RoundsTab extends StatelessWidget {
   const _RoundsTab();
 
@@ -202,150 +164,6 @@ class _RoundsTab extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileTab extends StatelessWidget {
-  const _ProfileTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: VspSpacing.md),
-
-            // ─── Profile Header ───────────────────────────────────────────────
-            Center(
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.person,
-                    size: 80,
-                    color: colorScheme.primary.withOpacity(0.5),
-                  ),
-                  const SizedBox(height: VspSpacing.md),
-                  Text(
-                    'Golfer Profile',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: VspFontWeight.semibold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: VspSpacing.xl),
-
-            // ─── Settings Section ───────────────────────────────────────────────
-            _SectionHeader(title: 'Settings'),
-
-            const SizedBox(height: VspSpacing.sm),
-
-            // Session Management
-            _SettingsTile(
-              icon: Icons.devices,
-              title: 'Active Sessions',
-              subtitle: 'Manage your signed-in devices',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SessionManagementScreen(),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 40),
-
-            // ─── Analytics Section (Story 11.2) ───────────────────────────────
-            _SectionHeader(title: 'Analytics'),
-
-            const SizedBox(height: VspSpacing.sm),
-
-            _SettingsTile(
-              icon: Icons.scatter_plot,
-              title: 'Driving Zone',
-              subtitle: 'Landing zone analytics per club per hole',
-              onTap: () {
-                Navigator.of(context).pushNamed('/analytics/driving-zone');
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            _SettingsTile(
-              icon: Icons.analytics,
-              title: 'Round Review',
-              subtitle: 'Review past round scoring and shot metrics',
-              onTap: () {
-                // Navigate to round review — requires roundId and playerId
-                // In production, this is triggered from Rounds history list
-                // with a selected round. Here we show a placeholder.
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Select a round from Rounds history to review',
-                    ),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 40),
-
-            // ─── Sign Out ─────────────────────────────────────────────────────
-            OutlinedButton.icon(
-              onPressed: () {
-                context.read<AuthBloc>().add(const LogoutRequested());
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
-              },
-              icon: const Icon(Icons.logout),
-              label: const Text('Sign Out'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.error,
-                side: BorderSide(color: colorScheme.error),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Section Header ────────────────────────────────────────────────────────────
-
-class _SectionHeader extends StatelessWidget {
-  final String title;
-
-  const _SectionHeader({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: VspSpacing.xs),
-      child: Text(
-        title.toUpperCase(),
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: colorScheme.onSurfaceVariant,
-          letterSpacing: VspLetterSpacing.wide,
         ),
       ),
     );
@@ -457,6 +275,15 @@ class _MoreTab extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _SettingsTile(
+            icon: Icons.shield_outlined,
+            title: 'Bảo mật & Quyền riêng tư',
+            subtitle: 'Quản lý dữ liệu, quyền và tài khoản',
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const PrivacyScreen())),
+          ),
+          const SizedBox(height: 12),
+          _SettingsTile(
             icon: Icons.devices,
             title: 'Phiên đăng nhập',
             subtitle: 'Kiểm tra và đăng xuất thiết bị',
@@ -464,6 +291,22 @@ class _MoreTab extends StatelessWidget {
               MaterialPageRoute(
                 builder: (_) => const SessionManagementScreen(),
               ),
+            ),
+          ),
+          const SizedBox(height: 32),
+          OutlinedButton.icon(
+            onPressed: () {
+              context.read<AuthBloc>().add(const LogoutRequested());
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                (route) => false,
+              );
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text('Đăng xuất'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: colorScheme.error,
+              side: BorderSide(color: colorScheme.error),
             ),
           ),
         ],

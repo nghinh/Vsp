@@ -79,8 +79,9 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     SearchSubmitted event,
     Emitter<CourseSearchState> emit,
   ) async {
+    // An empty query is a valid "browse all courses" request — the server
+    // returns the full catalogue when no text/geo filter is supplied.
     final query = event.query.trim();
-    if (query.isEmpty) return;
 
     emit(CourseSearchLoading(activeTab: SearchTab.all, lastQuery: query));
 

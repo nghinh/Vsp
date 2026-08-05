@@ -72,9 +72,21 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         } else if (request.isCombined()) {
             return searchCombined(request);
         } else {
-            // No meaningful filters — return empty
-            return new PageResponse<>(List.of(), 0, request.getSize(), 0, 0);
+            // No filters — browse the full course catalogue (paginated).
+            // An empty text query matches every course via LIKE '%%'.
+            request.setQ("");
+            return searchByText(request);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CourseSearchResultDto getCourseSearchResult(Long courseId, Integer downloadedVersion) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.COURSE_001, "courseId"));
+        CourseSearchResultDto dto = toSearchResultDto(course);
+        enrichUpdateAvailable(dto, downloadedVersion);
+        return dto;
     }
 
     private PageResponse<CourseSearchResultDto> searchByText(CourseSearchRequest request) {
@@ -175,13 +187,14 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         dto.setHolesCount(course.getHolesCount());
         dto.setParTotal(course.getParTotal());
 
-        // Parse lat/lng from WKT location string
-        if (facility != null && facility.getLocation() != null) {
-            double[] latLng = parseWktPoint(facility.getLocation());
-            if (latLng != null) {
-                dto.setLatitude(latLng[1]);
-                dto.setLongitude(latLng[0]);
-            }
+        // Coordinates from GolfFacility.location POINT via PostGIS (ST_X/ST_Y).
+        // The location column is a geometry; reading it as a String yields EWKB hex
+        // which is not human-parseable, so we query the projected lon/lat directly.
+        if (facility != null && facility.getId() != null) {
+            Double lon = facilityRepository.findLongitudeByFacilityId(facility.getId());
+            Double lat = facilityRepository.findLatitudeByFacilityId(facility.getId());
+            if (lat != null) dto.setLatitude(lat);
+            if (lon != null) dto.setLongitude(lon);
         }
 
         // Enrich with data freshness from latest published DataVersion
@@ -223,10 +236,15 @@ public class CourseSearchServiceImpl implements CourseSearchService {
      * Parses WKT POINT string (e.g., "POINT(106.6299 10.8231)") to [lng, lat].
      */
     private double[] parseWktPoint(String wkt) {
-        if (wkt == null || !wkt.startsWith("POINT(")) return null;
+        // Accepts any "POINT(x y)" / "POINT (x y)" (JTS emits a space) and even an
+        // SRID-prefixed EWKT — we simply read the two numbers between the parens.
+        if (wkt == null) return null;
         try {
-            String coords = wkt.replace("POINT(", "").replace(")", "");
-            String[] parts = coords.trim().split("\\s+");
+            int open = wkt.indexOf('(');
+            int close = wkt.indexOf(')');
+            if (open < 0 || close <= open) return null;
+            String[] parts = wkt.substring(open + 1, close).trim().split("\\s+");
+            if (parts.length < 2) return null;
             return new double[]{Double.parseDouble(parts[0]), Double.parseDouble(parts[1])};
         } catch (Exception e) {
             return null;

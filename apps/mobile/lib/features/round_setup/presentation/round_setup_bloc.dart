@@ -11,6 +11,8 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/network/api_client.dart';
+import '../../../data/api/course_search_api.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
@@ -45,6 +47,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   final PackageReadinessService _packageReadinessService;
   final NearbyCourseService _nearbyCourseService;
   final RoundSetupStore _roundSetupStore;
+  final CourseSearchApi _courseSearchApi;
   final Uuid _uuid;
 
   RoundSetupBloc({
@@ -54,6 +57,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     required PackageReadinessService packageReadinessService,
     required NearbyCourseService nearbyCourseService,
     required RoundSetupStore roundSetupStore,
+    CourseSearchApi? courseSearchApi,
     Uuid uuid = const Uuid(),
   }) : _manifestRepo = manifestRepo,
        _roundRepo = roundRepo,
@@ -61,6 +65,8 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
        _packageReadinessService = packageReadinessService,
        _nearbyCourseService = nearbyCourseService,
        _roundSetupStore = roundSetupStore,
+       _courseSearchApi =
+           courseSearchApi ?? CourseSearchApi(apiClient: ApiClient()),
        _uuid = uuid,
        super(const RoundSetupInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
@@ -99,10 +105,31 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       // Get suggested start hole based on time of day
       final suggestedHole = RoundSetupReady.suggestedStartHole();
 
-      // Load nearby courses (GPS-based)
-      // In real app, would request GPS location first
-      // For now, emit with empty nearby list
-      // add(const NearbyCoursesLoaded([]));
+      // Load the course catalogue so the picker always has options, even
+      // without GPS. Distance is filled in when the result carries it.
+      List<NearbyCourseSuggestion> availableCourses = const [];
+      try {
+        final page = await _courseSearchApi.searchCourses(
+          const CourseSearchParams(page: 0, size: 50),
+        );
+        availableCourses = page.content
+            .map(
+              (c) => NearbyCourseSuggestion(
+                courseId: c.courseId,
+                courseName: c.courseName ?? c.facilityName,
+                latitude: c.latitude,
+                longitude: c.longitude,
+                distanceKm: c.distanceMeters != null
+                    ? c.distanceMeters! / 1000
+                    : null,
+                packageId: null,
+              ),
+            )
+            .toList();
+      } catch (_) {
+        // Non-fatal: the picker still works with recent/last-played entries.
+        availableCourses = const [];
+      }
 
       // Load last-played courses as fallback
       final lastPlayed = await _nearbyCourseService.getLastPlayedCourse();
@@ -124,9 +151,23 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           activeBag: activeBag,
           selectedBagId: activeBag.id,
           startHole: suggestedHole,
+          nearbyCourses: availableCourses,
           recentCourses: recentCourses,
         ),
       );
+
+      // Pre-select the course passed in (e.g. from the course-detail CTA) now
+      // that the Ready state exists — dispatching here avoids the race where a
+      // CourseSelected fired before load completes is dropped.
+      if (event.initialCourseId != null && event.initialCourseName != null) {
+        add(
+          CourseSelected(
+            courseId: event.initialCourseId!,
+            courseName: event.initialCourseName!,
+            packageId: event.initialPackageId,
+          ),
+        );
+      }
     } catch (ex) {
       emit(RoundSetupError(message: 'Failed to load initial data: $ex'));
     }

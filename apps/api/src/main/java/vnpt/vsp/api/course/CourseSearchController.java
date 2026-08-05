@@ -105,28 +105,10 @@ public class CourseSearchController {
             @PathVariable Long courseId,
             @RequestParam(required = false) Integer downloadedVersion) {
 
-        CourseSearchRequest request = new CourseSearchRequest();
-        request.setPage(0);
-        request.setSize(1);
-        // Use courseId to filter - build a text query that matches exact course ID
-        // This is a single-result lookup via the search infrastructure
-        PageResponse<CourseSearchResultDto> response = courseSearchService.searchCourses(request);
-
-        // Find the matching course in results (search is not the right path for this)
-        // Fall back to returning first result if text search happened to match
-        if (response.getContent() != null && !response.getContent().isEmpty()) {
-            CourseSearchResultDto result = response.getContent().stream()
-                    .filter(r -> r.getCourseId().equals(courseId))
-                    .findFirst()
-                    .orElse(null);
-            if (result != null) {
-                return ResponseEntity.ok(result);
-            }
-        }
-
-        // If not found via search, construct a direct lookup response
-        // This endpoint is primarily for enriching search results;
-        // for direct course lookups, use the existing GET /courses/{courseId}
-        return ResponseEntity.ok(new CourseSearchResultDto());
+        // Direct single-course lookup — always returns the requested course fully
+        // populated (or 404 COURSE_001 if it does not exist), never an empty DTO.
+        CourseSearchResultDto result =
+                courseSearchService.getCourseSearchResult(courseId, downloadedVersion);
+        return ResponseEntity.ok(result);
     }
 }

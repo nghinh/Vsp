@@ -73,7 +73,8 @@ class IdentityServiceImplTest {
                 passwordService,
                 jwtService,
                 socialTokenValidator,
-                auditService
+                auditService,
+                "" // dev master OTP disabled in unit tests
         );
     }
 
