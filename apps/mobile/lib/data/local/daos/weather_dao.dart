@@ -12,13 +12,11 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../domain/models/weather_snapshot.dart';
+import '../round_database.dart';
 import '../tables/weather_snapshots_table.dart';
 
 /// Data Access Object for WeatherSnapshot persistence.
 class WeatherDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
 
   /// Singleton instance.
@@ -32,17 +30,9 @@ class WeatherDao {
     return _db!;
   }
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kWeatherSnapshotsTableCreateSql);
-    await db.execute(kWeatherSnapshotsCourseIndexSql);
-    await db.execute(kWeatherSnapshotsCapturedAtIndexSql);
-  }
+  // `vsp_round.db` is shared across round DAOs; open it through the shared
+  // helper so the full schema exists regardless of open order.
+  Future<Database> _initDb() => openRoundDatabase();
 
   /// Upsert a weather snapshot for a course (replaces existing by course_id).
   Future<void> upsert(String courseId, WeatherSnapshot snapshot) async {

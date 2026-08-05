@@ -7,7 +7,7 @@
 
 /// SQL for creating the hole_selection_log table.
 const String kHoleSelectionLogTableCreateSql = '''
-  CREATE TABLE hole_selection_log (
+  CREATE TABLE IF NOT EXISTS hole_selection_log (
     id TEXT PRIMARY KEY,
     round_id TEXT NOT NULL,
     detected_hole_id TEXT,
@@ -27,12 +27,12 @@ const String kHoleSelectionLogTableCreateSql = '''
 
 /// SQL for creating an index on round_id for round-scoped queries.
 const String kHoleSelectionLogTableRoundIdIndexSql = '''
-  CREATE INDEX idx_hole_selection_log_round_id ON hole_selection_log (round_id)
+  CREATE INDEX IF NOT EXISTS idx_hole_selection_log_round_id ON hole_selection_log (round_id)
 ''';
 
 /// SQL for creating an index on sync_status for sync worker queries.
 const String kHoleSelectionLogTableSyncStatusIndexSql = '''
-  CREATE INDEX idx_hole_selection_log_sync_status ON hole_selection_log (sync_status)
+  CREATE INDEX IF NOT EXISTS idx_hole_selection_log_sync_status ON hole_selection_log (sync_status)
 ''';
 
 /// Table name constant.

@@ -8,7 +8,7 @@
 
 /// SQL for creating the weather_snapshots table.
 const String kWeatherSnapshotsTableCreateSql = '''
-  CREATE TABLE weather_snapshots (
+  CREATE TABLE IF NOT EXISTS weather_snapshots (
     id TEXT PRIMARY KEY,
     course_id TEXT NOT NULL,
     captured_at INTEGER NOT NULL,
@@ -24,12 +24,12 @@ const String kWeatherSnapshotsTableCreateSql = '''
 
 /// SQL for creating an index on course_id for fast lookups.
 const String kWeatherSnapshotsCourseIndexSql = '''
-  CREATE INDEX idx_weather_snapshots_course ON weather_snapshots (course_id)
+  CREATE INDEX IF NOT EXISTS idx_weather_snapshots_course ON weather_snapshots (course_id)
 ''';
 
 /// SQL for creating an index on captured_at for staleness queries.
 const String kWeatherSnapshotsCapturedAtIndexSql = '''
-  CREATE INDEX idx_weather_snapshots_captured ON weather_snapshots (captured_at)
+  CREATE INDEX IF NOT EXISTS idx_weather_snapshots_captured ON weather_snapshots (captured_at)
 ''';
 
 /// Table name constant.

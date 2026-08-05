@@ -7,7 +7,7 @@
 
 /// SQL for creating the flights table.
 const String kFlightsTableCreateSql = '''
-  CREATE TABLE flights (
+  CREATE TABLE IF NOT EXISTS flights (
     id TEXT PRIMARY KEY,
     round_id TEXT NOT NULL,
     flight_index INTEGER NOT NULL,
@@ -19,7 +19,7 @@ const String kFlightsTableCreateSql = '''
 
 /// SQL for creating an index on round_id for efficient round-based lookups.
 const String kFlightsTableRoundIndexSql = '''
-  CREATE INDEX idx_flights_round_id ON flights (round_id)
+  CREATE INDEX IF NOT EXISTS idx_flights_round_id ON flights (round_id)
 ''';
 
 /// Table name constant.

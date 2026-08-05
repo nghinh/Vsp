@@ -8,7 +8,7 @@
 /// SQL for creating the telemetry table (unified GPS + battery + map latency).
 /// Each row stores one telemetry event with a type discriminator.
 const String kTelemetryTableCreateSql = '''
-  CREATE TABLE telemetry (
+  CREATE TABLE IF NOT EXISTS telemetry (
     id TEXT PRIMARY KEY,
     round_id TEXT NOT NULL,
     event_type TEXT NOT NULL,
@@ -22,22 +22,22 @@ const String kTelemetryTableCreateSql = '''
 
 /// SQL for creating an index on round_id for efficient round-based lookups.
 const String kTelemetryTableRoundIndexSql = '''
-  CREATE INDEX idx_telemetry_round_id ON telemetry (round_id)
+  CREATE INDEX IF NOT EXISTS idx_telemetry_round_id ON telemetry (round_id)
 ''';
 
 /// SQL for creating an index on event_type for efficient type-based filtering.
 const String kTelemetryTableEventTypeIndexSql = '''
-  CREATE INDEX idx_telemetry_event_type ON telemetry (event_type)
+  CREATE INDEX IF NOT EXISTS idx_telemetry_event_type ON telemetry (event_type)
 ''';
 
 /// SQL for creating an index on sync_status for efficient sync queue queries.
 const String kTelemetryTableSyncStatusIndexSql = '''
-  CREATE INDEX idx_telemetry_sync_status ON telemetry (sync_status)
+  CREATE INDEX IF NOT EXISTS idx_telemetry_sync_status ON telemetry (sync_status)
 ''';
 
 /// SQL for creating a compound index on round_id + event_type.
 const String kTelemetryTableRoundTypeIndexSql = '''
-  CREATE INDEX idx_telemetry_round_type ON telemetry (round_id, event_type)
+  CREATE INDEX IF NOT EXISTS idx_telemetry_round_type ON telemetry (round_id, event_type)
 ''';
 
 /// Table name constant.

@@ -9,14 +9,12 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../domain/models/manual_hole_selection.dart';
 import '../../../domain/models/qualified_location.dart';
+import '../round_database.dart';
 import '../../local/tables/hole_selection_log_table.dart';
 
 /// Data Access Object for ManualHoleSelection persistence.
 /// Append-only: inserts new records, never updates or deletes.
 class HoleSelectionLogDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
 
   Future<Database> get _database async {
@@ -25,17 +23,9 @@ class HoleSelectionLogDao {
     return _db!;
   }
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kHoleSelectionLogTableCreateSql);
-    await db.execute(kHoleSelectionLogTableRoundIdIndexSql);
-    await db.execute(kHoleSelectionLogTableSyncStatusIndexSql);
-  }
+  // `vsp_round.db` is shared across round DAOs; open it through the shared
+  // helper so the full schema exists regardless of open order.
+  Future<Database> _initDb() => openRoundDatabase();
 
   /// Append a new hole selection log entry.
   /// Append-only: each selection is a new record.
@@ -96,7 +86,7 @@ class HoleSelectionLogDao {
   Future<int> countPending() async {
     final db = await _database;
     final result = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM $_dbName.$kHoleSelectionLogTableName WHERE sync_status = ?',
+      'SELECT COUNT(*) as count FROM $kHoleSelectionLogTableName WHERE sync_status = ?',
       [ManualHoleSelectionSyncStatus.pending.name],
     );
     return Sqflite.firstIntValue(result) ?? 0;

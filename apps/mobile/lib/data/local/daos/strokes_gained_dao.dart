@@ -10,14 +10,12 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
 import '../../../domain/models/strokes_gained.dart';
+import '../round_database.dart';
 import '../tables/strokes_gained_tables.dart';
 
 /// Data Access Object for Strokes Gained persistence.
 /// Uses vsp_round.db (shares database with score/shot data).
 class StrokesGainedDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
   final Database? _injectedDb;
 
@@ -34,19 +32,9 @@ class StrokesGainedDao {
     return _db!;
   }
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kStrokesGainedSummariesTableCreateSql);
-    await db.execute(kStrokesGainedSummariesPlayerIndexSql);
-    await db.execute(kStrokesGainedSummariesRoundIndexSql);
-    await db.execute(kSgBenchmarksTableCreateSql);
-    await db.execute(kSgBenchmarksPlayerTypeIndexSql);
-  }
+  // `vsp_round.db` is shared across round DAOs; open it through the shared
+  // helper so the full schema exists regardless of open order.
+  Future<Database> _initDb() => openRoundDatabase();
 
   // ─── Summary CRUD ───────────────────────────────────────────────────────
 

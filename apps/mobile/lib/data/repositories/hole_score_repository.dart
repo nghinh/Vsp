@@ -8,53 +8,20 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/models/hole_score.dart';
+import '../local/round_database.dart';
 
 /// Repository for persisting and retrieving HoleScore entities locally.
 class HoleScoreRepository {
   static const String _tableName = 'hole_scores';
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
 
   Database? _db;
 
   Future<Database> get database async {
     if (_db != null) return _db!;
-    _db = await _initDb();
+    // `hole_scores` lives in the shared `vsp_round.db`; open via the shared
+    // helper so the full schema exists regardless of open order.
+    _db = await openRoundDatabase();
     return _db!;
-  }
-
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $_tableName (
-        id TEXT PRIMARY KEY,
-        round_id TEXT NOT NULL,
-        hole_number INTEGER NOT NULL,
-        par INTEGER NOT NULL,
-        strokes INTEGER NOT NULL,
-        putts INTEGER,
-        penalties INTEGER,
-        fairway_hit INTEGER,
-        gir INTEGER,
-        club_used TEXT,
-        notes TEXT,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      )
-    ''');
-
-    // Index for round lookup and hole lookup
-    await db.execute('''
-      CREATE INDEX idx_hole_scores_round ON $_tableName (round_id)
-    ''');
-    await db.execute('''
-      CREATE INDEX idx_hole_scores_hole ON $_tableName (round_id, hole_number)
-    ''');
   }
 
   /// Insert a new hole score.

@@ -13,6 +13,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../../domain/models/telemetry/gps_quality_telemetry.dart';
 import '../../../domain/models/telemetry/battery_telemetry.dart';
 import '../../../domain/models/telemetry/map_latency_telemetry.dart';
+import '../round_database.dart';
 import '../tables/telemetry_table.dart';
 
 /// Unified telemetry event type discriminator.
@@ -43,9 +44,6 @@ class TelemetryEvent {
 
 /// Data Access Object for telemetry persistence.
 class TelemetryDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
 
   Future<Database> get _database async {
@@ -54,19 +52,9 @@ class TelemetryDao {
     return _db!;
   }
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kTelemetryTableCreateSql);
-    await db.execute(kTelemetryTableRoundIndexSql);
-    await db.execute(kTelemetryTableEventTypeIndexSql);
-    await db.execute(kTelemetryTableSyncStatusIndexSql);
-    await db.execute(kTelemetryTableRoundTypeIndexSql);
-  }
+  // `vsp_round.db` is shared across round DAOs; open it through the shared
+  // helper so the full schema exists regardless of open order.
+  Future<Database> _initDb() => openRoundDatabase();
 
   // ─── GPS Telemetry ───────────────────────────────────────────────────────
 

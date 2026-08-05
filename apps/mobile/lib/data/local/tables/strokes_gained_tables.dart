@@ -7,7 +7,7 @@
 
 /// SQL for creating the strokes_gained_summaries table.
 const String kStrokesGainedSummariesTableCreateSql = '''
-  CREATE TABLE strokes_gained_summaries (
+  CREATE TABLE IF NOT EXISTS strokes_gained_summaries (
     id TEXT PRIMARY KEY,
     player_id TEXT NOT NULL,
     round_id TEXT,
@@ -25,17 +25,17 @@ const String kStrokesGainedSummariesTableCreateSql = '''
 
 /// SQL for creating an index on player_id for player-based lookups.
 const String kStrokesGainedSummariesPlayerIndexSql = '''
-  CREATE INDEX idx_sg_summaries_player ON strokes_gained_summaries (player_id)
+  CREATE INDEX IF NOT EXISTS idx_sg_summaries_player ON strokes_gained_summaries (player_id)
 ''';
 
 /// SQL for creating an index on player_id + round_id.
 const String kStrokesGainedSummariesRoundIndexSql = '''
-  CREATE INDEX idx_sg_summaries_round ON strokes_gained_summaries (player_id, round_id)
+  CREATE INDEX IF NOT EXISTS idx_sg_summaries_round ON strokes_gained_summaries (player_id, round_id)
 ''';
 
 /// SQL for creating the sg_benchmarks table.
 const String kSgBenchmarksTableCreateSql = '''
-  CREATE TABLE sg_benchmarks (
+  CREATE TABLE IF NOT EXISTS sg_benchmarks (
     id TEXT PRIMARY KEY,
     player_id TEXT NOT NULL,
     benchmark_type TEXT NOT NULL,
@@ -49,7 +49,7 @@ const String kSgBenchmarksTableCreateSql = '''
 
 /// SQL for creating an index on player_id + benchmark_type.
 const String kSgBenchmarksPlayerTypeIndexSql = '''
-  CREATE INDEX idx_sg_benchmarks_player_type ON sg_benchmarks (player_id, benchmark_type)
+  CREATE INDEX IF NOT EXISTS idx_sg_benchmarks_player_type ON sg_benchmarks (player_id, benchmark_type)
 ''';
 
 /// Table name constants.

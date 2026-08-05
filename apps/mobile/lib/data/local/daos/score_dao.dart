@@ -10,31 +10,20 @@ import 'package:sqflite/sqflite.dart';
 
 import '../../../domain/models/score.dart';
 import '../../../domain/models/score_value_objects.dart';
-import '../tables/scores_table.dart';
+import '../round_database.dart';
+import '../tables/scores_table.dart' show kScoresTableName;
 
 /// Data Access Object for Score persistence.
 class ScoreDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
 
   Future<Database> get _database async {
     if (_db != null) return _db!;
-    _db = await _initDb();
+    // `scores` lives in the shared `vsp_round.db`; open it through the shared
+    // helper so the full schema (all round tables) exists regardless of which
+    // DAO opens the file first. See [openRoundDatabase].
+    _db = await openRoundDatabase();
     return _db!;
-  }
-
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kScoresTableCreateSql);
-    await db.execute(kScoresTableFlightHoleIndexSql);
-    await db.execute(kScoresTableFlightPlayerIndexSql);
   }
 
   /// Insert a new score. Uses REPLACE to handle the UNIQUE constraint

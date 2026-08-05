@@ -8,13 +8,11 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../../features/correction/domain/course_correction.dart';
+import '../round_database.dart';
 import '../tables/corrections_table.dart';
 
 /// Data Access Object for CourseCorrection persistence.
 class CorrectionDao {
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
-
   Database? _db;
 
   /// Constructor for production use — opens the real SQLite database.
@@ -30,18 +28,9 @@ class CorrectionDao {
     return _db!;
   }
 
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute(kCorrectionsTableCreateSql);
-    await db.execute(kCorrectionsTableCourseIndexSql);
-    await db.execute(kCorrectionsTableSyncStateIndexSql);
-    await db.execute(kCorrectionsTableIdempotencyIndexSql);
-  }
+  // `vsp_round.db` is shared across round DAOs; open it through the shared
+  // helper so the full schema exists regardless of open order.
+  Future<Database> _initDb() => openRoundDatabase();
 
   /// Insert or replace a correction.
   /// Uses REPLACE so that the same idempotency key cannot be duplicated.

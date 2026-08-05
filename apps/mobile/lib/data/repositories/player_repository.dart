@@ -8,42 +8,20 @@
 import 'package:sqflite/sqflite.dart';
 
 import '../../domain/models/player.dart';
+import '../local/round_database.dart';
 
 /// Repository for persisting and retrieving Player entities locally.
 class PlayerRepository {
   static const String _tableName = 'players';
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
 
   Database? _db;
 
   Future<Database> get database async {
     if (_db != null) return _db!;
-    _db = await _initDb();
+    // `players` lives in the shared `vsp_round.db`; open via the shared helper
+    // so the full schema exists regardless of open order.
+    _db = await openRoundDatabase();
     return _db!;
-  }
-
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $_tableName (
-        id TEXT PRIMARY KEY,
-        round_id TEXT NOT NULL,
-        name TEXT NOT NULL,
-        handicap REAL,
-        is_current_user INTEGER NOT NULL
-      )
-    ''');
-
-    // Index for round lookup
-    await db.execute('''
-      CREATE INDEX idx_players_round ON $_tableName (round_id)
-    ''');
   }
 
   /// Add a player to a round.

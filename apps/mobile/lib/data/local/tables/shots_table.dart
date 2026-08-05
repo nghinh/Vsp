@@ -7,7 +7,7 @@
 
 /// SQL for creating the shots table.
 const String kShotsTableCreateSql = '''
-  CREATE TABLE shots (
+  CREATE TABLE IF NOT EXISTS shots (
     id TEXT PRIMARY KEY,
     round_id TEXT NOT NULL,
     flight_id TEXT NOT NULL,
@@ -40,17 +40,17 @@ const String kShotsTableCreateSql = '''
 
 /// SQL for creating an index on round_id for round-based lookups.
 const String kShotsTableRoundIndexSql = '''
-  CREATE INDEX idx_shots_round ON shots (round_id)
+  CREATE INDEX IF NOT EXISTS idx_shots_round ON shots (round_id)
 ''';
 
 /// SQL for creating an index on round_id + player_id for player-based lookups.
 const String kShotsTableRoundPlayerIndexSql = '''
-  CREATE INDEX idx_shots_round_player ON shots (round_id, player_id)
+  CREATE INDEX IF NOT EXISTS idx_shots_round_player ON shots (round_id, player_id)
 ''';
 
 /// SQL for creating an index on sync_status for pending-shot queries.
 const String kShotsTableSyncStatusIndexSql = '''
-  CREATE INDEX idx_shots_sync_status ON shots (sync_status)
+  CREATE INDEX IF NOT EXISTS idx_shots_sync_status ON shots (sync_status)
 ''';
 
 /// Table name constant.

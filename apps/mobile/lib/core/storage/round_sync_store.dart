@@ -8,47 +8,23 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../data/local/round_database.dart';
 import '../../domain/models/queued_round_update.dart';
 import '../../domain/models/round_sync_operation.dart';
 
 /// SQLite-backed store for round sync queue.
 class RoundSyncStore {
-  static const String _tableName = 'round_sync_queue';
-  static const String _dbName = 'vsp_round.db';
-  static const int _dbVersion = 1;
+  static const String _tableName = kRoundSyncQueueTableName;
 
   Database? _db;
   final Uuid _uuid = const Uuid();
 
   Future<Database> get database async {
     if (_db != null) return _db!;
-    _db = await _initDb();
+    // `round_sync_queue` lives in the shared `vsp_round.db`; open it through the
+    // shared helper so the full schema exists regardless of open order.
+    _db = await openRoundDatabase();
     return _db!;
-  }
-
-  Future<Database> _initDb() async {
-    final dbPath = await getDatabasesPath();
-    final path = '$dbPath/$_dbName';
-    return openDatabase(path, version: _dbVersion, onCreate: _onCreate);
-  }
-
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE $_tableName (
-        idempotency_key TEXT PRIMARY KEY,
-        operation TEXT NOT NULL,
-        round_id TEXT NOT NULL,
-        payload TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        synced_at TEXT,
-        retry_count INTEGER NOT NULL DEFAULT 0
-      )
-    ''');
-    await db.execute('''
-      CREATE INDEX idx_round_sync_pending
-      ON $_tableName (created_at)
-      WHERE synced_at IS NULL
-    ''');
   }
 
   /// Generate an idempotency key for a round operation.

@@ -7,7 +7,7 @@
 
 /// SQL for creating the corrections table.
 const String kCorrectionsTableCreateSql = '''
-  CREATE TABLE corrections (
+  CREATE TABLE IF NOT EXISTS corrections (
     id TEXT PRIMARY KEY,
     course_id TEXT NOT NULL,
     hole_id TEXT,
@@ -24,17 +24,17 @@ const String kCorrectionsTableCreateSql = '''
 
 /// SQL for creating an index on course_id for course-scoped queries.
 const String kCorrectionsTableCourseIndexSql = '''
-  CREATE INDEX idx_corrections_course ON corrections (course_id)
+  CREATE INDEX IF NOT EXISTS idx_corrections_course ON corrections (course_id)
 ''';
 
 /// SQL for creating an index on sync_state for sync-queue polling.
 const String kCorrectionsTableSyncStateIndexSql = '''
-  CREATE INDEX idx_corrections_sync_state ON corrections (sync_state)
+  CREATE INDEX IF NOT EXISTS idx_corrections_sync_state ON corrections (sync_state)
 ''';
 
 /// SQL for creating an index on idempotency_key for deduplication checks.
 const String kCorrectionsTableIdempotencyIndexSql = '''
-  CREATE UNIQUE INDEX idx_corrections_idempotency ON corrections (idempotency_key)
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_corrections_idempotency ON corrections (idempotency_key)
 ''';
 
 /// Table name constant.

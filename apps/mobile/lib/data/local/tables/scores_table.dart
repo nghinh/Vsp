@@ -8,7 +8,7 @@
 
 /// SQL for creating the scores table.
 const String kScoresTableCreateSql = '''
-  CREATE TABLE scores (
+  CREATE TABLE IF NOT EXISTS scores (
     id TEXT PRIMARY KEY,
     flight_id TEXT NOT NULL,
     hole_id TEXT NOT NULL,
@@ -30,12 +30,12 @@ const String kScoresTableCreateSql = '''
 
 /// SQL for creating a compound index on flight_id + hole_id for hole-based lookups.
 const String kScoresTableFlightHoleIndexSql = '''
-  CREATE INDEX idx_scores_flight_hole ON scores (flight_id, hole_id)
+  CREATE INDEX IF NOT EXISTS idx_scores_flight_hole ON scores (flight_id, hole_id)
 ''';
 
 /// SQL for creating an index on flight_id + player_id for player-based lookups.
 const String kScoresTableFlightPlayerIndexSql = '''
-  CREATE INDEX idx_scores_flight_player ON scores (flight_id, player_id)
+  CREATE INDEX IF NOT EXISTS idx_scores_flight_player ON scores (flight_id, player_id)
 ''';
 
 /// Table name constant.
