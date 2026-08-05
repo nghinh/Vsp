@@ -3,9 +3,11 @@ package vnpt.vsp.module.course;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.course.entity.*;
 import vnpt.vsp.module.course.repository.*;
@@ -372,5 +374,103 @@ class CourseServiceImplTest {
         verify(auditService).log(
                 eq(vnpt.vsp.module.audit.AuditAction.COURSE_ROLLBACK),
                 eq("Course"), eq("1"), eq("{\"status\":\"PUBLISHED\"}"), eq("{}"), isNull());
+    }
+
+    // ─── Geometry validation ────────────────────────────────────────────
+    //
+    // These are the admin course/hole/facility write paths. The WKT arrives
+    // verbatim from the request body; anything PostGIS would refuse has to be
+    // refused here as VALIDATION-008, not surfaced as a 500 from the parser.
+    // Nothing is saved and no facility/course is even looked up: the check runs
+    // before the entity reaches Hibernate.
+
+    private static void assertRejectedAsGeometry(String field, Executable call) {
+        VspApiException ex = assertThrows(VspApiException.class, call);
+        assertEquals(VspErrorCode.VALIDATION_008, ex.getErrorCode());
+        assertEquals(field, ex.getField());
+    }
+
+    @Test
+    void createFacility_rejectsGeometryPostgresWouldRefuse() {
+        GolfFacility facility = new GolfFacility();
+        facility.setName("Bad geometry club");
+        facility.setLocation("POLYGON((0 0,1 0,1 1,0 1,0 0))"); // column is geometry(Point,4326)
+
+        assertRejectedAsGeometry("location", () -> courseService.createFacility(facility));
+        verify(facilityRepository, never()).save(any(GolfFacility.class));
+    }
+
+    @Test
+    void updateFacility_rejectsMalformedWkt() {
+        GolfFacility update = new GolfFacility();
+        update.setLocation("POINT(oops)");
+
+        assertRejectedAsGeometry("location", () -> courseService.updateFacility(1L, update));
+        verify(facilityRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void createCourse_rejectsSelfIntersectingBoundary() {
+        Course course = new Course();
+        course.setName("Bowtie Links");
+        course.setLocation("POLYGON((0 0,1 1,1 0,0 1,0 0))");
+
+        assertRejectedAsGeometry("location", () -> courseService.createCourse(1L, course));
+        verify(courseRepository, never()).save(any(Course.class));
+    }
+
+    @Test
+    void updateCourse_acceptsAnyValidShapeForTheBoundaryColumn() {
+        Course existing = new Course();
+        existing.setId(1L);
+        Course update = new Course();
+        update.setLocation("POLYGON((106 10,106.001 10,106.001 10.001,106 10.001,106 10))");
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(courseRepository.save(any(Course.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        Course result = courseService.updateCourse(1L, update);
+
+        assertEquals("POLYGON((106 10,106.001 10,106.001 10.001,106 10.001,106 10))", result.getLocation());
+    }
+
+    @Test
+    void createHole_rejectsEachGeometryFieldByName() {
+        Hole withBadTee = new Hole();
+        withBadTee.setHoleNumber(1);
+        withBadTee.setTeeingGroundLocation("SRID=3857;POINT(0 0)");
+        assertRejectedAsGeometry("teeingGroundLocation", () -> courseService.createHole(1L, withBadTee));
+
+        Hole withBadGreen = new Hole();
+        withBadGreen.setHoleNumber(1);
+        withBadGreen.setTeeingGroundLocation("POINT(106.7 10.8)");
+        withBadGreen.setGreenLocation("LINESTRING(106 10,106.001 10.001)");
+        assertRejectedAsGeometry("greenLocation", () -> courseService.createHole(1L, withBadGreen));
+
+        verify(holeRepository, never()).save(any(Hole.class));
+    }
+
+    @Test
+    void updateHole_rejectsGeometryWithAZOrdinate() {
+        Hole update = new Hole();
+        update.setGreenLocation("POINT(106.7 10.8 12.5)");
+
+        assertRejectedAsGeometry("greenLocation", () -> courseService.updateHole(1L, update));
+        verify(holeRepository, never()).findById(anyLong());
+    }
+
+    @Test
+    void holeWithNoGeometryIsStillAllowed() {
+        Hole hole = new Hole();
+        hole.setHoleNumber(3);
+        hole.setPar(4);
+        Course course = new Course();
+        course.setId(1L);
+
+        when(courseRepository.findById(1L)).thenReturn(Optional.of(course));
+        when(holeRepository.save(any(Hole.class)))
+                .thenAnswer(inv -> { Hole h = inv.getArgument(0); h.setId(9L); return h; });
+
+        assertEquals(9L, courseService.createHole(1L, hole).getId());
     }
 }

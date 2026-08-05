@@ -11,6 +11,7 @@ import vnpt.vsp.module.audit.AuditAction;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.course.entity.*;
 import vnpt.vsp.module.course.repository.*;
+import vnpt.vsp.persistence.WktGeometryValidator;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,7 +21,13 @@ import static net.logstash.logback.marker.Markers.append;
 /**
  * Implementation of {@link CourseService}.
  * Per Story 3.1 GEO-5: full CRUD for course hierarchy entities.
- * Uses GeospatialService for geometry validation on create/update.
+ *
+ * <p>Every geometry a caller supplies is checked with {@link WktGeometryValidator}
+ * before it reaches a {@code geometry} column. These methods are the admin
+ * course/hole/facility write paths, and the WKT arrives verbatim from the
+ * request body; without the check, a typo or the wrong shape comes back as an
+ * unexplained 500 from the PostGIS parser rather than as
+ * {@code VSP-ERR-VALIDATION-008} naming the field.</p>
  */
 @Service
 @Primary
@@ -60,6 +67,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public GolfFacility createFacility(GolfFacility facility) {
         log.debug(append("action", "CREATE_FACILITY"), "Creating facility: name={}", facility.getName());
+        validateFacilityGeometry(facility);
         initMetadataDefaults(facility.getDataQuality(), "SYSTEM");
         GolfFacility saved = facilityRepository.save(facility);
         auditService.log(AuditAction.COURSE_PUBLISH, "GolfFacility", String.valueOf(saved.getId()),
@@ -85,6 +93,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public GolfFacility updateFacility(Long facilityId, GolfFacility update) {
         log.debug(append("action", "UPDATE_FACILITY"), "Updating facility: id={}", facilityId);
+        validateFacilityGeometry(update);
         GolfFacility existing = facilityRepository.findById(facilityId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.FACILITY_001));
         String beforeJson = serializeFacilityToJson(existing);
@@ -102,6 +111,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Course createCourse(Long facilityId, Course course) {
         log.debug(append("action", "CREATE_COURSE"), "Creating course: facilityId={}, name={}", facilityId, course.getName());
+        validateCourseGeometry(course);
         GolfFacility facility = facilityRepository.findById(facilityId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.FACILITY_001));
         course.setFacility(facility);
@@ -130,6 +140,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Course updateCourse(Long courseId, Course update) {
         log.debug(append("action", "UPDATE_COURSE"), "Updating course: id={}", courseId);
+        validateCourseGeometry(update);
         Course existing = courseRepository.findById(courseId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.COURSE_001));
         String beforeJson = serializeCourseToJson(existing);
@@ -147,6 +158,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Hole createHole(Long courseId, Hole hole) {
         log.debug(append("action", "CREATE_HOLE"), "Creating hole: courseId={}, number={}", courseId, hole.getHoleNumber());
+        validateHoleGeometry(hole);
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.COURSE_001));
         hole.setCourse(course);
@@ -175,6 +187,7 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public Hole updateHole(Long holeId, Hole update) {
         log.debug(append("action", "UPDATE_HOLE"), "Updating hole: id={}", holeId);
+        validateHoleGeometry(update);
         Hole existing = holeRepository.findById(holeId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.HOLE_001));
         String beforeJson = serializeHoleToJson(existing);
@@ -291,6 +304,26 @@ public class CourseServiceImpl implements CourseService {
     public void recordCourseRollback(Long courseId, String beforeJson, String afterJson) {
         auditService.log(AuditAction.COURSE_ROLLBACK, "Course",
                 String.valueOf(courseId), beforeJson, afterJson, null);
+    }
+
+    // ─── Geometry validation ───────────────────────────────────────────────
+    //
+    // Checked before the entity reaches Hibernate, so the caller is told which
+    // field is wrong and why. The column types are the contract: facility and
+    // hole geometries are geometry(Point,4326); a course boundary may be any
+    // shape, hence geometry(Geometry,4326).
+
+    private void validateFacilityGeometry(GolfFacility facility) {
+        WktGeometryValidator.requirePoint(facility.getLocation(), "location");
+    }
+
+    private void validateCourseGeometry(Course course) {
+        WktGeometryValidator.requireValid(course.getLocation(), "location");
+    }
+
+    private void validateHoleGeometry(Hole hole) {
+        WktGeometryValidator.requirePoint(hole.getTeeingGroundLocation(), "teeingGroundLocation");
+        WktGeometryValidator.requirePoint(hole.getGreenLocation(), "greenLocation");
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────
