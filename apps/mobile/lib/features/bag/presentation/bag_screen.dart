@@ -23,6 +23,7 @@ import 'bag_detail_screen.dart';
 import 'widgets/bag_card.dart';
 import 'widgets/recommendations_disabled_banner.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -79,7 +80,7 @@ class _BagScreenBody extends StatelessWidget {
                         size: 18,
                       ),
                       const SizedBox(width: 8),
-                      Text(state.message!),
+                      Text(context.tr(state.message)),
                     ],
                   ),
                   backgroundColor: state.hasPendingSync
@@ -100,7 +101,7 @@ class _BagScreenBody extends StatelessWidget {
 
           if (state is BagError && state.lastBags == null) {
             return _ErrorView(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 context.read<BagBloc>().add(const LoadBags());
               },

@@ -12,6 +12,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class EmailRegisterScreen extends StatefulWidget {
   const EmailRegisterScreen({super.key});
@@ -130,7 +131,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
               setState(() => _emailError = null);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(context.tr(state.message)),
                   backgroundColor: colorScheme.error,
                 ),
               );

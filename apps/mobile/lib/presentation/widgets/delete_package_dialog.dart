@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Confirmation dialog before deleting a downloaded course package.
 ///
@@ -43,7 +44,7 @@ class DeletePackageDialog extends StatelessWidget {
 
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      title: Text('Remove Offline Course?', style: theme.textTheme.titleLarge),
+      title: Text(AppLocalizations.of(context).downloadRemoveTitle, style: theme.textTheme.titleLarge),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,7 +102,7 @@ class DeletePackageDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context).commonCancel),
         ),
         TextButton(
           onPressed: () {

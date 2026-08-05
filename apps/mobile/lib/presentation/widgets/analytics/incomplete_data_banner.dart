@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/incomplete_data_warning.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Banner/warning shown when underlying data is insufficient for reliable analytics.
 ///
@@ -49,7 +50,7 @@ class IncompleteDataBanner extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Semantics(
-        label: '${warning.title}: ${warning.message}',
+        label: '${context.tr(warning.title)}: ${context.tr(warning.message)}',
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -60,7 +61,7 @@ class IncompleteDataBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    warning.title,
+                    context.tr(warning.title),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: textColor,
@@ -68,7 +69,7 @@ class IncompleteDataBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    warning.message,
+                    context.tr(warning.message),
                     style: TextStyle(fontSize: 13, color: textColor),
                   ),
                   if (warning.recommendedAction != null) ...[

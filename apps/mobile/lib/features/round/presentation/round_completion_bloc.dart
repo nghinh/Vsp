@@ -23,6 +23,7 @@ import '../../../core/storage/round_sync_store.dart';
 import '../domain/round_summary.dart';
 import '../domain/sync_state.dart';
 import '../domain/correction.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
@@ -202,7 +203,7 @@ class RoundCompletionBloc
     try {
       final round = await _roundRepo.getRound(event.roundId);
       if (round == null) {
-        emit(const RoundCompletionError(message: 'Round not found'));
+        emit(const RoundCompletionError(message: AppMessages.roundNotFound));
         return;
       }
 
@@ -217,7 +218,7 @@ class RoundCompletionBloc
 
       emit(RoundSummaryLoaded(summary: summary));
     } catch (e) {
-      emit(RoundCompletionError(message: 'Failed to load round: $e'));
+      emit(RoundCompletionError(message: AppMessages.roundLoadFailed));
     }
   }
 
@@ -230,7 +231,7 @@ class RoundCompletionBloc
     try {
       final round = await _roundRepo.getRound(event.roundId);
       if (round == null) {
-        emit(const RoundCompletionError(message: 'Round not found'));
+        emit(const RoundCompletionError(message: AppMessages.roundNotFound));
         return;
       }
 
@@ -293,7 +294,7 @@ class RoundCompletionBloc
         emit(RoundCompletionOffline(summary: summary));
       }
     } catch (e) {
-      emit(RoundCompletionError(message: 'Failed to complete round: $e'));
+      emit(RoundCompletionError(message: AppMessages.roundCompleteFailed));
     }
   }
 

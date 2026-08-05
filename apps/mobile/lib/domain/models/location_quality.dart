@@ -8,6 +8,7 @@
 
 import 'package:equatable/equatable.dart';
 import 'qualified_location.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// GPS quality classification for UI display.
 ///
@@ -48,11 +49,16 @@ class LocationWarning extends Equatable {
   /// be blocked until the warning clears.
   final bool blocksAutoAction;
 
+  /// Numeric detail (age in seconds, accuracy in metres) for messages that
+  /// interpolate a value; the UI formats it in the active locale.
+  final String? detail;
+
   const LocationWarning({
     required this.quality,
     required this.title,
     required this.message,
     required this.blocksAutoAction,
+    this.detail,
   });
 
   /// Builds a warning from QualifiedLocation.
@@ -62,8 +68,8 @@ class LocationWarning extends Equatable {
     if (loc.source == LocationSource.unavailable) {
       return const LocationWarning(
         quality: LocationQuality.unavailable,
-        title: 'GPS Unavailable',
-        message: 'Location cannot be determined. Enable location services.',
+        title: AppMessages.gpsUnavailable,
+        message: AppMessages.gpsUnavailableMessage,
         blocksAutoAction: true,
       );
     }
@@ -71,10 +77,9 @@ class LocationWarning extends Equatable {
     if (loc.isStale) {
       return LocationWarning(
         quality: LocationQuality.stale,
-        title: 'GPS Signal Stale',
-        message: loc.ageSeconds >= 0
-            ? 'Location data is ${loc.ageSeconds} seconds old. Move to refresh.'
-            : 'Location data is stale. Move to refresh.',
+        title: AppMessages.gpsStale,
+        message: AppMessages.gpsStaleMessage,
+        detail: loc.ageSeconds >= 0 ? '${loc.ageSeconds}' : null,
         blocksAutoAction: true,
       );
     }
@@ -82,18 +87,19 @@ class LocationWarning extends Equatable {
     if (loc.isLowAccuracy) {
       return LocationWarning(
         quality: LocationQuality.lowAccuracy,
-        title: 'Low GPS Accuracy',
-        message: loc.accuracyMeters != null
-            ? 'Accuracy is ±${loc.accuracyMeters!.round()}m. Distances may be approximate.'
-            : 'GPS accuracy is reduced.',
+        title: AppMessages.gpsLowAccuracy,
+        message: AppMessages.gpsLowAccuracyMessage,
+        detail: loc.accuracyMeters != null
+            ? '${loc.accuracyMeters!.round()}'
+            : null,
         blocksAutoAction: true,
       );
     }
 
     return const LocationWarning(
       quality: LocationQuality.ready,
-      title: 'GPS Ready',
-      message: 'Location accurate and current.',
+      title: AppMessages.gpsReady,
+      message: AppMessages.gpsReadyMessage,
       blocksAutoAction: false,
     );
   }

@@ -14,6 +14,7 @@ import '../../../domain/models/incomplete_data_warning.dart';
 import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../domain/repositories/shot_repository.dart';
 import 'driving_zone_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Cubit for managing the Driving Zone analytics screen.
 class DrivingZoneCubit extends Cubit<DrivingZoneState> {
@@ -59,7 +60,7 @@ class DrivingZoneCubit extends Cubit<DrivingZoneState> {
     } catch (e) {
       emit(
         DrivingZoneError(
-          message: 'Failed to load driving zone statistics: $e',
+          message: AppMessages.drivingZoneLoadFailed,
           lastFilter: filter,
         ),
       );

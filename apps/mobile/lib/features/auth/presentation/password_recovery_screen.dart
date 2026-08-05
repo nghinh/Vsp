@@ -14,6 +14,7 @@ import 'auth_bloc.dart';
 import 'otp_screen.dart';
 import 'login_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({super.key});
@@ -75,7 +76,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(context.tr(state.message)),
                 backgroundColor: colorScheme.error,
               ),
             );

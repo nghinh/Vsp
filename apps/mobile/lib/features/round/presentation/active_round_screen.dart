@@ -19,6 +19,7 @@ import '../../hole_map/hole_map.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../domain/services/location_service.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom tab index constants for the active round screen.
 enum ActiveRoundTab { map, score, target, conditions, more }
@@ -184,14 +185,14 @@ class _ScoreTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _RoundInfoScaffold(
-      title: 'Score',
+      title: AppLocalizations.of(context).activeRoundScore,
       icon: Icons.scoreboard_outlined,
       heading: 'Điểm hố $holeNumber',
       message:
           'Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.',
       details: [
-        _RoundInfoDetail(label: 'Hố', value: '$holeNumber'),
-        _RoundInfoDetail(label: 'Par', value: '$par'),
+        _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundHole, value: '$holeNumber'),
+        _RoundInfoDetail(label: AppLocalizations.of(context).fieldPar, value: '$par'),
       ],
     );
   }
@@ -217,17 +218,17 @@ class _TargetTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _RoundInfoScaffold(
-      title: 'Target',
+      title: AppLocalizations.of(context).activeRoundTarget,
       icon: Icons.gps_fixed,
       heading: 'Khoảng cách mục tiêu',
       message:
           'Chạm lên bản đồ chiến thuật ở tab Map để đặt mục tiêu; khoảng cách '
           'sẽ cập nhật theo vị trí GPS của bạn.',
       details: [
-        _RoundInfoDetail(label: 'Hố', value: '$holeNumber'),
-        _RoundInfoDetail(label: 'Par', value: '$par'),
+        _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundHole, value: '$holeNumber'),
+        _RoundInfoDetail(label: AppLocalizations.of(context).fieldPar, value: '$par'),
         if (yardage != null)
-          _RoundInfoDetail(label: 'Chiều dài', value: '$yardage m'),
+          _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundLength, value: '$yardage m'),
       ],
     );
   }
@@ -244,8 +245,8 @@ class _ConditionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _RoundInfoScaffold(
-      title: 'Conditions',
+    return _RoundInfoScaffold(
+      title: AppLocalizations.of(context).activeRoundConditions,
       icon: Icons.cloud_outlined,
       heading: 'Điều kiện sân',
       message:
@@ -401,7 +402,7 @@ class _MoreTab extends StatelessWidget {
       backgroundColor: VspColorDark.background,
       appBar: AppBar(
         backgroundColor: VspColorDark.surface,
-        title: const Text('More', style: TextStyle(color: VspColorDark.textPrimary)),
+        title: Text(AppLocalizations.of(context).navMore, style: TextStyle(color: VspColorDark.textPrimary)),
         iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
       ),
       body: Center(
@@ -422,7 +423,7 @@ class _MoreTab extends StatelessWidget {
             // Report Correction — opens CorrectionSubmissionScreen
             _MoreMenuTile(
               icon: Icons.flag_outlined,
-              label: 'Report Correction',
+              label: AppLocalizations.of(context).activeRoundReportCorrection,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -446,7 +447,7 @@ class _MoreTab extends StatelessWidget {
             ),
             _MoreMenuTile(
               icon: Icons.close,
-              label: 'End Round',
+              label: AppLocalizations.of(context).activeRoundEndRound,
               isDestructive: true,
               onTap: () {
                 // TODO: Show end round confirmation
@@ -513,35 +514,35 @@ class _BottomNavBar extends StatelessWidget {
               _NavItem(
                 icon: Icons.map_outlined,
                 selectedIcon: Icons.map,
-                label: 'Map',
+                label: AppLocalizations.of(context).activeRoundMap,
                 isSelected: currentTab == ActiveRoundTab.map,
                 onTap: () => onTabChanged(ActiveRoundTab.map),
               ),
               _NavItem(
                 icon: Icons.scoreboard_outlined,
                 selectedIcon: Icons.scoreboard,
-                label: 'Score',
+                label: AppLocalizations.of(context).activeRoundScore,
                 isSelected: currentTab == ActiveRoundTab.score,
                 onTap: () => onTabChanged(ActiveRoundTab.score),
               ),
               _NavItem(
                 icon: Icons.gps_fixed_outlined,
                 selectedIcon: Icons.gps_fixed,
-                label: 'Target',
+                label: AppLocalizations.of(context).activeRoundTarget,
                 isSelected: currentTab == ActiveRoundTab.target,
                 onTap: () => onTabChanged(ActiveRoundTab.target),
               ),
               _NavItem(
                 icon: Icons.cloud_outlined,
                 selectedIcon: Icons.cloud,
-                label: 'Conditions',
+                label: AppLocalizations.of(context).activeRoundConditions,
                 isSelected: currentTab == ActiveRoundTab.conditions,
                 onTap: () => onTabChanged(ActiveRoundTab.conditions),
               ),
               _NavItem(
                 icon: Icons.more_horiz,
                 selectedIcon: Icons.more_horiz,
-                label: 'More',
+                label: AppLocalizations.of(context).navMore,
                 isSelected: currentTab == ActiveRoundTab.more,
                 onTap: () => onTabChanged(ActiveRoundTab.more),
               ),

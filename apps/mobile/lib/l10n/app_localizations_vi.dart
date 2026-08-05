@@ -1999,4 +1999,549 @@ class AppLocalizationsVi extends AppLocalizations {
   String distanceConfidenceDetail(String label) {
     return 'Độ tin cậy khoảng cách: $label';
   }
+
+  @override
+  String get startupCheckingSession => 'Đang kiểm tra phiên đăng nhập';
+
+  @override
+  String get correctionSavedOffline => 'Đã lưu góp ý ngoại tuyến';
+
+  @override
+  String get correctionIssueType => 'Loại vấn đề';
+
+  @override
+  String get correctionYourLocation => 'Vị trí của bạn';
+
+  @override
+  String get correctionNote => 'Ghi chú (tuỳ chọn)';
+
+  @override
+  String get correctionNoteHint => 'Mô tả vấn đề…';
+
+  @override
+  String get correctionAdd => 'Thêm chỉnh sửa';
+
+  @override
+  String get correctionSubmit => 'Gửi';
+
+  @override
+  String get correctionOldValue => 'Giá trị cũ';
+
+  @override
+  String get correctionNewValue => 'Giá trị mới';
+
+  @override
+  String get correctionField => 'Trường';
+
+  @override
+  String get commonRemove => 'Xoá';
+
+  @override
+  String get privacySelectRoundLabel => 'Chọn vòng đấu';
+
+  @override
+  String get privacySubmitted => 'Đã gửi';
+
+  @override
+  String get privacyProcessed => 'Đã xử lý';
+
+  @override
+  String get privacyRejectionReason => 'Lý do từ chối';
+
+  @override
+  String get privacyTargetRound => 'Vòng đấu liên quan';
+
+  @override
+  String get otpConfirming => 'Đang xác nhận…';
+
+  @override
+  String get teeSetRating => 'Rating';
+
+  @override
+  String get roundStatsFairways => 'Fairway';
+
+  @override
+  String get roundStatsTotalPutts => 'Tổng số gạt';
+
+  @override
+  String get activeRoundScore => 'Điểm';
+
+  @override
+  String get activeRoundTarget => 'Mục tiêu';
+
+  @override
+  String get activeRoundConditions => 'Điều kiện';
+
+  @override
+  String get activeRoundMap => 'Bản đồ';
+
+  @override
+  String get activeRoundHole => 'Hố';
+
+  @override
+  String get activeRoundLength => 'Chiều dài';
+
+  @override
+  String get activeRoundReportCorrection => 'Báo lỗi dữ liệu';
+
+  @override
+  String get activeRoundEndRound => 'Kết thúc vòng đấu';
+
+  @override
+  String get distancesTitle => 'Khoảng cách';
+
+  @override
+  String get gpsQuality => 'Chất lượng GPS';
+
+  @override
+  String get courseFavoritesLoadFailed => 'Không tải được danh sách yêu thích';
+
+  @override
+  String get courseRecentLoadFailed => 'Không tải được danh sách đã xem';
+
+  @override
+  String get downloadOfflineCourses => 'Sân đã tải';
+
+  @override
+  String get downloadNoOfflineCourses => 'Chưa có sân nào được tải';
+
+  @override
+  String get downloadRemoveTitle => 'Xoá sân đã tải?';
+
+  @override
+  String get packageVersion => 'Phiên bản';
+
+  @override
+  String get packageUpdated => 'Cập nhật';
+
+  @override
+  String get packageFiles => 'Tệp';
+
+  @override
+  String get packageFormat => 'Định dạng';
+
+  @override
+  String get packageDataVersion => 'Phiên bản dữ liệu';
+
+  @override
+  String get packageOfflineReadyLabel =>
+      'Đã tải sân, sẵn sàng chơi ngoại tuyến';
+
+  @override
+  String get downloadPause => 'Tạm dừng';
+
+  @override
+  String get downloadPauseLabel => 'Tạm dừng tải';
+
+  @override
+  String get downloadResume => 'Tiếp tục';
+
+  @override
+  String get downloadResumeLabel => 'Tiếp tục tải';
+
+  @override
+  String get downloadValidating => 'Đang kiểm tra…';
+
+  @override
+  String get downloadValidatingLabel => 'Đang kiểm tra gói dữ liệu';
+
+  @override
+  String get downloadLabel => 'Tải gói dữ liệu sân';
+
+  @override
+  String get downloadUpdateLabel => 'Cập nhật gói dữ liệu sân';
+
+  @override
+  String get downloadRetryLabel => 'Thử tải lại';
+
+  @override
+  String get syncSaved => 'Đã lưu';
+
+  @override
+  String get syncPending => 'Chờ đồng bộ';
+
+  @override
+  String get syncSyncing => 'Đang đồng bộ…';
+
+  @override
+  String get syncFailed => 'Đồng bộ thất bại';
+
+  @override
+  String get syncRetry => 'Thử đồng bộ lại';
+
+  @override
+  String get syncSavedLocally => 'Đã lưu trên máy';
+
+  @override
+  String get syncSavedOffline => 'Đã lưu ngoại tuyến';
+
+  @override
+  String get detectionAutoSwitch => 'Đã bật tự chuyển hố';
+
+  @override
+  String get detectionConfidenceTitle => 'Độ tin cậy nhận diện';
+
+  @override
+  String get updateFilesToUpdate => 'Tệp cần cập nhật';
+
+  @override
+  String get updateFilesToRemove => 'Tệp cần xoá';
+
+  @override
+  String get updateUnchanged => 'Không đổi';
+
+  @override
+  String get updateDownloadSize => 'Dung lượng tải';
+
+  @override
+  String get updateLater => 'Để sau';
+
+  @override
+  String get updateNow => 'Cập nhật ngay';
+
+  @override
+  String get updateAvailableBadge => 'Có phiên bản mới. Chạm để cập nhật.';
+
+  @override
+  String get scoreNo => 'Không';
+
+  @override
+  String detectionConfidenceLabel(String level) {
+    return 'Độ tin cậy: $level';
+  }
+
+  @override
+  String packageStatusLabel(String status) {
+    return 'Gói dữ liệu sân $status';
+  }
+
+  @override
+  String syncStatusLabel(String status) {
+    return 'Trạng thái đồng bộ: $status';
+  }
+
+  @override
+  String distancesToggleUnit(String unit) {
+    return 'Đổi đơn vị ($unit)';
+  }
+
+  @override
+  String get msgAuthPleaseWait => 'Vui lòng đợi…';
+
+  @override
+  String get msgAuthCreatingAccount => 'Đang tạo tài khoản…';
+
+  @override
+  String get msgAuthSendingCode => 'Đang gửi mã xác thực…';
+
+  @override
+  String get msgAuthVerifyingCode => 'Đang xác thực mã…';
+
+  @override
+  String get msgAuthSendingRecoveryCode => 'Đang gửi mã khôi phục…';
+
+  @override
+  String get msgAuthResettingPassword => 'Đang đặt lại mật khẩu…';
+
+  @override
+  String get msgAuthSigningInGoogle => 'Đang đăng nhập bằng Google…';
+
+  @override
+  String get msgAuthSigningInApple => 'Đang đăng nhập bằng Apple…';
+
+  @override
+  String get msgAuthCheckingSession => 'Đang kiểm tra phiên đăng nhập…';
+
+  @override
+  String get msgAuthLoadingSessions => 'Đang tải danh sách phiên…';
+
+  @override
+  String get msgAuthUnexpectedError =>
+      'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.';
+
+  @override
+  String get msgAuthRegistrationFailed => 'Đăng ký thất bại. Vui lòng thử lại.';
+
+  @override
+  String get msgAuthSendCodeFailed =>
+      'Không gửi được mã xác thực. Vui lòng thử lại.';
+
+  @override
+  String get msgAuthPhoneVerified => 'Đã xác thực số điện thoại';
+
+  @override
+  String get msgAuthEmailVerified => 'Đã xác thực email';
+
+  @override
+  String get msgAuthVerificationFailed =>
+      'Xác thực thất bại. Vui lòng kiểm tra mã và thử lại.';
+
+  @override
+  String get msgAuthRecoveryCodeFailed =>
+      'Không gửi được mã khôi phục. Vui lòng thử lại.';
+
+  @override
+  String get msgAuthResetPasswordFailed =>
+      'Đặt lại mật khẩu thất bại. Vui lòng thử lại.';
+
+  @override
+  String get msgAuthRevokeSessionFailed =>
+      'Thu hồi phiên thất bại. Vui lòng thử lại.';
+
+  @override
+  String get msgPrivacyLoadFailed =>
+      'Không tải được yêu cầu quyền riêng tư. Vui lòng thử lại.';
+
+  @override
+  String get msgPrivacyDetailLoadFailed => 'Không tải được chi tiết yêu cầu.';
+
+  @override
+  String get msgCourseSearchFailed => 'Tìm kiếm thất bại. Vui lòng thử lại.';
+
+  @override
+  String get msgLocationUnavailable =>
+      'Không lấy được vị trí của bạn. Hãy thử lại.';
+
+  @override
+  String get msgLocationPermissionNeeded =>
+      'Bật vị trí và cấp quyền để tìm sân gần bạn.';
+
+  @override
+  String get msgRoundSetupLoadFailed =>
+      'Không tải được dữ liệu thiết lập vòng đấu.';
+
+  @override
+  String get msgRoundStartFailed =>
+      'Không bắt đầu được vòng đấu. Vui lòng thử lại.';
+
+  @override
+  String get msgRoundNotFound => 'Không tìm thấy vòng đấu';
+
+  @override
+  String get msgRoundLoadFailed => 'Không tải được vòng đấu.';
+
+  @override
+  String get msgRoundCompleteFailed => 'Không kết thúc được vòng đấu.';
+
+  @override
+  String get msgRoundReviewLoadFailed =>
+      'Không tải được phần xem lại vòng đấu.';
+
+  @override
+  String get msgDrivingZoneLoadFailed =>
+      'Không tải được thống kê vùng phát bóng.';
+
+  @override
+  String get msgCorrectionSubmitFailed => 'Không gửi được góp ý chỉnh sửa.';
+
+  @override
+  String get msgCorrectionsLoadFailed => 'Không tải được danh sách góp ý.';
+
+  @override
+  String get msgMapLoadFailed => 'Không tải được bản đồ hố.';
+
+  @override
+  String get msgResponseParseFailed => 'Không đọc được phản hồi từ máy chủ';
+
+  @override
+  String get restrictedWindAdjustment => 'Hiệu chỉnh theo gió';
+
+  @override
+  String get restrictedPlaysLike => 'Khoảng cách hiệu dụng';
+
+  @override
+  String get restrictedElevation => 'Chênh cao';
+
+  @override
+  String get restrictedClubRecommendation => 'Gợi ý gậy';
+
+  @override
+  String get restrictedGreenContours => 'Độ dốc green';
+
+  @override
+  String get restrictedPuttingHelp => 'Hỗ trợ gạt bóng';
+
+  @override
+  String get restrictedAiFeatures => 'Tính năng AI';
+
+  @override
+  String get smartTargetTitle => 'Smart Target';
+
+  @override
+  String get smartTargetRegenerate => 'Tạo lại';
+
+  @override
+  String get watchAppleWatch => 'Apple Watch';
+
+  @override
+  String get watchStatus => 'TRẠNG THÁI ĐỒNG HỒ';
+
+  @override
+  String get watchCoursePackages => 'GÓI DỮ LIỆU SÂN';
+
+  @override
+  String get watchDownloadPackages => 'Tải gói dữ liệu';
+
+  @override
+  String get watchDownloadPackagesSubtitle =>
+      'Đồng bộ dữ liệu sân tối ưu cho đồng hồ';
+
+  @override
+  String get watchSync => 'Đồng bộ sang đồng hồ';
+
+  @override
+  String get watchSyncSubtitle => 'Chuyển gói dữ liệu sang đồng hồ đã ghép nối';
+
+  @override
+  String get gpsUnavailable => 'Không có GPS';
+
+  @override
+  String get gpsUnavailableMessage =>
+      'Không xác định được vị trí. Hãy bật dịch vụ vị trí.';
+
+  @override
+  String get gpsStale => 'Tín hiệu GPS đã cũ';
+
+  @override
+  String get gpsLowAccuracy => 'Độ chính xác GPS thấp';
+
+  @override
+  String get gpsReady => 'GPS sẵn sàng';
+
+  @override
+  String get gpsReadyMessage => 'Vị trí chính xác và mới nhất.';
+
+  @override
+  String get warningInsufficientShots => 'Chưa đủ dữ liệu cú đánh';
+
+  @override
+  String get warningLimitedClubData => 'Dữ liệu gậy còn hạn chế';
+
+  @override
+  String get warningLimitedHoleData => 'Dữ liệu hố còn hạn chế';
+
+  @override
+  String get weatherNoCache => 'Chưa có dữ liệu thời tiết đã lưu';
+
+  @override
+  String get weatherCacheExpired => 'Dữ liệu thời tiết đã lưu hết hạn';
+
+  @override
+  String get weatherLocationUnavailable => 'Dịch vụ vị trí không khả dụng';
+
+  @override
+  String get msgNearbyLoadFailed => 'Không tìm được sân gần bạn.';
+
+  @override
+  String get msgFavoritesLoadFailed => 'Không tải được danh sách yêu thích.';
+
+  @override
+  String get msgRecentLoadFailed => 'Không tải được danh sách sân đã xem.';
+
+  @override
+  String get msgWifiRequiredDownload => 'Cần Wi-Fi để tải xuống';
+
+  @override
+  String get msgManifestFetchFailed =>
+      'Không tải được manifest gói dữ liệu sân từ máy chủ.';
+
+  @override
+  String get msgChecksumMismatch =>
+      'Checksum tệp đã tải không khớp với manifest.';
+
+  @override
+  String get msgNetworkError => 'Lỗi mạng. Vui lòng kiểm tra kết nối.';
+
+  @override
+  String get msgServerError => 'Lỗi máy chủ. Vui lòng thử lại sau.';
+
+  @override
+  String get msgStorageError =>
+      'Lỗi lưu trữ. Hãy giải phóng dung lượng rồi thử lại.';
+
+  @override
+  String get msgUnexpectedError => 'Lỗi không mong muốn. Vui lòng thử lại.';
+
+  @override
+  String get msgWifiRequiredUpdate => 'Cần Wi-Fi để cập nhật';
+
+  @override
+  String get msgManifestNewFetchFailed => 'Không tải được manifest mới';
+
+  @override
+  String get msgNoExistingManifest =>
+      'Chưa có gói dữ liệu — hãy tải toàn bộ gói';
+
+  @override
+  String get msgNoActivePackage => 'Sân này chưa có gói dữ liệu đang dùng';
+
+  @override
+  String get msgRoundsResponseShape =>
+      'Định dạng phản hồi danh sách vòng đấu không hợp lệ';
+
+  @override
+  String mapTargetPlaced(String suffix) {
+    return 'Đã đặt mục tiêu$suffix';
+  }
+
+  @override
+  String mapDistanceRingsLabel(String rings) {
+    return 'Vòng khoảng cách: $rings';
+  }
+
+  @override
+  String get msgGpsStaleUnknown =>
+      'Dữ liệu vị trí đã cũ. Hãy di chuyển để làm mới.';
+
+  @override
+  String get msgGpsLowAccuracyUnknown => 'Độ chính xác GPS bị giảm.';
+
+  @override
+  String msgGpsStaleAge(String seconds) {
+    return 'Dữ liệu vị trí đã cũ $seconds giây. Hãy di chuyển để làm mới.';
+  }
+
+  @override
+  String msgGpsAccuracy(String meters) {
+    return 'Sai số ±${meters}m. Khoảng cách có thể chỉ là ước lượng.';
+  }
+
+  @override
+  String get msgInsufficientShots => 'Chưa đủ dữ liệu cú đánh';
+
+  @override
+  String get msgLimitedClubData => 'Dữ liệu gậy còn hạn chế';
+
+  @override
+  String get msgLimitedHoleData => 'Dữ liệu hố còn hạn chế';
+
+  @override
+  String get downloadRemoveTooltip => 'Xoá sân đã tải';
+
+  @override
+  String get downloadNoPackage => 'Chưa có gói dữ liệu';
+
+  @override
+  String get downloadFailed => 'Tải xuống thất bại';
+
+  @override
+  String get weatherWindStaleWarning => 'Cảnh báo: dữ liệu gió có thể đã cũ.';
+
+  @override
+  String weatherWindFromAt(String direction, String speed) {
+    return 'Gió từ hướng $direction, tốc độ $speed km/h';
+  }
+
+  @override
+  String weatherWindFromAtVerbose(String direction, String speed) {
+    return 'Gió từ hướng $direction, tốc độ $speed km mỗi giờ';
+  }
+
+  @override
+  String get weatherConditionsLabel => 'Điều kiện thời tiết';
+
+  @override
+  String weatherTemperatureLabel(String value, String unit) {
+    return 'Nhiệt độ $value $unit';
+  }
 }

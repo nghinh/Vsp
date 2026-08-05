@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:vsp_mobile/features/hole_map/domain/distance_ring_entity.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Legend widget showing the active distance rings and their labels.
 class DistanceRingOverlay extends StatelessWidget {
@@ -17,7 +18,9 @@ class DistanceRingOverlay extends StatelessWidget {
     final visibleRings = rings.where((r) => r.visible).toList();
 
     return Semantics(
-      label: 'Distance rings: ${visibleRings.map((r) => r.label).join(', ')}',
+      label: AppLocalizations.of(context).mapDistanceRingsLabel(
+        visibleRings.map((r) => r.label).join(', '),
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(

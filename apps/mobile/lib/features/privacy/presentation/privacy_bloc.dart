@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/privacy_request_dto.dart';
 import '../data/privacy_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ─────────────────────────────────────────────────────────────────
 
@@ -192,7 +193,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
     } catch (ex) {
       emit(
         PrivacyError(
-          message: 'Failed to load privacy requests. Please try again.',
+          message: AppMessages.privacyLoadFailed,
           lastRequests: _cachedRequests.isNotEmpty ? _cachedRequests : null,
         ),
       );
@@ -383,7 +384,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
     } catch (ex) {
       emit(
         PrivacyError(
-          message: 'Failed to load request details.',
+          message: AppMessages.privacyDetailLoadFailed,
           lastRequests: _cachedRequests.isNotEmpty ? _cachedRequests : null,
         ),
       );

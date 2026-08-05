@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../domain/models/download_state.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Action button states for course package download.
 enum DownloadAction { download, update, pause, resume, retry, delete }
@@ -72,11 +73,11 @@ class DownloadActionButton extends StatelessWidget {
     switch (state) {
       case DownloadServiceState.idle:
         return _ButtonConfig(
-          label: 'Download',
+          label: AppLocalizations.of(context).downloadDownload,
           icon: Icons.download,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          semanticLabel: 'Download course package',
+          semanticLabel: AppLocalizations.of(context).downloadLabel,
           enabled: true,
           onPressed: onDownload,
         );
@@ -84,55 +85,55 @@ class DownloadActionButton extends StatelessWidget {
       case DownloadServiceState.fetchingManifest:
       case DownloadServiceState.downloading:
         return _ButtonConfig(
-          label: 'Pause',
+          label: AppLocalizations.of(context).downloadPause,
           icon: Icons.pause,
           backgroundColor: colorScheme.surfaceContainerHighest,
           foregroundColor: colorScheme.onSurface,
-          semanticLabel: 'Pause download',
+          semanticLabel: AppLocalizations.of(context).downloadPauseLabel,
           enabled: true,
           onPressed: onPause,
         );
 
       case DownloadServiceState.paused:
         return _ButtonConfig(
-          label: 'Resume',
+          label: AppLocalizations.of(context).downloadResume,
           icon: Icons.play_arrow,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          semanticLabel: 'Resume download',
+          semanticLabel: AppLocalizations.of(context).downloadResumeLabel,
           enabled: !wifiRequired,
           onPressed: onResume,
         );
 
       case DownloadServiceState.validating:
         return _ButtonConfig(
-          label: 'Validating...',
+          label: AppLocalizations.of(context).downloadValidating,
           icon: Icons.check_circle_outline,
           backgroundColor: colorScheme.surfaceContainerHighest,
           foregroundColor: colorScheme.onSurfaceVariant,
-          semanticLabel: 'Validating package',
+          semanticLabel: AppLocalizations.of(context).downloadValidatingLabel,
           enabled: false,
           onPressed: null,
         );
 
       case DownloadServiceState.offlineReady:
         return _ButtonConfig(
-          label: 'Update',
+          label: AppLocalizations.of(context).downloadUpdate,
           icon: Icons.system_update_alt,
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          semanticLabel: 'Update course package',
+          semanticLabel: AppLocalizations.of(context).downloadUpdateLabel,
           enabled: true,
           onPressed: onUpdate,
         );
 
       case DownloadServiceState.error:
         return _ButtonConfig(
-          label: 'Retry',
+          label: AppLocalizations.of(context).commonRetry,
           icon: Icons.refresh,
           backgroundColor: colorScheme.error,
           foregroundColor: colorScheme.onError,
-          semanticLabel: 'Retry failed download',
+          semanticLabel: AppLocalizations.of(context).downloadRetryLabel,
           enabled: true,
           onPressed: onRetry,
         );

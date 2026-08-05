@@ -779,7 +779,7 @@ class _ErrorBanner extends StatelessWidget {
         Icons.error_outline,
         color: theme.colorScheme.onErrorContainer,
       ),
-      actions: [TextButton(onPressed: onDismiss, child: const Text('Dismiss'))],
+      actions: [TextButton(onPressed: onDismiss, child: Text(AppLocalizations.of(context).commonDismiss))],
     );
   }
 }

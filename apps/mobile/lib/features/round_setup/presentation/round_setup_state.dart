@@ -116,6 +116,10 @@ class RoundSetupReady extends RoundSetupState {
   // Validation
   final List<String> validationErrors;
 
+  /// Real par per hole number, from the course detail API. Used to seed the
+  /// scorecard so score entry is scored against the actual course.
+  final Map<int, int> holePars;
+
   // Submitting
   final bool isSubmitting;
 
@@ -141,6 +145,7 @@ class RoundSetupReady extends RoundSetupState {
     this.nearbyCourses = const [],
     this.recentCourses = const [],
     this.validationErrors = const [],
+    this.holePars = const {},
     this.isSubmitting = false,
   });
 
@@ -187,6 +192,7 @@ class RoundSetupReady extends RoundSetupState {
     List<NearbyCourseSuggestion>? nearbyCourses,
     List<RecentCourseSuggestion>? recentCourses,
     List<String>? validationErrors,
+    Map<int, int>? holePars,
     bool? isSubmitting,
   }) {
     return RoundSetupReady(
@@ -211,6 +217,7 @@ class RoundSetupReady extends RoundSetupState {
       nearbyCourses: nearbyCourses ?? this.nearbyCourses,
       recentCourses: recentCourses ?? this.recentCourses,
       validationErrors: validationErrors ?? this.validationErrors,
+      holePars: holePars ?? this.holePars,
       isSubmitting: isSubmitting ?? this.isSubmitting,
     );
   }
@@ -238,6 +245,7 @@ class RoundSetupReady extends RoundSetupState {
     nearbyCourses,
     recentCourses,
     validationErrors,
+    holePars,
     isSubmitting,
   ];
 }

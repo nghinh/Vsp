@@ -15,6 +15,9 @@ import 'package:flutter/material.dart';
 import '../../../domain/models/location_quality.dart';
 import '../../../domain/models/qualified_location.dart';
 import 'package:mobile_theme/mobile_theme.dart' as theme;
+import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 enum _GpsQuality { ready, lowAccuracy, stale, unavailable }
 
@@ -126,7 +129,7 @@ class GpsQualityDetailDialog extends StatelessWidget {
         : null;
 
     return AlertDialog(
-      title: const Text('GPS Quality'),
+      title: Text(AppLocalizations.of(context).gpsQuality),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,21 +149,27 @@ class GpsQualityDetailDialog extends StatelessWidget {
           if (warning != null) ...[
             const Divider(),
             Text(
-              warning.title,
+              context.tr(warning.title),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: _colorForQuality(warning.quality),
               ),
             ),
             const SizedBox(height: 4),
-            Text(warning.message),
+            Text(
+              resolveGpsMessage(
+                AppLocalizations.of(context),
+                warning.message,
+                warning.detail,
+              ),
+            ),
           ],
         ],
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(AppLocalizations.of(context).commonClose),
         ),
       ],
     );

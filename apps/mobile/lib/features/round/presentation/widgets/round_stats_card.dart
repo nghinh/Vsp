@@ -6,6 +6,7 @@
 // Layout: 2x2 grid of stat items.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Stats card widget for round summary.
 class RoundStatsCard extends StatelessWidget {
@@ -52,7 +53,7 @@ class RoundStatsCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: _StatItem(
-                    label: 'Fairways',
+                    label: AppLocalizations.of(context).roundStatsFairways,
                     value: '$fairwaysHit/$par4Or5Count',
                     subValue: par4Or5Count > 0
                         ? '${((fairwaysHit / par4Or5Count) * 100).round()}%'
@@ -61,7 +62,7 @@ class RoundStatsCard extends StatelessWidget {
                 ),
                 Expanded(
                   child: _StatItem(
-                    label: 'GIR',
+                    label: AppLocalizations.of(context).analyticsGir,
                     value: '$girCount/$totalHoles',
                     subValue: totalHoles > 0
                         ? '${((girCount / totalHoles) * 100).round()}%'
@@ -74,11 +75,11 @@ class RoundStatsCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _StatItem(label: 'Total Putts', value: '$totalPutts'),
+                  child: _StatItem(label: AppLocalizations.of(context).roundStatsTotalPutts, value: '$totalPutts'),
                 ),
                 Expanded(
                   child: _StatItem(
-                    label: 'Penalties',
+                    label: AppLocalizations.of(context).analyticsPenalties,
                     value: '$totalPenalties',
                   ),
                 ),

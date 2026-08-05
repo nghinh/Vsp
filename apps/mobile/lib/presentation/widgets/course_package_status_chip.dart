@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Compact chip showing package download status.
 class CoursePackageStatusChip extends StatelessWidget {
@@ -24,7 +25,7 @@ class CoursePackageStatusChip extends StatelessWidget {
     if (status == 'update') {
       return _buildChip(
         context,
-        label: 'Update',
+        label: AppLocalizations.of(context).downloadUpdate,
         icon: Icons.system_update_alt,
         semanticColor: brightness == Brightness.dark
             ? VspColorDark.secondary
@@ -35,7 +36,7 @@ class CoursePackageStatusChip extends StatelessWidget {
     if (status == 'downloaded') {
       return _buildChip(
         context,
-        label: 'Downloaded',
+        label: AppLocalizations.of(context).downloadDownloaded,
         icon: Icons.offline_pin,
         semanticColor: brightness == Brightness.dark
             ? VspColorDark.accent
@@ -46,7 +47,7 @@ class CoursePackageStatusChip extends StatelessWidget {
     // Not downloaded
     return _buildChip(
       context,
-      label: 'Download',
+      label: AppLocalizations.of(context).downloadDownload,
       icon: Icons.download,
       semanticColor: brightness == Brightness.dark
           ? VspColorDark.textTertiary
@@ -61,7 +62,7 @@ class CoursePackageStatusChip extends StatelessWidget {
     required Color semanticColor,
   }) {
     return Semantics(
-      label: 'Course package $label',
+      label: AppLocalizations.of(context).packageStatusLabel(label),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,

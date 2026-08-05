@@ -17,6 +17,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/network/api_client.dart';
 import '../data/auth_dto.dart';
 import '../data/auth_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
@@ -191,7 +192,7 @@ class AuthInitial extends AuthState {
 class AuthLoading extends AuthState {
   final String message;
 
-  const AuthLoading([this.message = 'Please wait...']);
+  const AuthLoading([this.message = AppMessages.authPleaseWait]);
 
   @override
   List<Object?> get props => [message];
@@ -408,7 +409,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoginRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Signing in...'));
+    emit(const AuthLoading(AppMessages.authSigningIn));
     try {
       final tokens = await _authRepository.login(
         event.identifier,
@@ -421,7 +422,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'An unexpected error occurred. Please try again.',
+          message: AppMessages.authUnexpectedError,
         ),
       );
     }
@@ -431,7 +432,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     RegisterWithPhoneRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Creating account...'));
+    emit(const AuthLoading(AppMessages.authCreatingAccount));
     try {
       await _authRepository.registerWithPhone(
         phone: event.phone,
@@ -453,7 +454,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Registration failed. Please try again.',
+          message: AppMessages.authRegistrationFailed,
         ),
       );
     }
@@ -463,7 +464,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     RegisterWithEmailRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Creating account...'));
+    emit(const AuthLoading(AppMessages.authCreatingAccount));
     try {
       await _authRepository.registerWithEmail(
         email: event.email,
@@ -485,7 +486,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Registration failed. Please try again.',
+          message: AppMessages.authRegistrationFailed,
         ),
       );
     }
@@ -495,7 +496,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     OtpSendRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Sending verification code...'));
+    emit(const AuthLoading(AppMessages.authSendingCode));
     try {
       final isRecovery = event.type == OtpType.passwordRecovery;
       if (event.type == OtpType.phoneVerify) {
@@ -532,7 +533,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Failed to send verification code. Please try again.',
+          message: AppMessages.authSendCodeFailed,
         ),
       );
     }
@@ -542,7 +543,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     OtpVerifyRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Verifying code...'));
+    emit(const AuthLoading(AppMessages.authVerifyingCode));
     try {
       if (event.type == OtpType.passwordRecovery) {
         await _authRepository.verifyRecoveryOtp(event.identifier, event.code);
@@ -552,10 +553,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(const PasswordResetSuccess());
       } else if (event.type == OtpType.phoneVerify) {
         await _authRepository.verifyPhoneOtp(event.identifier, event.code);
-        emit(const AuthSuccess(message: 'Phone verified successfully'));
+        emit(const AuthSuccess(message: AppMessages.authPhoneVerified));
       } else {
         await _authRepository.verifyEmailOtp(event.identifier, event.code);
-        emit(const AuthSuccess(message: 'Email verified successfully'));
+        emit(const AuthSuccess(message: AppMessages.authEmailVerified));
       }
     } on VspApiException catch (ex) {
       emit(AuthFailure.fromApiException(ex));
@@ -563,7 +564,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Verification failed. Please check the code and try again.',
+          message: AppMessages.authVerificationFailed,
         ),
       );
     }
@@ -573,7 +574,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     PasswordRecoveryRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Sending recovery code...'));
+    emit(const AuthLoading(AppMessages.authSendingRecoveryCode));
     try {
       await _authRepository.initiatePasswordRecovery(event.identifier);
       emit(PasswordRecoveryOtpSent(identifier: event.identifier));
@@ -583,7 +584,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Failed to send recovery code. Please try again.',
+          message: AppMessages.authRecoveryCodeFailed,
         ),
       );
     }
@@ -593,7 +594,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     PasswordResetRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Resetting password...'));
+    emit(const AuthLoading(AppMessages.authResettingPassword));
     try {
       await _authRepository.resetPassword(event.token, event.newPassword);
       emit(const PasswordResetSuccess());
@@ -603,7 +604,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         AuthFailure(
           code: 'UNKNOWN',
-          message: 'Failed to reset password. Please try again.',
+          message: AppMessages.authResetPasswordFailed,
         ),
       );
     }
@@ -613,7 +614,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     GoogleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Signing in with Google...'));
+    emit(const AuthLoading(AppMessages.authSigningInGoogle));
     try {
       final response = await _authRepository.authenticateWithGoogle(
         event.idToken,
@@ -631,7 +632,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthFailure(
           code: 'GOOGLE_SIGN_IN_FAILED',
-          message: 'Google sign-in failed. Please try again.',
+          message: AppMessages.authGoogleFailed,
         ),
       );
     }
@@ -641,7 +642,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AppleSignInRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Signing in with Apple...'));
+    emit(const AuthLoading(AppMessages.authSigningInApple));
     try {
       final response = await _authRepository.authenticateWithApple(
         event.idToken,
@@ -660,7 +661,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthFailure(
           code: 'APPLE_SIGN_IN_FAILED',
-          message: 'Apple sign-in failed. Please try again.',
+          message: AppMessages.authAppleFailed,
         ),
       );
     }
@@ -678,7 +679,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     SessionRestoreRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Checking your secure session…'));
+    emit(const AuthLoading(AppMessages.authCheckingSession));
     final hasSession = await _authRepository.hasValidSession();
     if (hasSession) {
       final refreshed = await _authRepository.tryRefreshToken();
@@ -696,7 +697,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     LoadSessionsRequested event,
     Emitter<AuthState> emit,
   ) async {
-    emit(const AuthLoading('Loading sessions...'));
+    emit(const AuthLoading(AppMessages.authLoadingSessions));
     try {
       final sessions = await _authRepository.listSessions();
       emit(SessionsLoaded(sessions: sessions));
@@ -706,7 +707,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthFailure(
           code: 'UNKNOWN',
-          message: 'Failed to load sessions. Please try again.',
+          message: AppMessages.authSessionsLoadFailed,
         ),
       );
     }
@@ -746,7 +747,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(
         const AuthFailure(
           code: 'UNKNOWN',
-          message: 'Failed to revoke session. Please try again.',
+          message: AppMessages.authRevokeSessionFailed,
         ),
       );
     }

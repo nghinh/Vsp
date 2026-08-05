@@ -56,7 +56,7 @@ class WindIndicator extends StatelessWidget {
         : const Color(0xFF64748B);
 
     return Semantics(
-      label: _accessibleLabel,
+      label: _accessibleLabel(context),
       button: onTap != null,
       child: GestureDetector(
         onTap: onTap,
@@ -127,10 +127,13 @@ class WindIndicator extends StatelessWidget {
     );
   }
 
-  String get _accessibleLabel {
-    final base =
-        'Wind from ${wind.direction.label} at ${wind.speedKmh.toStringAsFixed(1)} kilometers per hour';
-    if (isStale) return '$base. Warning: wind data may be outdated.';
+  String _accessibleLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final base = l10n.weatherWindFromAtVerbose(
+      wind.direction.label,
+      wind.speedKmh.toStringAsFixed(1),
+    );
+    if (isStale) return '${base}. ${l10n.weatherWindStaleWarning}';
     return base;
   }
 }

@@ -16,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/services/round_state_service.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Semantic color tokens for sync indicator states.
 
@@ -116,7 +117,7 @@ class _SavedState extends StatelessWidget {
     return _SyncIndicatorLayout(
       icon: Icons.check_circle,
       iconColor: color,
-      label: 'Saved',
+      label: AppLocalizations.of(context).syncSaved,
       labelColor: color,
     );
   }
@@ -134,7 +135,7 @@ class _PendingState extends StatelessWidget {
     return _SyncIndicatorLayout(
       icon: Icons.schedule,
       iconColor: color,
-      label: 'Pending sync',
+      label: AppLocalizations.of(context).syncPending,
       labelColor: color,
     );
   }
@@ -151,7 +152,7 @@ class _SyncingState extends StatelessWidget {
     return _SyncIndicatorLayout(
       icon: null, // spinner replaces icon
       spinnerColor: color,
-      label: 'Syncing…',
+      label: AppLocalizations.of(context).syncSyncing,
       labelColor: color,
     );
   }
@@ -174,7 +175,7 @@ class _FailedState extends StatelessWidget {
         _SyncIndicatorLayout(
           icon: Icons.error,
           iconColor: color,
-          label: 'Sync failed',
+          label: AppLocalizations.of(context).syncFailed,
           labelColor: color,
         ),
         if (onRetry != null) ...[
@@ -186,7 +187,7 @@ class _FailedState extends StatelessWidget {
             child: IconButton(
               onPressed: onRetry,
               icon: Icon(Icons.refresh, color: color, size: 20),
-              tooltip: 'Retry sync',
+              tooltip: AppLocalizations.of(context).syncRetry,
               padding: EdgeInsets.zero,
             ),
           ),
@@ -233,7 +234,7 @@ class _BriefSavedIndicatorState extends State<_BriefSavedIndicator> {
       return _PendingState(brightness: widget.brightness);
     }
     return Semantics(
-      label: 'Saved locally',
+      label: AppLocalizations.of(context).syncSavedLocally,
       child: _SavedState(brightness: widget.brightness),
     );
   }

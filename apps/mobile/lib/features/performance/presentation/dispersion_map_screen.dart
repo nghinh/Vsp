@@ -20,6 +20,7 @@ import 'performance_state.dart';
 import 'dispersion_map_widget.dart';
 import 'dispersion_legend_widget.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ class _DispersionMapScreenState extends State<DispersionMapScreen> {
 
     if (state is DispersionOverlayError && state.lastOverlay == null) {
       return _ErrorBody(
-        message: state.message,
+        message: context.tr(state.message),
         onRetry: () {
           context.read<PerformanceBloc>().add(
             LoadDispersionOverlay(

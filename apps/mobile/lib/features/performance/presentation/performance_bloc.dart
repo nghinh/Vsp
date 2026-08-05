@@ -14,6 +14,7 @@ import '../../../data/repositories/performance_repository.dart';
 import '../../../core/network/api_client.dart';
 import 'performance_event.dart';
 import 'performance_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// BLoC for club performance and dispersion overlay.
 class PerformanceBloc extends Bloc<PerformanceEvent, PerformanceState> {
@@ -55,7 +56,7 @@ class PerformanceBloc extends Bloc<PerformanceEvent, PerformanceState> {
     } catch (ex) {
       emit(
         PerformanceError(
-          message: 'Failed to load club performance. Please try again.',
+          message: AppMessages.performanceClubLoadFailed,
           bagId: event.bagId,
           clubId: event.clubId,
         ),
@@ -82,7 +83,7 @@ class PerformanceBloc extends Bloc<PerformanceEvent, PerformanceState> {
     } catch (ex) {
       emit(
         PerformanceError(
-          message: 'Failed to load bag performance. Please try again.',
+          message: AppMessages.performanceBagLoadFailed,
           bagId: event.bagId,
         ),
       );
@@ -152,7 +153,7 @@ class PerformanceBloc extends Bloc<PerformanceEvent, PerformanceState> {
     } catch (ex) {
       emit(
         DispersionOverlayError(
-          message: 'Failed to load dispersion overlay. Please try again.',
+          message: AppMessages.performanceDispersionLoadFailed,
           bagId: event.bagId,
           clubId: event.clubId,
           holeId: event.holeId,

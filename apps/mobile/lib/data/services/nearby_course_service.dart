@@ -63,7 +63,6 @@ class NearbyCourseResult {
 class NearbyCourseService {
   static const String _dbName = 'vsp_nearby.db';
   static const String _recentTable = 'recent_courses';
-  static const double _autoSelectRadiusKm = 5.0;
 
   Database? _db;
 
@@ -92,23 +91,6 @@ class NearbyCourseService {
   /// Find nearby downloaded courses within [radiusKm].
   ///
   /// Uses the manifest's embedded course location for downloaded courses.
-  /// Returns [NearbyCourseResult] with courses and optional auto-selection.
-  Future<NearbyCourseResult> getNearbyDownloadedCourses({
-    required double latitude,
-    required double longitude,
-    required double radiusKm,
-  }) async {
-    // In a real implementation, this would:
-    // 1. Query PackageManifestRepository for all downloaded courses
-    // 2. Get their locations from the manifest metadata
-    // 3. Filter by distance using Haversine formula
-    // 4. Sort by distance
-    //
-    // For now, return empty result — actual implementation would
-    // need the manifest location data from the package metadata.
-    return const NearbyCourseResult(courses: []);
-  }
-
   /// Get the last-played course as fallback suggestion.
   ///
   /// Queries the recent_courses table for the most recently played course.

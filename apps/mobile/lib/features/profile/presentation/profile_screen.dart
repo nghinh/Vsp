@@ -28,6 +28,7 @@ import 'widgets/unit_picker.dart';
 import 'widgets/skill_level_picker.dart';
 import 'widgets/hand_picker.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -149,7 +150,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(context.tr(state.message)),
                 backgroundColor: colorScheme.error,
               ),
             );
@@ -162,7 +163,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
 
           if (state is ProfileError && state.lastProfile == null) {
             return _ErrorView(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 context.read<ProfileBloc>().add(const LoadProfile());
               },

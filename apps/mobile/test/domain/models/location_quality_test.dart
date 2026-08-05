@@ -12,6 +12,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/location_quality.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 void main() {
   group('LocationWarning', () {
@@ -21,7 +22,7 @@ void main() {
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
         expect(warning.quality, LocationQuality.unavailable);
-        expect(warning.title, 'GPS Unavailable');
+        expect(warning.title, AppMessages.gpsUnavailable);
         expect(warning.blocksAutoAction, true);
       });
 
@@ -37,7 +38,7 @@ void main() {
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
         expect(warning.quality, LocationQuality.stale);
-        expect(warning.title, 'GPS Signal Stale');
+        expect(warning.title, AppMessages.gpsStale);
         expect(warning.blocksAutoAction, true);
       });
 
@@ -53,7 +54,7 @@ void main() {
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
         expect(warning.quality, LocationQuality.lowAccuracy);
-        expect(warning.title, 'Low GPS Accuracy');
+        expect(warning.title, AppMessages.gpsLowAccuracy);
         expect(warning.blocksAutoAction, true);
       });
 
@@ -69,7 +70,7 @@ void main() {
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
         expect(warning.quality, LocationQuality.ready);
-        expect(warning.title, 'GPS Ready');
+        expect(warning.title, AppMessages.gpsReady);
         expect(warning.blocksAutoAction, false);
       });
 
@@ -84,7 +85,7 @@ void main() {
         );
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
-        expect(warning.message, 'Location accurate and current.');
+        expect(warning.message, AppMessages.gpsReadyMessage);
       });
 
       test('lowAccuracy message includes accuracy value', () {
@@ -98,7 +99,7 @@ void main() {
         );
         final warning = LocationWarning.fromQualifiedLocation(loc);
 
-        expect(warning.message, contains('±15m'));
+        expect(warning.message, AppMessages.gpsLowAccuracyMessage);
       });
     });
 

@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/course_correction.dart';
 import '../../../data/repositories/course_correction_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
@@ -128,7 +129,7 @@ class CorrectionListBloc
         emit(CorrectionListLoaded(corrections: corrections));
       }
     } catch (e) {
-      emit(CorrectionListError(message: 'Failed to load corrections: $e'));
+      emit(CorrectionListError(message: AppMessages.correctionsLoadFailed));
     }
   }
 

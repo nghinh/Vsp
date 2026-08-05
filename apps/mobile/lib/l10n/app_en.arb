@@ -1179,5 +1179,258 @@
         "type": "String"
       }
     }
+  },
+  "startupCheckingSession": "Checking your secure session",
+  "correctionSavedOffline": "Correction saved offline",
+  "correctionIssueType": "Issue Type",
+  "correctionYourLocation": "Your Location",
+  "correctionNote": "Note (optional)",
+  "correctionNoteHint": "Describe the issue…",
+  "correctionAdd": "Add Correction",
+  "correctionSubmit": "Submit",
+  "correctionOldValue": "Old Value",
+  "correctionNewValue": "New Value",
+  "correctionField": "Field",
+  "commonRemove": "Remove",
+  "privacySelectRoundLabel": "Select Round",
+  "privacySubmitted": "Submitted",
+  "privacyProcessed": "Processed",
+  "privacyRejectionReason": "Rejection Reason",
+  "privacyTargetRound": "Target Round",
+  "otpConfirming": "Confirming…",
+  "teeSetRating": "Rating",
+  "roundStatsFairways": "Fairways",
+  "roundStatsTotalPutts": "Total Putts",
+  "activeRoundScore": "Score",
+  "activeRoundTarget": "Target",
+  "activeRoundConditions": "Conditions",
+  "activeRoundMap": "Map",
+  "activeRoundHole": "Hole",
+  "activeRoundLength": "Length",
+  "activeRoundReportCorrection": "Report Correction",
+  "activeRoundEndRound": "End Round",
+  "distancesTitle": "Distances",
+  "gpsQuality": "GPS Quality",
+  "courseFavoritesLoadFailed": "Failed to load favorites",
+  "courseRecentLoadFailed": "Failed to load recent",
+  "downloadOfflineCourses": "Offline Courses",
+  "downloadNoOfflineCourses": "No offline courses",
+  "downloadRemoveTitle": "Remove Offline Course?",
+  "packageVersion": "Version",
+  "packageUpdated": "Updated",
+  "packageFiles": "Files",
+  "packageFormat": "Format",
+  "packageDataVersion": "Data version",
+  "packageOfflineReadyLabel": "Course downloaded and ready for offline play",
+  "downloadPause": "Pause",
+  "downloadPauseLabel": "Pause download",
+  "downloadResume": "Resume",
+  "downloadResumeLabel": "Resume download",
+  "downloadValidating": "Validating…",
+  "downloadValidatingLabel": "Validating package",
+  "downloadLabel": "Download course package",
+  "downloadUpdateLabel": "Update course package",
+  "downloadRetryLabel": "Retry failed download",
+  "syncSaved": "Saved",
+  "syncPending": "Pending sync",
+  "syncSyncing": "Syncing…",
+  "syncFailed": "Sync failed",
+  "syncRetry": "Retry sync",
+  "syncSavedLocally": "Saved locally",
+  "syncSavedOffline": "Saved offline",
+  "detectionAutoSwitch": "Auto-switch enabled",
+  "detectionConfidenceTitle": "Detection Confidence",
+  "updateFilesToUpdate": "Files to update",
+  "updateFilesToRemove": "Files to remove",
+  "updateUnchanged": "Unchanged",
+  "updateDownloadSize": "Download size",
+  "updateLater": "Later",
+  "updateNow": "Update Now",
+  "updateAvailableBadge": "New version available. Tap to update.",
+  "scoreNo": "No",
+  "detectionConfidenceLabel": "Confidence: {level}",
+  "@detectionConfidenceLabel": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "packageStatusLabel": "Course package {status}",
+  "@packageStatusLabel": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "syncStatusLabel": "Sync status: {status}",
+  "@syncStatusLabel": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "distancesToggleUnit": "Toggle unit ({unit})",
+  "@distancesToggleUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "msgAuthPleaseWait": "Please wait…",
+  "msgAuthCreatingAccount": "Creating account…",
+  "msgAuthSendingCode": "Sending verification code…",
+  "msgAuthVerifyingCode": "Verifying code…",
+  "msgAuthSendingRecoveryCode": "Sending recovery code…",
+  "msgAuthResettingPassword": "Resetting password…",
+  "msgAuthSigningInGoogle": "Signing in with Google…",
+  "msgAuthSigningInApple": "Signing in with Apple…",
+  "msgAuthCheckingSession": "Checking your secure session…",
+  "msgAuthLoadingSessions": "Loading sessions…",
+  "msgAuthUnexpectedError": "An unexpected error occurred. Please try again.",
+  "msgAuthRegistrationFailed": "Registration failed. Please try again.",
+  "msgAuthSendCodeFailed": "Failed to send verification code. Please try again.",
+  "msgAuthPhoneVerified": "Phone verified successfully",
+  "msgAuthEmailVerified": "Email verified successfully",
+  "msgAuthVerificationFailed": "Verification failed. Please check the code and try again.",
+  "msgAuthRecoveryCodeFailed": "Failed to send recovery code. Please try again.",
+  "msgAuthResetPasswordFailed": "Failed to reset password. Please try again.",
+  "msgAuthRevokeSessionFailed": "Failed to revoke session. Please try again.",
+  "msgPrivacyLoadFailed": "Failed to load privacy requests. Please try again.",
+  "msgPrivacyDetailLoadFailed": "Failed to load request details.",
+  "msgCourseSearchFailed": "Search failed. Please try again.",
+  "msgLocationUnavailable": "We could not get your location. Please try again.",
+  "msgLocationPermissionNeeded": "Turn on location and grant permission to find courses near you.",
+  "msgRoundSetupLoadFailed": "Failed to load round setup data.",
+  "msgRoundStartFailed": "Failed to start the round. Please try again.",
+  "msgRoundNotFound": "Round not found",
+  "msgRoundLoadFailed": "Failed to load the round.",
+  "msgRoundCompleteFailed": "Failed to complete the round.",
+  "msgRoundReviewLoadFailed": "Failed to load the round review.",
+  "msgDrivingZoneLoadFailed": "Failed to load driving zone statistics.",
+  "msgCorrectionSubmitFailed": "Failed to submit the correction.",
+  "msgCorrectionsLoadFailed": "Failed to load corrections.",
+  "msgMapLoadFailed": "Failed to load the hole map.",
+  "msgResponseParseFailed": "Failed to parse server response",
+  "restrictedWindAdjustment": "Wind adjustment",
+  "restrictedPlaysLike": "Plays-like",
+  "restrictedElevation": "Elevation",
+  "restrictedClubRecommendation": "Club recommendation",
+  "restrictedGreenContours": "Green contours",
+  "restrictedPuttingHelp": "Putting help",
+  "restrictedAiFeatures": "AI features",
+  "smartTargetTitle": "Smart Target",
+  "smartTargetRegenerate": "Regenerate",
+  "watchAppleWatch": "Apple Watch",
+  "watchStatus": "WATCH STATUS",
+  "watchCoursePackages": "COURSE PACKAGES",
+  "watchDownloadPackages": "Download Packages",
+  "watchDownloadPackagesSubtitle": "Sync watch-optimized course data",
+  "watchSync": "Sync to Watch",
+  "watchSyncSubtitle": "Transfer packages to paired watch",
+  "gpsUnavailable": "GPS Unavailable",
+  "gpsUnavailableMessage": "Location cannot be determined. Enable location services.",
+  "gpsStale": "GPS Signal Stale",
+  "gpsLowAccuracy": "Low GPS Accuracy",
+  "gpsReady": "GPS Ready",
+  "gpsReadyMessage": "Location accurate and current.",
+  "warningInsufficientShots": "Insufficient Shot Data",
+  "warningLimitedClubData": "Limited Club Data",
+  "warningLimitedHoleData": "Limited Hole Data",
+  "weatherNoCache": "No cached weather data available",
+  "weatherCacheExpired": "Cached weather data has expired",
+  "weatherLocationUnavailable": "Location services unavailable",
+  "msgNearbyLoadFailed": "Failed to find nearby courses.",
+  "msgFavoritesLoadFailed": "Failed to load favorites.",
+  "msgRecentLoadFailed": "Failed to load recent courses.",
+  "msgWifiRequiredDownload": "Wi-Fi required for download",
+  "msgManifestFetchFailed": "Could not fetch course package manifest from server.",
+  "msgChecksumMismatch": "Downloaded file checksum does not match manifest.",
+  "msgNetworkError": "Network error. Please check your connection.",
+  "msgServerError": "Server error. Please try again later.",
+  "msgStorageError": "Storage error. Please free up space and try again.",
+  "msgUnexpectedError": "Unexpected error. Please try again.",
+  "msgWifiRequiredUpdate": "Wi-Fi required for update",
+  "msgManifestNewFetchFailed": "Failed to fetch the new manifest",
+  "msgNoExistingManifest": "No existing package found — download the full package",
+  "msgNoActivePackage": "No active package found for this course",
+  "msgRoundsResponseShape": "Unexpected rounds response shape",
+  "mapTargetPlaced": "Target placed{suffix}",
+  "@mapTargetPlaced": {
+    "placeholders": {
+      "suffix": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDistanceRingsLabel": "Distance rings: {rings}",
+  "@mapDistanceRingsLabel": {
+    "placeholders": {
+      "rings": {
+        "type": "String"
+      }
+    }
+  },
+  "msgGpsStaleUnknown": "Location data is stale. Move to refresh.",
+  "msgGpsLowAccuracyUnknown": "GPS accuracy is reduced.",
+  "msgGpsStaleAge": "Location data is {seconds} seconds old. Move to refresh.",
+  "@msgGpsStaleAge": {
+    "placeholders": {
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "msgGpsAccuracy": "Accuracy is ±{meters}m. Distances may be approximate.",
+  "@msgGpsAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "msgInsufficientShots": "Insufficient Shot Data",
+  "msgLimitedClubData": "Limited Club Data",
+  "msgLimitedHoleData": "Limited Hole Data",
+  "downloadRemoveTooltip": "Remove offline course",
+  "downloadNoPackage": "No package available",
+  "downloadFailed": "Download Failed",
+  "weatherWindStaleWarning": "Warning: wind data may be outdated.",
+  "weatherWindFromAt": "Wind from {direction} at {speed} km/h",
+  "@weatherWindFromAt": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherWindFromAtVerbose": "Wind from {direction} at {speed} kilometers per hour",
+  "@weatherWindFromAtVerbose": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      },
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherConditionsLabel": "Weather conditions",
+  "weatherTemperatureLabel": "Temperature {value} {unit}",
+  "@weatherTemperatureLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
   }
 }

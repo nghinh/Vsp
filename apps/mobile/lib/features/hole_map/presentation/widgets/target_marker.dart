@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge showing the user-placed target marker.
 class TargetMarker extends StatelessWidget {
@@ -16,7 +17,9 @@ class TargetMarker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Target placed${target.label != null ? ': ${target.label}' : ''}',
+      label: AppLocalizations.of(context).mapTargetPlaced(
+        target.label != null ? ': ${target.label}' : '',
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(

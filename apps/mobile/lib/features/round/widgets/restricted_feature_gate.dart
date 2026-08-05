@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import '../../../application/services/tournament_feature_guard.dart';
 import '../../../domain/models/tournament_feature.dart';
 import 'restriction_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Widget that conditionally shows a child or a restricted placeholder
 /// based on tournament policy feature status.
@@ -102,50 +103,53 @@ class _DefaultRestrictedPlaceholder extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Opacity(opacity: 0.4, child: IgnorePointer(child: child)),
+        Opacity(
+          opacity: 0.4,
+          child: IgnorePointer(child: placeholderFor(context)),
+        ),
         const SizedBox(height: 4),
         RestrictionBadge(restrictionReason: feature.restrictionLabel),
       ],
     );
   }
 
-  Widget get child {
+  Widget placeholderFor(BuildContext context) {
     // Return a generic placeholder based on feature type
     switch (feature) {
       case TournamentFeature.windAdjustment:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.air,
-          label: 'Wind adjustment',
+          label: AppLocalizations.of(context).restrictedWindAdjustment,
         );
       case TournamentFeature.playsLike:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.trending_up,
-          label: 'Plays-like',
+          label: AppLocalizations.of(context).restrictedPlaysLike,
         );
       case TournamentFeature.elevation:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.terrain,
-          label: 'Elevation',
+          label: AppLocalizations.of(context).restrictedElevation,
         );
       case TournamentFeature.clubRecommendation:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.sports_golf,
-          label: 'Club recommendation',
+          label: AppLocalizations.of(context).restrictedClubRecommendation,
         );
       case TournamentFeature.contours:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.layers,
-          label: 'Green contours',
+          label: AppLocalizations.of(context).restrictedGreenContours,
         );
       case TournamentFeature.puttingHelp:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.flag,
-          label: 'Putting help',
+          label: AppLocalizations.of(context).restrictedPuttingHelp,
         );
       case TournamentFeature.aiFeatures:
-        return const _FeaturePlaceholder(
+        return _FeaturePlaceholder(
           icon: Icons.smart_toy,
-          label: 'AI features',
+          label: AppLocalizations.of(context).restrictedAiFeatures,
         );
     }
   }

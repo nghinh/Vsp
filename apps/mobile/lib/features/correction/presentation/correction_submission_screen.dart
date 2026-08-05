@@ -15,6 +15,8 @@ import '../domain/course_correction.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../domain/services/location_service.dart';
 import 'correction_submission_bloc.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -128,8 +130,8 @@ class _CorrectionSubmissionScreenState
               ScaffoldMessenger.of(context)
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
-                  const SnackBar(
-                    content: Text('Correction saved offline'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context).correctionSavedOffline),
                     backgroundColor: Color(0xFF16A34A),
                   ),
                 );
@@ -140,7 +142,7 @@ class _CorrectionSubmissionScreenState
                 ..hideCurrentSnackBar()
                 ..showSnackBar(
                   SnackBar(
-                    content: Text(state.message),
+                    content: Text(context.tr(state.message)),
                     backgroundColor: const Color(0xFFDC2626),
                   ),
                 );
@@ -159,7 +161,7 @@ class _CorrectionSubmissionScreenState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Issue type selector ──────────────────────────────────
-                  _SectionLabel(label: 'Issue Type'),
+                  _SectionLabel(label: AppLocalizations.of(context).correctionIssueType),
                   const SizedBox(height: 8),
                   _IssueTypeSelector(
                     selected: _selectedIssueType,
@@ -170,7 +172,7 @@ class _CorrectionSubmissionScreenState
                   const SizedBox(height: 24),
 
                   // ── Location display ───────────────────────────────────
-                  _SectionLabel(label: 'Your Location'),
+                  _SectionLabel(label: AppLocalizations.of(context).correctionYourLocation),
                   const SizedBox(height: 8),
                   _LocationCard(
                     location: location,
@@ -180,7 +182,7 @@ class _CorrectionSubmissionScreenState
                   const SizedBox(height: 24),
 
                   // ── Note field ─────────────────────────────────────────
-                  _SectionLabel(label: 'Note (optional)'),
+                  _SectionLabel(label: AppLocalizations.of(context).correctionNote),
                   const SizedBox(height: 8),
                   TextField(
                     controller: _noteController,
@@ -188,7 +190,7 @@ class _CorrectionSubmissionScreenState
                     maxLines: 4,
                     style: const TextStyle(color: Color(0xFFF8FAFC)),
                     decoration: InputDecoration(
-                      hintText: 'Describe the issue…',
+                      hintText: AppLocalizations.of(context).correctionNoteHint,
                       hintStyle: const TextStyle(color: Color(0xFF64748B)),
                       filled: true,
                       fillColor: const Color(0xFF1E293B),

@@ -1999,4 +1999,546 @@ class AppLocalizationsEn extends AppLocalizations {
   String distanceConfidenceDetail(String label) {
     return 'Distance confidence: $label';
   }
+
+  @override
+  String get startupCheckingSession => 'Checking your secure session';
+
+  @override
+  String get correctionSavedOffline => 'Correction saved offline';
+
+  @override
+  String get correctionIssueType => 'Issue Type';
+
+  @override
+  String get correctionYourLocation => 'Your Location';
+
+  @override
+  String get correctionNote => 'Note (optional)';
+
+  @override
+  String get correctionNoteHint => 'Describe the issue…';
+
+  @override
+  String get correctionAdd => 'Add Correction';
+
+  @override
+  String get correctionSubmit => 'Submit';
+
+  @override
+  String get correctionOldValue => 'Old Value';
+
+  @override
+  String get correctionNewValue => 'New Value';
+
+  @override
+  String get correctionField => 'Field';
+
+  @override
+  String get commonRemove => 'Remove';
+
+  @override
+  String get privacySelectRoundLabel => 'Select Round';
+
+  @override
+  String get privacySubmitted => 'Submitted';
+
+  @override
+  String get privacyProcessed => 'Processed';
+
+  @override
+  String get privacyRejectionReason => 'Rejection Reason';
+
+  @override
+  String get privacyTargetRound => 'Target Round';
+
+  @override
+  String get otpConfirming => 'Confirming…';
+
+  @override
+  String get teeSetRating => 'Rating';
+
+  @override
+  String get roundStatsFairways => 'Fairways';
+
+  @override
+  String get roundStatsTotalPutts => 'Total Putts';
+
+  @override
+  String get activeRoundScore => 'Score';
+
+  @override
+  String get activeRoundTarget => 'Target';
+
+  @override
+  String get activeRoundConditions => 'Conditions';
+
+  @override
+  String get activeRoundMap => 'Map';
+
+  @override
+  String get activeRoundHole => 'Hole';
+
+  @override
+  String get activeRoundLength => 'Length';
+
+  @override
+  String get activeRoundReportCorrection => 'Report Correction';
+
+  @override
+  String get activeRoundEndRound => 'End Round';
+
+  @override
+  String get distancesTitle => 'Distances';
+
+  @override
+  String get gpsQuality => 'GPS Quality';
+
+  @override
+  String get courseFavoritesLoadFailed => 'Failed to load favorites';
+
+  @override
+  String get courseRecentLoadFailed => 'Failed to load recent';
+
+  @override
+  String get downloadOfflineCourses => 'Offline Courses';
+
+  @override
+  String get downloadNoOfflineCourses => 'No offline courses';
+
+  @override
+  String get downloadRemoveTitle => 'Remove Offline Course?';
+
+  @override
+  String get packageVersion => 'Version';
+
+  @override
+  String get packageUpdated => 'Updated';
+
+  @override
+  String get packageFiles => 'Files';
+
+  @override
+  String get packageFormat => 'Format';
+
+  @override
+  String get packageDataVersion => 'Data version';
+
+  @override
+  String get packageOfflineReadyLabel =>
+      'Course downloaded and ready for offline play';
+
+  @override
+  String get downloadPause => 'Pause';
+
+  @override
+  String get downloadPauseLabel => 'Pause download';
+
+  @override
+  String get downloadResume => 'Resume';
+
+  @override
+  String get downloadResumeLabel => 'Resume download';
+
+  @override
+  String get downloadValidating => 'Validating…';
+
+  @override
+  String get downloadValidatingLabel => 'Validating package';
+
+  @override
+  String get downloadLabel => 'Download course package';
+
+  @override
+  String get downloadUpdateLabel => 'Update course package';
+
+  @override
+  String get downloadRetryLabel => 'Retry failed download';
+
+  @override
+  String get syncSaved => 'Saved';
+
+  @override
+  String get syncPending => 'Pending sync';
+
+  @override
+  String get syncSyncing => 'Syncing…';
+
+  @override
+  String get syncFailed => 'Sync failed';
+
+  @override
+  String get syncRetry => 'Retry sync';
+
+  @override
+  String get syncSavedLocally => 'Saved locally';
+
+  @override
+  String get syncSavedOffline => 'Saved offline';
+
+  @override
+  String get detectionAutoSwitch => 'Auto-switch enabled';
+
+  @override
+  String get detectionConfidenceTitle => 'Detection Confidence';
+
+  @override
+  String get updateFilesToUpdate => 'Files to update';
+
+  @override
+  String get updateFilesToRemove => 'Files to remove';
+
+  @override
+  String get updateUnchanged => 'Unchanged';
+
+  @override
+  String get updateDownloadSize => 'Download size';
+
+  @override
+  String get updateLater => 'Later';
+
+  @override
+  String get updateNow => 'Update Now';
+
+  @override
+  String get updateAvailableBadge => 'New version available. Tap to update.';
+
+  @override
+  String get scoreNo => 'No';
+
+  @override
+  String detectionConfidenceLabel(String level) {
+    return 'Confidence: $level';
+  }
+
+  @override
+  String packageStatusLabel(String status) {
+    return 'Course package $status';
+  }
+
+  @override
+  String syncStatusLabel(String status) {
+    return 'Sync status: $status';
+  }
+
+  @override
+  String distancesToggleUnit(String unit) {
+    return 'Toggle unit ($unit)';
+  }
+
+  @override
+  String get msgAuthPleaseWait => 'Please wait…';
+
+  @override
+  String get msgAuthCreatingAccount => 'Creating account…';
+
+  @override
+  String get msgAuthSendingCode => 'Sending verification code…';
+
+  @override
+  String get msgAuthVerifyingCode => 'Verifying code…';
+
+  @override
+  String get msgAuthSendingRecoveryCode => 'Sending recovery code…';
+
+  @override
+  String get msgAuthResettingPassword => 'Resetting password…';
+
+  @override
+  String get msgAuthSigningInGoogle => 'Signing in with Google…';
+
+  @override
+  String get msgAuthSigningInApple => 'Signing in with Apple…';
+
+  @override
+  String get msgAuthCheckingSession => 'Checking your secure session…';
+
+  @override
+  String get msgAuthLoadingSessions => 'Loading sessions…';
+
+  @override
+  String get msgAuthUnexpectedError =>
+      'An unexpected error occurred. Please try again.';
+
+  @override
+  String get msgAuthRegistrationFailed =>
+      'Registration failed. Please try again.';
+
+  @override
+  String get msgAuthSendCodeFailed =>
+      'Failed to send verification code. Please try again.';
+
+  @override
+  String get msgAuthPhoneVerified => 'Phone verified successfully';
+
+  @override
+  String get msgAuthEmailVerified => 'Email verified successfully';
+
+  @override
+  String get msgAuthVerificationFailed =>
+      'Verification failed. Please check the code and try again.';
+
+  @override
+  String get msgAuthRecoveryCodeFailed =>
+      'Failed to send recovery code. Please try again.';
+
+  @override
+  String get msgAuthResetPasswordFailed =>
+      'Failed to reset password. Please try again.';
+
+  @override
+  String get msgAuthRevokeSessionFailed =>
+      'Failed to revoke session. Please try again.';
+
+  @override
+  String get msgPrivacyLoadFailed =>
+      'Failed to load privacy requests. Please try again.';
+
+  @override
+  String get msgPrivacyDetailLoadFailed => 'Failed to load request details.';
+
+  @override
+  String get msgCourseSearchFailed => 'Search failed. Please try again.';
+
+  @override
+  String get msgLocationUnavailable =>
+      'We could not get your location. Please try again.';
+
+  @override
+  String get msgLocationPermissionNeeded =>
+      'Turn on location and grant permission to find courses near you.';
+
+  @override
+  String get msgRoundSetupLoadFailed => 'Failed to load round setup data.';
+
+  @override
+  String get msgRoundStartFailed =>
+      'Failed to start the round. Please try again.';
+
+  @override
+  String get msgRoundNotFound => 'Round not found';
+
+  @override
+  String get msgRoundLoadFailed => 'Failed to load the round.';
+
+  @override
+  String get msgRoundCompleteFailed => 'Failed to complete the round.';
+
+  @override
+  String get msgRoundReviewLoadFailed => 'Failed to load the round review.';
+
+  @override
+  String get msgDrivingZoneLoadFailed =>
+      'Failed to load driving zone statistics.';
+
+  @override
+  String get msgCorrectionSubmitFailed => 'Failed to submit the correction.';
+
+  @override
+  String get msgCorrectionsLoadFailed => 'Failed to load corrections.';
+
+  @override
+  String get msgMapLoadFailed => 'Failed to load the hole map.';
+
+  @override
+  String get msgResponseParseFailed => 'Failed to parse server response';
+
+  @override
+  String get restrictedWindAdjustment => 'Wind adjustment';
+
+  @override
+  String get restrictedPlaysLike => 'Plays-like';
+
+  @override
+  String get restrictedElevation => 'Elevation';
+
+  @override
+  String get restrictedClubRecommendation => 'Club recommendation';
+
+  @override
+  String get restrictedGreenContours => 'Green contours';
+
+  @override
+  String get restrictedPuttingHelp => 'Putting help';
+
+  @override
+  String get restrictedAiFeatures => 'AI features';
+
+  @override
+  String get smartTargetTitle => 'Smart Target';
+
+  @override
+  String get smartTargetRegenerate => 'Regenerate';
+
+  @override
+  String get watchAppleWatch => 'Apple Watch';
+
+  @override
+  String get watchStatus => 'WATCH STATUS';
+
+  @override
+  String get watchCoursePackages => 'COURSE PACKAGES';
+
+  @override
+  String get watchDownloadPackages => 'Download Packages';
+
+  @override
+  String get watchDownloadPackagesSubtitle =>
+      'Sync watch-optimized course data';
+
+  @override
+  String get watchSync => 'Sync to Watch';
+
+  @override
+  String get watchSyncSubtitle => 'Transfer packages to paired watch';
+
+  @override
+  String get gpsUnavailable => 'GPS Unavailable';
+
+  @override
+  String get gpsUnavailableMessage =>
+      'Location cannot be determined. Enable location services.';
+
+  @override
+  String get gpsStale => 'GPS Signal Stale';
+
+  @override
+  String get gpsLowAccuracy => 'Low GPS Accuracy';
+
+  @override
+  String get gpsReady => 'GPS Ready';
+
+  @override
+  String get gpsReadyMessage => 'Location accurate and current.';
+
+  @override
+  String get warningInsufficientShots => 'Insufficient Shot Data';
+
+  @override
+  String get warningLimitedClubData => 'Limited Club Data';
+
+  @override
+  String get warningLimitedHoleData => 'Limited Hole Data';
+
+  @override
+  String get weatherNoCache => 'No cached weather data available';
+
+  @override
+  String get weatherCacheExpired => 'Cached weather data has expired';
+
+  @override
+  String get weatherLocationUnavailable => 'Location services unavailable';
+
+  @override
+  String get msgNearbyLoadFailed => 'Failed to find nearby courses.';
+
+  @override
+  String get msgFavoritesLoadFailed => 'Failed to load favorites.';
+
+  @override
+  String get msgRecentLoadFailed => 'Failed to load recent courses.';
+
+  @override
+  String get msgWifiRequiredDownload => 'Wi-Fi required for download';
+
+  @override
+  String get msgManifestFetchFailed =>
+      'Could not fetch course package manifest from server.';
+
+  @override
+  String get msgChecksumMismatch =>
+      'Downloaded file checksum does not match manifest.';
+
+  @override
+  String get msgNetworkError => 'Network error. Please check your connection.';
+
+  @override
+  String get msgServerError => 'Server error. Please try again later.';
+
+  @override
+  String get msgStorageError =>
+      'Storage error. Please free up space and try again.';
+
+  @override
+  String get msgUnexpectedError => 'Unexpected error. Please try again.';
+
+  @override
+  String get msgWifiRequiredUpdate => 'Wi-Fi required for update';
+
+  @override
+  String get msgManifestNewFetchFailed => 'Failed to fetch the new manifest';
+
+  @override
+  String get msgNoExistingManifest =>
+      'No existing package found — download the full package';
+
+  @override
+  String get msgNoActivePackage => 'No active package found for this course';
+
+  @override
+  String get msgRoundsResponseShape => 'Unexpected rounds response shape';
+
+  @override
+  String mapTargetPlaced(String suffix) {
+    return 'Target placed$suffix';
+  }
+
+  @override
+  String mapDistanceRingsLabel(String rings) {
+    return 'Distance rings: $rings';
+  }
+
+  @override
+  String get msgGpsStaleUnknown => 'Location data is stale. Move to refresh.';
+
+  @override
+  String get msgGpsLowAccuracyUnknown => 'GPS accuracy is reduced.';
+
+  @override
+  String msgGpsStaleAge(String seconds) {
+    return 'Location data is $seconds seconds old. Move to refresh.';
+  }
+
+  @override
+  String msgGpsAccuracy(String meters) {
+    return 'Accuracy is ±${meters}m. Distances may be approximate.';
+  }
+
+  @override
+  String get msgInsufficientShots => 'Insufficient Shot Data';
+
+  @override
+  String get msgLimitedClubData => 'Limited Club Data';
+
+  @override
+  String get msgLimitedHoleData => 'Limited Hole Data';
+
+  @override
+  String get downloadRemoveTooltip => 'Remove offline course';
+
+  @override
+  String get downloadNoPackage => 'No package available';
+
+  @override
+  String get downloadFailed => 'Download Failed';
+
+  @override
+  String get weatherWindStaleWarning => 'Warning: wind data may be outdated.';
+
+  @override
+  String weatherWindFromAt(String direction, String speed) {
+    return 'Wind from $direction at $speed km/h';
+  }
+
+  @override
+  String weatherWindFromAtVerbose(String direction, String speed) {
+    return 'Wind from $direction at $speed kilometers per hour';
+  }
+
+  @override
+  String get weatherConditionsLabel => 'Weather conditions';
+
+  @override
+  String weatherTemperatureLabel(String value, String unit) {
+    return 'Temperature $value $unit';
+  }
 }

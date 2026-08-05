@@ -7,6 +7,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Watch pairing screen for managing Apple Watch connection.
 class WatchPairingScreen extends StatelessWidget {
@@ -35,11 +36,11 @@ class WatchPairingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Apple Watch'),
+        middle: Text(AppLocalizations.of(context).watchAppleWatch),
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: onCancel,
-          child: const Text('Done'),
+          child: Text(AppLocalizations.of(context).commonDone),
         ),
       ),
       child: SafeArea(
@@ -48,7 +49,7 @@ class WatchPairingScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Watch status section
-            _SectionHeader(title: 'WATCH STATUS'),
+            _SectionHeader(title: AppLocalizations.of(context).watchStatus),
 
             if (pairedWatchName != null)
               _WatchStatusTile(
@@ -62,11 +63,11 @@ class WatchPairingScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Course packages section
-            _SectionHeader(title: 'COURSE PACKAGES'),
+            _SectionHeader(title: AppLocalizations.of(context).watchCoursePackages),
 
             _PackageManagementTile(
-              title: 'Download Packages',
-              subtitle: 'Sync watch-optimized course data',
+              title: AppLocalizations.of(context).watchDownloadPackages,
+              subtitle: AppLocalizations.of(context).watchDownloadPackagesSubtitle,
               onTap: isDownloading ? null : onDownloadPackage,
               trailing: isDownloading
                   ? _DownloadProgressIndicator(progress: downloadProgress)
@@ -74,8 +75,8 @@ class WatchPairingScreen extends StatelessWidget {
             ),
 
             _PackageManagementTile(
-              title: 'Sync to Watch',
-              subtitle: 'Transfer packages to paired watch',
+              title: AppLocalizations.of(context).watchSync,
+              subtitle: AppLocalizations.of(context).watchSyncSubtitle,
               onTap: pairedWatchName != null ? onSyncPackages : null,
               trailing: const Icon(CupertinoIcons.arrow_right_arrow_left),
             ),

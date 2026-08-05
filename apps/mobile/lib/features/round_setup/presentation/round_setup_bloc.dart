@@ -14,6 +14,14 @@ import 'package:uuid/uuid.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/api/course_search_api.dart';
 import '../../../data/api/round_api.dart';
+import '../../../core/storage/bag_sync_store.dart';
+import '../../../core/storage/secure_storage.dart';
+import '../../bag/data/bag_service.dart';
+import '../../bag/data/bag_repository.dart';
+import '../../../core/storage/profile_sync_store.dart';
+import '../../profile/data/profile_service.dart';
+import '../../profile/data/profile_repository.dart';
+import '../../../data/api/course_detail_api.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
@@ -28,6 +36,24 @@ import '../../../domain/models/course_package_manifest.dart';
 import '../../../core/storage/round_setup_store.dart';
 import 'round_setup_event.dart';
 import 'round_setup_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
+
+ProfileRepository _defaultProfileRepository() {
+  final apiClient = ApiClient();
+  return ProfileRepository(
+    profileService: ProfileService(apiClient: apiClient),
+    syncStore: ProfileSyncStore(),
+  );
+}
+
+BagRepository _defaultBagRepository() {
+  final apiClient = ApiClient();
+  return BagRepository(
+    bagService: BagService(apiClient: apiClient),
+    syncStore: BagSyncStore(),
+    apiClient: apiClient,
+  );
+}
 
 // ─── BLoC ─────────────────────────────────────────────────────────────────────
 
@@ -50,7 +76,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   final NearbyCourseService _nearbyCourseService;
   final RoundSetupStore _roundSetupStore;
   final CourseSearchApi _courseSearchApi;
+  final CourseDetailApi _courseDetailApi;
   final RoundApi _roundApi;
+  final ProfileRepository _profileRepository;
+  final BagRepository _bagRepository;
+  final SecureStorage _secureStorage;
   final Uuid _uuid;
 
   RoundSetupBloc({
@@ -61,7 +91,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     required NearbyCourseService nearbyCourseService,
     required RoundSetupStore roundSetupStore,
     CourseSearchApi? courseSearchApi,
+    CourseDetailApi? courseDetailApi,
     RoundApi? roundApi,
+    ProfileRepository? profileRepository,
+    BagRepository? bagRepository,
+    SecureStorage? secureStorage,
     Uuid uuid = const Uuid(),
   }) : _manifestRepo = manifestRepo,
        _roundRepo = roundRepo,
@@ -71,7 +105,12 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
        _roundSetupStore = roundSetupStore,
        _courseSearchApi =
            courseSearchApi ?? CourseSearchApi(apiClient: ApiClient()),
+       _courseDetailApi =
+           courseDetailApi ?? CourseDetailApi(apiClient: ApiClient()),
        _roundApi = roundApi ?? RoundApi(),
+       _profileRepository = profileRepository ?? _defaultProfileRepository(),
+       _bagRepository = bagRepository ?? _defaultBagRepository(),
+       _secureStorage = secureStorage ?? SecureStorage(),
        _uuid = uuid,
        super(const RoundSetupInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
@@ -101,11 +140,13 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     emit(const RoundSetupLoading());
 
     try {
-      // Load primary player from profile (mock — would come from auth/profile service)
-      final primaryPlayer = Player(id: 'self', name: 'Me', isPrimary: true);
+      // The signed-in golfer is the primary player. Falls back to a local
+      // identity when the profile endpoint is unreachable so an offline golfer
+      // can still start a round.
+      final primaryPlayer = await _loadPrimaryPlayer();
 
-      // Load active bag (mock — would come from bag repository)
-      final activeBag = BagOption(id: 1, name: 'My Bag', isActive: true);
+      // The golfer's active bag, if they have one — no bag is a valid state.
+      final activeBag = await _loadActiveBag();
 
       // Get suggested start hole based on time of day
       final suggestedHole = RoundSetupReady.suggestedStartHole();
@@ -154,7 +195,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           primaryPlayer: primaryPlayer,
           players: [primaryPlayer],
           activeBag: activeBag,
-          selectedBagId: activeBag.id,
+          selectedBagId: activeBag?.id,
           startHole: suggestedHole,
           nearbyCourses: availableCourses,
           recentCourses: recentCourses,
@@ -174,7 +215,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         );
       }
     } catch (ex) {
-      emit(RoundSetupError(message: 'Failed to load initial data: $ex'));
+      emit(RoundSetupError(message: AppMessages.roundSetupLoadFailed));
     }
   }
 
@@ -208,42 +249,74 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     RoundSetupReady currentState,
   ) async {
     try {
-      final manifest = await _manifestRepo.getActiveManifest(courseId);
+      // The course detail endpoint is the source of truth for tee sets, hole
+      // count and per-hole par. The offline manifest only pins the package
+      // version, so it cannot answer those.
+      final detail = await _courseDetailApi.getCourseDetail(courseId);
 
-      if (manifest != null) {
-        // Extract layouts and tees from manifest
-        // In a real app, these would come from the manifest's course metadata
-        final layouts = _extractLayouts(manifest);
-        final tees = _extractTees(manifest);
+      final tees = detail.teeSets
+          .map((t) => TeeOption(id: t.id, name: t.name))
+          .toList();
+      final layouts = [
+        LayoutOption(
+          id: 1,
+          name: detail.facilityName,
+          holeCount: detail.holesCount,
+        ),
+      ];
+      final holePars = {
+        for (final h in detail.holes) h.holeNumber: h.par,
+      };
 
-        emit(
-          currentState.copyWith(
-            layouts: layouts,
-            tees: tees,
-            selectedLayoutId: layouts.isNotEmpty ? layouts.first.id : null,
-            selectedTeeId: tees.isNotEmpty ? tees.first.id : null,
-          ),
-        );
-      }
+      emit(
+        currentState.copyWith(
+          layouts: layouts,
+          tees: tees,
+          selectedLayoutId: layouts.first.id,
+          selectedTeeId: tees.isNotEmpty ? tees.first.id : null,
+          holePars: holePars,
+        ),
+      );
     } catch (_) {
-      // Ignore — manifest might not be available
+      // Course detail unavailable (offline / server error) — the golfer can
+      // still start the round; the scorecard falls back to par 4 per hole.
     }
   }
 
-  List<LayoutOption> _extractLayouts(CoursePackageManifest manifest) {
-    // In a real app, layouts would come from manifest.courseLayouts
-    // For now, return a default 18-hole layout
-    return const [LayoutOption(id: 1, name: 'Standard', holeCount: 18)];
+  /// The signed-in golfer as the primary player.
+  Future<Player> _loadPrimaryPlayer() async {
+    try {
+      // Identity + handicap come from the profile endpoint; the display name
+      // was stored at sign-in, so it is available offline too.
+      final profile = await _profileRepository.getProfile();
+      final storedName = (await _secureStorage.getGolferDisplayName())?.trim();
+      return Player(
+        id: profile.golferAccountId.toString(),
+        name: storedName != null && storedName.isNotEmpty ? storedName : 'Me',
+        handicap: profile.handicap,
+        isPrimary: true,
+      );
+    } catch (_) {
+      // Offline or unauthenticated — fall back to the locally stored identity.
+      final storedName = (await _secureStorage.getGolferDisplayName())?.trim();
+      final storedId = await _secureStorage.getGolferId();
+      return Player(
+        id: storedId?.toString() ?? 'self',
+        name: storedName != null && storedName.isNotEmpty ? storedName : 'Me',
+        isPrimary: true,
+      );
+    }
   }
 
-  List<TeeOption> _extractTees(CoursePackageManifest manifest) {
-    // In a real app, tees would come from manifest.teeSets
-    // For now, return placeholder tees
-    return const [
-      TeeOption(id: 1, name: 'White Tees'),
-      TeeOption(id: 2, name: 'Blue Tees'),
-      TeeOption(id: 3, name: 'Red Tees'),
-    ];
+  /// The golfer's active bag, or null when they have none / it cannot load.
+  Future<BagOption?> _loadActiveBag() async {
+    try {
+      final bag = await _bagRepository.getActiveBag();
+      if (bag == null) return null;
+      return BagOption(id: bag.id, name: bag.name, isActive: true);
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _onLayoutSelected(
@@ -605,7 +678,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     } catch (ex) {
       emit(
         RoundSetupError(
-          message: 'Failed to start round: $ex',
+          message: AppMessages.roundStartFailed,
           lastState: currentState.copyWith(isSubmitting: false),
         ),
       );

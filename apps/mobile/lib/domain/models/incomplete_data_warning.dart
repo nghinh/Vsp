@@ -7,6 +7,7 @@
 // analytics, preventing false precision claims per AC2.
 
 import 'package:equatable/equatable.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Severity level for the warning.
 enum WarningSeverity {
@@ -160,7 +161,7 @@ class IncompleteDataWarning extends Equatable {
           ? WarningSeverity.error
           : WarningSeverity.warning,
       category: InsufficientDataCategory.totalShots,
-      title: 'Insufficient Shot Data',
+      title: AppMessages.insufficientShots,
       message:
           'Only $actualCount shot${actualCount == 1 ? '' : 's'} recorded. '
           'At least $requiredMinimum shots are needed for reliable analytics.',
@@ -186,7 +187,7 @@ class IncompleteDataWarning extends Equatable {
           ? WarningSeverity.error
           : WarningSeverity.warning,
       category: InsufficientDataCategory.clubShots,
-      title: 'Limited Club Data',
+      title: AppMessages.limitedClubData,
       message:
           '$clubName has only $actualCount recorded shot${actualCount == 1 ? '' : 's'}. '
           '$requiredMinimum shots recommended for accurate club analytics.',
@@ -212,7 +213,7 @@ class IncompleteDataWarning extends Equatable {
           ? WarningSeverity.error
           : WarningSeverity.warning,
       category: InsufficientDataCategory.holeShots,
-      title: 'Limited Hole Data',
+      title: AppMessages.limitedHoleData,
       message:
           'Hole $holeNumber has only $actualCount recorded shot${actualCount == 1 ? '' : 's'}. '
           '$requiredMinimum shots recommended for hole-specific analytics.',

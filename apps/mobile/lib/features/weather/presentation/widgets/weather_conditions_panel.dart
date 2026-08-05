@@ -45,7 +45,7 @@ class WeatherConditionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: _buildSemanticsLabel(),
+      label: _buildSemanticsLabel(context),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -89,12 +89,19 @@ class WeatherConditionsPanel extends StatelessWidget {
     );
   }
 
-  String _buildSemanticsLabel() {
+  String _buildSemanticsLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final parts = <String>[
-      'Weather conditions',
+      l10n.weatherConditionsLabel,
       snapshot.condition.displayLabel,
-      'Temperature ${snapshot.temperature?.value ?? 'unknown'} ${snapshot.temperature?.unit ?? ''}',
-      snapshot.wind.accessibleLabel,
+      l10n.weatherTemperatureLabel(
+        '${snapshot.temperature?.value ?? '—'}',
+        '${snapshot.temperature?.unit ?? ''}',
+      ),
+      l10n.weatherWindFromAt(
+        snapshot.wind.direction.label,
+        snapshot.wind.speedKmh.toStringAsFixed(1),
+      ),
       'Humidity ${snapshot.humidity ?? 'unknown'} percent',
     ];
     if (snapshot.precipitationProbability != null) {
@@ -243,7 +250,10 @@ class _WindRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: wind.accessibleLabel,
+      label: AppLocalizations.of(context).weatherWindFromAt(
+        wind.direction.label,
+        wind.speedKmh.toStringAsFixed(1),
+      ),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(

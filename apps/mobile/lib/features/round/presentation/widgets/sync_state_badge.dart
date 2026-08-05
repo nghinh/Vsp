@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/sync_state.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge widget displaying sync state with icon and label.
 class SyncStateBadge extends StatelessWidget {
@@ -20,7 +21,7 @@ class SyncStateBadge extends StatelessWidget {
     final (color, icon, label) = _appearanceFor(syncState);
 
     return Semantics(
-      label: 'Sync status: $label',
+      label: AppLocalizations.of(context).syncStatusLabel(label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(

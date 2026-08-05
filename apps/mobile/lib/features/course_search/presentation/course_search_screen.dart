@@ -31,6 +31,7 @@ import 'course_search_state.dart';
 import 'widgets/course_card.dart';
 import 'widgets/empty_search_state.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class CourseSearchScreen extends StatelessWidget {
   /// When true the screen acts as a picker: tapping a course pops the route
@@ -291,7 +292,7 @@ class _SearchResultsTab extends StatelessWidget {
         if (state is CourseSearchError) {
           return EmptySearchState(
             message: AppLocalizations.of(context).commonError,
-            subtitle: state.message,
+            subtitle: context.tr(state.message),
             actionLabel: AppLocalizations.of(context).commonTryAgain,
             onAction: () {
               context.read<CourseSearchBloc>().add(const RefreshResults());
@@ -444,8 +445,8 @@ class _FavoritesTab extends StatelessWidget {
         if (state is CourseSearchError &&
             state.activeTab == SearchTab.favorites) {
           return EmptySearchState(
-            message: 'Failed to load favorites',
-            subtitle: state.message,
+            message: AppLocalizations.of(context).courseFavoritesLoadFailed,
+            subtitle: context.tr(state.message),
             actionLabel: 'Retry',
             onAction: () {
               context.read<CourseSearchBloc>().add(const LoadFavorites());
@@ -511,8 +512,8 @@ class _RecentTab extends StatelessWidget {
 
         if (state is CourseSearchError && state.activeTab == SearchTab.recent) {
           return EmptySearchState(
-            message: 'Failed to load recent',
-            subtitle: state.message,
+            message: AppLocalizations.of(context).courseRecentLoadFailed,
+            subtitle: context.tr(state.message),
             actionLabel: 'Retry',
             onAction: () {
               context.read<CourseSearchBloc>().add(const LoadRecent());
@@ -708,7 +709,7 @@ class _FavoriteCourseTile extends StatelessWidget {
             IconButton(
               onPressed: onRemove,
               icon: const Icon(Icons.favorite, color: Colors.red),
-              tooltip: 'Remove from favorites',
+              tooltip: AppLocalizations.of(context).courseRemoveFavorite,
             ),
           ],
         ),

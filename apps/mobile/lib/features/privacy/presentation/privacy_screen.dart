@@ -26,6 +26,7 @@ import 'widgets/privacy_request_card.dart';
 import 'widgets/request_type_selector.dart';
 import 'widgets/round_picker_for_deletion.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -127,7 +128,7 @@ class _PrivacyScreenBody extends StatelessWidget {
 
           if (state is PrivacyError && state.lastRequests == null) {
             return _ErrorView(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 context.read<PrivacyBloc>().add(
                   const LoadPrivacyRequests(forceReload: true),
@@ -829,27 +830,27 @@ class _RequestDetailSheet extends StatelessWidget {
 
                 // Details
                 _DetailRow(
-                  label: 'Submitted',
+                  label: AppLocalizations.of(context).privacySubmitted,
                   value: request.formattedRequestedDate,
                 ),
                 const SizedBox(height: VspSpacing.sm),
                 if (request.processedAt != null) ...[
                   _DetailRow(
-                    label: 'Processed',
+                    label: AppLocalizations.of(context).privacyProcessed,
                     value: _formatDateTime(request.processedAt!),
                   ),
                   const SizedBox(height: VspSpacing.sm),
                 ],
                 if (request.hasRejectionReason) ...[
                   _DetailRow(
-                    label: 'Rejection Reason',
+                    label: AppLocalizations.of(context).privacyRejectionReason,
                     value: request.rejectionReason!,
                     isWarning: true,
                   ),
                 ],
                 if (request.targetRoundId != null) ...[
                   _DetailRow(
-                    label: 'Target Round',
+                    label: AppLocalizations.of(context).privacyTargetRound,
                     value: request.targetRoundId!,
                   ),
                 ],
@@ -865,7 +866,7 @@ class _RequestDetailSheet extends StatelessWidget {
             child: SizedBox(
               width: double.infinity,
               child: VspButton(
-                label: 'Close',
+                label: AppLocalizations.of(context).commonClose,
                 variant: VspButtonVariant.secondary,
                 onPressed: () => Navigator.of(context).pop(),
               ),
@@ -1139,7 +1140,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Try Again',
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
               variant: VspButtonVariant.secondary,
               icon: Icons.refresh,

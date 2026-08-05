@@ -16,6 +16,7 @@ import 'package:vsp_mobile/features/hole_map/domain/distance_ring_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/services/wind_relative_calculator.dart';
 import 'hole_map_event.dart';
 import 'hole_map_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// BLoC for the strategic hole map feature.
 class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
@@ -67,7 +68,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       if (holeMap == null) {
         emit(
           HoleMapError(
-            message: 'Hole geometry not found in course package',
+            message: AppMessages.mapGeometryNotFound,
             courseName: event.courseName,
             holeNumber: event.holeNumber,
           ),
@@ -86,7 +87,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     } catch (e) {
       emit(
         HoleMapError(
-          message: 'Failed to load hole map: $e',
+          message: AppMessages.mapLoadFailed,
           courseName: event.courseName,
           holeNumber: event.holeNumber,
         ),

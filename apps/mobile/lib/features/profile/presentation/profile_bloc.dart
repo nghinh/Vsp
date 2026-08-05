@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/profile_dto.dart';
 import '../data/profile_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 part 'profile_event.dart';
 part 'profile_state.dart';
 
@@ -51,7 +52,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final hasPending = await _profileRepository.hasPending();
       emit(ProfileLoaded(profile: profile, hasPendingSync: hasPending));
     } catch (ex) {
-      emit(ProfileError(message: 'Failed to load profile. Please try again.'));
+      emit(ProfileError(message: AppMessages.profileLoadFailed));
     }
   }
 
@@ -135,7 +136,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     } catch (_) {
       emit(
         ProfileError(
-          message: 'Failed to save. Please try again.',
+          message: AppMessages.profileSaveFailed,
           lastProfile: draft,
         ),
       );

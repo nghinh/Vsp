@@ -23,6 +23,7 @@ import '../repositories/course_package_repository.dart';
 import '../repositories/package_manifest_repository.dart';
 import 'connectivity_service.dart';
 import 'package_file_downloader.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Result of a download package operation.
 sealed class DownloadPackageResult {}
@@ -126,7 +127,7 @@ class CoursePackageDownloadService {
         ),
       );
       return DownloadPackageFailure(
-        message: 'Wi-Fi required for download',
+        message: AppMessages.wifiRequiredDownload,
         error: DownloadError.networkError,
       );
     }
@@ -145,7 +146,7 @@ class CoursePackageDownloadService {
           'Could not fetch course package manifest from server.',
         );
         return DownloadPackageFailure(
-          message: 'Could not fetch course package manifest from server.',
+          message: AppMessages.manifestFetchFailed,
           error: DownloadError.serverError,
         );
       }
@@ -274,7 +275,7 @@ class CoursePackageDownloadService {
       debugPrint('[CoursePackageDownloadService] Unexpected error: $e');
       await _manifestRepo.discardPending(courseId);
       _emitError(courseId, 'Unexpected error: $e');
-      return DownloadPackageFailure(message: 'Unexpected error: $e');
+      return DownloadPackageFailure(message: AppMessages.unexpectedError);
     } finally {
       _cancelTokens.remove(courseId);
     }

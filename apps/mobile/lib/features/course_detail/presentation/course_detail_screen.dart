@@ -34,6 +34,7 @@ import 'widgets/ratings_section.dart';
 import 'widgets/local_rules_section.dart';
 import 'widgets/data_quality_section.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -70,7 +71,7 @@ class _CourseDetailScreenBody extends StatelessWidget {
 
           if (state is CourseDetailError) {
             return _ErrorBody(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 final courseId =
                     (context.read<CourseDetailBloc>().state

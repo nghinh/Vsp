@@ -23,6 +23,7 @@ import '../widgets/delete_package_dialog.dart';
 import '../widgets/download_action_button.dart';
 import '../widgets/offline_ready_badge.dart';
 import '../widgets/update_available_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Screen listing all downloaded course packages.
 ///
@@ -136,7 +137,7 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Offline Courses')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).downloadOfflineCourses)),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _packages.isEmpty
@@ -156,7 +157,7 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 12),
-          Text('No offline courses', style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).downloadNoOfflineCourses, style: theme.textTheme.titleMedium),
           Text(
             'Download a course to play offline',
             style: theme.textTheme.bodySmall?.copyWith(
@@ -363,7 +364,7 @@ class _PackageListItem extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onDelete,
                   icon: const Icon(Icons.delete_outline, size: 16),
-                  label: const Text('Remove'),
+                  label: Text(AppLocalizations.of(context).commonRemove),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: VspColorSemantic.of(
                       colorScheme.brightness,

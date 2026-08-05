@@ -15,6 +15,7 @@ import '../../hole_map/domain/hole_map_entity.dart';
 import 'widgets/hole_map_view.dart';
 import 'widgets/map_loading_skeleton.dart';
 import 'widgets/map_error_view.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main scaffold for the strategic hole map display.
 class HoleMapScreen extends StatelessWidget {
@@ -73,7 +74,7 @@ class _HoleMapBody extends StatelessWidget {
 
         if (state is HoleMapError) {
           return _ErrorContent(
-            message: state.message,
+            message: context.tr(state.message),
             courseName: state.courseName,
             holeNumber: state.holeNumber,
           );

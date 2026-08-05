@@ -1,0 +1,8 @@
+# Test tags used in this package.
+#
+# `system` marks tests that talk to a running backend. They self-skip when no
+# API is reachable, so they are safe to leave in the default run; exclude them
+# explicitly with: flutter test --exclude-tags system
+tags:
+  system:
+    description: End-to-end tests against a live API

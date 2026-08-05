@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../domain/models/course_hole_detection.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Non-color-only confidence indicator for hole detection.
 ///
@@ -75,7 +76,7 @@ class DetectionConfidenceIndicator extends StatelessWidget {
               _icon(currentLevel),
               size: 16,
               color: _foregroundColor(currentLevel, theme),
-              semanticLabel: 'Confidence: ${currentLevel.displayLabel}',
+              semanticLabel: AppLocalizations.of(context).detectionConfidenceLabel(currentLevel.displayLabel),
             ),
             const SizedBox(width: 6),
             Text(
@@ -103,7 +104,7 @@ class DetectionConfidenceIndicator extends StatelessWidget {
                 Icons.auto_awesome,
                 size: 12,
                 color: _foregroundColor(currentLevel, theme),
-                semanticLabel: 'Auto-switch enabled',
+                semanticLabel: AppLocalizations.of(context).detectionAutoSwitch,
               ),
             ],
           ],
@@ -176,7 +177,7 @@ class DetectionConfidenceDetailDialog extends StatelessWidget {
         children: [
           Icon(_icon(level), color: _foregroundColor(level, theme), size: 24),
           const SizedBox(width: 12),
-          const Text('Detection Confidence'),
+          Text(AppLocalizations.of(context).detectionConfidenceTitle),
         ],
       ),
       content: Column(
@@ -202,7 +203,7 @@ class DetectionConfidenceDetailDialog extends StatelessWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Close'),
+          child: Text(AppLocalizations.of(context).commonClose),
         ),
       ],
     );

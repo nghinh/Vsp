@@ -126,7 +126,7 @@ void main() {
         ),
       ]);
 
-      await tester.tap(find.text('Đang xác nhận...'));
+      await tester.tap(find.text('Đang xác nhận…'));
       await tester.pump();
       expect(authBloc.recordedEvents, hasLength(1));
     });

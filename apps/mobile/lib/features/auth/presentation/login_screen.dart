@@ -10,6 +10,7 @@ import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/password_recovery_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/register_screen.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -444,7 +445,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                   builder: (context, state) {
                     final loading =
                         state is AuthLoading &&
-                        state.message == 'Signing in...';
+                        state.message == AppMessages.authSigningIn;
                     return FilledButton(
                       onPressed: loading ? null : _submit,
                       child: loading

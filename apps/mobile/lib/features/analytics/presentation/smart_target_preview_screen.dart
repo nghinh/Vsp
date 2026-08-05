@@ -24,6 +24,7 @@ import '../../../domain/analytics/smart_target/repositories/in_memory_strokes_ga
 import '../../../domain/analytics/smart_target/repositories/strokes_gained_repository.dart';
 import '../../../domain/value_objects/lat_lng.dart';
 import '../../../presentation/analytics/smart_target/smart_target_panel.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Screen hosting the Smart Target strategy panel over preview data.
 class SmartTargetPreviewScreen extends StatefulWidget {
@@ -234,11 +235,11 @@ class _SmartTargetPreviewScreenState extends State<SmartTargetPreviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Smart Target'),
+        title: Text(AppLocalizations.of(context).smartTargetTitle),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Tạo lại',
+            tooltip: AppLocalizations.of(context).smartTargetRegenerate,
             onPressed: _generate,
           ),
         ],

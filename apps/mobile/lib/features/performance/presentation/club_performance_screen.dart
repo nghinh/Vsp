@@ -23,6 +23,7 @@ import 'performance_state.dart';
 import 'widgets/widgets.dart';
 import 'dispersion_map_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -62,7 +63,7 @@ class _ClubPerformanceScreenState extends State<ClubPerformanceScreen> {
 
         if (state is PerformanceError && state.lastStats == null) {
           return _ErrorScreen(
-            message: state.message,
+            message: context.tr(state.message),
             clubName: widget.clubName,
             onRetry: () {
               context.read<PerformanceBloc>().add(

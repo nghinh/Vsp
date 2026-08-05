@@ -228,9 +228,8 @@ class WindData extends Equatable {
   /// Gust speed in km/h (converted if needed).
   double? get gustsKmh => gusts != null ? unit.toKmh(gusts!) : null;
 
-  /// Accessible label: "Wind from SE at 15 km/h".
-  String get accessibleLabel =>
-      'Wind from ${direction.label} at ${speedKmh.toStringAsFixed(1)} km/h';
+  /// Accessible wind labels are built in the UI via
+  /// `AppLocalizations.weatherWindFromAt` so they follow the app language.
 
   WindData copyWith({
     double? speed,

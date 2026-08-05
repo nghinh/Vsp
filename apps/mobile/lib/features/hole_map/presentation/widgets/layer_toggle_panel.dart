@@ -45,7 +45,7 @@ class _LayerTogglePanelState extends State<LayerTogglePanel> {
   Widget build(BuildContext context) {
     return Semantics(
       label:
-          'Layer toggle panel, $_visibleCount of ${_allLayers.length} layers visible',
+          'Layer toggle panel, $_visibleCount of ${_allLayers(context).length} layers visible',
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(
@@ -100,7 +100,7 @@ class _LayerTogglePanelState extends State<LayerTogglePanel> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    for (final layer in _allLayers)
+                    for (final layer in _allLayers(context))
                       _LayerToggleRow(
                         id: layer.id,
                         label: layer.label,

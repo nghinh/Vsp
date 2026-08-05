@@ -13,6 +13,7 @@ import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../domain/models/round_review_metrics.dart';
 import '../../../domain/repositories/shot_repository.dart';
 import 'round_review_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Cubit for managing the Round Review screen.
 class RoundReviewCubit extends Cubit<RoundReviewState> {
@@ -55,7 +56,7 @@ class RoundReviewCubit extends Cubit<RoundReviewState> {
     } catch (e) {
       emit(
         RoundReviewError(
-          message: 'Failed to load round review: $e',
+          message: AppMessages.roundReviewLoadFailed,
           roundId: roundId,
         ),
       );

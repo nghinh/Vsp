@@ -278,7 +278,7 @@ class _StrokesGainedLoaderState extends State<_StrokesGainedLoader> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Strokes Gained')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).analyticsStrokesGained)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }

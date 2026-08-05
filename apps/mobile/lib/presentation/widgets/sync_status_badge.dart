@@ -18,6 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../domain/models/sync_status.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Semantic color tokens for sync badge states.
 
@@ -102,7 +103,7 @@ class _PendingBadge extends StatelessWidget {
     return _SyncBadgeLayout(
       icon: Icons.schedule,
       iconColor: color,
-      label: 'Saved offline',
+      label: AppLocalizations.of(context).syncSavedOffline,
       labelColor: color,
       compact: compact,
     );
@@ -131,7 +132,7 @@ class _SyncingBadge extends StatelessWidget {
       icon: reducedMotion ? Icons.cloud_upload : null,
       iconColor: reducedMotion ? color : null,
       spinnerColor: reducedMotion ? null : color,
-      label: 'Syncing…',
+      label: AppLocalizations.of(context).syncSyncing,
       labelColor: color,
       compact: compact,
     );
@@ -154,7 +155,7 @@ class _SyncedBadge extends StatelessWidget {
     return _SyncBadgeLayout(
       icon: Icons.check_circle,
       iconColor: color,
-      label: 'Synced',
+      label: AppLocalizations.of(context).commonSynced,
       labelColor: color,
       compact: compact,
     );
@@ -185,7 +186,7 @@ class _FailedBadge extends StatelessWidget {
         _SyncBadgeLayout(
           icon: Icons.warning,
           iconColor: color,
-          label: 'Sync failed',
+          label: AppLocalizations.of(context).syncFailed,
           labelColor: color,
           compact: compact,
         ),

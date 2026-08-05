@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../domain/models/package_delta.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom sheet shown when an incremental update is available.
 ///
@@ -131,7 +132,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                 children: [
                   _DeltaRow(
                     icon: Icons.download,
-                    label: 'Files to update',
+                    label: AppLocalizations.of(context).updateFilesToUpdate,
                     value: '${delta.toDownload.length}',
                     color: colorScheme.primary,
                   ),
@@ -139,7 +140,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                     const SizedBox(height: VspSpacing.sm),
                     _DeltaRow(
                       icon: Icons.delete_outline,
-                      label: 'Files to remove',
+                      label: AppLocalizations.of(context).updateFilesToRemove,
                       value: '${delta.toDelete.length}',
                       color: colorScheme.error,
                     ),
@@ -148,7 +149,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                     const SizedBox(height: VspSpacing.sm),
                     _DeltaRow(
                       icon: Icons.check_circle_outline,
-                      label: 'Unchanged',
+                      label: AppLocalizations.of(context).updateUnchanged,
                       value: '${delta.unchangedCount}',
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -156,7 +157,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                   const Divider(height: VspSpacing.md),
                   _DeltaRow(
                     icon: Icons.storage,
-                    label: 'Download size',
+                    label: AppLocalizations.of(context).updateDownloadSize,
                     value: _formatBytes(delta.totalDownloadBytes),
                     color: colorScheme.primary,
                     isBold: true,
@@ -195,7 +196,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Later'),
+                    child: Text(AppLocalizations.of(context).updateLater),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -209,7 +210,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text('Update Now'),
+                    child: Text(AppLocalizations.of(context).updateNow),
                   ),
                 ),
               ],

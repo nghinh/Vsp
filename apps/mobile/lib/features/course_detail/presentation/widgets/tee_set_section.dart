@@ -7,6 +7,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/tee_set_summary.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class TeeSetSection extends StatelessWidget {
   final CourseDetail course;
@@ -115,17 +116,17 @@ class _TeeSetCard extends StatelessWidget {
           // Par + yardages summary
           Row(
             children: [
-              _MetricChip(label: 'Par', value: '${teeSet.totalPar}'),
+              _MetricChip(label: AppLocalizations.of(context).fieldPar, value: '${teeSet.totalPar}'),
               if (teeSet.rating != null) ...[
                 const SizedBox(width: VspSpacing.sm),
                 _MetricChip(
-                  label: 'Rating',
+                  label: AppLocalizations.of(context).teeSetRating,
                   value: teeSet.rating!.toStringAsFixed(1),
                 ),
               ],
               if (teeSet.slope != null) ...[
                 const SizedBox(width: VspSpacing.sm),
-                _MetricChip(label: 'Slope', value: '${teeSet.slope}'),
+                _MetricChip(label: AppLocalizations.of(context).fieldSlope, value: '${teeSet.slope}'),
               ],
             ],
           ),

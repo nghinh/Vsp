@@ -11,6 +11,7 @@ import 'package:flutter/services.dart';
 
 import '../../domain/score_entry.dart';
 import '../../domain/correction.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Dialog for requesting score corrections.
 class CorrectionDialog extends StatefulWidget {
@@ -137,7 +138,7 @@ class _CorrectionDialogState extends State<CorrectionDialog> {
               TextButton.icon(
                 onPressed: _addCorrection,
                 icon: const Icon(Icons.add),
-                label: const Text('Add Correction'),
+                label: Text(AppLocalizations.of(context).correctionAdd),
               ),
               const SizedBox(height: 16),
               Row(
@@ -145,10 +146,10 @@ class _CorrectionDialogState extends State<CorrectionDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: Text(AppLocalizations.of(context).commonCancel),
                   ),
                   const SizedBox(width: 8),
-                  FilledButton(onPressed: _submit, child: const Text('Submit')),
+                  FilledButton(onPressed: _submit, child: Text(AppLocalizations.of(context).correctionSubmit)),
                 ],
               ),
             ],
@@ -188,8 +189,8 @@ class _CorrectionRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Hole',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).fieldHole,
                       isDense: true,
                     ),
                     value: edit.holeNumber?.toString(),
@@ -209,8 +210,8 @@ class _CorrectionRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: const InputDecoration(
-                      labelText: 'Field',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).correctionField,
                       isDense: true,
                     ),
                     value: edit.field,
@@ -229,8 +230,8 @@ class _CorrectionRow extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'Old Value',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).correctionOldValue,
                       isDense: true,
                     ),
                     initialValue: edit.oldValue,
@@ -243,8 +244,8 @@ class _CorrectionRow extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: 'New Value',
+                    decoration: InputDecoration(
+                      labelText: AppLocalizations.of(context).correctionNewValue,
                       isDense: true,
                     ),
                     initialValue: edit.newValue,
@@ -257,7 +258,7 @@ class _CorrectionRow extends StatelessWidget {
                     icon: const Icon(Icons.remove_circle_outline),
                     color: theme.colorScheme.error,
                     onPressed: onRemove,
-                    tooltip: 'Remove',
+                    tooltip: AppLocalizations.of(context).commonRemove,
                   ),
                 ],
               ],

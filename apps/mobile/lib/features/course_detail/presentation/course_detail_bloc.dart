@@ -7,6 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../data/repositories/course_detail_repository.dart';
 import 'course_detail_event.dart';
 import 'course_detail_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// BLoC for course detail screen.
 class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
@@ -33,7 +34,7 @@ class CourseDetailBloc extends Bloc<CourseDetailEvent, CourseDetailState> {
       final course = await _repository.getCourseDetail(event.courseId);
       emit(CourseDetailLoaded(course));
     } catch (ex) {
-      emit(CourseDetailError(message: 'Failed to load course details.'));
+      emit(CourseDetailError(message: AppMessages.courseDetailLoadFailed));
     }
   }
 

@@ -498,7 +498,7 @@ class _OtpScreenState extends State<OtpScreen> {
                               child: FilledButton(
                                 onPressed: _isVerifying ? null : _verify,
                                 child: _isVerifying
-                                    ? const Row(
+                                    ? Row(
                                         mainAxisAlignment:
                                             MainAxisAlignment.center,
                                         children: [
@@ -509,7 +509,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                             ),
                                           ),
                                           SizedBox(width: VspSpacing.sm),
-                                          Text('Đang xác nhận...'),
+                                          Text(AppLocalizations.of(context).otpConfirming),
                                         ],
                                       )
                                     : Text(AppLocalizations.of(context).otpConfirm),

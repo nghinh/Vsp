@@ -12,6 +12,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class PhoneRegisterScreen extends StatefulWidget {
   const PhoneRegisterScreen({super.key});
@@ -133,7 +134,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
               setState(() => _phoneError = null);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(state.message),
+                  content: Text(context.tr(state.message)),
                   backgroundColor: colorScheme.error,
                 ),
               );

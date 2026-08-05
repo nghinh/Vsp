@@ -18,6 +18,7 @@ import '../../../domain/models/qualified_location.dart';
 import '../../../domain/services/location_service.dart';
 import 'course_search_event.dart';
 import 'course_search_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// BLoC for course search screen.
 ///
@@ -109,7 +110,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     } catch (ex) {
       emit(
         CourseSearchError(
-          message: 'Search failed. Please try again.',
+          message: AppMessages.courseSearchFailed,
           activeTab: SearchTab.all,
           lastQuery: query,
         ),
@@ -138,8 +139,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
       if (!available) {
         emit(
           const CourseSearchError(
-            message:
-                'Bật vị trí và cấp quyền để tìm sân gần bạn.',
+            message: AppMessages.locationPermissionNeeded,
             activeTab: SearchTab.nearby,
           ),
         );
@@ -149,7 +149,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
       if (loc.source == LocationSource.unavailable) {
         emit(
           const CourseSearchError(
-            message: 'Không lấy được vị trí của bạn. Hãy thử lại.',
+            message: AppMessages.locationUnavailable,
             activeTab: SearchTab.nearby,
           ),
         );
@@ -165,7 +165,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     } catch (_) {
       emit(
         const CourseSearchError(
-          message: 'Không lấy được vị trí của bạn. Hãy thử lại.',
+          message: AppMessages.locationUnavailable,
           activeTab: SearchTab.nearby,
         ),
       );
@@ -208,7 +208,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     } catch (ex) {
       emit(
         CourseSearchError(
-          message: 'Failed to find nearby courses.',
+          message: AppMessages.nearbyLoadFailed,
           activeTab: SearchTab.nearby,
           lastLatitude: event.latitude,
           lastLongitude: event.longitude,
@@ -255,7 +255,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     } catch (ex) {
       emit(
         CourseSearchError(
-          message: 'Failed to load favorites.',
+          message: AppMessages.favoritesLoadFailed,
           activeTab: SearchTab.favorites,
         ),
       );
@@ -343,7 +343,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     } catch (ex) {
       emit(
         CourseSearchError(
-          message: 'Failed to load recent courses.',
+          message: AppMessages.recentLoadFailed,
           activeTab: SearchTab.recent,
         ),
       );

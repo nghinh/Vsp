@@ -77,7 +77,7 @@ class BunkerToggle extends StatelessWidget {
 
           // No button
           _BunkerButton(
-            label: 'No',
+            label: AppLocalizations.of(context).scoreNo,
             isSelected: state == StatToggleState.no,
             color: theme.colorScheme.surfaceContainerHighest,
             selectedColor: theme.colorScheme.error,

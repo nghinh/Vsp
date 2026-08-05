@@ -10,6 +10,7 @@ import 'features/auth/data/auth_service.dart';
 import 'features/auth/presentation/auth_bloc.dart';
 import 'features/auth/presentation/home_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
+import 'l10n/app_messages.dart';
 
 class VspApp extends StatefulWidget {
   const VspApp({super.key, this.authBloc});
@@ -97,14 +98,14 @@ class AuthStartupGate extends StatelessWidget {
           current is SessionRestored ||
           current is SessionNotFound ||
           (current is AuthLoading &&
-              current.message == 'Checking your secure session…'),
+              current.message == AppMessages.authCheckingSession),
       builder: (context, state) {
         if (state is SessionRestored) {
           return const HomeScreen();
         }
         if (state is AuthInitial ||
             (state is AuthLoading &&
-                state.message == 'Checking your secure session…')) {
+                state.message == AppMessages.authCheckingSession)) {
           return const _SessionStartupView();
         }
         // SessionNotFound (and any later state) → real login/registration entry.
@@ -159,7 +160,7 @@ class _SessionStartupView extends StatelessWidget {
         child: Center(
           child: Semantics(
             liveRegion: true,
-            label: 'Checking your secure session',
+            label: AppLocalizations.of(context).startupCheckingSession,
             child: Padding(
               padding: const EdgeInsets.all(24),
               child: Column(

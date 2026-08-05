@@ -20,6 +20,7 @@ import 'auth_bloc.dart';
 import 'session_card.dart';
 import '../data/auth_dto.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class SessionManagementScreen extends StatefulWidget {
   const SessionManagementScreen({super.key});
@@ -111,7 +112,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
+                content: Text(context.tr(state.message)),
                 backgroundColor: colorScheme.error,
               ),
             );
@@ -124,7 +125,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
 
           if (state is AuthFailure) {
             return _ErrorView(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 context.read<AuthBloc>().add(const LoadSessionsRequested());
               },

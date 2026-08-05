@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// VSP API error with structured code, message, and optional field context.
 class VspApiException implements Exception {
@@ -45,7 +46,7 @@ class VspApiException implements Exception {
     } catch (_) {
       return VspApiException(
         code: 'PARSE_ERROR',
-        message: 'Failed to parse server response',
+        message: AppMessages.responseParseFailed,
         statusCode: response.statusCode,
       );
     }

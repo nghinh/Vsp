@@ -16,6 +16,7 @@ import 'widgets/score_row_widget.dart';
 import 'widgets/sync_state_badge.dart';
 import 'widgets/correction_dialog.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main round summary screen.
 class RoundSummaryScreen extends StatelessWidget {
@@ -61,7 +62,7 @@ class _RoundSummaryView extends StatelessWidget {
                 children: [
                   const Icon(Icons.error_outline, size: 48, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text(state.message),
+                  Text(context.tr(state.message)),
                 ],
               ),
             ),

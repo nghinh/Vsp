@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge indicating a course is downloaded and ready for offline play.
 ///
@@ -26,7 +27,7 @@ class OfflineReadyBadge extends StatelessWidget {
         : VspColorLight.accent;
 
     return Semantics(
-      label: 'Course downloaded and ready for offline play',
+      label: AppLocalizations.of(context).packageOfflineReadyLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,

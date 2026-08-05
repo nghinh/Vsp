@@ -27,6 +27,7 @@ import '../widgets/download_action_button.dart';
 import '../widgets/download_progress_indicator.dart';
 import '../widgets/package_info_card.dart';
 import '../widgets/wifi_only_toggle.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Screen for managing course package download/update/delete.
 class CourseDownloadScreen extends StatefulWidget {
@@ -162,7 +163,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             IconButton(
               onPressed: _confirmDelete,
               icon: const Icon(Icons.delete_outline),
-              tooltip: 'Remove offline course',
+              tooltip: AppLocalizations.of(context).downloadRemoveTooltip,
             ),
         ],
       ),
@@ -253,7 +254,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
 
   Widget _buildOfflineReadyBanner(ThemeData theme, ColorScheme colorScheme) {
     return Semantics(
-      label: 'Course downloaded and ready for offline play',
+      label: AppLocalizations.of(context).packageOfflineReadyLabel,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -323,7 +324,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: VspSpacing.sm),
-          Text('No package available', style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).downloadNoPackage, style: theme.textTheme.titleMedium),
           Text(
             'This course is not yet available for offline download.',
             style: theme.textTheme.bodySmall?.copyWith(
@@ -351,7 +352,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             ),
           ),
           const SizedBox(height: VspSpacing.sm),
-          Text('Download Failed', style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).downloadFailed, style: theme.textTheme.titleMedium),
           const SizedBox(height: VspSpacing.xs),
           Text(
             _errorMessage ?? 'An error occurred.',

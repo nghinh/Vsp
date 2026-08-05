@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge indicating a course package update is available.
 class UpdateAvailableBadge extends StatelessWidget {
@@ -24,7 +25,7 @@ class UpdateAvailableBadge extends StatelessWidget {
         : VspColorLight.secondary;
 
     return Semantics(
-      label: 'New version available. Tap to update.',
+      label: AppLocalizations.of(context).updateAvailableBadge,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,

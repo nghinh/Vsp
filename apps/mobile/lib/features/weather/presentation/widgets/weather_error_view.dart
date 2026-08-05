@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Error state view for weather panel.
 ///
@@ -38,7 +39,7 @@ class WeatherErrorView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: AppLocalizations.of(context).weatherErrorLabel(message),
+      label: AppLocalizations.of(context).weatherErrorLabel(context.tr(message)),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -64,7 +65,7 @@ class WeatherErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              message,
+              context.tr(message),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

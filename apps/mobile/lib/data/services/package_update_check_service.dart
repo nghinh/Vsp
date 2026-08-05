@@ -19,6 +19,7 @@ import '../../core/network/api_client.dart';
 import '../../domain/models/course_package_manifest.dart';
 import '../../domain/models/course_update_state.dart';
 import '../repositories/package_manifest_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Service to check for available course package updates.
 ///
@@ -73,12 +74,12 @@ class PackageUpdateCheckService {
         case 404:
           // No active package for this course
           return UpdateCheckFailed(
-            message: 'No active package found for this course',
+            message: AppMessages.noActivePackage,
           );
 
         default:
           return UpdateCheckFailed(
-            message: 'Server returned HTTP ${response.statusCode}',
+            message: AppMessages.serverError,
           );
       }
     } on VspApiException catch (e) {
@@ -91,12 +92,12 @@ class PackageUpdateCheckService {
       );
     } on http.ClientException catch (e) {
       return UpdateCheckFailed(
-        message: 'Network error: ${e.message}',
+        message: AppMessages.networkError,
         isNetworkError: true,
       );
     } catch (e) {
       debugPrint('[PackageUpdateCheckService] Unexpected error: $e');
-      return UpdateCheckFailed(message: 'Unexpected error: $e');
+      return UpdateCheckFailed(message: AppMessages.unexpectedError);
     }
   }
 

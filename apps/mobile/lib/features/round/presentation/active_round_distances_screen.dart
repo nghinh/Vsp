@@ -28,6 +28,7 @@ import '../../../domain/models/hole_geometry.dart';
 import '../../../domain/models/hazard_geometry.dart';
 import '../../../presentation/widgets/distance/hazard_distance_list.dart';
 import '../../../presentation/widgets/distance/primary_distance_panel.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Active round distances screen shell.
 ///
@@ -97,7 +98,7 @@ class _ActiveRoundDistancesBody extends StatelessWidget {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        title: const Text('Distances'),
+        title: Text(AppLocalizations.of(context).distancesTitle),
         backgroundColor: colorScheme.surface,
         elevation: 0,
         actions: [
@@ -109,7 +110,7 @@ class _ActiveRoundDistancesBody extends StatelessWidget {
                       ? Icons.straighten
                       : Icons.straighten_outlined,
                 ),
-                tooltip: 'Toggle unit (${state.selectedUnit.value})',
+                tooltip: AppLocalizations.of(context).distancesToggleUnit(state.selectedUnit.value),
                 onPressed: () {
                   context.read<DistanceCubit>().toggleUnit();
                 },
@@ -176,7 +177,7 @@ class _ActiveRoundDistancesBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('GPS Quality'),
+        title: Text(AppLocalizations.of(context).gpsQuality),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +198,7 @@ class _ActiveRoundDistancesBody extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context).commonClose),
           ),
         ],
       ),
@@ -213,7 +214,7 @@ class _ActiveRoundDistancesBody extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Close'),
+            child: Text(AppLocalizations.of(context).commonClose),
           ),
         ],
       ),

@@ -32,6 +32,7 @@ import 'connectivity_service.dart';
 import 'package_delta_service.dart';
 import 'package_file_downloader.dart';
 import 'package_update_check_service.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Result of an update operation.
 sealed class UpdateResult {}
@@ -137,7 +138,7 @@ class CoursePackageUpdateService {
         ),
       );
       return UpdateFailure(
-        message: 'Wi-Fi required for update',
+        message: AppMessages.wifiRequiredUpdate,
         error: UpdateError.networkError,
       );
     }
@@ -189,7 +190,7 @@ class CoursePackageUpdateService {
           );
           if (newManifest == null) {
             return UpdateFailure(
-              message: 'Failed to fetch new manifest',
+              message: AppMessages.manifestNewFetchFailed,
               error: UpdateError.networkError,
             );
           }
@@ -200,7 +201,7 @@ class CoursePackageUpdateService {
             // No existing manifest — this is a fresh download, not an update
             // Delegate to CoursePackageDownloadService for full download
             return UpdateFailure(
-              message: 'No existing manifest found — use full download',
+              message: AppMessages.noExistingManifest,
               error: UpdateError.unknown,
             );
           }
@@ -346,7 +347,7 @@ class CoursePackageUpdateService {
           errorMessage: 'Unexpected error: $e',
         ),
       );
-      return UpdateFailure(message: 'Unexpected error: $e');
+      return UpdateFailure(message: AppMessages.unexpectedError);
     } finally {
       _cancelTokens.remove(courseId);
     }

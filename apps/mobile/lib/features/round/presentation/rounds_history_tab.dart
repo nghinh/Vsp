@@ -17,6 +17,7 @@ import '../../../domain/models/round.dart';
 import '../../../presentation/screens/analytics/round_review_screen.dart';
 import '../data/round_history_repository.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Home-screen tab showing the golfer's round history.
 class RoundsHistoryTab extends StatefulWidget {
@@ -71,7 +72,7 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
         return;
       }
       setState(() {
-        _errorMessage = AppLocalizations.of(context).roundsLoadFailed;
+        _errorMessage = AppMessages.roundsLoadFailed;
         _status = _Status.error;
       });
     }

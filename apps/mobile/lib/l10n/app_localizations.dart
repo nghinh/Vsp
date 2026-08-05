@@ -3697,6 +3697,1008 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Distance confidence: {label}'**
   String distanceConfidenceDetail(String label);
+
+  /// No description provided for @startupCheckingSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your secure session'**
+  String get startupCheckingSession;
+
+  /// No description provided for @correctionSavedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Correction saved offline'**
+  String get correctionSavedOffline;
+
+  /// No description provided for @correctionIssueType.
+  ///
+  /// In en, this message translates to:
+  /// **'Issue Type'**
+  String get correctionIssueType;
+
+  /// No description provided for @correctionYourLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Location'**
+  String get correctionYourLocation;
+
+  /// No description provided for @correctionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get correctionNote;
+
+  /// No description provided for @correctionNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the issue…'**
+  String get correctionNoteHint;
+
+  /// No description provided for @correctionAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Correction'**
+  String get correctionAdd;
+
+  /// No description provided for @correctionSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get correctionSubmit;
+
+  /// No description provided for @correctionOldValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Old Value'**
+  String get correctionOldValue;
+
+  /// No description provided for @correctionNewValue.
+  ///
+  /// In en, this message translates to:
+  /// **'New Value'**
+  String get correctionNewValue;
+
+  /// No description provided for @correctionField.
+  ///
+  /// In en, this message translates to:
+  /// **'Field'**
+  String get correctionField;
+
+  /// No description provided for @commonRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get commonRemove;
+
+  /// No description provided for @privacySelectRoundLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Round'**
+  String get privacySelectRoundLabel;
+
+  /// No description provided for @privacySubmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted'**
+  String get privacySubmitted;
+
+  /// No description provided for @privacyProcessed.
+  ///
+  /// In en, this message translates to:
+  /// **'Processed'**
+  String get privacyProcessed;
+
+  /// No description provided for @privacyRejectionReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejection Reason'**
+  String get privacyRejectionReason;
+
+  /// No description provided for @privacyTargetRound.
+  ///
+  /// In en, this message translates to:
+  /// **'Target Round'**
+  String get privacyTargetRound;
+
+  /// No description provided for @otpConfirming.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirming…'**
+  String get otpConfirming;
+
+  /// No description provided for @teeSetRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get teeSetRating;
+
+  /// No description provided for @roundStatsFairways.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairways'**
+  String get roundStatsFairways;
+
+  /// No description provided for @roundStatsTotalPutts.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Putts'**
+  String get roundStatsTotalPutts;
+
+  /// No description provided for @activeRoundScore.
+  ///
+  /// In en, this message translates to:
+  /// **'Score'**
+  String get activeRoundScore;
+
+  /// No description provided for @activeRoundTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get activeRoundTarget;
+
+  /// No description provided for @activeRoundConditions.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions'**
+  String get activeRoundConditions;
+
+  /// No description provided for @activeRoundMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get activeRoundMap;
+
+  /// No description provided for @activeRoundHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole'**
+  String get activeRoundHole;
+
+  /// No description provided for @activeRoundLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get activeRoundLength;
+
+  /// No description provided for @activeRoundReportCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Correction'**
+  String get activeRoundReportCorrection;
+
+  /// No description provided for @activeRoundEndRound.
+  ///
+  /// In en, this message translates to:
+  /// **'End Round'**
+  String get activeRoundEndRound;
+
+  /// No description provided for @distancesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Distances'**
+  String get distancesTitle;
+
+  /// No description provided for @gpsQuality.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Quality'**
+  String get gpsQuality;
+
+  /// No description provided for @courseFavoritesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load favorites'**
+  String get courseFavoritesLoadFailed;
+
+  /// No description provided for @courseRecentLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load recent'**
+  String get courseRecentLoadFailed;
+
+  /// No description provided for @downloadOfflineCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline Courses'**
+  String get downloadOfflineCourses;
+
+  /// No description provided for @downloadNoOfflineCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'No offline courses'**
+  String get downloadNoOfflineCourses;
+
+  /// No description provided for @downloadRemoveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove Offline Course?'**
+  String get downloadRemoveTitle;
+
+  /// No description provided for @packageVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get packageVersion;
+
+  /// No description provided for @packageUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated'**
+  String get packageUpdated;
+
+  /// No description provided for @packageFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get packageFiles;
+
+  /// No description provided for @packageFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get packageFormat;
+
+  /// No description provided for @packageDataVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Data version'**
+  String get packageDataVersion;
+
+  /// No description provided for @packageOfflineReadyLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Course downloaded and ready for offline play'**
+  String get packageOfflineReadyLabel;
+
+  /// No description provided for @downloadPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get downloadPause;
+
+  /// No description provided for @downloadPauseLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause download'**
+  String get downloadPauseLabel;
+
+  /// No description provided for @downloadResume.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume'**
+  String get downloadResume;
+
+  /// No description provided for @downloadResumeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Resume download'**
+  String get downloadResumeLabel;
+
+  /// No description provided for @downloadValidating.
+  ///
+  /// In en, this message translates to:
+  /// **'Validating…'**
+  String get downloadValidating;
+
+  /// No description provided for @downloadValidatingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Validating package'**
+  String get downloadValidatingLabel;
+
+  /// No description provided for @downloadLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Download course package'**
+  String get downloadLabel;
+
+  /// No description provided for @downloadUpdateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Update course package'**
+  String get downloadUpdateLabel;
+
+  /// No description provided for @downloadRetryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry failed download'**
+  String get downloadRetryLabel;
+
+  /// No description provided for @syncSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get syncSaved;
+
+  /// No description provided for @syncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending sync'**
+  String get syncPending;
+
+  /// No description provided for @syncSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get syncSyncing;
+
+  /// No description provided for @syncFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed'**
+  String get syncFailed;
+
+  /// No description provided for @syncRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry sync'**
+  String get syncRetry;
+
+  /// No description provided for @syncSavedLocally.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved locally'**
+  String get syncSavedLocally;
+
+  /// No description provided for @syncSavedOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved offline'**
+  String get syncSavedOffline;
+
+  /// No description provided for @detectionAutoSwitch.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-switch enabled'**
+  String get detectionAutoSwitch;
+
+  /// No description provided for @detectionConfidenceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Detection Confidence'**
+  String get detectionConfidenceTitle;
+
+  /// No description provided for @updateFilesToUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Files to update'**
+  String get updateFilesToUpdate;
+
+  /// No description provided for @updateFilesToRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Files to remove'**
+  String get updateFilesToRemove;
+
+  /// No description provided for @updateUnchanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Unchanged'**
+  String get updateUnchanged;
+
+  /// No description provided for @updateDownloadSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Download size'**
+  String get updateDownloadSize;
+
+  /// No description provided for @updateLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get updateLater;
+
+  /// No description provided for @updateNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Now'**
+  String get updateNow;
+
+  /// No description provided for @updateAvailableBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'New version available. Tap to update.'**
+  String get updateAvailableBadge;
+
+  /// No description provided for @scoreNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get scoreNo;
+
+  /// No description provided for @detectionConfidenceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence: {level}'**
+  String detectionConfidenceLabel(String level);
+
+  /// No description provided for @packageStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Course package {status}'**
+  String packageStatusLabel(String status);
+
+  /// No description provided for @syncStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync status: {status}'**
+  String syncStatusLabel(String status);
+
+  /// No description provided for @distancesToggleUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle unit ({unit})'**
+  String distancesToggleUnit(String unit);
+
+  /// No description provided for @msgAuthPleaseWait.
+  ///
+  /// In en, this message translates to:
+  /// **'Please wait…'**
+  String get msgAuthPleaseWait;
+
+  /// No description provided for @msgAuthCreatingAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Creating account…'**
+  String get msgAuthCreatingAccount;
+
+  /// No description provided for @msgAuthSendingCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending verification code…'**
+  String get msgAuthSendingCode;
+
+  /// No description provided for @msgAuthVerifyingCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying code…'**
+  String get msgAuthVerifyingCode;
+
+  /// No description provided for @msgAuthSendingRecoveryCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending recovery code…'**
+  String get msgAuthSendingRecoveryCode;
+
+  /// No description provided for @msgAuthResettingPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Resetting password…'**
+  String get msgAuthResettingPassword;
+
+  /// No description provided for @msgAuthSigningInGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in with Google…'**
+  String get msgAuthSigningInGoogle;
+
+  /// No description provided for @msgAuthSigningInApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Signing in with Apple…'**
+  String get msgAuthSigningInApple;
+
+  /// No description provided for @msgAuthCheckingSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your secure session…'**
+  String get msgAuthCheckingSession;
+
+  /// No description provided for @msgAuthLoadingSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading sessions…'**
+  String get msgAuthLoadingSessions;
+
+  /// No description provided for @msgAuthUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'An unexpected error occurred. Please try again.'**
+  String get msgAuthUnexpectedError;
+
+  /// No description provided for @msgAuthRegistrationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Please try again.'**
+  String get msgAuthRegistrationFailed;
+
+  /// No description provided for @msgAuthSendCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send verification code. Please try again.'**
+  String get msgAuthSendCodeFailed;
+
+  /// No description provided for @msgAuthPhoneVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone verified successfully'**
+  String get msgAuthPhoneVerified;
+
+  /// No description provided for @msgAuthEmailVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Email verified successfully'**
+  String get msgAuthEmailVerified;
+
+  /// No description provided for @msgAuthVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification failed. Please check the code and try again.'**
+  String get msgAuthVerificationFailed;
+
+  /// No description provided for @msgAuthRecoveryCodeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send recovery code. Please try again.'**
+  String get msgAuthRecoveryCodeFailed;
+
+  /// No description provided for @msgAuthResetPasswordFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reset password. Please try again.'**
+  String get msgAuthResetPasswordFailed;
+
+  /// No description provided for @msgAuthRevokeSessionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to revoke session. Please try again.'**
+  String get msgAuthRevokeSessionFailed;
+
+  /// No description provided for @msgPrivacyLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load privacy requests. Please try again.'**
+  String get msgPrivacyLoadFailed;
+
+  /// No description provided for @msgPrivacyDetailLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load request details.'**
+  String get msgPrivacyDetailLoadFailed;
+
+  /// No description provided for @msgCourseSearchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Search failed. Please try again.'**
+  String get msgCourseSearchFailed;
+
+  /// No description provided for @msgLocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'We could not get your location. Please try again.'**
+  String get msgLocationUnavailable;
+
+  /// No description provided for @msgLocationPermissionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn on location and grant permission to find courses near you.'**
+  String get msgLocationPermissionNeeded;
+
+  /// No description provided for @msgRoundSetupLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load round setup data.'**
+  String get msgRoundSetupLoadFailed;
+
+  /// No description provided for @msgRoundStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to start the round. Please try again.'**
+  String get msgRoundStartFailed;
+
+  /// No description provided for @msgRoundNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Round not found'**
+  String get msgRoundNotFound;
+
+  /// No description provided for @msgRoundLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the round.'**
+  String get msgRoundLoadFailed;
+
+  /// No description provided for @msgRoundCompleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to complete the round.'**
+  String get msgRoundCompleteFailed;
+
+  /// No description provided for @msgRoundReviewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the round review.'**
+  String get msgRoundReviewLoadFailed;
+
+  /// No description provided for @msgDrivingZoneLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load driving zone statistics.'**
+  String get msgDrivingZoneLoadFailed;
+
+  /// No description provided for @msgCorrectionSubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit the correction.'**
+  String get msgCorrectionSubmitFailed;
+
+  /// No description provided for @msgCorrectionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load corrections.'**
+  String get msgCorrectionsLoadFailed;
+
+  /// No description provided for @msgMapLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load the hole map.'**
+  String get msgMapLoadFailed;
+
+  /// No description provided for @msgResponseParseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to parse server response'**
+  String get msgResponseParseFailed;
+
+  /// No description provided for @restrictedWindAdjustment.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind adjustment'**
+  String get restrictedWindAdjustment;
+
+  /// No description provided for @restrictedPlaysLike.
+  ///
+  /// In en, this message translates to:
+  /// **'Plays-like'**
+  String get restrictedPlaysLike;
+
+  /// No description provided for @restrictedElevation.
+  ///
+  /// In en, this message translates to:
+  /// **'Elevation'**
+  String get restrictedElevation;
+
+  /// No description provided for @restrictedClubRecommendation.
+  ///
+  /// In en, this message translates to:
+  /// **'Club recommendation'**
+  String get restrictedClubRecommendation;
+
+  /// No description provided for @restrictedGreenContours.
+  ///
+  /// In en, this message translates to:
+  /// **'Green contours'**
+  String get restrictedGreenContours;
+
+  /// No description provided for @restrictedPuttingHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Putting help'**
+  String get restrictedPuttingHelp;
+
+  /// No description provided for @restrictedAiFeatures.
+  ///
+  /// In en, this message translates to:
+  /// **'AI features'**
+  String get restrictedAiFeatures;
+
+  /// No description provided for @smartTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Target'**
+  String get smartTargetTitle;
+
+  /// No description provided for @smartTargetRegenerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Regenerate'**
+  String get smartTargetRegenerate;
+
+  /// No description provided for @watchAppleWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Apple Watch'**
+  String get watchAppleWatch;
+
+  /// No description provided for @watchStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'WATCH STATUS'**
+  String get watchStatus;
+
+  /// No description provided for @watchCoursePackages.
+  ///
+  /// In en, this message translates to:
+  /// **'COURSE PACKAGES'**
+  String get watchCoursePackages;
+
+  /// No description provided for @watchDownloadPackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Packages'**
+  String get watchDownloadPackages;
+
+  /// No description provided for @watchDownloadPackagesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync watch-optimized course data'**
+  String get watchDownloadPackagesSubtitle;
+
+  /// No description provided for @watchSync.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync to Watch'**
+  String get watchSync;
+
+  /// No description provided for @watchSyncSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Transfer packages to paired watch'**
+  String get watchSyncSubtitle;
+
+  /// No description provided for @gpsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Unavailable'**
+  String get gpsUnavailable;
+
+  /// No description provided for @gpsUnavailableMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location cannot be determined. Enable location services.'**
+  String get gpsUnavailableMessage;
+
+  /// No description provided for @gpsStale.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Signal Stale'**
+  String get gpsStale;
+
+  /// No description provided for @gpsLowAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Low GPS Accuracy'**
+  String get gpsLowAccuracy;
+
+  /// No description provided for @gpsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Ready'**
+  String get gpsReady;
+
+  /// No description provided for @gpsReadyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Location accurate and current.'**
+  String get gpsReadyMessage;
+
+  /// No description provided for @warningInsufficientShots.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient Shot Data'**
+  String get warningInsufficientShots;
+
+  /// No description provided for @warningLimitedClubData.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited Club Data'**
+  String get warningLimitedClubData;
+
+  /// No description provided for @warningLimitedHoleData.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited Hole Data'**
+  String get warningLimitedHoleData;
+
+  /// No description provided for @weatherNoCache.
+  ///
+  /// In en, this message translates to:
+  /// **'No cached weather data available'**
+  String get weatherNoCache;
+
+  /// No description provided for @weatherCacheExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached weather data has expired'**
+  String get weatherCacheExpired;
+
+  /// No description provided for @weatherLocationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Location services unavailable'**
+  String get weatherLocationUnavailable;
+
+  /// No description provided for @msgNearbyLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to find nearby courses.'**
+  String get msgNearbyLoadFailed;
+
+  /// No description provided for @msgFavoritesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load favorites.'**
+  String get msgFavoritesLoadFailed;
+
+  /// No description provided for @msgRecentLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load recent courses.'**
+  String get msgRecentLoadFailed;
+
+  /// No description provided for @msgWifiRequiredDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi required for download'**
+  String get msgWifiRequiredDownload;
+
+  /// No description provided for @msgManifestFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not fetch course package manifest from server.'**
+  String get msgManifestFetchFailed;
+
+  /// No description provided for @msgChecksumMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloaded file checksum does not match manifest.'**
+  String get msgChecksumMismatch;
+
+  /// No description provided for @msgNetworkError.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Please check your connection.'**
+  String get msgNetworkError;
+
+  /// No description provided for @msgServerError.
+  ///
+  /// In en, this message translates to:
+  /// **'Server error. Please try again later.'**
+  String get msgServerError;
+
+  /// No description provided for @msgStorageError.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage error. Please free up space and try again.'**
+  String get msgStorageError;
+
+  /// No description provided for @msgUnexpectedError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected error. Please try again.'**
+  String get msgUnexpectedError;
+
+  /// No description provided for @msgWifiRequiredUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi required for update'**
+  String get msgWifiRequiredUpdate;
+
+  /// No description provided for @msgManifestNewFetchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to fetch the new manifest'**
+  String get msgManifestNewFetchFailed;
+
+  /// No description provided for @msgNoExistingManifest.
+  ///
+  /// In en, this message translates to:
+  /// **'No existing package found — download the full package'**
+  String get msgNoExistingManifest;
+
+  /// No description provided for @msgNoActivePackage.
+  ///
+  /// In en, this message translates to:
+  /// **'No active package found for this course'**
+  String get msgNoActivePackage;
+
+  /// No description provided for @msgRoundsResponseShape.
+  ///
+  /// In en, this message translates to:
+  /// **'Unexpected rounds response shape'**
+  String get msgRoundsResponseShape;
+
+  /// No description provided for @mapTargetPlaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Target placed{suffix}'**
+  String mapTargetPlaced(String suffix);
+
+  /// No description provided for @mapDistanceRingsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance rings: {rings}'**
+  String mapDistanceRingsLabel(String rings);
+
+  /// No description provided for @msgGpsStaleUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Location data is stale. Move to refresh.'**
+  String get msgGpsStaleUnknown;
+
+  /// No description provided for @msgGpsLowAccuracyUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS accuracy is reduced.'**
+  String get msgGpsLowAccuracyUnknown;
+
+  /// No description provided for @msgGpsStaleAge.
+  ///
+  /// In en, this message translates to:
+  /// **'Location data is {seconds} seconds old. Move to refresh.'**
+  String msgGpsStaleAge(String seconds);
+
+  /// No description provided for @msgGpsAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Accuracy is ±{meters}m. Distances may be approximate.'**
+  String msgGpsAccuracy(String meters);
+
+  /// No description provided for @msgInsufficientShots.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient Shot Data'**
+  String get msgInsufficientShots;
+
+  /// No description provided for @msgLimitedClubData.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited Club Data'**
+  String get msgLimitedClubData;
+
+  /// No description provided for @msgLimitedHoleData.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited Hole Data'**
+  String get msgLimitedHoleData;
+
+  /// No description provided for @downloadRemoveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove offline course'**
+  String get downloadRemoveTooltip;
+
+  /// No description provided for @downloadNoPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'No package available'**
+  String get downloadNoPackage;
+
+  /// No description provided for @downloadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Failed'**
+  String get downloadFailed;
+
+  /// No description provided for @weatherWindStaleWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: wind data may be outdated.'**
+  String get weatherWindStaleWarning;
+
+  /// No description provided for @weatherWindFromAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind from {direction} at {speed} km/h'**
+  String weatherWindFromAt(String direction, String speed);
+
+  /// No description provided for @weatherWindFromAtVerbose.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind from {direction} at {speed} kilometers per hour'**
+  String weatherWindFromAtVerbose(String direction, String speed);
+
+  /// No description provided for @weatherConditionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather conditions'**
+  String get weatherConditionsLabel;
+
+  /// No description provided for @weatherTemperatureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Temperature {value} {unit}'**
+  String weatherTemperatureLabel(String value, String unit);
 }
 
 class _AppLocalizationsDelegate

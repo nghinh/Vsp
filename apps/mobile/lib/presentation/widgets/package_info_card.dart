@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../domain/models/course_package_manifest.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card displaying package metadata for CourseDownloadScreen.
 class PackageInfoCard extends StatelessWidget {
@@ -101,13 +102,13 @@ class PackageInfoCard extends StatelessWidget {
             children: [
               _MetaItem(
                 icon: Icons.verified,
-                label: 'Version',
+                label: AppLocalizations.of(context).packageVersion,
                 value: manifest.version,
               ),
               const SizedBox(width: VspSpacing.md),
               _MetaItem(
                 icon: Icons.calendar_today,
-                label: 'Updated',
+                label: AppLocalizations.of(context).packageUpdated,
                 value: _formatRelativeTime(manifest.effectiveDate),
               ),
             ],
@@ -119,13 +120,13 @@ class PackageInfoCard extends StatelessWidget {
             children: [
               _MetaItem(
                 icon: Icons.layers,
-                label: 'Files',
+                label: AppLocalizations.of(context).packageFiles,
                 value: '${manifest.files.length}',
               ),
               const SizedBox(width: VspSpacing.md),
               _MetaItem(
                 icon: Icons.speed,
-                label: 'Format',
+                label: AppLocalizations.of(context).packageFormat,
                 value: manifest.tilesFormat.value,
               ),
             ],
@@ -135,7 +136,7 @@ class PackageInfoCard extends StatelessWidget {
             const SizedBox(height: VspSpacing.sm),
             _MetaItem(
               icon: Icons.fingerprint,
-              label: 'Data version',
+              label: AppLocalizations.of(context).packageDataVersion,
               value: manifest.dataVersion!,
             ),
           ],

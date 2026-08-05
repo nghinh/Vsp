@@ -17,6 +17,7 @@ import 'club_form_screen.dart';
 import 'widgets/club_card.dart';
 import 'widgets/recommendations_disabled_banner.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ class _BagDetailScreenState extends State<BagDetailScreen> {
                     size: 18,
                   ),
                   const SizedBox(width: 8),
-                  Text(state.message!),
+                  Text(context.tr(state.message)),
                 ],
               ),
               backgroundColor: state.hasPendingSync
@@ -76,7 +77,7 @@ class _BagDetailScreenState extends State<BagDetailScreen> {
           return Scaffold(
             appBar: AppBar(title: Text(AppLocalizations.of(context).bagDetailsTitle)),
             body: _ErrorView(
-              message: state.message,
+              message: context.tr(state.message),
               onRetry: () {
                 context.read<BagBloc>().add(LoadBagDetail(bagId: widget.bagId));
               },

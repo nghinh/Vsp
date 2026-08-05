@@ -4,6 +4,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/incomplete_data_warning.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 void main() {
   group('WarningSeverity', () {
@@ -122,7 +123,7 @@ void main() {
       );
       expect(warning.severity, WarningSeverity.error);
       expect(warning.category, InsufficientDataCategory.totalShots);
-      expect(warning.title, 'Insufficient Shot Data');
+      expect(warning.title, AppMessages.insufficientShots);
       expect(warning.actualCount, 0);
       expect(warning.requiredMinimum, 20);
     });

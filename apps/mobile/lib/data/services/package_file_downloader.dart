@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Result of a file download operation.
 sealed class DownloadFileResult {}
@@ -119,7 +120,7 @@ class PackageFileDownloader {
           await file.delete();
         }
         return DownloadFileFailure(
-          message: 'Downloaded file checksum does not match manifest.',
+          message: AppMessages.checksumMismatch,
           isChecksumMismatch: true,
         );
       }
@@ -133,13 +134,13 @@ class PackageFileDownloader {
           e.type == DioExceptionType.receiveTimeout ||
           e.type == DioExceptionType.connectionError) {
         return DownloadFileFailure(
-          message: 'Network error: ${e.message}',
+          message: AppMessages.networkError,
           isNetworkError: true,
         );
       }
       if (e.type == DioExceptionType.badResponse) {
         return DownloadFileFailure(
-          message: 'Server error: HTTP ${e.response?.statusCode}',
+          message: AppMessages.serverError,
           isNetworkError: true,
         );
       }
@@ -147,11 +148,11 @@ class PackageFileDownloader {
     } on FileSystemException catch (e) {
       final isStorage = e.osError?.errorCode == 28; // ENOSPC
       return DownloadFileFailure(
-        message: 'Storage error: ${e.message}',
+        message: AppMessages.storageError,
         isStorageError: isStorage,
       );
     } catch (e) {
-      return DownloadFileFailure(message: 'Unexpected error: $e');
+      return DownloadFileFailure(message: AppMessages.unexpectedError);
     }
   }
 

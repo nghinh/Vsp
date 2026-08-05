@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/bag_dto.dart';
 import '../data/bag_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ─────────────────────────────────────────────────────────────────
 
@@ -278,7 +279,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         ),
       );
     } catch (ex) {
-      emit(const BagError(message: 'Failed to load bags. Please try again.'));
+      emit(const BagError(message: AppMessages.bagLoadFailed));
     }
   }
 
@@ -350,7 +351,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         activeBag: activeBag,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: 'Bag deleted',
+        message: AppMessages.bagDeleted,
       ),
     );
   }
@@ -409,7 +410,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
     } catch (ex) {
       emit(
         BagError(
-          message: 'Failed to load bag details.',
+          message: AppMessages.bagDetailLoadFailed,
           lastBags: currentState is BagLoaded ? currentState.bags : null,
         ),
       );
@@ -487,7 +488,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         hasMinimumClubData: hasMinData,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: 'Club deleted',
+        message: AppMessages.clubDeleted,
       ),
     );
   }
@@ -518,7 +519,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
             hasMinimumClubData: hasMinData,
             hasPendingSync: hasPending,
             isSyncing: false,
-            message: 'Synced',
+            message: AppMessages.synced,
           ),
         );
       } else if (currentState is BagDetailLoaded) {
@@ -531,7 +532,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
             hasMinimumClubData: hasMinData,
             hasPendingSync: hasPending,
             isSyncing: false,
-            message: 'Synced',
+            message: AppMessages.synced,
           ),
         );
       }

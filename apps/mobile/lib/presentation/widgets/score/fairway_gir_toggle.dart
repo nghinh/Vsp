@@ -96,7 +96,7 @@ class StatToggle extends StatelessWidget {
               // No/False button
               _ToggleButton(
                 icon: Icons.close,
-                label: 'No',
+                label: AppLocalizations.of(context).scoreNo,
                 isSelected: state == StatToggleState.no,
                 selectedColor: theme.colorScheme.errorContainer,
                 onTap: () {
@@ -256,7 +256,7 @@ class FairwayGirToggles extends StatelessWidget {
             color: theme.dividerColor.withOpacity(0.12),
           ),
           StatToggle(
-            label: 'GIR',
+            label: AppLocalizations.of(context).analyticsGir,
             state: girState,
             onToggleYes: onGirYes,
             onToggleNo: onGirNo,

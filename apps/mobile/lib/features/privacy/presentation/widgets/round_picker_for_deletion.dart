@@ -8,6 +8,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/privacy_request_dto.dart';
 import '../../data/privacy_repository.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Round Picker ─────────────────────────────────────────────────────────────
 
@@ -140,7 +141,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
                 child: SizedBox(
                   width: double.infinity,
                   child: VspButton(
-                    label: 'Select Round',
+                    label: AppLocalizations.of(context).privacySelectRoundLabel,
                     onPressed: () => Navigator.of(context).pop(_selectedRound),
                   ),
                 ),
@@ -176,7 +177,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
               ),
               const SizedBox(height: VspSpacing.md),
               VspButton(
-                label: 'Retry',
+                label: AppLocalizations.of(context).commonRetry,
                 variant: VspButtonVariant.secondary,
                 icon: Icons.refresh,
                 onPressed: _loadRounds,

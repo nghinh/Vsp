@@ -32,6 +32,7 @@ import 'widgets/hole_picker.dart';
 import 'widgets/package_status_banner.dart';
 import 'widgets/player_card.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,12 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
 
     final holeIds = _holeIdsFor(ready);
     final players = ready.players;
+    // Real par per hole from the course detail; par 4 only where the course
+    // data does not cover that hole.
+    final pars = {
+      for (final id in holeIds)
+        id: ready.holePars[int.tryParse(id) ?? 0] ?? 4,
+    };
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) => ScorecardScreen(
@@ -108,7 +115,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
           holeIds: holeIds,
           playerIds: players.map((p) => p.id).toList(),
           playerNames: {for (final p in players) p.id: p.name},
-          holePars: {for (final id in holeIds) id: 4},
+          holePars: pars,
         ),
       ),
     );
@@ -158,7 +165,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
         } else if (state is RoundSetupError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message),
+              content: Text(context.tr(state.message)),
               backgroundColor: colorScheme.error,
             ),
           );
@@ -181,7 +188,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
                 children: [
                   Icon(Icons.error_outline, size: 48, color: colorScheme.error),
                   const SizedBox(height: 16),
-                  Text(state.message),
+                  Text(context.tr(state.message)),
                   const SizedBox(height: 16),
                   FilledButton(
                     onPressed: () {
@@ -387,10 +394,7 @@ class _CourseSelector extends StatelessWidget {
           : AppLocalizations.of(context).roundSetupNoCourseSelected,
       button: true,
       child: InkWell(
-        onTap: () {
-          // TODO: Navigate to course search/picker
-          _showCoursePicker(context);
-        },
+        onTap: () => _showCoursePicker(context),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

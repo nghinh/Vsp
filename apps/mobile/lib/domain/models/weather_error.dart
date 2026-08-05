@@ -3,6 +3,8 @@
 // Story 7.1 Wave 2: Error types for weather operations.
 
 /// Errors that can occur when fetching or caching weather data.
+
+import 'package:vsp_mobile/l10n/app_messages.dart';
 enum WeatherErrorCode {
   /// Network unavailable and no cached data.
   networkUnavailable,
@@ -54,17 +56,17 @@ class WeatherError {
 
   factory WeatherError.cacheMiss() => const WeatherError(
     code: WeatherErrorCode.cacheMiss,
-    message: 'No cached weather data available',
+    message: AppMessages.weatherNoCache,
   );
 
   factory WeatherError.cacheExpired() => const WeatherError(
     code: WeatherErrorCode.cacheExpired,
-    message: 'Cached weather data has expired',
+    message: AppMessages.weatherCacheExpired,
   );
 
   factory WeatherError.locationUnavailable() => const WeatherError(
     code: WeatherErrorCode.locationUnavailable,
-    message: 'Location services unavailable',
+    message: AppMessages.weatherLocationUnavailable,
   );
 
   factory WeatherError.unknown([String? message]) => WeatherError(

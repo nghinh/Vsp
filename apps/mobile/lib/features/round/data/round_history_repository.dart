@@ -10,6 +10,7 @@
 
 import '../../../core/network/api_client.dart';
 import '../../../domain/models/round.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// A single page of round-history results.
 class RoundHistoryPage {
@@ -69,7 +70,7 @@ class RoundHistoryRepository {
     if (json is! Map<String, dynamic>) {
       throw const VspApiException(
         code: 'PARSE_ERROR',
-        message: 'Unexpected rounds response shape',
+        message: AppMessages.roundsResponseShape,
       );
     }
     return RoundHistoryPage.fromJson(json);

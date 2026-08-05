@@ -16,6 +16,7 @@ import '../../../domain/models/qualified_location.dart';
 import '../../../domain/services/location_service.dart';
 import '../domain/course_correction.dart';
 import '../../../data/repositories/course_correction_repository.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 
@@ -216,7 +217,7 @@ class CorrectionSubmissionBloc
       emit(CorrectionSubmissionSuccess(correction: result.correction));
     } catch (e) {
       emit(
-        CorrectionSubmissionFailure(message: 'Failed to submit correction: $e'),
+        CorrectionSubmissionFailure(message: AppMessages.correctionSubmitFailed),
       );
     }
   }

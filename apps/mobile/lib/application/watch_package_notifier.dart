@@ -8,6 +8,14 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
+import '../core/network/api_client.dart';
+import '../data/repositories/course_package_repository.dart';
+import '../data/repositories/package_manifest_repository.dart';
+import '../data/services/connectivity_service.dart';
+import '../data/services/course_package_download_service.dart';
+import '../data/services/package_file_downloader.dart';
+import '../l10n/app_messages.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ─── Events ─────────────────────────────────────────────────────────────────
 
@@ -109,26 +117,41 @@ class WatchPackageState extends Equatable {
   ];
 }
 
+/// Builds the real package download service. Async because the connectivity
+/// service needs SharedPreferences for the Wi-Fi-only preference.
+Future<CoursePackageDownloadService> _buildDownloadService() async {
+  final apiClient = ApiClient();
+  return CoursePackageDownloadService(
+    manifestRepo: PackageManifestRepository(),
+    packageRepo: CoursePackageRepository(apiClient: apiClient),
+    downloader: PackageFileDownloader(),
+    connectivity: ConnectivityService(prefs: await SharedPreferences.getInstance()),
+  );
+}
+
 // ─── Notifier/Cubit ─────────────────────────────────────────────────────────
 
 class WatchPackageNotifier extends Cubit<WatchPackageState> {
   final WatchConnectivity _watch;
+  CoursePackageDownloadService? _downloadService;
 
-  WatchPackageNotifier({WatchConnectivity? watch})
-    : _watch = watch ?? WatchConnectivity(),
-      super(const WatchPackageState());
+  WatchPackageNotifier({
+    WatchConnectivity? watch,
+    CoursePackageDownloadService? downloadService,
+  }) : _watch = watch ?? WatchConnectivity(),
+       _downloadService = downloadService,
+       super(const WatchPackageState());
+
+  Future<CoursePackageDownloadService> _service() async =>
+      _downloadService ??= await _buildDownloadService();
 
   /// Start listening for watch connectivity.
   Future<void> startListening() async {
     _watch.messageStream.listen(_handleWatchMessage);
 
-    // Check current connection
+    // Report the watch's real reachability rather than assuming disconnected.
     emit(state.copyWith(connectionStatus: WatchConnectionStatus.connecting));
-
-    // Simulate connection check
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    emit(state.copyWith(connectionStatus: WatchConnectionStatus.disconnected));
+    await checkStatus();
   }
 
   /// Check watch connection status.
@@ -157,30 +180,49 @@ class WatchPackageNotifier extends Cubit<WatchPackageState> {
       ),
     );
 
+    // Mirror the real package download: progress comes from the download
+    // service's stream, and only a successful download marks the course as
+    // available to the watch.
+    final service = await _service();
+    final progressSub = service
+        .getProgressStream(courseId)
+        .listen(
+          (progress) =>
+              emit(state.copyWith(downloadProgress: progress.percentComplete)),
+        );
+
     try {
-      // Simulate download progress
-      for (var i = 1; i <= 10; i++) {
-        await Future.delayed(const Duration(milliseconds: 200));
-        emit(state.copyWith(downloadProgress: i / 10));
+      final result = await service.downloadPackage(courseId);
+      if (result is DownloadPackageSuccess) {
+        emit(
+          state.copyWith(
+            downloadedCourseIds: {
+              ...state.downloadedCourseIds,
+              courseId,
+            }.toList(),
+            isDownloading: false,
+            downloadProgress: 1.0,
+          ),
+        );
+      } else if (result is DownloadPackageFailure) {
+        emit(
+          state.copyWith(
+            isDownloading: false,
+            errorMessage: result.message,
+          ),
+        );
+      } else {
+        emit(state.copyWith(isDownloading: false));
       }
-
-      // Add to downloaded list
-      final updated = [...state.downloadedCourseIds, courseId];
-
-      emit(
-        state.copyWith(
-          downloadedCourseIds: updated,
-          isDownloading: false,
-          downloadProgress: 1.0,
-        ),
-      );
     } catch (e) {
       emit(
         state.copyWith(
           isDownloading: false,
-          errorMessage: 'Download failed: $e',
+          errorMessage: AppMessages.unexpectedError,
         ),
       );
+    } finally {
+      await progressSub.cancel();
     }
   }
 

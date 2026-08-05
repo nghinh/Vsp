@@ -13,6 +13,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../domain/course_correction.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import 'correction_list_bloc.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () => _bloc.add(const RefreshCorrections()),
-                      child: const Text('Retry'),
+                      child: Text(AppLocalizations.of(context).commonRetry),
                     ),
                   ],
                 ),
