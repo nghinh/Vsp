@@ -237,7 +237,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     );
 
     // Load layouts and tees from manifest
-    await _loadCourseOptions(event.courseId, emit, currentState);
+    await _loadCourseOptions(event.courseId, emit);
 
     // Validate package readiness
     add(const PackageValidationRequested());
@@ -246,7 +246,6 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   Future<void> _loadCourseOptions(
     int courseId,
     Emitter<RoundSetupState> emit,
-    RoundSetupReady currentState,
   ) async {
     try {
       // The course detail endpoint is the source of truth for tee sets, hole
@@ -268,8 +267,15 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         for (final h in detail.holes) h.holeNumber: h.par,
       };
 
+      // Re-read the latest state rather than a snapshot captured before the
+      // course was set: `_onCourseSelected` emits `courseId`/`courseName`
+      // first, and basing this emit on the pre-selection snapshot would clobber
+      // those fields (leaving `hasCourse` false while tees appear).
+      final latest = state;
+      if (latest is! RoundSetupReady) return;
+
       emit(
-        currentState.copyWith(
+        latest.copyWith(
           layouts: layouts,
           tees: tees,
           selectedLayoutId: layouts.first.id,

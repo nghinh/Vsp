@@ -36,17 +36,12 @@ class PackageStatusBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final brightness = theme.colorScheme.brightness;
 
+    // No readiness yet means no course is selected (or the check is still in
+    // flight). There is nothing actionable to show, and a persistent
+    // "checking…" banner reads as a stuck state — so render nothing.
     if (packageReadiness == null) {
-      return _buildBanner(
-        context: context,
-        icon: Icons.hourglass_empty,
-        iconColor: theme.colorScheme.outline,
-        label: AppLocalizations.of(context).packageChecking,
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        textColor: theme.colorScheme.onSurfaceVariant,
-      );
+      return const SizedBox.shrink();
     }
 
     switch (packageReadiness!.status) {
