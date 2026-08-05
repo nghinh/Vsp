@@ -4,14 +4,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 
 /**
  * REST controller for booking endpoints.
  *
- * All endpoints return 405 Not Implemented — this is a stub module.
- * Full implementation is out of scope for Story 12.2.
+ * <p>Per Story 12.2. Booking is a customer-operations boundary module; it holds no
+ * coupling to the round/score modules. All write operations honour the consent
+ * boundary — a booking cannot be created without consent.
  */
 @RestController
 @RequestMapping("/booking")
@@ -23,61 +25,71 @@ public class BookingController {
         this.bookingService = bookingService;
     }
 
-    /**
-     * Get available booking slots for a course.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Get available booking slots for a course. */
     @GetMapping("/courses/{courseId}/slots")
-    public ResponseEntity<BookingService.BookingSlot> getAvailableSlots(@PathVariable String courseId) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+    public ResponseEntity<List<BookingService.BookingSlot>> getAvailableSlots(@PathVariable String courseId) {
+        return ResponseEntity.ok(bookingService.getAvailableSlots(courseId));
     }
 
-    /**
-     * Create a new booking.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Create a new booking. Requires consent (consent boundary). */
     @PostMapping("/bookings")
-    public ResponseEntity<BookingService.Booking> createBooking(@RequestBody BookingService.BookingRequest request) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+    public ResponseEntity<?> createBooking(@RequestBody BookingService.BookingRequest request) {
+        try {
+            BookingService.Booking booking = bookingService.createBooking(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(booking);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(error(e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
     }
 
-    /**
-     * Get a booking by ID.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Get a booking by ID. */
     @GetMapping("/bookings/{bookingId}")
     public ResponseEntity<BookingService.Booking> getBooking(@PathVariable String bookingId) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        return bookingService.getBooking(bookingId)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * Update booking status.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Update booking status. */
     @PatchMapping("/bookings/{bookingId}/status")
-    public ResponseEntity<BookingService.Booking> updateBookingStatus(
+    public ResponseEntity<?> updateBookingStatus(
             @PathVariable String bookingId,
             @RequestParam String status) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        try {
+            return ResponseEntity.ok(bookingService.updateBookingStatus(bookingId, status));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(error(e.getMessage()));
+        }
     }
 
-    /**
-     * Cancel a booking.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Cancel a booking. */
     @DeleteMapping("/bookings/{bookingId}")
-    public ResponseEntity<Void> cancelBooking(@PathVariable String bookingId) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+    public ResponseEntity<?> cancelBooking(@PathVariable String bookingId) {
+        try {
+            return ResponseEntity.ok(bookingService.cancelBooking(bookingId));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    /**
-     * Record consent for a booking.
-     * Returns 405 Not Implemented — stub only.
-     */
+    /** Record consent for a booking. */
     @PostMapping("/bookings/{bookingId}/consent")
     public ResponseEntity<Void> recordConsent(
             @PathVariable String bookingId,
             @RequestParam boolean consentGiven) {
-        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        try {
+            bookingService.recordConsent(bookingId, consentGiven, Instant.now());
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private java.util.Map<String, String> error(String message) {
+        return java.util.Map.of("message", message != null ? message : "Bad request");
     }
 }

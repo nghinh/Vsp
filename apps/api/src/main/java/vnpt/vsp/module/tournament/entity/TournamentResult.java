@@ -38,6 +38,30 @@ public class TournamentResult {
     @Column(name = "tie_break_applied", nullable = false)
     private boolean tieBreakApplied = false;
 
+    /**
+     * Number of birdies (or better) recorded across the tournament. Optional —
+     * populated from scorecard aggregation; used by the {@code MOST_BIRDIES}
+     * tie-break rule. Null when scorecard detail is unavailable.
+     */
+    @Column(name = "birdie_count")
+    private Integer birdieCount;
+
+    /**
+     * The player's lowest single-round gross score across the tournament.
+     * Optional — used by the {@code LOWEST_ROUND} tie-break rule. Null when
+     * per-round detail is unavailable.
+     */
+    @Column(name = "best_round_score")
+    private Integer bestRoundScore;
+
+    /**
+     * Comma-separated hole-by-hole gross scores in hole order (hole 1 first),
+     * e.g. {@code "4,5,3,4,..."}. Optional — used by the {@code SCORECARD_PLAYOFF}
+     * (countback) tie-break rule. Null when hole detail is unavailable.
+     */
+    @Column(name = "hole_scores", length = 200)
+    private String holeScores;
+
     @Column(name = "published_at")
     private Instant publishedAt;
 
@@ -66,6 +90,15 @@ public class TournamentResult {
 
     public boolean isTieBreakApplied() { return tieBreakApplied; }
     public void setTieBreakApplied(boolean tieBreakApplied) { this.tieBreakApplied = tieBreakApplied; }
+
+    public Integer getBirdieCount() { return birdieCount; }
+    public void setBirdieCount(Integer birdieCount) { this.birdieCount = birdieCount; }
+
+    public Integer getBestRoundScore() { return bestRoundScore; }
+    public void setBestRoundScore(Integer bestRoundScore) { this.bestRoundScore = bestRoundScore; }
+
+    public String getHoleScores() { return holeScores; }
+    public void setHoleScores(String holeScores) { this.holeScores = holeScores; }
 
     public Instant getPublishedAt() { return publishedAt; }
     public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }

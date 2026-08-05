@@ -16,12 +16,24 @@ import java.util.*;
  * TieBreakService implementation.
  * Per Story 12.1 Slice D: applies configured tie-break rules in order.
  *
- * Supported rule types:
- * - SCORECARD_PLAYOFF: compare scores on most difficult holes first
- * - EXACT_HANDICAP: lower handicap wins
- * - LOWEST_ROUND: lowest individual round score
- * - MOST_BIRDIES: most birdies across the round
- * - DRAW: random selection (last resort)
+ * <p>Supported rule types, applied as a lexicographic chain in configured order
+ * (an earlier rule's decision is kept; a later rule only separates entries the
+ * earlier rules left equal):
+ * <ul>
+ *   <li>{@code EXACT_HANDICAP} — lower exact handicap wins (from TournamentPlayer).</li>
+ *   <li>{@code LOWEST_ROUND} — lowest single-round gross score wins
+ *       ({@link TournamentResult#getBestRoundScore()}).</li>
+ *   <li>{@code MOST_BIRDIES} — most birdies (or better) wins
+ *       ({@link TournamentResult#getBirdieCount()}).</li>
+ *   <li>{@code SCORECARD_PLAYOFF} — USGA-style countback over the hole-by-hole
+ *       scores ({@link TournamentResult#getHoleScores()}): back 9, 6, 3, then last hole.</li>
+ *   <li>{@code DRAW} — random draw, applied last to any entries still tied.</li>
+ * </ul>
+ *
+ * <p>Rules needing detail absent from the result (null {@code bestRoundScore},
+ * {@code birdieCount}, or {@code holeScores}) treat those entries as tied and defer to
+ * the next rule. Populating that scorecard detail is owned by the scoring/round-sync
+ * path and is out of scope for this module.
  */
 @Service
 public class TieBreakServiceImpl implements TieBreakService {
@@ -47,7 +59,6 @@ public class TieBreakServiceImpl implements TieBreakService {
             scoreGroups.computeIfAbsent(result.getScore(), k -> new ArrayList<>()).add(result);
         }
 
-        // Get configured tie-break rules
         List<TieBreakRule> rules = tieBreakRuleRepository.findByTournamentIdOrderByOrder(tournamentId);
         if (rules.isEmpty()) {
             log.info("No tie-break rules configured for tournament: {}", tournamentId);
@@ -63,88 +74,210 @@ public class TieBreakServiceImpl implements TieBreakService {
             }
         }
 
-        // Re-rank results
-        recalculateRanks(results);
+        // Rebuild results so the resolved intra-group order is reflected in the
+        // final standings (ascending score, tie-break order within each score).
+        List<TournamentResult> ordered = new ArrayList<>();
+        scoreGroups.keySet().stream().sorted().forEach(score -> ordered.addAll(scoreGroups.get(score)));
+        results.clear();
+        results.addAll(ordered);
+
+        assignRanksPreservingOrder(results);
 
         log.info("Tie resolution complete for tournament: {}", tournamentId);
         return results;
     }
 
+    /**
+     * Orders a tied group by the configured rule chain. Non-DRAW rules form a
+     * lexicographic comparator; a DRAW rule (if present) randomly separates any
+     * entries still equal after the comparator chain.
+     */
     private void resolveTieGroup(List<TournamentResult> tied, List<TieBreakRule> rules) {
-        // Sort by score first, then apply each tie-break rule in order
+        Comparator<TournamentResult> chain = null;
+        boolean hasDraw = false;
         for (TieBreakRule rule : rules) {
-            if (allSameRank(tied)) {
-                break; // All resolved
+            if (rule.getRuleType() == TieBreakRuleType.DRAW) {
+                hasDraw = true;
+                continue;
             }
-            applyTieBreakRule(tied, rule);
+            Comparator<TournamentResult> c = comparatorFor(rule.getRuleType(), tied);
+            chain = (chain == null) ? c : chain.thenComparing(c);
         }
 
-        // If still tied after all rules, mark tie-break as applied but leave tied
+        boolean separated = false;
+        if (chain != null) {
+            separated = differentiatesAny(tied, chain);
+            tied.sort(chain);
+        }
+        if (hasDraw) {
+            boolean drawSeparated = shuffleStillTied(tied, chain);
+            separated = separated || drawSeparated;
+        }
+
+        if (separated) {
+            for (TournamentResult r : tied) {
+                r.setTieBreakApplied(true);
+            }
+        }
+    }
+
+    private Comparator<TournamentResult> comparatorFor(TieBreakRuleType type, List<TournamentResult> tied) {
+        return switch (type) {
+            case EXACT_HANDICAP -> handicapComparator(tied);
+            case LOWEST_ROUND -> nullsLastInt(TournamentResult::getBestRoundScore);
+            case MOST_BIRDIES -> birdieComparator();
+            case SCORECARD_PLAYOFF -> countbackComparator();
+            case DRAW -> (a, b) -> 0; // handled separately
+        };
+    }
+
+    private boolean differentiatesAny(List<TournamentResult> tied, Comparator<TournamentResult> cmp) {
+        for (int i = 0; i < tied.size(); i++) {
+            for (int j = i + 1; j < tied.size(); j++) {
+                if (cmp.compare(tied.get(i), tied.get(j)) != 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Randomly shuffles any maximal runs of entries that are still equal under the
+     * comparator chain (or the whole group when there is no chain).
+     *
+     * @return true if any run of size &gt; 1 was shuffled.
+     */
+    private boolean shuffleStillTied(List<TournamentResult> tied, Comparator<TournamentResult> chain) {
+        Random random = new Random();
+        if (chain == null) {
+            if (tied.size() > 1) {
+                Collections.shuffle(tied, random);
+                return true;
+            }
+            return false;
+        }
+        boolean shuffled = false;
+        int i = 0;
+        while (i < tied.size()) {
+            int j = i + 1;
+            while (j < tied.size() && chain.compare(tied.get(j - 1), tied.get(j)) == 0) {
+                j++;
+            }
+            if (j - i > 1) {
+                List<TournamentResult> sub = new ArrayList<>(tied.subList(i, j));
+                Collections.shuffle(sub, random);
+                for (int k = i; k < j; k++) {
+                    tied.set(k, sub.get(k - i));
+                }
+                shuffled = true;
+            }
+            i = j;
+        }
+        return shuffled;
+    }
+
+    // ─── Rule comparators ──────────────────────────────────────────────────
+
+    private Comparator<TournamentResult> handicapComparator(List<TournamentResult> tied) {
+        // Pre-fetch and cache each distinct player's handicap so the comparator is
+        // consistent and issues one query per player.
+        Map<Long, Double> handicaps = new HashMap<>();
         for (TournamentResult r : tied) {
-            r.setTieBreakApplied(true);
+            handicaps.computeIfAbsent(r.getPlayerId(), pid -> {
+                TournamentPlayer p = playerRepository
+                        .findByTournamentIdAndPlayerId(r.getTournament().getId(), pid)
+                        .orElse(null);
+                return (p != null && p.getHandicap() != null) ? p.getHandicap() : Double.MAX_VALUE;
+            });
         }
+        return Comparator.comparingDouble(r -> handicaps.getOrDefault(r.getPlayerId(), Double.MAX_VALUE));
     }
 
-    private void applyTieBreakRule(List<TournamentResult> tied, TieBreakRule rule) {
-        switch (rule.getRuleType()) {
-            case EXACT_HANDICAP -> applyHandicapTieBreak(tied);
-            case LOWEST_ROUND -> applyLowestRoundTieBreak(tied);
-            case MOST_BIRDIES -> applyMostBirdiesTieBreak(tied);
-            case SCORECARD_PLAYOFF -> applyScorecardPlayoffTieBreak(tied);
-            case DRAW -> applyDrawTieBreak(tied);
-        }
-    }
-
-    private void applyHandicapTieBreak(List<TournamentResult> tied) {
-        // Lower handicap wins - sort by handicap ascending
-        tied.sort((a, b) -> {
-            TournamentPlayer pa = playerRepository.findByTournamentIdAndPlayerId(
-                    a.getTournament().getId(), a.getPlayerId()).orElse(null);
-            TournamentPlayer pb = playerRepository.findByTournamentIdAndPlayerId(
-                    b.getTournament().getId(), b.getPlayerId()).orElse(null);
-            if (pa == null || pb == null) return 0;
-            return Double.compare(
-                    pa.getHandicap() != null ? pa.getHandicap() : 0,
-                    pb.getHandicap() != null ? pb.getHandicap() : 0);
+    private Comparator<TournamentResult> nullsLastInt(java.util.function.Function<TournamentResult, Integer> key) {
+        return Comparator.comparingInt(r -> {
+            Integer v = key.apply(r);
+            return v != null ? v : Integer.MAX_VALUE;
         });
     }
 
-    private void applyLowestRoundTieBreak(List<TournamentResult> tied) {
-        // Would need round data - for now, keep order
-        // TODO: integrate with round scores
+    private Comparator<TournamentResult> birdieComparator() {
+        // More birdies wins → descending; null treated as 0.
+        return Comparator.comparingInt((TournamentResult r) ->
+                r.getBirdieCount() != null ? r.getBirdieCount() : 0).reversed();
     }
 
-    private void applyMostBirdiesTieBreak(List<TournamentResult> tied) {
-        // Would need scoring data - for now, keep order
-        // TODO: integrate with score entries
+    /**
+     * USGA countback: compare cumulative totals over the last 9, 6, 3, then final
+     * hole; lower total wins. Missing hole detail sorts last.
+     */
+    private Comparator<TournamentResult> countbackComparator() {
+        return (a, b) -> {
+            int[] sa = parseHoleScores(a.getHoleScores());
+            int[] sb = parseHoleScores(b.getHoleScores());
+            if (sa.length == 0 && sb.length == 0) return 0;
+            if (sa.length == 0) return 1;
+            if (sb.length == 0) return -1;
+            for (int back : new int[]{9, 6, 3, 1}) {
+                int cmp = Integer.compare(tailSum(sa, back), tailSum(sb, back));
+                if (cmp != 0) return cmp;
+            }
+            return 0;
+        };
     }
 
-    private void applyScorecardPlayoffTieBreak(List<TournamentResult> tied) {
-        // Would need hole-by-hole scores - for now, keep order
-        // TODO: integrate with scorecard data
+    private int[] parseHoleScores(String csv) {
+        if (csv == null || csv.isBlank()) return new int[0];
+        String[] parts = csv.split(",");
+        int[] out = new int[parts.length];
+        for (int i = 0; i < parts.length; i++) {
+            try {
+                out[i] = Integer.parseInt(parts[i].trim());
+            } catch (NumberFormatException e) {
+                return new int[0];
+            }
+        }
+        return out;
     }
 
-    private void applyDrawTieBreak(List<TournamentResult> tied) {
-        // Random draw as last resort
-        Collections.shuffle(tied, new Random());
+    private int tailSum(int[] scores, int n) {
+        int from = Math.max(0, scores.length - n);
+        int sum = 0;
+        for (int i = from; i < scores.length; i++) sum += scores[i];
+        return sum;
     }
+
+    // ─── Ranking ───────────────────────────────────────────────────────────
 
     private void applyDefaultTieBreak(List<TournamentResult> results) {
-        // Default: sort by player ID ascending (deterministic)
-        results.sort((a, b) -> Long.compare(a.getPlayerId(), b.getPlayerId()));
+        // Default: ascending score, then ascending player ID (deterministic).
+        results.sort(Comparator.comparingInt(TournamentResult::getScore)
+                .thenComparing(TournamentResult::getPlayerId));
         recalculateRanks(results);
     }
 
-    private boolean allSameRank(List<TournamentResult> results) {
-        if (results.isEmpty()) return true;
-        int firstRank = results.get(0).getRank();
-        return results.stream().allMatch(r -> r.getRank() == firstRank);
+    /**
+     * Assigns competition ranks (1,2,2,4 style) from the current list order. Since
+     * tie-break has ordered the list, adjacent entries with equal score share a rank
+     * only when neither was tie-broken; otherwise ranks are sequential.
+     */
+    private void assignRanksPreservingOrder(List<TournamentResult> results) {
+        for (int i = 0; i < results.size(); i++) {
+            TournamentResult current = results.get(i);
+            if (i == 0) {
+                current.setRank(1);
+                continue;
+            }
+            TournamentResult previous = results.get(i - 1);
+            boolean shareRank = current.getScore() == previous.getScore()
+                    && !current.isTieBreakApplied()
+                    && !previous.isTieBreakApplied();
+            current.setRank(shareRank ? previous.getRank() : i + 1);
+        }
     }
 
     private void recalculateRanks(List<TournamentResult> results) {
-        // Sort by score ascending
         results.sort(Comparator.comparingInt(TournamentResult::getScore));
-
         int rank = 1;
         for (int i = 0; i < results.size(); i++) {
             TournamentResult current = results.get(i);

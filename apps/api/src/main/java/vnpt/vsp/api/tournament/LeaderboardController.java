@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import vnpt.vsp.module.tournament.dto.LeaderboardResponse;
 import vnpt.vsp.module.tournament.service.LeaderboardService;
 
@@ -45,9 +46,8 @@ public class LeaderboardController {
      * Per Story 12.1 AC: Live leaderboard handles expected concurrency and degraded connectivity.
      */
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<Void> streamLeaderboard(@PathVariable UUID tournamentId) {
+    public SseEmitter streamLeaderboard(@PathVariable UUID tournamentId) {
         log.info("GET /tournaments/{}/leaderboard/stream - SSE connection opened", tournamentId);
-        leaderboardService.subscribe(tournamentId);
-        return ResponseEntity.ok().build();
+        return leaderboardService.subscribe(tournamentId);
     }
 }

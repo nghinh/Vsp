@@ -1,5 +1,6 @@
 package vnpt.vsp.module.tournament.service;
 
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import vnpt.vsp.module.tournament.dto.LeaderboardResponse;
 
 import java.util.UUID;
@@ -20,11 +21,15 @@ public interface LeaderboardService {
     LeaderboardResponse getLeaderboard(UUID tournamentId);
 
     /**
-     * Subscribes to leaderboard updates for a tournament (SSE connection).
+     * Subscribes to leaderboard updates for a tournament and returns the live
+     * {@link SseEmitter} to stream to the client. The emitter immediately receives
+     * the current leaderboard snapshot and then a {@code leaderboard} event on every
+     * recalculation until the client disconnects or the emitter times out.
      *
      * @param tournamentId the tournament UUID
+     * @return an open SSE emitter registered for this tournament
      */
-    void subscribe(UUID tournamentId);
+    SseEmitter subscribe(UUID tournamentId);
 
     /**
      * Publishes a score update and triggers leaderboard recalculation.

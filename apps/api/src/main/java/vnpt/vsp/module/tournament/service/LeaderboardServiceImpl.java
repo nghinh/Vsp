@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import vnpt.vsp.module.tournament.dto.LeaderboardEntryResponse;
 import vnpt.vsp.module.tournament.dto.LeaderboardResponse;
 import vnpt.vsp.module.tournament.entity.TournamentPlayer;
@@ -35,6 +36,10 @@ public class LeaderboardServiceImpl implements LeaderboardService {
 
     private static final String LEADERBOARD_CHANNEL_PREFIX = "tournament:leaderboard:";
     private static final String LEADERBOARD_STATE_PREFIX = "leaderboard:state:";
+
+    /** SSE connection timeout — 30 minutes; clients reconnect (and can poll as fallback). */
+    private static final long SSE_TIMEOUT_MS = 30 * 60 * 1000L;
+    private static final String SSE_EVENT_NAME = "leaderboard";
 
     private final TournamentRepository tournamentRepository;
     private final TournamentPlayerRepository playerRepository;
@@ -81,11 +86,37 @@ public class LeaderboardServiceImpl implements LeaderboardService {
     }
 
     @Override
-    public void subscribe(UUID tournamentId) {
-        // Subscriber registration is handled by the SSE endpoint
-        // This method is called to initialize subscription tracking
-        subscribers.computeIfAbsent(tournamentId, k -> new CopyOnWriteArrayList<>());
-        log.debug("SSE subscription registered for tournament: {}", tournamentId);
+    public SseEmitter subscribe(UUID tournamentId) {
+        SseEmitter emitter = new SseEmitter(SSE_TIMEOUT_MS);
+        SSESubscriber subscriber = new SSESubscriber(UUID.randomUUID(), emitter);
+
+        List<SSESubscriber> subs = subscribers.computeIfAbsent(tournamentId, k -> new CopyOnWriteArrayList<>());
+        subs.add(subscriber);
+
+        // Deregister on any terminal condition so the subscriber list does not leak.
+        Runnable remove = () -> {
+            List<SSESubscriber> list = subscribers.get(tournamentId);
+            if (list != null) {
+                list.remove(subscriber);
+            }
+        };
+        emitter.onCompletion(remove);
+        emitter.onTimeout(() -> {
+            remove.run();
+            emitter.complete();
+        });
+        emitter.onError(e -> remove.run());
+
+        // Push the current snapshot immediately so a fresh subscriber is not blank.
+        try {
+            emitter.send(SseEmitter.event().name(SSE_EVENT_NAME).data(getLeaderboard(tournamentId)));
+        } catch (Exception e) {
+            log.warn("Failed to send initial SSE snapshot for tournament {}: {}", tournamentId, e.getMessage());
+            remove.run();
+        }
+
+        log.debug("SSE subscriber {} registered for tournament: {}", subscriber.getId(), tournamentId);
+        return emitter;
     }
 
     @Override
@@ -141,7 +172,11 @@ public class LeaderboardServiceImpl implements LeaderboardService {
                     entry.setPlayerId(p.getPlayerId());
                     entry.setStatus(p.getStatus().name());
                     entry.setFlightId(p.getFlight() != null ? p.getFlight().getId() : null);
-                    // Note: score would come from round integration
+                    // Score is populated by the round-score integration; default to 0
+                    // (even par / no strokes) until that arrives so ranking is null-safe.
+                    if (entry.getScore() == null) {
+                        entry.setScore(0);
+                    }
                     return entry;
                 })
                 .sorted(Comparator.comparingInt(LeaderboardEntryResponse::getScore))
@@ -184,26 +219,32 @@ public class LeaderboardServiceImpl implements LeaderboardService {
             try {
                 subscriber.send(response);
             } catch (Exception e) {
-                log.warn("Failed to send SSE update to subscriber: {}", e.getMessage());
+                log.warn("Failed to send SSE update to subscriber {}: {}", subscriber.getId(), e.getMessage());
+                subs.remove(subscriber);
+                subscriber.getEmitter().completeWithError(e);
             }
         }
     }
 
     /**
-     * SSE subscriber holder.
-     * In production, this would be replaced with Spring's SseEmitter or similar.
+     * SSE subscriber holder — wraps a Spring {@link SseEmitter} and streams each
+     * leaderboard update as a named {@code leaderboard} event.
      */
     public static class SSESubscriber {
         private final UUID id;
-        private final java.util.function.Consumer<LeaderboardResponse> sender;
+        private final SseEmitter emitter;
 
-        public SSESubscriber(UUID id, java.util.function.Consumer<LeaderboardResponse> sender) {
+        public SSESubscriber(UUID id, SseEmitter emitter) {
             this.id = id;
-            this.sender = sender;
+            this.emitter = emitter;
         }
 
-        public void send(LeaderboardResponse response) {
-            sender.accept(response);
+        public void send(LeaderboardResponse response) throws java.io.IOException {
+            emitter.send(SseEmitter.event().name(SSE_EVENT_NAME).data(response));
+        }
+
+        public SseEmitter getEmitter() {
+            return emitter;
         }
 
         public UUID getId() {
