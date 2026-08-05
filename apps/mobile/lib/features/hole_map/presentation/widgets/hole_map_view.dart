@@ -218,25 +218,34 @@ class _HoleMapViewState extends State<HoleMapView> {
         ),
         initialOrigin: _originFromMapState(),
       ),
-      child: Column(
-        children: [
-          if (!_hasStrategicGeometry)
-            NoGeometryBanner(trailing: toggle)
-          else
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-              color: const Color(0xFF1E293B),
-              alignment: Alignment.centerRight,
-              child: toggle,
+      // Opening the map is usually what triggers the profile fetch, so the
+      // unit above is whatever is known at that instant — metres, most of the
+      // time. This keeps listening and switches the tool the moment the
+      // golfer's saved preference arrives (or they change it).
+      child: DistanceUnitScope.listen(
+        context: context,
+        onUnit: (measureContext, unit) =>
+            measureContext.read<MeasureCubit>().setUnit(unit),
+        child: Column(
+          children: [
+            if (!_hasStrategicGeometry)
+              NoGeometryBanner(trailing: toggle)
+            else
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+                color: const Color(0xFF1E293B),
+                alignment: Alignment.centerRight,
+                child: toggle,
+              ),
+            Expanded(
+              child: SatelliteMeasureView(
+                config: _imagery,
+                fallbackCenter: _fallbackCenter(),
+              ),
             ),
-          Expanded(
-            child: SatelliteMeasureView(
-              config: _imagery,
-              fallbackCenter: _fallbackCenter(),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

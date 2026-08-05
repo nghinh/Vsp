@@ -19,6 +19,7 @@ import 'widgets/map_error_view.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
+import 'package:vsp_mobile/features/profile/presentation/profile_scope.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main scaffold for the strategic hole map display.
@@ -48,20 +49,25 @@ class HoleMapScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
-      body: SafeArea(
-        child: BlocProvider(
-          create: (context) => HoleMapBloc(repository: context.read())
-            ..add(
-              LoadHoleMap(
-                packageId: packageId,
-                courseId: courseId,
-                courseName: courseName,
-                holeNumber: holeNumber,
+      // The map shows distances, so it needs the golfer's metres/yards
+      // preference. ProfileScope is a no-op when the round flow already
+      // provided one higher up.
+      body: ProfileScope(
+        child: SafeArea(
+          child: BlocProvider(
+            create: (context) => HoleMapBloc(repository: context.read())
+              ..add(
+                LoadHoleMap(
+                  packageId: packageId,
+                  courseId: courseId,
+                  courseName: courseName,
+                  holeNumber: holeNumber,
+                ),
               ),
+            child: _HoleMapBody(
+              locationService: locationService,
+              distanceUnit: distanceUnit,
             ),
-          child: _HoleMapBody(
-            locationService: locationService,
-            distanceUnit: distanceUnit,
           ),
         ),
       ),

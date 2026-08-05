@@ -19,6 +19,7 @@ import '../../hole_map/hole_map.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../domain/services/location_service.dart';
+import '../../profile/presentation/profile_scope.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom tab index constants for the active round screen.
@@ -86,6 +87,15 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // One profile for the whole round: every tab that shows a distance reads
+    // the golfer's metres/yards preference from here, and the map tab keeps
+    // it even as tabs are swapped in the IndexedStack.
+    return ProfileScope(
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: VspColorDark.background,
       body: IndexedStack(

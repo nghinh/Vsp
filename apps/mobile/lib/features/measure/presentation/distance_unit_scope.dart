@@ -26,7 +26,11 @@ abstract final class DistanceUnitScope {
     DistanceUnit fallback = DistanceUnit.meters,
   }) {
     try {
-      final state = BlocProvider.of<ProfileBloc>(context, listen: false).state;
+      // context.read, not BlocProvider.of: BlocProvider.of rewrites a missing
+      // provider into a FlutterError, which no `on ProviderNotFoundException`
+      // catch can see — so this used to throw on any route without a profile
+      // instead of falling back.
+      final state = context.read<ProfileBloc>().state;
       if (state is ProfileLoaded) {
         return state.profile.distanceUnit;
       }
@@ -35,5 +39,42 @@ abstract final class DistanceUnitScope {
       // preference rather than guessing.
     }
     return fallback;
+  }
+
+  /// Wraps [child] so [onUnit] fires whenever the profile's unit becomes known
+  /// or changes.
+  ///
+  /// [resolve] answers with whatever is known *now*, which is metres while the
+  /// profile is still loading — and the profile usually is, because opening the
+  /// map is what triggers the fetch. Without this the golfer would see metres
+  /// for the rest of the round despite having saved yards.
+  ///
+  /// Returns [child] unchanged where no [ProfileBloc] is in scope, so screens
+  /// and tests without a profile keep working.
+  static Widget listen({
+    required BuildContext context,
+    required Widget child,
+    required void Function(BuildContext context, DistanceUnit unit) onUnit,
+  }) {
+    final ProfileBloc bloc;
+    try {
+      bloc = context.read<ProfileBloc>();
+    } on ProviderNotFoundException {
+      return child;
+    }
+
+    return BlocListener<ProfileBloc, ProfileState>(
+      bloc: bloc,
+      listenWhen: (previous, current) =>
+          current is ProfileLoaded &&
+          (previous is! ProfileLoaded ||
+              previous.profile.distanceUnit != current.profile.distanceUnit),
+      listener: (listenerContext, state) {
+        if (state is ProfileLoaded) {
+          onUnit(listenerContext, state.profile.distanceUnit);
+        }
+      },
+      child: child,
+    );
   }
 }
