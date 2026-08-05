@@ -4,27 +4,15 @@
 // Renders course geometry layers, golfer position, pin, target,
 // wind arrow, and distance rings from local course package data.
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-// mobile_theme also exports a DistanceUnit; the profile one is canonical here.
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
-import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/pin_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/wind_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/wind_relative_entity.dart';
-import 'package:vsp_mobile/features/hole_map/domain/distance_ring_entity.dart';
 import '../hole_map_bloc.dart';
 import '../hole_map_state.dart';
 import '../hole_map_event.dart';
 import 'golfer_position_marker.dart';
 import 'pin_marker.dart';
-import 'target_marker.dart';
 import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'layer_toggle_panel.dart';
@@ -80,13 +68,6 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// Which basemap is showing. Holes with no surveyed geometry open straight
   /// into satellite + measuring — an empty vector map helps nobody.
   BasemapMode _basemapMode = BasemapMode.courseMap;
-
-  // Cached symbol sources to avoid unnecessary style updates
-  final Map<String, bool> _addedSources = {};
-
-  // Performance: track last rendered position to avoid duplicate updates
-  String? _lastGolferPositionKey;
-  String? _lastTargetKey;
 
   @override
   void dispose() {
