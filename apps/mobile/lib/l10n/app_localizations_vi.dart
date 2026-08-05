@@ -2111,6 +2111,47 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeRoundEndRound => 'Kết thúc vòng đấu';
 
   @override
+  String get activeRoundOptions => 'Tùy chọn vòng đấu';
+
+  @override
+  String activeRoundScoreHeading(int holeNumber) {
+    return 'Điểm hố $holeNumber';
+  }
+
+  @override
+  String get activeRoundScoreMessage =>
+      'Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.';
+
+  @override
+  String get activeRoundTargetHeading => 'Khoảng cách mục tiêu';
+
+  @override
+  String get activeRoundTargetMessage =>
+      'Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.';
+
+  @override
+  String get activeRoundConditionsHeading => 'Điều kiện sân';
+
+  @override
+  String get activeRoundConditionsMessage =>
+      'Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ chiến thuật ở tab Bản đồ.';
+
+  @override
+  String activeRoundLengthMeters(int meters) {
+    return '$meters m';
+  }
+
+  @override
+  String activeRoundTabSemantics(String label) {
+    return 'Thẻ $label';
+  }
+
+  @override
+  String activeRoundTabSemanticsSelected(String label) {
+    return 'Thẻ $label, đang chọn';
+  }
+
+  @override
   String get distancesTitle => 'Khoảng cách';
 
   @override

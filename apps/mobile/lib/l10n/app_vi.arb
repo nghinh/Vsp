@@ -636,6 +636,44 @@
   "activeRoundLength": "Chiều dài",
   "activeRoundReportCorrection": "Báo lỗi dữ liệu",
   "activeRoundEndRound": "Kết thúc vòng đấu",
+  "activeRoundOptions": "Tùy chọn vòng đấu",
+  "activeRoundScoreHeading": "Điểm hố {holeNumber}",
+  "@activeRoundScoreHeading": {
+    "placeholders": {
+      "holeNumber": {
+        "type": "int"
+      }
+    }
+  },
+  "activeRoundScoreMessage": "Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.",
+  "activeRoundTargetHeading": "Khoảng cách mục tiêu",
+  "activeRoundTargetMessage": "Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.",
+  "activeRoundConditionsHeading": "Điều kiện sân",
+  "activeRoundConditionsMessage": "Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ chiến thuật ở tab Bản đồ.",
+  "activeRoundLengthMeters": "{meters} m",
+  "@activeRoundLengthMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "activeRoundTabSemantics": "Thẻ {label}",
+  "@activeRoundTabSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "activeRoundTabSemanticsSelected": "Thẻ {label}, đang chọn",
+  "@activeRoundTabSemanticsSelected": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "distancesTitle": "Khoảng cách",
   "gpsQuality": "Chất lượng GPS",
   "courseFavoritesLoadFailed": "Không tải được danh sách yêu thích",

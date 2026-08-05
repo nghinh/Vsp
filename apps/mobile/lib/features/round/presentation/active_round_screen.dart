@@ -200,15 +200,15 @@ class _ScoreTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return _RoundInfoScaffold(
-      title: AppLocalizations.of(context).activeRoundScore,
+      title: l10n.activeRoundScore,
       icon: Icons.scoreboard_outlined,
-      heading: 'Điểm hố $holeNumber',
-      message:
-          'Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.',
+      heading: l10n.activeRoundScoreHeading(holeNumber),
+      message: l10n.activeRoundScoreMessage,
       details: [
-        _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundHole, value: '$holeNumber'),
-        _RoundInfoDetail(label: AppLocalizations.of(context).fieldPar, value: '$par'),
+        _RoundInfoDetail(label: l10n.activeRoundHole, value: '$holeNumber'),
+        _RoundInfoDetail(label: l10n.fieldPar, value: '$par'),
       ],
     );
   }
@@ -233,18 +233,20 @@ class _TargetTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return _RoundInfoScaffold(
-      title: AppLocalizations.of(context).activeRoundTarget,
+      title: l10n.activeRoundTarget,
       icon: Icons.gps_fixed,
-      heading: 'Khoảng cách mục tiêu',
-      message:
-          'Chạm lên bản đồ chiến thuật ở tab Map để đặt mục tiêu; khoảng cách '
-          'sẽ cập nhật theo vị trí GPS của bạn.',
+      heading: l10n.activeRoundTargetHeading,
+      message: l10n.activeRoundTargetMessage,
       details: [
-        _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundHole, value: '$holeNumber'),
-        _RoundInfoDetail(label: AppLocalizations.of(context).fieldPar, value: '$par'),
+        _RoundInfoDetail(label: l10n.activeRoundHole, value: '$holeNumber'),
+        _RoundInfoDetail(label: l10n.fieldPar, value: '$par'),
         if (yardage != null)
-          _RoundInfoDetail(label: AppLocalizations.of(context).activeRoundLength, value: '$yardage m'),
+          _RoundInfoDetail(
+            label: l10n.activeRoundLength,
+            value: l10n.activeRoundLengthMeters(yardage!),
+          ),
       ],
     );
   }
@@ -261,13 +263,12 @@ class _ConditionsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return _RoundInfoScaffold(
-      title: AppLocalizations.of(context).activeRoundConditions,
+      title: l10n.activeRoundConditions,
       icon: Icons.cloud_outlined,
-      heading: 'Điều kiện sân',
-      message:
-          'Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ '
-          'chiến thuật ở tab Map.',
+      heading: l10n.activeRoundConditionsHeading,
+      message: l10n.activeRoundConditionsMessage,
     );
   }
 }
@@ -414,11 +415,12 @@ class _MoreTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: VspColorDark.background,
       appBar: AppBar(
         backgroundColor: VspColorDark.surface,
-        title: Text(AppLocalizations.of(context).navMore, style: TextStyle(color: VspColorDark.textPrimary)),
+        title: Text(l10n.navMore, style: const TextStyle(color: VspColorDark.textPrimary)),
         iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
       ),
       body: Center(
@@ -427,9 +429,9 @@ class _MoreTab extends StatelessWidget {
           children: [
             const Icon(Icons.more_horiz, size: 64, color: VspColorDark.textTertiary),
             const SizedBox(height: 16),
-            const Text(
-              'Round Options',
-              style: TextStyle(
+            Text(
+              l10n.activeRoundOptions,
+              style: const TextStyle(
                 color: VspColorDark.textPrimary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -439,7 +441,7 @@ class _MoreTab extends StatelessWidget {
             // Report Correction — opens CorrectionSubmissionScreen
             _MoreMenuTile(
               icon: Icons.flag_outlined,
-              label: AppLocalizations.of(context).activeRoundReportCorrection,
+              label: l10n.activeRoundReportCorrection,
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -463,7 +465,7 @@ class _MoreTab extends StatelessWidget {
             ),
             _MoreMenuTile(
               icon: Icons.close,
-              label: AppLocalizations.of(context).activeRoundEndRound,
+              label: l10n.activeRoundEndRound,
               isDestructive: true,
               onTap: () {
                 // TODO: Show end round confirmation
@@ -513,6 +515,7 @@ class _BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: const BoxDecoration(
         color: VspColorDark.surface,
@@ -530,35 +533,35 @@ class _BottomNavBar extends StatelessWidget {
               _NavItem(
                 icon: Icons.map_outlined,
                 selectedIcon: Icons.map,
-                label: AppLocalizations.of(context).activeRoundMap,
+                label: l10n.activeRoundMap,
                 isSelected: currentTab == ActiveRoundTab.map,
                 onTap: () => onTabChanged(ActiveRoundTab.map),
               ),
               _NavItem(
                 icon: Icons.scoreboard_outlined,
                 selectedIcon: Icons.scoreboard,
-                label: AppLocalizations.of(context).activeRoundScore,
+                label: l10n.activeRoundScore,
                 isSelected: currentTab == ActiveRoundTab.score,
                 onTap: () => onTabChanged(ActiveRoundTab.score),
               ),
               _NavItem(
                 icon: Icons.gps_fixed_outlined,
                 selectedIcon: Icons.gps_fixed,
-                label: AppLocalizations.of(context).activeRoundTarget,
+                label: l10n.activeRoundTarget,
                 isSelected: currentTab == ActiveRoundTab.target,
                 onTap: () => onTabChanged(ActiveRoundTab.target),
               ),
               _NavItem(
                 icon: Icons.cloud_outlined,
                 selectedIcon: Icons.cloud,
-                label: AppLocalizations.of(context).activeRoundConditions,
+                label: l10n.activeRoundConditions,
                 isSelected: currentTab == ActiveRoundTab.conditions,
                 onTap: () => onTabChanged(ActiveRoundTab.conditions),
               ),
               _NavItem(
                 icon: Icons.more_horiz,
                 selectedIcon: Icons.more_horiz,
-                label: AppLocalizations.of(context).navMore,
+                label: l10n.navMore,
                 isSelected: currentTab == ActiveRoundTab.more,
                 onTap: () => onTabChanged(ActiveRoundTab.more),
               ),
@@ -590,8 +593,11 @@ class _NavItem extends StatelessWidget {
     const activeColor = VspColorDark.primary;
     const inactiveColor = VspColorDark.textTertiary;
 
+    final l10n = AppLocalizations.of(context);
     return Semantics(
-      label: '$label tab${isSelected ? ', selected' : ''}',
+      label: isSelected
+          ? l10n.activeRoundTabSemanticsSelected(label)
+          : l10n.activeRoundTabSemantics(label),
       button: true,
       child: GestureDetector(
         onTap: onTap,

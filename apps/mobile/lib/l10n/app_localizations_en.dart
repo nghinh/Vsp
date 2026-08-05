@@ -2111,6 +2111,47 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRoundEndRound => 'End Round';
 
   @override
+  String get activeRoundOptions => 'Round Options';
+
+  @override
+  String activeRoundScoreHeading(int holeNumber) {
+    return 'Hole $holeNumber score';
+  }
+
+  @override
+  String get activeRoundScoreMessage =>
+      'Enter your score hole by hole. Scores are synced as soon as you have a connection.';
+
+  @override
+  String get activeRoundTargetHeading => 'Target distance';
+
+  @override
+  String get activeRoundTargetMessage =>
+      'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.';
+
+  @override
+  String get activeRoundConditionsHeading => 'Course conditions';
+
+  @override
+  String get activeRoundConditionsMessage =>
+      'Wind, weather and pin position are shown live on the strategic map in the Map tab.';
+
+  @override
+  String activeRoundLengthMeters(int meters) {
+    return '$meters m';
+  }
+
+  @override
+  String activeRoundTabSemantics(String label) {
+    return '$label tab';
+  }
+
+  @override
+  String activeRoundTabSemanticsSelected(String label) {
+    return '$label tab, selected';
+  }
+
+  @override
   String get distancesTitle => 'Distances';
 
   @override

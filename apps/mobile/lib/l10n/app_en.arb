@@ -1216,6 +1216,44 @@
   "activeRoundLength": "Length",
   "activeRoundReportCorrection": "Report Correction",
   "activeRoundEndRound": "End Round",
+  "activeRoundOptions": "Round Options",
+  "activeRoundScoreHeading": "Hole {holeNumber} score",
+  "@activeRoundScoreHeading": {
+    "placeholders": {
+      "holeNumber": {
+        "type": "int"
+      }
+    }
+  },
+  "activeRoundScoreMessage": "Enter your score hole by hole. Scores are synced as soon as you have a connection.",
+  "activeRoundTargetHeading": "Target distance",
+  "activeRoundTargetMessage": "Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.",
+  "activeRoundConditionsHeading": "Course conditions",
+  "activeRoundConditionsMessage": "Wind, weather and pin position are shown live on the strategic map in the Map tab.",
+  "activeRoundLengthMeters": "{meters} m",
+  "@activeRoundLengthMeters": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "activeRoundTabSemantics": "{label} tab",
+  "@activeRoundTabSemantics": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "activeRoundTabSemanticsSelected": "{label} tab, selected",
+  "@activeRoundTabSemanticsSelected": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "distancesTitle": "Distances",
   "gpsQuality": "GPS Quality",
   "courseFavoritesLoadFailed": "Failed to load favorites",

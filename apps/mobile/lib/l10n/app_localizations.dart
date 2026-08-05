@@ -3914,6 +3914,66 @@ abstract class AppLocalizations {
   /// **'End Round'**
   String get activeRoundEndRound;
 
+  /// No description provided for @activeRoundOptions.
+  ///
+  /// In en, this message translates to:
+  /// **'Round Options'**
+  String get activeRoundOptions;
+
+  /// No description provided for @activeRoundScoreHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {holeNumber} score'**
+  String activeRoundScoreHeading(int holeNumber);
+
+  /// No description provided for @activeRoundScoreMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your score hole by hole. Scores are synced as soon as you have a connection.'**
+  String get activeRoundScoreMessage;
+
+  /// No description provided for @activeRoundTargetHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Target distance'**
+  String get activeRoundTargetHeading;
+
+  /// No description provided for @activeRoundTargetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.'**
+  String get activeRoundTargetMessage;
+
+  /// No description provided for @activeRoundConditionsHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Course conditions'**
+  String get activeRoundConditionsHeading;
+
+  /// No description provided for @activeRoundConditionsMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind, weather and pin position are shown live on the strategic map in the Map tab.'**
+  String get activeRoundConditionsMessage;
+
+  /// No description provided for @activeRoundLengthMeters.
+  ///
+  /// In en, this message translates to:
+  /// **'{meters} m'**
+  String activeRoundLengthMeters(int meters);
+
+  /// No description provided for @activeRoundTabSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} tab'**
+  String activeRoundTabSemantics(String label);
+
+  /// No description provided for @activeRoundTabSemanticsSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} tab, selected'**
+  String activeRoundTabSemanticsSelected(String label);
+
   /// No description provided for @distancesTitle.
   ///
   /// In en, this message translates to:
