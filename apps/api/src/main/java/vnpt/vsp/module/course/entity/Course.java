@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,7 @@ public class Course {
     private Integer parTotal;
 
     /** Course boundary or centroid as SRID 4326 geometry */
+    @Type(WktGeometryType.class)
     @Column(columnDefinition = "geometry(Geometry,4326)")
     private String location;
 

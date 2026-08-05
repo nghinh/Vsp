@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 
 /**
  * Landmark entity — point landmark on a hole (clubhouse, restroom, signage, etc.).
@@ -19,6 +21,7 @@ public class Landmark {
     @JoinColumn(name = "hole_id", nullable = false)
     private Hole hole;
 
+    @Type(WktGeometryType.class)
     @Column(nullable = false, columnDefinition = "geometry(Point,4326)")
     private String location;
 

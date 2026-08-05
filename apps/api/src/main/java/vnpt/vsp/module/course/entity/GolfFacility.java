@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 import java.time.Instant;
 
 /**
@@ -28,6 +30,7 @@ public class GolfFacility {
     private String website;
 
     /** Centroid location as SRID 4326 POINT (stored as Geometry in Hibernate Spatial) */
+    @Type(WktGeometryType.class)
     @Column(columnDefinition = "geometry(Point,4326)")
     private String location;
 

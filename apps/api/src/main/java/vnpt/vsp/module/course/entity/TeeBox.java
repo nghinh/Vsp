@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 
 /**
  * TeeBox entity — the teeing ground area for a specific hole and tee set.
@@ -23,6 +25,7 @@ public class TeeBox {
     @JoinColumn(name = "tee_set_id")
     private TeeSet teeSet;
 
+    @Type(WktGeometryType.class)
     @Column(nullable = false, columnDefinition = "geometry(Polygon,4326)")
     private String location;
 

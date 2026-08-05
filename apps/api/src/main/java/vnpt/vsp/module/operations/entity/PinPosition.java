@@ -1,6 +1,8 @@
 package vnpt.vsp.module.operations.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 import java.math.BigDecimal;
 import java.time.Instant;
 import vnpt.vsp.module.course.entity.DataQualityMetadata;
@@ -31,6 +33,7 @@ public class PinPosition {
     private Hole hole;
 
     /** Pin coordinates as PostGIS POINT with SRID 4326 (WGS84) */
+    @Type(WktGeometryType.class)
     @Column(columnDefinition = "geometry(Point,4326)")
     private String location;
 

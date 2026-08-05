@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +32,11 @@ public class Hole {
     @Column(nullable = false)
     private Integer par;
 
+    @Type(WktGeometryType.class)
     @Column(name = "teeing_ground_location", columnDefinition = "geometry(Point,4326)")
     private String teeingGroundLocation;
 
+    @Type(WktGeometryType.class)
     @Column(name = "green_location", columnDefinition = "geometry(Point,4326)")
     private String greenLocation;
 

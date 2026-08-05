@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 
 /**
  * PenaltyArea entity — penalty area per modern Rules of Golf.
@@ -19,6 +21,7 @@ public class PenaltyArea {
     @JoinColumn(name = "hole_id", nullable = false)
     private Hole hole;
 
+    @Type(WktGeometryType.class)
     @Column(nullable = false, columnDefinition = "geometry(Polygon,4326)")
     private String location;
 

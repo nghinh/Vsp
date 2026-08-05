@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 import java.time.LocalDate;
 
 /**
@@ -20,6 +22,7 @@ public class PinPosition {
     @JoinColumn(name = "hole_id", nullable = false)
     private Hole hole;
 
+    @Type(WktGeometryType.class)
     @Column(nullable = false, columnDefinition = "geometry(Point,4326)")
     private String location;
 

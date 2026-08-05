@@ -1,6 +1,8 @@
 package vnpt.vsp.module.course.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
+import vnpt.vsp.persistence.WktGeometryType;
 
 /**
  * WaterHazard entity — water hazard (pond, stream, lake) affecting a hole.
@@ -19,6 +21,7 @@ public class WaterHazard {
     @JoinColumn(name = "hole_id", nullable = false)
     private Hole hole;
 
+    @Type(WktGeometryType.class)
     @Column(nullable = false, columnDefinition = "geometry(Geometry,4326)")
     private String location;
 
