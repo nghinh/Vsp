@@ -1,5 +1,6 @@
 package vnpt.vsp.module.audit;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import org.slf4j.Logger;
@@ -21,6 +22,15 @@ import java.util.concurrent.CompletableFuture;
  * <p>
  * Audit entries are <strong>append-only</strong>. No update or delete is
  * permitted. Retention is enforced by a scheduled job (outside this epic).
+ * <p>
+ * Because the write is asynchronous, it can only fail after the business
+ * operation has committed — there is nothing left to roll back and no caller
+ * left to tell. That makes silence the danger rather than latency: a failed
+ * write is logged at ERROR with its cause and counted on
+ * {@value #WRITE_FAILURES_METRIC}, so an entry that never reached the table is
+ * visible in the metrics an operator already watches. Guaranteeing the entry
+ * instead of merely reporting its loss means writing it in the caller's
+ * transaction, which is a different design from this one.
  *
  * @see AuditAspect
  */
@@ -29,8 +39,22 @@ public class AuditServiceImpl implements AuditService {
 
     private static final Logger log = LoggerFactory.getLogger(AuditServiceImpl.class);
 
+    /**
+     * Counter incremented once per audit entry that could not be written,
+     * tagged with the action that was lost. Any non-zero rate is an incident:
+     * the business operation has already committed and returned, so a failure
+     * here is a compliance record that no longer exists anywhere.
+     */
+    public static final String WRITE_FAILURES_METRIC = "vsp_api.audit.write.failures";
+
     @PersistenceContext
     private EntityManager entityManager;
+
+    private final MeterRegistry meterRegistry;
+
+    public AuditServiceImpl(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+    }
 
     /**
      * Writes an audit entry asynchronously and emits a structured log line.
@@ -87,9 +111,18 @@ public class AuditServiceImpl implements AuditService {
             log.info("AUDIT action={} objectType={} objectId={} actor={} role={} correlationId={}",
                     action, objectType, objectId, actor, role, correlationId);
         } catch (Exception e) {
-            // Audit failure must never break the business flow
-            log.error("AUDIT_WRITE_FAILED action={} objectType={} objectId={} correlationId={}: {}",
-                    action, objectType, objectId, correlationId, e.getMessage());
+            // The write cannot be retried into the caller: this runs after the
+            // business transaction has committed and the response has been
+            // sent, so rethrowing would fail nothing and reach no one. What it
+            // must not do is disappear. The stack trace is attached because the
+            // message alone ("could not execute statement") never named the
+            // constraint that was rejecting the row, and the counter exists so
+            // a lost compliance record is something an alert can fire on rather
+            // than something someone has to be grepping for.
+            meterRegistry.counter(WRITE_FAILURES_METRIC, "action", String.valueOf(action)).increment();
+            log.error("AUDIT_WRITE_FAILED action={} objectType={} objectId={} correlationId={} — "
+                            + "the operation succeeded and this audit entry is lost",
+                    action, objectType, objectId, correlationId, e);
         } finally {
             MDC.clear();
         }
