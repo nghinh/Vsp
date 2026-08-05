@@ -18,7 +18,7 @@ import 'app_localizations_vi.dart';
 /// `supportedLocales` list. For example:
 ///
 /// ```dart
-/// import 'l10n/app_localizations.dart';
+/// import 'out/app_localizations.dart';
 ///
 /// return MaterialApp(
 ///   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -4705,6 +4705,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The course package is empty — nothing to download. Contact support if this course should be available offline.'**
   String get msgEmptyPackage;
+
+  /// No description provided for @measureTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure'**
+  String get measureTitle;
+
+  /// No description provided for @measureTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Measuring tool'**
+  String get measureTooltip;
+
+  /// No description provided for @measureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the map to drop a point. Tap a point again to remove it.'**
+  String get measureHint;
+
+  /// No description provided for @measureClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get measureClear;
+
+  /// No description provided for @measureUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo last point'**
+  String get measureUndo;
+
+  /// No description provided for @measureFromYou.
+  ///
+  /// In en, this message translates to:
+  /// **'From you'**
+  String get measureFromYou;
+
+  /// No description provided for @measureLegLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Point {index}'**
+  String measureLegLabel(String index);
+
+  /// No description provided for @measureToGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'On to green'**
+  String get measureToGreen;
+
+  /// No description provided for @measureTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Total'**
+  String get measureTotal;
+
+  /// No description provided for @measurePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No points} =1{1 point} other{{count} points}}'**
+  String measurePoints(int count);
+
+  /// No description provided for @measureNoFix.
+  ///
+  /// In en, this message translates to:
+  /// **'No GPS fix — distances from your position are unavailable.'**
+  String get measureNoFix;
+
+  /// No description provided for @measureWeakFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Weak GPS fix. Treat these distances as approximate.'**
+  String get measureWeakFix;
+
+  /// No description provided for @measureStaleFix.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS fix is out of date. Move to open sky for a fresh reading.'**
+  String get measureStaleFix;
+
+  /// No description provided for @measureAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS ±{meters} m'**
+  String measureAccuracy(String meters);
+
+  /// No description provided for @measureTolerance.
+  ///
+  /// In en, this message translates to:
+  /// **'give or take {value}'**
+  String measureTolerance(String value);
+
+  /// No description provided for @measureGreenUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'No green position for this hole'**
+  String get measureGreenUnknown;
+
+  /// No description provided for @measureGreenEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'Green position is estimated, not surveyed'**
+  String get measureGreenEstimated;
+
+  /// No description provided for @measureGreenSurveyed.
+  ///
+  /// In en, this message translates to:
+  /// **'Green position is surveyed'**
+  String get measureGreenSurveyed;
+
+  /// No description provided for @measureEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure any distance'**
+  String get measureEmptyTitle;
+
+  /// No description provided for @measureEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.'**
+  String get measureEmptyBody;
+
+  /// No description provided for @measureQualityGood.
+  ///
+  /// In en, this message translates to:
+  /// **'Good'**
+  String get measureQualityGood;
+
+  /// No description provided for @measureQualityFair.
+  ///
+  /// In en, this message translates to:
+  /// **'Fair'**
+  String get measureQualityFair;
+
+  /// No description provided for @measureQualityPoor.
+  ///
+  /// In en, this message translates to:
+  /// **'Rough'**
+  String get measureQualityPoor;
+
+  /// No description provided for @measureQualityUnusable.
+  ///
+  /// In en, this message translates to:
+  /// **'Unreliable'**
+  String get measureQualityUnusable;
+
+  /// No description provided for @measureQualityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measurement quality: {quality}'**
+  String measureQualityLabel(String quality);
+
+  /// No description provided for @measureRemovePoint.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove point {index}'**
+  String measureRemovePoint(String index);
+
+  /// No description provided for @measureSemanticsLeg.
+  ///
+  /// In en, this message translates to:
+  /// **'{label}: {distance}, give or take {tolerance}'**
+  String measureSemanticsLeg(String label, String distance, String tolerance);
+
+  /// No description provided for @basemapSatellite.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite'**
+  String get basemapSatellite;
+
+  /// No description provided for @basemapCourseMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Course map'**
+  String get basemapCourseMap;
+
+  /// No description provided for @basemapSwitchToSatellite.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to satellite imagery'**
+  String get basemapSwitchToSatellite;
+
+  /// No description provided for @basemapSwitchToCourseMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to course map'**
+  String get basemapSwitchToCourseMap;
+
+  /// No description provided for @basemapSatelliteUnavailableTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite imagery unavailable'**
+  String get basemapSatelliteUnavailableTitle;
+
+  /// No description provided for @basemapSatelliteUnavailableBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This build has no imagery provider configured, so satellite view is turned off.'**
+  String get basemapSatelliteUnavailableBody;
+
+  /// No description provided for @basemapSatelliteOfflineBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite imagery needs a connection. Distances still work from your GPS position.'**
+  String get basemapSatelliteOfflineBody;
+
+  /// No description provided for @basemapAttributionImproveMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Improve this map'**
+  String get basemapAttributionImproveMap;
+
+  /// No description provided for @basemapAttributionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Imagery attribution: {attribution}'**
+  String basemapAttributionSemantics(String attribution);
+
+  /// No description provided for @holeNoGeometryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No surveyed map for this hole'**
+  String get holeNoGeometryTitle;
+
+  /// No description provided for @holeNoGeometryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We haven\'t digitised this hole yet. The satellite view is real imagery — measure the distances you need.'**
+  String get holeNoGeometryBody;
+
+  /// No description provided for @holeNoGeometryBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Not surveyed'**
+  String get holeNoGeometryBadge;
 }
 
 class _AppLocalizationsDelegate

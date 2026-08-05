@@ -99,6 +99,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             holeNumber: widget.holeNumber,
             par: widget.par,
             yardage: widget.yardage,
+            locationService: widget.locationService,
           ),
 
           // Score tab — round scoring context
@@ -144,12 +145,16 @@ class _MapTab extends StatelessWidget {
   final int par;
   final int? yardage;
 
+  /// GPS source, forwarded to the satellite measuring tool.
+  final LocationService locationService;
+
   const _MapTab({
     required this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
     required this.par,
+    required this.locationService,
     this.yardage,
   });
 
@@ -160,6 +165,7 @@ class _MapTab extends StatelessWidget {
       courseId: courseId,
       courseName: courseName,
       holeNumber: holeNumber,
+      locationService: locationService,
     );
   }
 }

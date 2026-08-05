@@ -2545,4 +2545,154 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get msgEmptyPackage =>
       'The course package is empty — nothing to download. Contact support if this course should be available offline.';
+
+  @override
+  String get measureTitle => 'Measure';
+
+  @override
+  String get measureTooltip => 'Measuring tool';
+
+  @override
+  String get measureHint =>
+      'Tap the map to drop a point. Tap a point again to remove it.';
+
+  @override
+  String get measureClear => 'Clear';
+
+  @override
+  String get measureUndo => 'Undo last point';
+
+  @override
+  String get measureFromYou => 'From you';
+
+  @override
+  String measureLegLabel(String index) {
+    return 'Point $index';
+  }
+
+  @override
+  String get measureToGreen => 'On to green';
+
+  @override
+  String get measureTotal => 'Total';
+
+  @override
+  String measurePoints(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count points',
+      one: '1 point',
+      zero: 'No points',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get measureNoFix =>
+      'No GPS fix — distances from your position are unavailable.';
+
+  @override
+  String get measureWeakFix =>
+      'Weak GPS fix. Treat these distances as approximate.';
+
+  @override
+  String get measureStaleFix =>
+      'GPS fix is out of date. Move to open sky for a fresh reading.';
+
+  @override
+  String measureAccuracy(String meters) {
+    return 'GPS ±$meters m';
+  }
+
+  @override
+  String measureTolerance(String value) {
+    return 'give or take $value';
+  }
+
+  @override
+  String get measureGreenUnknown => 'No green position for this hole';
+
+  @override
+  String get measureGreenEstimated =>
+      'Green position is estimated, not surveyed';
+
+  @override
+  String get measureGreenSurveyed => 'Green position is surveyed';
+
+  @override
+  String get measureEmptyTitle => 'Measure any distance';
+
+  @override
+  String get measureEmptyBody =>
+      'Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.';
+
+  @override
+  String get measureQualityGood => 'Good';
+
+  @override
+  String get measureQualityFair => 'Fair';
+
+  @override
+  String get measureQualityPoor => 'Rough';
+
+  @override
+  String get measureQualityUnusable => 'Unreliable';
+
+  @override
+  String measureQualityLabel(String quality) {
+    return 'Measurement quality: $quality';
+  }
+
+  @override
+  String measureRemovePoint(String index) {
+    return 'Remove point $index';
+  }
+
+  @override
+  String measureSemanticsLeg(String label, String distance, String tolerance) {
+    return '$label: $distance, give or take $tolerance';
+  }
+
+  @override
+  String get basemapSatellite => 'Satellite';
+
+  @override
+  String get basemapCourseMap => 'Course map';
+
+  @override
+  String get basemapSwitchToSatellite => 'Switch to satellite imagery';
+
+  @override
+  String get basemapSwitchToCourseMap => 'Switch to course map';
+
+  @override
+  String get basemapSatelliteUnavailableTitle =>
+      'Satellite imagery unavailable';
+
+  @override
+  String get basemapSatelliteUnavailableBody =>
+      'This build has no imagery provider configured, so satellite view is turned off.';
+
+  @override
+  String get basemapSatelliteOfflineBody =>
+      'Satellite imagery needs a connection. Distances still work from your GPS position.';
+
+  @override
+  String get basemapAttributionImproveMap => 'Improve this map';
+
+  @override
+  String basemapAttributionSemantics(String attribution) {
+    return 'Imagery attribution: $attribution';
+  }
+
+  @override
+  String get holeNoGeometryTitle => 'No surveyed map for this hole';
+
+  @override
+  String get holeNoGeometryBody =>
+      'We haven\'t digitised this hole yet. The satellite view is real imagery — measure the distances you need.';
+
+  @override
+  String get holeNoGeometryBadge => 'Not surveyed';
 }

@@ -72,3 +72,7 @@ flutter:
   uses-material-design: true
   # Generates AppLocalizations from lib/l10n/*.arb (see l10n.yaml)
   generate: true
+  assets:
+    # Mapbox's own logo. Mapbox's terms require it on screen whenever their
+    # satellite imagery is displayed — see satellite_imagery_config.dart.
+    - assets/imagery/

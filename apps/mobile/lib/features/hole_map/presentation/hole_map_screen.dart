@@ -7,7 +7,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:mobile_theme/mobile_theme.dart';
+// mobile_theme also exports a DistanceUnit; the profile one is canonical here.
+import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
 import '../../hole_map/presentation/hole_map_bloc.dart';
 import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
@@ -15,6 +16,9 @@ import '../../hole_map/domain/hole_map_entity.dart';
 import 'widgets/hole_map_view.dart';
 import 'widgets/map_loading_skeleton.dart';
 import 'widgets/map_error_view.dart';
+import 'package:vsp_mobile/domain/services/location_service.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main scaffold for the strategic hole map display.
@@ -24,12 +28,20 @@ class HoleMapScreen extends StatelessWidget {
   final String courseName;
   final int holeNumber;
 
+  /// GPS source for the satellite measuring tool. Optional.
+  final LocationService? locationService;
+
+  /// Starting display unit when no ProfileBloc is in scope.
+  final DistanceUnit? distanceUnit;
+
   const HoleMapScreen({
     super.key,
     required this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
+    this.locationService,
+    this.distanceUnit,
   });
 
   @override
@@ -47,7 +59,10 @@ class HoleMapScreen extends StatelessWidget {
                 holeNumber: holeNumber,
               ),
             ),
-          child: const _HoleMapBody(),
+          child: _HoleMapBody(
+            locationService: locationService,
+            distanceUnit: distanceUnit,
+          ),
         ),
       ),
     );
@@ -55,7 +70,10 @@ class HoleMapScreen extends StatelessWidget {
 }
 
 class _HoleMapBody extends StatelessWidget {
-  const _HoleMapBody();
+  final LocationService? locationService;
+  final DistanceUnit? distanceUnit;
+
+  const _HoleMapBody({this.locationService, this.distanceUnit});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +99,11 @@ class _HoleMapBody extends StatelessWidget {
         }
 
         if (state is HoleMapReady) {
-          return _ReadyContent(state: state);
+          return _ReadyContent(
+            state: state,
+            locationService: locationService,
+            distanceUnit: distanceUnit,
+          );
         }
 
         return const SizedBox.shrink();
@@ -143,8 +165,14 @@ class _ErrorContent extends StatelessWidget {
 
 class _ReadyContent extends StatelessWidget {
   final HoleMapReady state;
+  final LocationService? locationService;
+  final DistanceUnit? distanceUnit;
 
-  const _ReadyContent({required this.state});
+  const _ReadyContent({
+    required this.state,
+    this.locationService,
+    this.distanceUnit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -158,7 +186,13 @@ class _ReadyContent extends StatelessWidget {
           par: holeMap.par,
           yardage: holeMap.yardage,
         ),
-        Expanded(child: HoleMapView(state: state)),
+        Expanded(
+          child: HoleMapView(
+            state: state,
+            locationService: locationService,
+            distanceUnit: distanceUnit,
+          ),
+        ),
       ],
     );
   }

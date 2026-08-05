@@ -1433,5 +1433,106 @@
       }
     }
   },
-  "msgEmptyPackage": "The course package is empty — nothing to download. Contact support if this course should be available offline."
+  "msgEmptyPackage": "The course package is empty — nothing to download. Contact support if this course should be available offline.",
+  "measureTitle": "Measure",
+  "measureTooltip": "Measuring tool",
+  "measureHint": "Tap the map to drop a point. Tap a point again to remove it.",
+  "measureClear": "Clear",
+  "measureUndo": "Undo last point",
+  "measureFromYou": "From you",
+  "measureLegLabel": "Point {index}",
+  "@measureLegLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "measureToGreen": "On to green",
+  "measureTotal": "Total",
+  "measurePoints": "{count, plural, =0{No points} =1{1 point} other{{count} points}}",
+  "@measurePoints": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "measureNoFix": "No GPS fix — distances from your position are unavailable.",
+  "measureWeakFix": "Weak GPS fix. Treat these distances as approximate.",
+  "measureStaleFix": "GPS fix is out of date. Move to open sky for a fresh reading.",
+  "measureAccuracy": "GPS ±{meters} m",
+  "@measureAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "measureTolerance": "give or take {value}",
+  "@measureTolerance": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "measureGreenUnknown": "No green position for this hole",
+  "measureGreenEstimated": "Green position is estimated, not surveyed",
+  "measureGreenSurveyed": "Green position is surveyed",
+  "measureEmptyTitle": "Measure any distance",
+  "measureEmptyBody": "Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.",
+  "measureQualityGood": "Good",
+  "measureQualityFair": "Fair",
+  "measureQualityPoor": "Rough",
+  "measureQualityUnusable": "Unreliable",
+  "measureQualityLabel": "Measurement quality: {quality}",
+  "@measureQualityLabel": {
+    "placeholders": {
+      "quality": {
+        "type": "String"
+      }
+    }
+  },
+  "measureRemovePoint": "Remove point {index}",
+  "@measureRemovePoint": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "measureSemanticsLeg": "{label}: {distance}, give or take {tolerance}",
+  "@measureSemanticsLeg": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      },
+      "tolerance": {
+        "type": "String"
+      }
+    }
+  },
+  "basemapSatellite": "Satellite",
+  "basemapCourseMap": "Course map",
+  "basemapSwitchToSatellite": "Switch to satellite imagery",
+  "basemapSwitchToCourseMap": "Switch to course map",
+  "basemapSatelliteUnavailableTitle": "Satellite imagery unavailable",
+  "basemapSatelliteUnavailableBody": "This build has no imagery provider configured, so satellite view is turned off.",
+  "basemapSatelliteOfflineBody": "Satellite imagery needs a connection. Distances still work from your GPS position.",
+  "basemapAttributionImproveMap": "Improve this map",
+  "basemapAttributionSemantics": "Imagery attribution: {attribution}",
+  "@basemapAttributionSemantics": {
+    "placeholders": {
+      "attribution": {
+        "type": "String"
+      }
+    }
+  },
+  "holeNoGeometryTitle": "No surveyed map for this hole",
+  "holeNoGeometryBody": "We haven't digitised this hole yet. The satellite view is real imagery — measure the distances you need.",
+  "holeNoGeometryBadge": "Not surveyed"
 }

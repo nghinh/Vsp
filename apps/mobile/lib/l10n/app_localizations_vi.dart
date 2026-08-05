@@ -2548,4 +2548,153 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get msgEmptyPackage =>
       'Gói dữ liệu sân rỗng — không có gì để tải. Hãy báo bộ phận hỗ trợ nếu sân này cần dùng được ngoại tuyến.';
+
+  @override
+  String get measureTitle => 'Đo khoảng cách';
+
+  @override
+  String get measureTooltip => 'Công cụ đo';
+
+  @override
+  String get measureHint =>
+      'Chạm vào bản đồ để đặt điểm. Chạm lại vào điểm để xoá.';
+
+  @override
+  String get measureClear => 'Xoá hết';
+
+  @override
+  String get measureUndo => 'Xoá điểm cuối';
+
+  @override
+  String get measureFromYou => 'Từ bạn';
+
+  @override
+  String measureLegLabel(String index) {
+    return 'Điểm $index';
+  }
+
+  @override
+  String get measureToGreen => 'Tới green';
+
+  @override
+  String get measureTotal => 'Tổng';
+
+  @override
+  String measurePoints(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count điểm',
+      one: '1 điểm',
+      zero: 'Chưa có điểm',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get measureNoFix =>
+      'Chưa có tín hiệu GPS — không thể tính khoảng cách từ vị trí của bạn.';
+
+  @override
+  String get measureWeakFix =>
+      'Tín hiệu GPS yếu. Hãy xem các khoảng cách này là ước lượng.';
+
+  @override
+  String get measureStaleFix =>
+      'Vị trí GPS đã cũ. Hãy ra chỗ thoáng để lấy tín hiệu mới.';
+
+  @override
+  String measureAccuracy(String meters) {
+    return 'GPS ±$meters m';
+  }
+
+  @override
+  String measureTolerance(String value) {
+    return 'sai số $value';
+  }
+
+  @override
+  String get measureGreenUnknown => 'Hố này chưa có vị trí green';
+
+  @override
+  String get measureGreenEstimated =>
+      'Vị trí green là ước lượng, chưa được khảo sát';
+
+  @override
+  String get measureGreenSurveyed => 'Vị trí green đã được khảo sát';
+
+  @override
+  String get measureEmptyTitle => 'Đo mọi khoảng cách';
+
+  @override
+  String get measureEmptyBody =>
+      'Chạm vào cờ, mép bunker hoặc điểm layup trên ảnh vệ tinh để đo.';
+
+  @override
+  String get measureQualityGood => 'Tốt';
+
+  @override
+  String get measureQualityFair => 'Khá';
+
+  @override
+  String get measureQualityPoor => 'Tương đối';
+
+  @override
+  String get measureQualityUnusable => 'Không đáng tin';
+
+  @override
+  String measureQualityLabel(String quality) {
+    return 'Chất lượng phép đo: $quality';
+  }
+
+  @override
+  String measureRemovePoint(String index) {
+    return 'Xoá điểm $index';
+  }
+
+  @override
+  String measureSemanticsLeg(String label, String distance, String tolerance) {
+    return '$label: $distance, sai số $tolerance';
+  }
+
+  @override
+  String get basemapSatellite => 'Vệ tinh';
+
+  @override
+  String get basemapCourseMap => 'Bản đồ sân';
+
+  @override
+  String get basemapSwitchToSatellite => 'Chuyển sang ảnh vệ tinh';
+
+  @override
+  String get basemapSwitchToCourseMap => 'Chuyển sang bản đồ sân';
+
+  @override
+  String get basemapSatelliteUnavailableTitle => 'Không có ảnh vệ tinh';
+
+  @override
+  String get basemapSatelliteUnavailableBody =>
+      'Bản dựng này chưa cấu hình nguồn ảnh vệ tinh nên chế độ vệ tinh đã tắt.';
+
+  @override
+  String get basemapSatelliteOfflineBody =>
+      'Ảnh vệ tinh cần kết nối mạng. Khoảng cách vẫn tính được từ GPS của bạn.';
+
+  @override
+  String get basemapAttributionImproveMap => 'Góp ý bản đồ';
+
+  @override
+  String basemapAttributionSemantics(String attribution) {
+    return 'Nguồn ảnh: $attribution';
+  }
+
+  @override
+  String get holeNoGeometryTitle => 'Hố này chưa có bản đồ khảo sát';
+
+  @override
+  String get holeNoGeometryBody =>
+      'Chúng tôi chưa số hoá hố này. Ảnh vệ tinh là ảnh thật — hãy tự đo khoảng cách bạn cần.';
+
+  @override
+  String get holeNoGeometryBadge => 'Chưa khảo sát';
 }

@@ -10,7 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import 'package:mobile_theme/mobile_theme.dart';
+// mobile_theme also exports a DistanceUnit; the profile one is canonical here.
+import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/pin_entity.dart';
@@ -28,6 +29,19 @@ import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+// Satellite basemap + manual measuring, for holes we never surveyed.
+import 'package:vsp_mobile/domain/models/qualified_location.dart';
+import 'package:vsp_mobile/domain/services/location_service.dart';
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as vsp;
+import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
+import 'package:vsp_mobile/features/basemap/presentation/widgets/basemap_toggle.dart';
+import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/measure/presentation/measure_cubit.dart';
+import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_banner.dart';
+import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Main MapLibre-based hole map view widget.
 ///
@@ -37,7 +51,19 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 class HoleMapView extends StatefulWidget {
   final HoleMapReady state;
 
-  const HoleMapView({super.key, required this.state});
+  /// GPS source for the measuring tool. Optional — without it the tool falls
+  /// back to the position already in [HoleMapReady].
+  final LocationService? locationService;
+
+  /// Display unit to start from when no ProfileBloc is in scope.
+  final DistanceUnit? distanceUnit;
+
+  const HoleMapView({
+    super.key,
+    required this.state,
+    this.locationService,
+    this.distanceUnit,
+  });
 
   @override
   State<HoleMapView> createState() => _HoleMapViewState();
@@ -46,6 +72,14 @@ class HoleMapView extends StatefulWidget {
 class _HoleMapViewState extends State<HoleMapView> {
   MapLibreMapController? _mapController;
   bool _isInitialized = false;
+
+  /// Imagery configuration baked into this build.
+  final SatelliteImageryConfig _imagery =
+      SatelliteImageryConfig.fromEnvironment();
+
+  /// Which basemap is showing. Holes with no surveyed geometry open straight
+  /// into satellite + measuring — an empty vector map helps nobody.
+  BasemapMode _basemapMode = BasemapMode.courseMap;
 
   // Cached symbol sources to avoid unnecessary style updates
   final Map<String, bool> _addedSources = {};
@@ -271,6 +305,14 @@ class _HoleMapViewState extends State<HoleMapView> {
   @override
   void initState() {
     super.initState();
+
+    _hasStrategicGeometry = HoleGeometryCoverage.hasStrategicGeometry(
+      widget.state.holeMap,
+    );
+    if (!_hasStrategicGeometry && _imagery.isAvailable) {
+      _basemapMode = BasemapMode.satellite;
+    }
+
     // Update overlay source once map is ready
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -279,10 +321,94 @@ class _HoleMapViewState extends State<HoleMapView> {
     });
   }
 
+  /// Whether this hole has geometry worth drawing as a vector map.
+  late final bool _hasStrategicGeometry;
+
   @override
   Widget build(BuildContext context) {
     return RepaintBoundary(
-      child: Stack(
+      child: _basemapMode == BasemapMode.satellite
+          ? _buildSatelliteMode(context)
+          : _buildCourseMapMode(context),
+    );
+  }
+
+  // ─── Satellite + measuring ─────────────────────────────────────────────────
+
+  Widget _buildSatelliteMode(BuildContext context) {
+    final holeMap = widget.state.holeMap;
+    final toggle = _buildBasemapToggle();
+
+    return BlocProvider<MeasureCubit>(
+      create: (_) => MeasureCubit(
+        locationService: widget.locationService,
+        green: HoleGeometryCoverage.greenAnchor(holeMap),
+        unit: DistanceUnitScope.resolve(
+          context,
+          fallback: widget.distanceUnit ?? DistanceUnit.meters,
+        ),
+        initialOrigin: _originFromMapState(),
+      ),
+      child: Column(
+        children: [
+          if (!_hasStrategicGeometry)
+            NoGeometryBanner(trailing: toggle)
+          else
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
+              color: const Color(0xFF1E293B),
+              alignment: Alignment.centerRight,
+              child: toggle,
+            ),
+          Expanded(
+            child: SatelliteMeasureView(
+              config: _imagery,
+              fallbackCenter: _fallbackCenter(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Reuses the position already on the map so the measuring tool has
+  /// something to work with before its own GPS stream produces a fix.
+  QualifiedLocation? _originFromMapState() {
+    final position = widget.state.golferPosition;
+    if (position == null) return null;
+    return QualifiedLocation(
+      latitude: position.latitude,
+      longitude: position.longitude,
+      accuracyMeters: position.accuracy,
+      timestamp: position.timestamp,
+      source: LocationSource.gps,
+      isStale: position.isStale,
+    );
+  }
+
+  vsp.LatLng? _fallbackCenter() {
+    final lat = widget.state.holeMap.mapCenterLat;
+    final lng = widget.state.holeMap.mapCenterLng;
+    if (lat == null || lng == null) return null;
+    return vsp.LatLng(latitude: lat, longitude: lng);
+  }
+
+  Widget _buildBasemapToggle() {
+    return BasemapToggle(
+      mode: _basemapMode,
+      satelliteAvailable: _imagery.isAvailable,
+      onChanged: (mode) {
+        if (mode == _basemapMode) return;
+        setState(() => _basemapMode = mode);
+      },
+    );
+  }
+
+  // ─── Vector course map ─────────────────────────────────────────────────────
+
+  Widget _buildCourseMapMode(BuildContext context) {
+    return Stack(
         children: [
           // MapLibre GL map
           _buildMap(),
@@ -337,8 +463,15 @@ class _HoleMapViewState extends State<HoleMapView> {
               top: MediaQuery.of(context).padding.top + 8,
               child: DistanceRingOverlay(rings: widget.state.distanceRings),
             ),
-        ],
-      ),
+
+          // Basemap switch — satellite imagery is always one tap away
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 72,
+            child: Center(child: _buildBasemapToggle()),
+          ),
+      ],
     );
   }
 
