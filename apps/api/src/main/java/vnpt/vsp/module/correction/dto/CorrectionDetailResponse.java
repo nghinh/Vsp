@@ -52,6 +52,20 @@ public class CorrectionDetailResponse {
     /** Geometry layer for a golfer-reported layer correction; null otherwise. */
     private String geometryLayer;
 
+    /**
+     * The shape the reporter proposes, as SRID 4326 WKT; null for a correction
+     * that carries no geometry.
+     *
+     * <p>This is the correction. A reviewer deciding whether to approve one
+     * needs to see the shape next to the official geometry, and until now the
+     * only way to get it was a second call to the map-context endpoint.</p>
+     *
+     * <p>Supplied by the caller from {@code ST_AsText} for the same reason as
+     * {@link #reporterGpsLocation}: the mapped field holds the EWKB hex JDBC
+     * returns for a geometry column.</p>
+     */
+    private String proposedGeometry;
+
     /** Reporter's horizontal GPS accuracy in metres at submission time. */
     private Double gpsAccuracyMeters;
 
@@ -83,12 +97,15 @@ public class CorrectionDetailResponse {
     // ─── Factory method ───────────────────────────────────────────────────────
 
     /**
-     * @param reporterGpsWkt the reporter's position read back with
-     *                       {@code ST_AsText} (SRID 4326 WKT), or null when the
-     *                       correction carries no position
+     * @param reporterGpsWkt      the reporter's position read back with
+     *                            {@code ST_AsText} (SRID 4326 WKT), or null when
+     *                            the correction carries no position
+     * @param proposedGeometryWkt the proposed shape read back with
+     *                            {@code ST_AsText} (SRID 4326 WKT), or null when
+     *                            the correction is not a geometry correction
      */
     public static CorrectionDetailResponse fromEntity(CourseCorrection c, String courseName, Integer holeNumber,
-                                                      String reporterGpsWkt) {
+                                                      String reporterGpsWkt, String proposedGeometryWkt) {
         CorrectionDetailResponse r = new CorrectionDetailResponse();
         r.setId(c.getId());
         r.setCourseId(c.getCourseId());
@@ -103,6 +120,7 @@ public class CorrectionDetailResponse {
         r.setStatus(c.getStatus().name());
         r.setConfidence(c.getConfidence());
         r.setGeometryLayer(c.getGeometryLayer() != null ? c.getGeometryLayer().getWireValue() : null);
+        r.setProposedGeometry(proposedGeometryWkt);
         r.setGpsAccuracyMeters(c.getGpsAccuracyMeters());
         r.setCorroborationCount(c.getCorroborationCount());
         r.setSubmittedAt(c.getSubmittedAt());
@@ -127,6 +145,9 @@ public class CorrectionDetailResponse {
 
     public String getGeometryLayer() { return geometryLayer; }
     public void setGeometryLayer(String geometryLayer) { this.geometryLayer = geometryLayer; }
+
+    public String getProposedGeometry() { return proposedGeometry; }
+    public void setProposedGeometry(String proposedGeometry) { this.proposedGeometry = proposedGeometry; }
 
     public Double getGpsAccuracyMeters() { return gpsAccuracyMeters; }
     public void setGpsAccuracyMeters(Double gpsAccuracyMeters) { this.gpsAccuracyMeters = gpsAccuracyMeters; }

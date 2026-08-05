@@ -30,14 +30,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * The admin correction detail view, which documents
- * {@code reporterGpsLocation} as SRID 4326 WKT.
+ * The admin correction detail view, which documents both of its geometry fields
+ * as SRID 4326 WKT.
  *
  * <p>Reading the mapped entity field gives whatever JDBC returns for a geometry
  * column, which is EWKB hex ({@code 0101000020E6100000…}) — unusable to the
  * reviewer's map and not what the field says it is. The golfer-facing
  * geometry-corrections endpoint already reads its geometry back through
- * {@code ST_AsText}; this is the admin path doing the same.</p>
+ * {@code ST_AsText}; this is the admin path doing the same, for the reporter's
+ * position and for the shape they are proposing.</p>
  */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -46,6 +47,9 @@ class CorrectionServiceImplDetailTest {
     private static final Long CORRECTION_ID = 42L;
     private static final String EWKB_HEX = "0101000020E61000009A99999999595A409A99999999193540";
     private static final String WKT = "POINT(105.4 21.1)";
+    private static final String PROPOSED_HEX = "0103000020E610000001000000050000000000000000C05A40";
+    private static final String PROPOSED_WKT =
+            "POLYGON((105.4 21.1,105.401 21.1,105.401 21.101,105.4 21.101,105.4 21.1))";
 
     @Mock private CourseCorrectionRepository correctionRepository;
     @Mock private CourseRepository courseRepository;
@@ -104,5 +108,34 @@ class CorrectionServiceImplDetailTest {
 
         assertNull(detail.getReporterGpsLocation());
         verify(correctionRepository, never()).findReporterGpsLocationWkt(CORRECTION_ID);
+    }
+
+    @Test
+    @DisplayName("the proposed shape is in the detail response as WKT — the reviewer sees what is being claimed")
+    void proposedGeometryIsWkt() {
+        CourseCorrection c = correction(EWKB_HEX);
+        c.setProposedGeometry(PROPOSED_HEX);
+        when(correctionRepository.findById(CORRECTION_ID)).thenReturn(Optional.of(c));
+        when(correctionRepository.findReporterGpsLocationWkt(CORRECTION_ID)).thenReturn(WKT);
+        when(correctionRepository.findProposedGeometryWkt(CORRECTION_ID)).thenReturn(PROPOSED_WKT);
+        stubCourseAndHole();
+
+        CorrectionDetailResponse detail = service.getDetail(CORRECTION_ID);
+
+        assertEquals(PROPOSED_WKT, detail.getProposedGeometry());
+    }
+
+    @Test
+    @DisplayName("a non-geometry correction carries no shape and costs no extra query")
+    void nullProposedGeometryStaysNull() {
+        when(correctionRepository.findById(CORRECTION_ID))
+                .thenReturn(Optional.of(correction(EWKB_HEX)));
+        when(correctionRepository.findReporterGpsLocationWkt(CORRECTION_ID)).thenReturn(WKT);
+        stubCourseAndHole();
+
+        CorrectionDetailResponse detail = service.getDetail(CORRECTION_ID);
+
+        assertNull(detail.getProposedGeometry());
+        verify(correctionRepository, never()).findProposedGeometryWkt(CORRECTION_ID);
     }
 }

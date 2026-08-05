@@ -79,6 +79,13 @@ export interface CorrectionDetailResponse {
   /** Reporter's GPS location as SRID 4326 WKT (e.g. "POINT(106.7205 10.8506)") */
   reporterGpsLocation: string | null;
 
+  /**
+   * The shape the reporter proposes, as SRID 4326 WKT; null when the correction
+   * carries no geometry. Previously only reachable through the map-context
+   * endpoint, so the detail panel could not draw what was being claimed.
+   */
+  proposedGeometry: string | null;
+
   // Classification
   correctionType: CorrectionTypeValue;
   status: CorrectionStatusValue;

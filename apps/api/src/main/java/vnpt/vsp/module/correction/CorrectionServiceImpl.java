@@ -157,14 +157,20 @@ public class CorrectionServiceImpl implements CorrectionService {
                     .orElse(null);
         }
 
-        // Read the geometry back through PostGIS. The entity's mapped String is
-        // the EWKB hex JDBC returns for a geometry column, which no reviewer's
-        // map can plot and which the response schema documents as WKT.
+        // Read both geometries back through PostGIS. The entity's mapped Strings
+        // are the EWKB hex JDBC returns for a geometry column, which no
+        // reviewer's map can plot and which the response schema documents as
+        // WKT. Each query is skipped when the column is empty, so a correction
+        // without a position or without a proposed shape costs nothing extra.
         String reporterGpsWkt = correction.getReporterGpsLocation() != null
                 ? correctionRepository.findReporterGpsLocationWkt(correctionId)
                 : null;
+        String proposedGeometryWkt = correction.getProposedGeometry() != null
+                ? correctionRepository.findProposedGeometryWkt(correctionId)
+                : null;
 
-        return CorrectionDetailResponse.fromEntity(correction, courseName, holeNumber, reporterGpsWkt);
+        return CorrectionDetailResponse.fromEntity(
+                correction, courseName, holeNumber, reporterGpsWkt, proposedGeometryWkt);
     }
 
     // ─── review ────────────────────────────────────────────────────────────────
