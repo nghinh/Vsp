@@ -61,10 +61,101 @@ public class ScoreServiceImpl implements ScoreService {
         this.auditService = auditService;
     }
 
-    // syncScores is a stub — not yet implemented in this slice
+    /**
+     * Apply a batch of per-hole score updates queued on the device.
+     *
+     * The mobile app is offline-first: it stores every hole entry locally and
+     * flushes the queue here, so this must be an idempotent upsert — replaying
+     * the same batch after a flaky network must not duplicate or double-count
+     * entries. Each update targets (round, player, hole) and overwrites that
+     * hole's values.
+     *
+     * @param accountId      the authenticated golfer (also the default player)
+     * @param idempotencyKey the client's batch key, echoed as the event id
+     * @param request        the queued score updates
+     * @return SYNCED with the applied event id
+     */
     @Override
+    @Transactional
     public SyncStatusResponse syncScores(Long accountId, String idempotencyKey, ScoreSyncRequest request) {
-        throw new UnsupportedOperationException("syncScores not yet implemented");
+        if (request == null || request.roundId() == null) {
+            throw new VspApiException(VspErrorCode.ROUND_001, "roundId");
+        }
+
+        Round round = roundRepository.findById(request.roundId())
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001, "roundId"));
+
+        // A golfer may only sync scores for their own round.
+        if (!round.getGolferAccountId().equals(accountId)) {
+            throw new VspApiException(VspErrorCode.AUTH_010, "roundId");
+        }
+
+        List<vnpt.vsp.module.score.entity.Score> roundScores =
+                scoreRepository.findByRoundIdAndDeletedAtIsNull(request.roundId());
+
+        int applied = 0;
+        if (request.scores() != null) {
+            for (ScoreSyncRequest.ScoreUpdate update : request.scores()) {
+                // playerId is optional on the wire — an absent one means the
+                // authenticated golfer, which is the single-player case.
+                Long playerId = update.playerId() != null ? update.playerId() : accountId;
+
+                vnpt.vsp.module.score.entity.Score playerScore = roundScores.stream()
+                        .filter(sc -> sc.getGolferAccountId().equals(playerId))
+                        .findFirst()
+                        .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_005, "playerId"));
+
+                // Skip holes with no strokes yet: the device queues placeholders
+                // for unplayed holes and they must not create empty entries.
+                if (update.grossScore() == null) {
+                    continue;
+                }
+
+                ScoreEntry entry = scoreEntryRepository
+                        .findByScoreIdAndHoleNumber(playerScore.getId(), update.holeIndex())
+                        .orElseGet(() -> {
+                            ScoreEntry created = new ScoreEntry();
+                            created.setScoreId(playerScore.getId());
+                            created.setHoleNumber(update.holeIndex());
+                            return created;
+                        });
+
+                entry.setStrokes(update.grossScore());
+                if (entry.getPar() == null) {
+                    // Par comes from the course package on the device; default to
+                    // 4 so the not-null column is satisfied for ad-hoc syncs.
+                    entry.setPar(4);
+                }
+                if (update.putts() != null) {
+                    entry.setPutts(update.putts());
+                }
+                if (update.penalties() != null) {
+                    entry.setPenalties(update.penalties());
+                }
+                entry.setFairwayHit(update.fairwayHit());
+                entry.setGir(update.gir());
+                entry.setBunker(update.bunker());
+                if (update.notes() != null) {
+                    entry.setNotes(update.notes());
+                }
+
+                scoreEntryRepository.save(entry);
+                applied++;
+            }
+        }
+
+        log.info("Synced {} score entries for round {} (account {})",
+                applied, request.roundId(), accountId);
+
+        UUID eventId = request.clientEventId() != null
+                ? request.clientEventId()
+                : UUID.nameUUIDFromBytes(idempotencyKey.getBytes());
+
+        SyncStatusResponse response = new SyncStatusResponse();
+        response.setEventId(eventId);
+        response.setStatus(SyncStatusResponse.Status.SYNCED);
+        response.setSyncedAt(Instant.now());
+        return response;
     }
 
     @Override

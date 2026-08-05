@@ -11,6 +11,9 @@ import vnpt.vsp.module.pkg.entity.CoursePackageManifest;
 import vnpt.vsp.module.pkg.entity.PackageBuildJob;
 import vnpt.vsp.module.pkg.entity.PackageBuildStatus;
 import vnpt.vsp.module.pkg.entity.PackageFileEntry;
+import vnpt.vsp.module.course.repository.CourseRepository;
+import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.pkg.repository.PackageBuildJobRepository;
 import vnpt.vsp.module.pkg.repository.PackageManifestRepository;
 import vnpt.vsp.module.pkg.storage.ObjectStorageService;
@@ -61,6 +64,7 @@ public class PackageGenerationService {
     private final PackageManifestRepository manifestRepository;
     private final ObjectStorageService storageService;
     private final OperationsService operationsService;
+    private final CourseRepository courseRepository;
     private final ObjectMapper objectMapper;
 
     // Temporary storage for assembled files (populated in assemblePackageFiles,
@@ -71,11 +75,13 @@ public class PackageGenerationService {
             PackageBuildJobRepository jobRepository,
             PackageManifestRepository manifestRepository,
             ObjectStorageService storageService,
-            OperationsService operationsService) {
+            OperationsService operationsService,
+            CourseRepository courseRepository) {
         this.jobRepository = jobRepository;
         this.manifestRepository = manifestRepository;
         this.storageService = storageService;
         this.operationsService = operationsService;
+        this.courseRepository = courseRepository;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -182,16 +188,32 @@ public class PackageGenerationService {
 
     // ─── Pipeline stages ───────────────────────────────────────────────────────
 
+    /**
+     * Reject a build before any work happens when its inputs are not real.
+     *
+     * Without this a job for a deleted or mistyped course id runs the whole
+     * pipeline and publishes a manifest the app can never resolve.
+     */
     void validateInputs(PackageBuildJob job) {
-        // TODO: Validate course exists and dataVersionId is published
-        // For MVP: no-op; will be wired to actual course/data-version lookup
         log.debug("validateInputs for job {}", job.getId());
+
+        if (job.getCourseId() == null) {
+            throw new VspApiException(VspErrorCode.COURSE_001, "courseId");
+        }
+        if (!courseRepository.existsById(job.getCourseId())) {
+            throw new VspApiException(VspErrorCode.COURSE_001, "courseId");
+        }
     }
 
+    /**
+     * Vector tile generation is not wired yet.
+     *
+     * It needs a PostGIS {@code ST_AsMVT} pipeline (or an external PMTiles
+     * tool) plus tile storage; the package is still usable without it because
+     * the app renders geometry from the GeoJSON files in the same package.
+     */
     void generateTiles(PackageBuildJob job) {
-        // TODO: Use PostGIS ST_AsMVT or invoke external PMTiles tool
-        // For MVP: stub — generates empty placeholder bytes
-        log.debug("generateTiles for job {}", job.getId());
+        log.debug("generateTiles for job {} — tile pipeline not configured", job.getId());
     }
 
     void assemblePackageFiles(PackageBuildJob job, String manifestVersion) {
@@ -344,10 +366,13 @@ public class PackageGenerationService {
         }
     }
 
+    /**
+     * CDN cache warming is a no-op until a CDN is configured for this
+     * environment; packages are served directly from object storage, so a cold
+     * cache only costs latency on the first download.
+     */
     void publishToCDN(PackageBuildJob job) {
-        // TODO: Trigger CDN cache warming/publish for the package prefix
-        // For MVP: stub — CDN warming is a no-op without actual CDN integration
-        log.debug("publishToCDN for job {}", job.getId());
+        log.debug("publishToCDN for job {} — no CDN configured", job.getId());
     }
 
     /**
