@@ -49,7 +49,7 @@ class PackageControllerTest {
                 courseId,
                 courseId,               // dataVersionId
                 "1.0." + courseId,      // version
-                0L,                     // packageSizeBytes
+                1_024L,                 // packageSizeBytes — a published package has payload
                 "abc123",               // checksum
                 Instant.parse("2026-08-01T00:00:00Z"),
                 "1.0.0",

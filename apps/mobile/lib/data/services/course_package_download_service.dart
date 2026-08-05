@@ -151,6 +151,23 @@ class CoursePackageDownloadService {
         );
       }
 
+      // A manifest with no files cannot make the course playable offline.
+      // Without this guard the loop below has nothing to do, the pending
+      // manifest is promoted to active, and the app tells the golfer the course
+      // is "Offline Ready" having downloaded zero bytes — they would find out
+      // on the tee, with no map.
+      if (remoteManifest.files.isEmpty) {
+        _emitError(
+          courseId,
+          'Course package contains no files.',
+          error: DownloadError.serverError,
+        );
+        return DownloadPackageFailure(
+          message: AppMessages.emptyPackage,
+          error: DownloadError.serverError,
+        );
+      }
+
       // Step 2: Compare with local active manifest
       final localManifest = await _manifestRepo.getActiveManifest(courseId);
       if (localManifest != null &&

@@ -91,6 +91,7 @@ abstract final class AppMessages {
   static const serverError = 'msg.serverError';
   static const storageError = 'msg.storageError';
   static const unexpectedError = 'msg.unexpectedError';
+  static const emptyPackage = 'msg.emptyPackage';
 
   // GPS quality warnings (see LocationWarning.detail for the numeric part)
   static const gpsUnavailable = 'msg.gpsUnavailable';
@@ -198,6 +199,7 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.weatherNoCache => l10n.weatherNoCache,
     AppMessages.weatherCacheExpired => l10n.weatherCacheExpired,
     AppMessages.weatherLocationUnavailable => l10n.weatherLocationUnavailable,
+    AppMessages.emptyPackage => l10n.msgEmptyPackage,
     _ => raw ?? '',
   };
 }

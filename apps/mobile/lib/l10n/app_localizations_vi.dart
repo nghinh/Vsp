@@ -2544,4 +2544,8 @@ class AppLocalizationsVi extends AppLocalizations {
   String weatherTemperatureLabel(String value, String unit) {
     return 'Nhiệt độ $value $unit';
   }
+
+  @override
+  String get msgEmptyPackage =>
+      'Gói dữ liệu sân rỗng — không có gì để tải. Hãy báo bộ phận hỗ trợ nếu sân này cần dùng được ngoại tuyến.';
 }

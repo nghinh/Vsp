@@ -250,6 +250,36 @@ void main() {
         );
       }
     });
+
+    test('9. serves a downloadable course package', () async {
+      if (!reachable || course == null) return;
+
+      final res = await http.get(
+        Uri.parse('$_baseUrl/courses/${course!.courseId}/packages/current'),
+        headers: {'Authorization': 'Bearer $accessToken'},
+      );
+      if (res.statusCode == 404) {
+        // No package published for this course — nothing to download, and the
+        // app correctly shows "not downloaded".
+        return;
+      }
+      expect(res.statusCode, 200, reason: res.body);
+
+      final manifest = jsonDecode(res.body) as Map<String, dynamic>;
+      final files = (manifest['files'] as List?) ?? const [];
+
+      // A published manifest must carry the files it promises: the download
+      // service refuses an empty package rather than reporting a course as
+      // "Offline Ready" having fetched nothing.
+      expect(
+        files,
+        isNotEmpty,
+        reason: 'package ${manifest['version']} for course '
+            '${course!.courseId} lists no files — publishing it makes offline '
+            'play impossible',
+      );
+      expect((manifest['sizeBytes'] as num?)?.toInt() ?? 0, greaterThan(0));
+    });
   });
 
   tearDownAll(() {

@@ -4699,6 +4699,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Temperature {value} {unit}'**
   String weatherTemperatureLabel(String value, String unit);
+
+  /// No description provided for @msgEmptyPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'The course package is empty — nothing to download. Contact support if this course should be available offline.'**
+  String get msgEmptyPackage;
 }
 
 class _AppLocalizationsDelegate

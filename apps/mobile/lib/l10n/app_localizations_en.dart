@@ -2541,4 +2541,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String weatherTemperatureLabel(String value, String unit) {
     return 'Temperature $value $unit';
   }
+
+  @override
+  String get msgEmptyPackage =>
+      'The course package is empty — nothing to download. Contact support if this course should be available offline.';
 }

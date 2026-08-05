@@ -766,5 +766,6 @@
   "weatherWindFromAt": "Gió từ hướng {direction}, tốc độ {speed} km/h",
   "weatherWindFromAtVerbose": "Gió từ hướng {direction}, tốc độ {speed} km mỗi giờ",
   "weatherConditionsLabel": "Điều kiện thời tiết",
-  "weatherTemperatureLabel": "Nhiệt độ {value} {unit}"
+  "weatherTemperatureLabel": "Nhiệt độ {value} {unit}",
+  "msgEmptyPackage": "Gói dữ liệu sân rỗng — không có gì để tải. Hãy báo bộ phận hỗ trợ nếu sân này cần dùng được ngoại tuyến."
 }

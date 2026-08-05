@@ -1,6 +1,8 @@
 package vnpt.vsp.module.pkg;
 
 import org.springframework.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.course.entity.Course;
@@ -45,6 +47,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/courses/{courseId}/packages")
 public class PackageController {
 
+    private static final Logger log = LoggerFactory.getLogger(PackageController.class);
+
     private final PackageService packageService;
     private final CourseRepository courseRepository;
     private final GolfFacilityRepository facilityRepository;
@@ -77,6 +81,17 @@ public class PackageController {
         }
 
         vnpt.vsp.module.pkg.entity.CoursePackageManifest manifest = manifestOpt.get();
+
+        // A manifest with no payload is not a downloadable package. Serving it
+        // makes the app offer a download that fetches nothing and then reports
+        // the course as "Offline Ready" — a promise it cannot keep on the tee.
+        // Until a real package is built for this course, say so with a 404 and
+        // the app shows "not downloaded".
+        if (!hasDownloadableContent(manifest)) {
+            log.warn("Course {} has manifest {} with no payload — treating as unpublished",
+                    courseId, manifest.getVersion());
+            return ResponseEntity.notFound().build();
+        }
         String etag = computeEtag(manifest);
 
         // Conditional fetch: if client ETag matches current ETag, return 304
@@ -420,5 +435,17 @@ public class PackageController {
         public String getCourseName() { return courseName; }
         public Integer getHolesCount() { return holesCount; }
         public Integer getParTotal() { return parTotal; }
+    }
+
+    /**
+     * True when the manifest actually points at bytes the client can fetch.
+     *
+     * A published row with a zero size carries no files, so downloading it is a
+     * no-op.
+     */
+    private static boolean hasDownloadableContent(
+            vnpt.vsp.module.pkg.entity.CoursePackageManifest manifest) {
+        Long size = manifest.getPackageSizeBytes();
+        return size != null && size > 0;
     }
 }

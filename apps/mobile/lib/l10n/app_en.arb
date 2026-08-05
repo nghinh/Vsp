@@ -1432,5 +1432,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "msgEmptyPackage": "The course package is empty — nothing to download. Contact support if this course should be available offline."
 }
