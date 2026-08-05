@@ -64,11 +64,18 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.cloud_download_outlined,
           iconColor: const Color(0xFFF97316), // semantic amber
-          label: 'Course data not downloaded',
+          label: 'Chưa tải dữ liệu sân',
+          subtitle: 'Tải để dùng offline, hoặc chơi luôn (cần mạng)',
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),
+          // "Play Anyway" lets the golfer start the round online without the
+          // offline package (scoring only needs holes/par); Download is for
+          // offline GPS use.
+          secondaryAction: onWarningAcknowledged != null
+              ? _Action(label: 'Chơi luôn', onPressed: onWarningAcknowledged!)
+              : null,
           action: onDownloadPressed != null
-              ? _Action(label: 'Download', onPressed: onDownloadPressed!)
+              ? _Action(label: 'Tải', onPressed: onDownloadPressed!)
               : null,
         );
 
@@ -123,6 +130,7 @@ class PackageStatusBanner extends StatelessWidget {
     required Color backgroundColor,
     required Color textColor,
     _Action? action,
+    _Action? secondaryAction,
   }) {
     final theme = Theme.of(context);
 
@@ -159,13 +167,30 @@ class PackageStatusBanner extends StatelessWidget {
                 ],
               ),
             ),
+            if (secondaryAction != null) ...[
+              const SizedBox(width: 4),
+              TextButton(
+                onPressed: secondaryAction.onPressed,
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(44, 36),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                ),
+                child: Text(
+                  secondaryAction.label,
+                  style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
             if (action != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               TextButton(
                 onPressed: action.onPressed,
                 style: TextButton.styleFrom(
                   minimumSize: const Size(44, 36), // 44pt touch target
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                 ),
                 child: Text(
                   action.label,

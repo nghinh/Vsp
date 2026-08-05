@@ -183,7 +183,12 @@ class RoundConfig extends Equatable {
       );
     }
 
-    if (startTime.isBefore(DateTime.now())) {
+    // Allow a small grace period: an immediate round sets startTime = now(),
+    // and the few milliseconds elapsed before this check must not make it
+    // "in the past". Genuinely past/scheduled times are still rejected.
+    if (startTime.isBefore(
+      DateTime.now().subtract(const Duration(minutes: 1)),
+    )) {
       errors.add(
         const RoundConfigValidationError(
           'startTime',
