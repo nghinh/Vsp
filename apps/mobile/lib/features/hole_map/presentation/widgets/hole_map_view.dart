@@ -23,7 +23,9 @@ import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as vsp;
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
 import 'package:vsp_mobile/features/basemap/presentation/widgets/basemap_toggle.dart';
+import 'package:vsp_mobile/features/hole_map/domain/course_map_style_builder.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
+import 'package:vsp_mobile/features/hole_map/domain/hole_map_geojson.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/features/measure/presentation/measure_cubit.dart';
 import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_banner.dart';
@@ -77,12 +79,16 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
+  }
+
+  /// The style is only queryable once it has loaded — pushing sources or layer
+  /// visibility before that silently does nothing, which is what used to leave
+  /// the overlay empty on first open.
+  void _onStyleLoaded() {
     _isInitialized = true;
-
-    // Apply initial layer visibility
+    _updateCourseGeometrySource(widget.state);
+    _updateOverlaySource(widget.state);
     _applyLayerVisibility(widget.state.layerVisibility);
-
-    // Set initial camera to hole center
     _moveCameraToHole();
   }
 
@@ -102,159 +108,38 @@ class _HoleMapViewState extends State<HoleMapView> {
   }
 
   void _applyLayerVisibility(Map<String, bool> visibility) {
-    if (_mapController == null) return;
-
-    for (final entry in visibility.entries) {
-      final layerId = entry.key;
-      final visible = entry.value;
-
-      // Map style layer IDs from our style.json
-      final styleLayerId = _styleLayerId(layerId);
-      if (styleLayerId != null) {
-        _mapController?.setLayerVisibility(styleLayerId, visible);
-      }
-    }
-  }
-
-  String? _styleLayerId(String layerName) {
-    // Map domain layer names to MapLibre style layer IDs
-    const mapping = {
-      'tee': 'tee-box-symbol',
-      'fairway': 'fairway-fill',
-      'rough': 'rough-fill',
-      'green': 'green-fill',
-      'bunker': 'bunker-fill',
-      'water': 'water-fill',
-      'penaltyArea': 'penalty-area-fill',
-      'ob': 'ob-fill',
-      'cartPath': 'cart-path-line',
-      'landmark': 'landmark-symbol',
-      'pin': 'pin-circle',
-      'golfer': 'golfer-circle',
-      'target': 'target-marker',
-      'wind': 'wind-arrow',
-      'distanceRing100': 'distance-ring-100',
-      'distanceRing150': 'distance-ring-150',
-      'distanceRing200': 'distance-ring-200',
-    };
-    return mapping[layerName];
-  }
-
-  void _updateOverlaySource(HoleMapReady state) {
     if (_mapController == null || !_isInitialized) return;
 
-    // Build GeoJSON feature collection for hole-overlay source
-    final features = <Map<String, dynamic>>[];
-
-    // Golfer position
-    if (state.golferPosition != null) {
-      final pos = state.golferPosition!;
-      features.add({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [pos.longitude, pos.latitude],
-        },
-        'properties': {'layerType': 'golfer'},
-      });
-
-      // Accuracy circle
-      if (pos.accuracy != null) {
-        final radiusDegrees = pos.accuracyDegrees ?? (pos.accuracy! / 111000.0);
-        features.add({
-          'type': 'Feature',
-          'geometry': {
-            'type': 'Point',
-            'coordinates': [pos.longitude, pos.latitude],
-          },
-          'properties': {
-            'layerType': 'golferAccuracy',
-            'radius': radiusDegrees,
-          },
-        });
+    for (final entry in visibility.entries) {
+      // One domain layer is drawn by several style layers (fill, line and
+      // point), so a toggle has to move all of them.
+      for (final styleLayerId
+          in CourseMapStyleBuilder.styleLayerIds(entry.key)) {
+        _mapController?.setLayerVisibility(styleLayerId, entry.value);
       }
     }
+  }
 
-    // Pin
-    if (state.holeMap.pin != null) {
-      final pin = state.holeMap.pin!;
-      features.add({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [pin.longitude, pin.latitude],
-        },
-        'properties': {
-          'layerType': 'pin',
-          'source': pin.source.name,
-          'confidence': pin.confidence,
-        },
-      });
-    }
-
-    // Target
-    if (state.target != null) {
-      final target = state.target!;
-      features.add({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [target.longitude, target.latitude],
-        },
-        'properties': {'layerType': 'target', 'label': target.label},
-      });
-    }
-
-    // Wind
-    if (state.wind != null) {
-      final wind = state.wind!;
-      // Wind arrow positioned at a fixed offset from center
-      final centerLat = state.holeMap.mapCenterLat;
-      final centerLng = state.holeMap.mapCenterLng;
-      if (centerLat != null && centerLng != null) {
-        features.add({
-          'type': 'Feature',
-          'geometry': {
-            'type': 'Point',
-            'coordinates': [centerLng, centerLat],
-          },
-          'properties': {
-            'layerType': 'wind',
-            'direction': wind.direction,
-            'speed': '${wind.speed.toStringAsFixed(1)} ${wind.unit ?? 'km/h'}',
-          },
-        });
-      }
-    }
-
-    // Distance rings
-    for (final ring in state.distanceRings) {
-      if (!ring.visible) continue;
-      features.add({
-        'type': 'Feature',
-        'geometry': {
-          'type': 'Point',
-          'coordinates': [ring.centerLng, ring.centerLat],
-        },
-        'properties': {
-          'layerType': ring.id == 'ring_100'
-              ? 'distanceRing100'
-              : ring.id == 'ring_150'
-              ? 'distanceRing150'
-              : 'distanceRing200',
-          'label': ring.label,
-        },
-      });
-    }
-
-    final featureCollection = {
-      'type': 'FeatureCollection',
-      'features': features,
-    };
-
+  /// Pushes the hole's course-package geometry into the vector source.
+  void _updateCourseGeometrySource(HoleMapReady state) {
+    if (_mapController == null || !_isInitialized) return;
     _mapController?.setGeoJsonSource(
-      'hole-overlay',
-      featureCollection,
+      CourseMapStyleBuilder.courseSourceId,
+      HoleMapGeoJson.courseGeometry(state.holeMap),
+    );
+  }
+
+  /// Pushes the live overlay (golfer, pin, target, rings) into its source.
+  void _updateOverlaySource(HoleMapReady state) {
+    if (_mapController == null || !_isInitialized) return;
+    _mapController?.setGeoJsonSource(
+      CourseMapStyleBuilder.overlaySourceId,
+      HoleMapGeoJson.overlay(
+        golferPosition: state.golferPosition,
+        pin: state.holeMap.pin,
+        target: state.target,
+        distanceRings: state.distanceRings,
+      ),
     );
   }
 
@@ -269,10 +154,15 @@ class _HoleMapViewState extends State<HoleMapView> {
   void didUpdateWidget(HoleMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // Redraw the hole itself when the map moves to another hole.
+    if (widget.state.holeMap.layers != oldWidget.state.holeMap.layers) {
+      _updateCourseGeometrySource(widget.state);
+    }
+
     // Update overlay source when state changes
     if (widget.state.golferPosition != oldWidget.state.golferPosition ||
         widget.state.target != oldWidget.state.target ||
-        widget.state.wind != oldWidget.state.wind ||
+        widget.state.holeMap.pin != oldWidget.state.holeMap.pin ||
         widget.state.distanceRings != oldWidget.state.distanceRings) {
       _updateOverlaySource(widget.state);
     }
@@ -293,14 +183,12 @@ class _HoleMapViewState extends State<HoleMapView> {
     if (!_hasStrategicGeometry && _imagery.isAvailable) {
       _basemapMode = BasemapMode.satellite;
     }
-
-    // Update overlay source once map is ready
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _updateOverlaySource(widget.state);
-      }
-    });
+    // Sources are filled from _onStyleLoaded — before the style is up there is
+    // nothing to put them into.
   }
+
+  /// The vector style, built once: it does not depend on the hole.
+  late final String _courseStyle = CourseMapStyleBuilder.build();
 
   /// Whether this hole has geometry worth drawing as a vector map.
   late final bool _hasStrategicGeometry;
@@ -460,8 +348,9 @@ class _HoleMapViewState extends State<HoleMapView> {
     return Semantics(
       label: AppLocalizations.of(context).mapHoleLabel('${widget.state.holeMap.holeNumber}'),
       child: MapLibreMap(
-        styleString: 'packages/map-style/style.json',
+        styleString: _courseStyle,
         onMapCreated: _onMapCreated,
+        onStyleLoadedCallback: _onStyleLoaded,
         onMapClick: (_, point) => _onMapTap(point),
         initialCameraPosition: CameraPosition(
           target: _holeCenter,
