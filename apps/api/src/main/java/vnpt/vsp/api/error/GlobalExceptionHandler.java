@@ -1,5 +1,9 @@
 package vnpt.vsp.api.error;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
@@ -13,6 +17,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * Central {@link RestControllerAdvice} that converts all API exceptions into
@@ -35,6 +42,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     private static final String CORRELATION_ID_KEY = "correlationId";
+
+    /** Used only to render enum constants in the wire form the client must send. */
+    private final ObjectMapper objectMapper;
+
+    public GlobalExceptionHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Returns the correlation ID from the MDC set by {@link vnpt.vsp.api.error.CorrelationIdFilter},
@@ -98,18 +112,119 @@ public class GlobalExceptionHandler {
 
     // ─── Malformed JSON body ─────────────────────────────────────────────────
 
+    /**
+     * Jackson reports every body it could not turn into the request object as
+     * {@link HttpMessageNotReadableException}, whether the JSON was truly
+     * malformed or merely carried a value the target type rejects. Reporting
+     * both as "Malformed JSON" sends a client developer hunting for a syntax
+     * error in a body whose syntax is perfect — the actual problem, an
+     * unaccepted enum value, is the one case where the server knows exactly
+     * what the client should have sent, so it says so.
+     */
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(
             HttpMessageNotReadableException ex,
             HttpServletRequest request) {
 
-        ErrorResponse body = ErrorResponse.builder()
-                .code(VspErrorCode.VALIDATION_004.getCode())
-                .message("Malformed JSON in request body")
-                .correlationId(correlationId())
-                .build();
+        ErrorResponse body = describeRejectedEnumValue(ex);
+        if (body == null) {
+            body = ErrorResponse.builder()
+                    .code(VspErrorCode.VALIDATION_004.getCode())
+                    .message("Malformed JSON in request body")
+                    .correlationId(correlationId())
+                    .build();
+        }
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * Builds a field-level error for a JSON value that named no constant of an
+     * enum-typed field, or {@code null} when the failure was something else.
+     *
+     * <p>The response names the field, echoes the value the client sent, and
+     * lists the accepted values in their wire form. It never names a Java type
+     * or a package.</p>
+     */
+    private ErrorResponse describeRejectedEnumValue(HttpMessageNotReadableException ex) {
+        JsonMappingException mappingException = findCause(ex, JsonMappingException.class);
+        if (mappingException == null) {
+            return null;
+        }
+
+        Class<?> targetType = null;
+        Object rejectedValue = null;
+        if (mappingException instanceof InvalidFormatException invalidFormat) {
+            // Jackson coerced the value itself and found no matching constant.
+            targetType = invalidFormat.getTargetType();
+            rejectedValue = invalidFormat.getValue();
+        } else if (mappingException instanceof ValueInstantiationException valueInstantiation) {
+            // An @JsonCreator factory rejected the value by throwing.
+            targetType = valueInstantiation.getType() != null
+                    ? valueInstantiation.getType().getRawClass() : null;
+        }
+        if (targetType == null || !targetType.isEnum()) {
+            return null;
+        }
+
+        String field = pathOf(mappingException);
+        String accepted = acceptedValues(targetType);
+        String message = rejectedValue != null
+                ? "Invalid value '%s' for '%s'. Accepted values: %s".formatted(rejectedValue, field, accepted)
+                : "Invalid value for '%s'. Accepted values: %s".formatted(field, accepted);
+
+        return ErrorResponse.builder()
+                .code(VspErrorCode.VALIDATION_003.getCode())
+                .message(message)
+                .correlationId(correlationId())
+                .field(field)
+                .build();
+    }
+
+    /**
+     * The accepted values as the client must spell them — serialised through
+     * Jackson so a {@code @JsonValue} wire form ({@code "green"}) is listed
+     * rather than the constant name ({@code "GREEN"}).
+     */
+    private String acceptedValues(Class<?> enumType) {
+        return Arrays.stream(enumType.getEnumConstants())
+                .map(constant -> {
+                    try {
+                        return objectMapper.convertValue(constant, String.class);
+                    } catch (IllegalArgumentException e) {
+                        return ((Enum<?>) constant).name();
+                    }
+                })
+                .collect(Collectors.joining(", "));
+    }
+
+    /** Dotted JSON path to the offending field, e.g. {@code layer} or {@code holes[2].par}. */
+    private String pathOf(JsonMappingException ex) {
+        StringBuilder path = new StringBuilder();
+        for (JsonMappingException.Reference reference : ex.getPath()) {
+            if (reference.getFieldName() != null) {
+                if (!path.isEmpty()) {
+                    path.append('.');
+                }
+                path.append(reference.getFieldName());
+            } else if (reference.getIndex() >= 0) {
+                path.append('[').append(reference.getIndex()).append(']');
+            }
+        }
+        return path.isEmpty() ? "request body" : path.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T extends Throwable> T findCause(Throwable ex, Class<T> type) {
+        for (Throwable current = ex; current != null; current = current.getCause()) {
+            if (type.isInstance(current)) {
+                return (T) current;
+            }
+            if (current.getCause() == current) {
+                break;
+            }
+        }
+        return null;
     }
 
     // ─── Missing required parameter ─────────────────────────────────────────
