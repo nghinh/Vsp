@@ -45,7 +45,7 @@ public class TeeSetAdminController {
     }
 
     @PostMapping("/courses/{courseId}/tee-sets")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<TeeSetResponse> createTeeSet(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -65,7 +65,7 @@ public class TeeSetAdminController {
     }
 
     @GetMapping("/courses/{courseId}/tee-sets")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<TeeSetResponse>> listTeeSets(
             Authentication authentication,
             @PathVariable Long courseId) {
@@ -82,7 +82,7 @@ public class TeeSetAdminController {
     }
 
     @GetMapping("/tee-sets/{teeSetId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<TeeSetResponse> getTeeSet(
             Authentication authentication,
             @PathVariable Long teeSetId) {
@@ -97,7 +97,7 @@ public class TeeSetAdminController {
     }
 
     @PutMapping("/tee-sets/{teeSetId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<TeeSetResponse> updateTeeSet(
             Authentication authentication,
             @PathVariable Long teeSetId,
@@ -117,7 +117,7 @@ public class TeeSetAdminController {
     }
 
     @DeleteMapping("/tee-sets/{teeSetId}")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteTeeSet(
             Authentication authentication,
             @PathVariable Long teeSetId) {

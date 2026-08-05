@@ -41,7 +41,7 @@ public class CourseConditionController {
     }
 
     @PostMapping("/courses/{courseId}/conditions")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseConditionDto> createCourseCondition(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -67,7 +67,7 @@ public class CourseConditionController {
     }
 
     @PutMapping("/courses/{courseId}/conditions/{conditionId}")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseConditionDto> updateCourseCondition(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -92,7 +92,7 @@ public class CourseConditionController {
     }
 
     @GetMapping("/courses/{courseId}/conditions")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<CourseConditionDto>> getCourseConditions(
             Authentication authentication,
             @PathVariable Long courseId,

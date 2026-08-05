@@ -1,5 +1,6 @@
 package vnpt.vsp.config;
 
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import vnpt.vsp.api.error.SecurityErrorResponder;
 import vnpt.vsp.module.identity.security.JwtAuthenticationFilter;
 
 /**
@@ -20,9 +22,29 @@ import vnpt.vsp.module.identity.security.JwtAuthenticationFilter;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final SecurityErrorResponder securityErrorResponder;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
+                          SecurityErrorResponder securityErrorResponder) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.securityErrorResponder = securityErrorResponder;
+    }
+
+    /**
+     * Keeps the JWT filter out of the plain servlet filter chain.
+     * <p>
+     * It is a {@code @Component} extending {@code OncePerRequestFilter}, which
+     * Boot otherwise registers with the servlet container as well, at the very
+     * end of the chain. There it authenticates nothing useful — every security
+     * decision has already been taken by then — while creating a second place
+     * a reader has to reason about. The security chains add it explicitly.
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthenticationFilter> jwtAuthenticationFilterRegistration(
+            JwtAuthenticationFilter filter) {
+        FilterRegistrationBean<JwtAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
     }
 
     @Bean
@@ -61,6 +83,13 @@ public class SecurityConfig {
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
+                )
+
+                // Refusals from the chain itself carry the same error body as
+                // every other API error, instead of an empty 403.
+                .exceptionHandling(handling -> handling
+                        .authenticationEntryPoint(securityErrorResponder)
+                        .accessDeniedHandler(securityErrorResponder)
                 )
 
                 // Add JWT filter before UsernamePasswordAuthenticationFilter

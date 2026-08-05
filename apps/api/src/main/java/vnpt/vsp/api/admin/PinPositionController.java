@@ -43,7 +43,7 @@ public class PinPositionController {
     }
 
     @PostMapping("/courses/{courseId}/holes/{holeNumber}/pins")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PinPositionDto> createPin(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -69,7 +69,7 @@ public class PinPositionController {
     }
 
     @PutMapping("/courses/{courseId}/holes/{holeNumber}/pins/{pinId}")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PinPositionDto> updatePin(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -93,7 +93,7 @@ public class PinPositionController {
     }
 
     @GetMapping("/courses/{courseId}/holes/{holeNumber}/pins")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<PinPositionDto>> getPinsForHole(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -111,7 +111,7 @@ public class PinPositionController {
     }
 
     @GetMapping("/courses/{courseId}/pins")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<PinPositionDto>> getAllPinsForCourse(
             Authentication authentication,
             @PathVariable Long courseId,

@@ -312,6 +312,20 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     @Transactional(readOnly = true)
+    public java.util.Set<RoleName> getRoles(Long golferAccountId) {
+        if (golferAccountId == null) {
+            return java.util.Set.of();
+        }
+        return adminAccountRepository.findByGolferAccountId(golferAccountId)
+                .map(adminAccount -> roleAssignmentRepository.findByAdminAccountId(adminAccount.getId()).stream()
+                        .map(AdminRoleAssignment::getRoleName)
+                        .collect(Collectors.toCollection(() -> java.util.EnumSet.noneOf(RoleName.class))))
+                .map(roles -> (java.util.Set<RoleName>) roles)
+                .orElseGet(java.util.Set::of);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public AdminAccountResponse getAdminAccountByGolferId(Long golferAccountId) {
         return adminAccountRepository.findByGolferAccountId(golferAccountId)
                 .map(AdminAccountResponse::fromEntity)

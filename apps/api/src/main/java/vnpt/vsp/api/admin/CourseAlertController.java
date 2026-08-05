@@ -60,7 +60,7 @@ public class CourseAlertController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseAlertResponse> createAlert(
             Authentication authentication,
             @Valid @RequestBody CourseAlertCreateRequest request) {
@@ -76,7 +76,7 @@ public class CourseAlertController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseAlertListResponse> listAlerts(
             Authentication authentication,
             @RequestParam(required = false) AlertType alertType,
@@ -115,7 +115,7 @@ public class CourseAlertController {
     }
 
     @GetMapping("/{alertId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseAlertResponse> getAlert(
             Authentication authentication,
             @PathVariable Long alertId) {
@@ -130,7 +130,7 @@ public class CourseAlertController {
     }
 
     @PatchMapping("/{alertId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseAlertResponse> updateAlert(
             Authentication authentication,
             @PathVariable Long alertId,
@@ -146,7 +146,7 @@ public class CourseAlertController {
     }
 
     @DeleteMapping("/{alertId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> cancelAlert(
             Authentication authentication,
             @PathVariable Long alertId) {
@@ -161,7 +161,7 @@ public class CourseAlertController {
     }
 
     @PostMapping("/{alertId}/acknowledge")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<Void> acknowledgeAlert(
             Authentication authentication,
             @PathVariable Long alertId) {

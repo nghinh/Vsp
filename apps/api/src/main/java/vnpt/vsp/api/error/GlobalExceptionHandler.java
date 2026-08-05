@@ -309,6 +309,47 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
+    // ─── Method security ────────────────────────────────────────────────────
+
+    /**
+     * A {@code @PreAuthorize} refusal. Method security throws this from inside
+     * the controller invocation, so it reaches this advice rather than Spring
+     * Security's {@code ExceptionTranslationFilter} — and the catch-all below
+     * would otherwise report an authorization decision as {@code 500 Unexpected
+     * server error}, which tells the caller nothing and reads like an outage.
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(
+            org.springframework.security.access.AccessDeniedException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse body = ErrorResponse.builder()
+                .code(VspErrorCode.AUTH_005.getCode())
+                .message(VspErrorCode.AUTH_005.getDefaultMessage())
+                .correlationId(correlationId())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    /**
+     * A handler reached with no usable authentication — for instance
+     * {@code authentication.principal} evaluated on an anonymous request.
+     */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthentication(
+            org.springframework.security.core.AuthenticationException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse body = ErrorResponse.builder()
+                .code(VspErrorCode.AUTH_001.getCode())
+                .message("Authentication required — send a valid access token as 'Authorization: Bearer <token>'")
+                .correlationId(correlationId())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
+    }
+
     // ─── Catch-all — never expose raw message to clients ────────────────────
 
     @ExceptionHandler(Exception.class)

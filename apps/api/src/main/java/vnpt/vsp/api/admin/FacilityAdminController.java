@@ -45,7 +45,7 @@ public class FacilityAdminController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<FacilityResponse> createFacility(
             Authentication authentication,
             @Valid @RequestBody FacilityCreateRequest request) {
@@ -67,7 +67,7 @@ public class FacilityAdminController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<FacilityResponse>> listFacilities(Authentication authentication) {
         Long accountId = (Long) authentication.getPrincipal();
         requireAdminRole(accountId);
@@ -81,7 +81,7 @@ public class FacilityAdminController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<FacilityResponse> getFacility(
             Authentication authentication,
             @PathVariable Long id) {
@@ -96,7 +96,7 @@ public class FacilityAdminController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<FacilityResponse> updateFacility(
             Authentication authentication,
             @PathVariable Long id,
@@ -119,7 +119,7 @@ public class FacilityAdminController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteFacility(
             Authentication authentication,
             @PathVariable Long id) {

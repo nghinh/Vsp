@@ -99,6 +99,18 @@ public interface RoleService {
     boolean hasAdminRole(Long golferAccountId);
 
     /**
+     * Every role assigned to a golfer account, in one lookup.
+     * <p>
+     * This is what turns a JWT principal into Spring Security authorities, so
+     * it is on the hot path of every authenticated request: callers must not
+     * have to make one round trip per role they are interested in.
+     *
+     * @param golferAccountId the golfer account ID
+     * @return the assigned roles, empty when the account is not an admin
+     */
+    java.util.Set<RoleName> getRoles(Long golferAccountId);
+
+    /**
      * Get the admin account for a golfer account ID.
      * Returns null if no admin account exists.
      *

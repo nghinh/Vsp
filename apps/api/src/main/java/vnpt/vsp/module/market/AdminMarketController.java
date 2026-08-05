@@ -2,6 +2,7 @@ package vnpt.vsp.module.market;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.market.entity.*;
 import vnpt.vsp.module.market.repository.*;
@@ -17,9 +18,15 @@ import java.util.stream.Collectors;
  * - PUT /admin/markets/{marketId}/config — create or update market config
  *
  * Story 12.4 — Slice 4: Market Config API
+ *
+ * <p>Market configuration is platform-wide — it decides which features and data
+ * a whole country's users get — so the whole controller is SUPER_ADMIN. It
+ * carried no authorization check of any kind until the {@code /admin/**} chain
+ * was repaired, which had been hiding that.</p>
  */
 @RestController
 @RequestMapping("/admin/markets")
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 public class AdminMarketController {
 
     private final MarketRepository marketRepository;

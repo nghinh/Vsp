@@ -67,7 +67,7 @@ public class DataQualityController {
      * Returns data quality metrics for the given filter criteria.
      */
     @GetMapping("/metrics")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COURSE_ADMIN', 'AUDITOR')")
     public ResponseEntity<DataQualityMetricsDto> getMetrics(
             Authentication authentication,
             @RequestParam(required = false) Long facilityId,
@@ -99,7 +99,7 @@ public class DataQualityController {
      * Returns stale pin, green speed, and course condition records.
      */
     @GetMapping("/stale")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COURSE_ADMIN', 'AUDITOR')")
     public ResponseEntity<List<StaleRecordDto>> getStaleRecords(
             Authentication authentication,
             @RequestParam(required = false) Long facilityId,
@@ -122,7 +122,7 @@ public class DataQualityController {
      * Enforces 90-day maximum date range per Slice Plan risk mitigation.
      */
     @GetMapping("/export")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'AUDITOR')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'COURSE_ADMIN', 'AUDITOR')")
     @Audited(action = AuditAction.DATA_QUALITY_METRICS_EXPORT, objectType = "DataQuality")
     public ResponseEntity<String> exportDataQuality(
             Authentication authentication,

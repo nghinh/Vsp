@@ -3,6 +3,7 @@ package vnpt.vsp.api.course;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +14,15 @@ import vnpt.vsp.module.course.dto.ImportResultDto;
 /**
  * REST controller for GeoJSON course data import.
  * Per Story 3.4 AC-1, AC-2, AC-3.
+ *
+ * <p>Importing replaces a course's geometry wholesale, so it takes the same
+ * roles as the rest of course editing. This class carried no authorization
+ * check of any kind until the {@code /admin/**} chain was repaired, which had
+ * been hiding that.</p>
  */
 @RestController
 @RequestMapping("/admin/courses")
+@PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
 public class CourseImportController {
 
     private static final Logger log = LoggerFactory.getLogger(CourseImportController.class);

@@ -45,7 +45,7 @@ public class CourseAdminController {
     }
 
     @PostMapping("/facilities/{facilityId}/courses")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseResponse> createCourse(
             Authentication authentication,
             @PathVariable Long facilityId,
@@ -67,7 +67,7 @@ public class CourseAdminController {
     }
 
     @GetMapping("/facilities/{facilityId}/courses")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<CourseResponse>> listCourses(
             Authentication authentication,
             @PathVariable Long facilityId) {
@@ -84,7 +84,7 @@ public class CourseAdminController {
     }
 
     @GetMapping("/courses/{courseId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseResponse> getCourse(
             Authentication authentication,
             @PathVariable Long courseId) {
@@ -99,7 +99,7 @@ public class CourseAdminController {
     }
 
     @PutMapping("/courses/{courseId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseResponse> updateCourse(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -121,7 +121,7 @@ public class CourseAdminController {
     }
 
     @DeleteMapping("/courses/{courseId}")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteCourse(
             Authentication authentication,
             @PathVariable Long courseId) {

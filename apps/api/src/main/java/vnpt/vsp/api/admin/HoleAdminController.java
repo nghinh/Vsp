@@ -45,7 +45,7 @@ public class HoleAdminController {
     }
 
     @PostMapping("/courses/{courseId}/holes")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<HoleResponse> createHole(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -68,7 +68,7 @@ public class HoleAdminController {
     }
 
     @GetMapping("/courses/{courseId}/holes")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<HoleResponse>> listHoles(
             Authentication authentication,
             @PathVariable Long courseId) {
@@ -85,7 +85,7 @@ public class HoleAdminController {
     }
 
     @GetMapping("/holes/{holeId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<HoleResponse> getHole(
             Authentication authentication,
             @PathVariable Long holeId) {
@@ -100,7 +100,7 @@ public class HoleAdminController {
     }
 
     @PutMapping("/holes/{holeId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<HoleResponse> updateHole(
             Authentication authentication,
             @PathVariable Long holeId,
@@ -123,7 +123,7 @@ public class HoleAdminController {
     }
 
     @DeleteMapping("/holes/{holeId}")
-    @PreAuthorize("hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteHole(
             Authentication authentication,
             @PathVariable Long holeId) {

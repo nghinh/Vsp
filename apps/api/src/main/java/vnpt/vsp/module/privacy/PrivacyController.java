@@ -2,6 +2,7 @@ package vnpt.vsp.module.privacy;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.privacy.dto.CreatePrivacyRequestRequest;
@@ -90,8 +91,14 @@ public class PrivacyController {
 
     /**
      * List all privacy requests filtered by status (admin only).
+     * <p>
+     * "Admin only" was a comment, not a check, until the {@code /admin/**} chain
+     * was repaired. The listing names every golfer who has asked to be deleted
+     * or exported, so it is restricted to the two roles that handle data-subject
+     * requests.
      */
     @GetMapping("/admin/privacy-requests")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'AUDITOR')")
     public ResponseEntity<List<PrivacyRequestResponse>> listRequestsByStatus(
             @RequestParam(required = false) String status) {
         Status filterStatus = null;
@@ -119,6 +126,7 @@ public class PrivacyController {
      * Per Story 2.5 AC-3: auditable processing.
      */
     @PutMapping("/admin/privacy-requests/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'AUDITOR')")
     public ResponseEntity<PrivacyRequestResponse> processRequest(
             Authentication authentication,
             @PathVariable Long id,

@@ -52,7 +52,7 @@ public class CourseVersionController {
      * @return paginated list of versions
      */
     @GetMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<PageResponse<CourseVersionDto>> listVersions(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -76,7 +76,7 @@ public class CourseVersionController {
      * @return version detail
      */
     @GetMapping("/{versionId}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CourseVersionDto> getVersion(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -99,7 +99,7 @@ public class CourseVersionController {
      * @return impact summary showing current vs target version
      */
     @GetMapping("/rollback-impact")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<RollbackImpactDto> getRollbackImpact(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -127,7 +127,7 @@ public class CourseVersionController {
      * @return rollback response with new job ID and version info
      */
     @PostMapping("/{versionId}/rollback")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<RollbackResponse> executeRollback(
             Authentication authentication,
             @PathVariable Long courseId,

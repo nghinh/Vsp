@@ -75,7 +75,7 @@ public class CorrectionController {
      * @param pageSize   page size (default 20)
      */
     @GetMapping
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'GREENKEEPER', 'SUPER_ADMIN')")
     public ResponseEntity<CorrectionQueueResponse> getQueue(
             Authentication authentication,
             @RequestParam(required = false) Long courseId,
@@ -126,7 +126,7 @@ public class CorrectionController {
      * location, and review history.
      */
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'GREENKEEPER', 'SUPER_ADMIN')")
     public ResponseEntity<CorrectionDetailResponse> getDetail(
             Authentication authentication,
             @PathVariable Long id) {
@@ -151,7 +151,7 @@ public class CorrectionController {
      * @param request the review action and optional reason/note
      */
     @PostMapping("/{id}/review")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'GREENKEEPER', 'SUPER_ADMIN')")
     public ResponseEntity<Map<String, Object>> review(
             Authentication authentication,
             @PathVariable Long id,
@@ -187,7 +187,7 @@ public class CorrectionController {
      * @param request the resolution request (decision, reason, produceDraftChange)
      */
     @PostMapping("/{id}/resolve")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<CorrectionResolutionResponse> resolve(
             Authentication authentication,
             @PathVariable Long id,
@@ -215,7 +215,7 @@ public class CorrectionController {
      * when the geometry editor integration is complete.</p>
      */
     @GetMapping("/{id}/map-context")
-    @PreAuthorize("hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'GREENKEEPER', 'SUPER_ADMIN')")
     public ResponseEntity<Map<String, Object>> getMapContext(
             Authentication authentication,
             @PathVariable Long id) {

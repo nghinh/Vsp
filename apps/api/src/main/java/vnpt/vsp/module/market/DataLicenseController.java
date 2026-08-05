@@ -2,6 +2,7 @@ package vnpt.vsp.module.market;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.market.entity.DataLicense;
 import vnpt.vsp.module.market.repository.DataLicenseRepository;
@@ -18,9 +19,14 @@ import java.util.stream.Collectors;
  * - POST /admin/licenses/validate-redistribution — validate redistribution
  *
  * Story 12.4 — Slice 4: Market Config API
+ *
+ * <p>Licensing terms decide what may be redistributed and to whom, so the whole
+ * controller is SUPER_ADMIN. It carried no authorization check of any kind until
+ * the {@code /admin/**} chain was repaired, which had been hiding that.</p>
  */
 @RestController
 @RequestMapping("/admin/licenses")
+@PreAuthorize("hasRole('SUPER_ADMIN')")
 public class DataLicenseController {
 
     private final DataLicenseRepository dataLicenseRepository;

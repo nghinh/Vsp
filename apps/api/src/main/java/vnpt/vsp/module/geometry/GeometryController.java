@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.api.idempotency.Idempotent;
@@ -20,9 +21,14 @@ import java.util.UUID;
  *
  * <p>All endpoints require Course Admin or higher RBAC role.
  * Geometry is stored as GeoJSON (SRID 4326) and validated using PostGIS ST_IsValid.</p>
+ *
+ * <p>That sentence was documentation only until the {@code /admin/**} chain was
+ * repaired: nothing in this class enforced it. The class-level annotation is
+ * what makes it true.</p>
  */
 @RestController
 @RequestMapping("/admin/courses/{courseId}/geometry")
+@PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
 @GeometryModule
 public class GeometryController {
 

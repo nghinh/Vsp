@@ -42,7 +42,7 @@ public class GreenConditionController {
     }
 
     @PostMapping("/courses/{courseId}/holes/{holeNumber}/green-conditions")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<GreenConditionDto> createGreenCondition(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -69,7 +69,7 @@ public class GreenConditionController {
     }
 
     @PutMapping("/courses/{courseId}/holes/{holeNumber}/green-conditions/{conditionId}")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<GreenConditionDto> updateGreenCondition(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -95,7 +95,7 @@ public class GreenConditionController {
     }
 
     @GetMapping("/courses/{courseId}/holes/{holeNumber}/green-conditions")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<GreenConditionDto>> getGreenConditionsForHole(
             Authentication authentication,
             @PathVariable Long courseId,
@@ -113,7 +113,7 @@ public class GreenConditionController {
     }
 
     @GetMapping("/courses/{courseId}/green-conditions")
-    @PreAuthorize("hasRole(#authentication, 'GREENKEEPER') or hasRole(#authentication, 'COURSE_ADMIN') or hasRole(#authentication, 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('GREENKEEPER', 'COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<List<GreenConditionDto>> getAllGreenConditionsForCourse(
             Authentication authentication,
             @PathVariable Long courseId,
