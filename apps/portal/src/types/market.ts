@@ -122,5 +122,3 @@ export interface MarketApiError {
   correlationId?: string;
   field?: string;
 }
-</content>
-</invoke>

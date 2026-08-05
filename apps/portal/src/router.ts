@@ -3,10 +3,6 @@ import FacilitiesPage from "./pages/facilities/index.vue";
 import TournamentListPage from "./pages/tournament/list.vue";
 import { getAuthToken, getUserRoles } from "./auth";
 
-const PlaceholderPage = (title: string, description: string) => ({
-  template: `<section class="placeholder-page"><div class="eyebrow">GolfOps Portal</div><h2>${title}</h2><p>${description}</p><div class="placeholder-card"><span class="material-symbols-outlined">construction</span><div><strong>Màn hình đang được kết nối</strong><p>Thiết kế và luồng nghiệp vụ đã được xác định theo bộ mockup vận hành.</p></div></div></section>`,
-});
-
 /** Inject the portal auth token (+ any route params) as component props. */
 function withAuth(
   extra: (route: RouteLocationNormalized) => Record<string, unknown> = () => ({}),
@@ -163,10 +159,8 @@ const router = createRouter({
     },
     {
       path: "/market-integrations",
-      component: PlaceholderPage(
-        "Thị trường & Tích hợp",
-        "Quản lý thị trường, đối tác và các kết nối nền tảng.",
-      ),
+      component: () => import("./pages/market-integrations/index.vue"),
+      props: withAuth(),
       meta: { title: "Thị trường & Tích hợp" },
     },
   ],

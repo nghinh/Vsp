@@ -25,9 +25,16 @@ data class WearHoleSubset(
     val holeNumber: Int,
     val par: Int,
     val holeLengthMeters: Int? = null,
-    // Simplified geometry — only centroid stored for distance calc
+    // Green geometry. `center` (centroid) is always present; `front`/`back`
+    // green-edge points enable an honest front-center-back panel. When the
+    // front/back edge points are absent the distance calculator reports no
+    // distance rather than fabricating a front/back offset from the centroid.
     val centerLat: Double,
     val centerLon: Double,
+    val frontLat: Double? = null,
+    val frontLon: Double? = null,
+    val backLat: Double? = null,
+    val backLon: Double? = null,
     val pinLat: Double? = null,
     val pinLon: Double? = null,
     // Simplified hazard bounding boxes (min/max lat/lon)

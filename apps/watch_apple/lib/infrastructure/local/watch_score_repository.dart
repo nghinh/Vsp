@@ -41,7 +41,7 @@ class WatchScoreRepository {
   Future<void> saveScoreEntry(WatchScoreEntry entry) async {
     final scores = await _getAllScores();
     scores.add(entry);
-    await _prefs.setString(_scoresKey, _encodeScores(scores));
+    await (await _ensurePrefs()).setString(_scoresKey, _encodeScores(scores));
     await _addToPendingSync(entry);
   }
 
@@ -93,7 +93,7 @@ class WatchScoreRepository {
       }
       return s;
     }).toList();
-    await _prefs.setString(_scoresKey, _encodeScores(updated));
+    await (await _ensurePrefs()).setString(_scoresKey, _encodeScores(updated));
     await _removeFromPendingSync(entryId);
   }
 
@@ -106,17 +106,17 @@ class WatchScoreRepository {
       }
       return s;
     }).toList();
-    await _prefs.setString(_scoresKey, _encodeScores(updated));
+    await (await _ensurePrefs()).setString(_scoresKey, _encodeScores(updated));
   }
 
   /// Save round session.
   Future<void> saveSession(WatchRoundSession session) async {
-    await _prefs.setString(_sessionKey, jsonEncode(sessionToJson(session)));
+    await (await _ensurePrefs()).setString(_sessionKey, jsonEncode(sessionToJson(session)));
   }
 
   /// Load round session.
   Future<WatchRoundSession?> loadSession() async {
-    final jsonStr = _prefs.getString(_sessionKey);
+    final jsonStr = (await _ensurePrefs()).getString(_sessionKey);
     if (jsonStr == null) return null;
     try {
       return sessionFromJson(jsonDecode(jsonStr));
@@ -127,13 +127,13 @@ class WatchScoreRepository {
 
   /// Delete round session.
   Future<void> deleteSession() async {
-    await _prefs.remove(_sessionKey);
+    await (await _ensurePrefs()).remove(_sessionKey);
   }
 
   // ─── Private helpers ───────────────────────────────────────────────────────
 
   Future<List<WatchScoreEntry>> _getAllScores() async {
-    final jsonStr = _prefs.getString(_scoresKey);
+    final jsonStr = (await _ensurePrefs()).getString(_scoresKey);
     if (jsonStr == null) return [];
     try {
       return _decodeScores(jsonStr);
@@ -146,14 +146,14 @@ class WatchScoreRepository {
     final pending = await getPendingSyncEntries();
     if (!pending.any((p) => p.id == entry.id)) {
       pending.add(entry.copyWith(syncStatus: 'pending'));
-      await _prefs.setString(_pendingSyncKey, _encodeScores(pending));
+      await (await _ensurePrefs()).setString(_pendingSyncKey, _encodeScores(pending));
     }
   }
 
   Future<void> _removeFromPendingSync(String entryId) async {
     final pending = await getPendingSyncEntries();
     pending.removeWhere((p) => p.id == entryId);
-    await _prefs.setString(_pendingSyncKey, _encodeScores(pending));
+    await (await _ensurePrefs()).setString(_pendingSyncKey, _encodeScores(pending));
   }
 
   String _encodeScores(List<WatchScoreEntry> scores) {

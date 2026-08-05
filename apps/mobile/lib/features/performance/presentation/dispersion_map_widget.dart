@@ -12,7 +12,6 @@
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import 'package:mobile_theme/mobile_theme.dart';
 import '../../../../domain/models/performance/dispersion_overlay.dart';
 
 // ─── Widget ───────────────────────────────────────────────────────────────────
@@ -158,6 +157,13 @@ class _DispersionMapWidgetState extends State<DispersionMapWidget> {
 // ─── Scatter Points Painter ───────────────────────────────────────────────────
 
 /// Custom painter for rendering scatter points on top of the map.
+///
+/// Reads the GeoJSON `FeatureCollection` in [scatterGeoJSON] and draws each
+/// shot as a filled circle in hole-local space. Coordinates are interpreted as
+/// metres relative to ([centerX], [centerY]); the point cloud is auto-fitted to
+/// the available canvas so real dispersion data is always visible, independent
+/// of the underlying MapLibre GL context (which is unavailable in tests and
+/// preview environments).
 class _ScatterPointsPainter extends CustomPainter {
   final Map<String, dynamic> scatterGeoJSON;
   final double? centerX;
@@ -171,16 +177,120 @@ class _ScatterPointsPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Scatter points are rendered via GeoJSON source in MapLibre
-    // This painter is a placeholder for additional Flutter-based rendering
-    // In a full implementation, scatter points would be rendered
-    // using canvas primitives with proper coordinate transformation
+    if (size.isEmpty) return;
+
+    final points = _parsePoints();
+    if (points.isEmpty) return;
+
+    // Origin in hole-local metres. Falls back to the point-cloud centroid when
+    // the overlay does not supply an explicit centre.
+    final originX =
+        centerX ?? points.map((p) => p.x).reduce((a, b) => a + b) / points.length;
+    final originY =
+        centerY ?? points.map((p) => p.y).reduce((a, b) => a + b) / points.length;
+
+    // Fit the cloud to the canvas with a small margin, capped so a tight
+    // cluster is not blown up to fill the whole view.
+    var maxOffset = 0.0;
+    for (final p in points) {
+      final dx = (p.x - originX).abs();
+      final dy = (p.y - originY).abs();
+      if (dx > maxOffset) maxOffset = dx;
+      if (dy > maxOffset) maxOffset = dy;
+    }
+    final halfExtent = size.shortestSide / 2 - 16;
+    // metres → pixels. Default to ~2 px/m when the cloud is degenerate.
+    final scale = maxOffset > 0
+        ? (halfExtent / maxOffset).clamp(0.5, 4.0)
+        : 2.0;
+
+    final center = Offset(size.width / 2, size.height / 2);
+
+    final strokePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0
+      ..color = const Color(0xCCFFFFFF);
+
+    for (final p in points) {
+      final offset = Offset(
+        center.dx + (p.x - originX) * scale,
+        // Screen y grows downward; hole-local y (northing) grows upward.
+        center.dy - (p.y - originY) * scale,
+      );
+      final fill = Paint()
+        ..style = PaintingStyle.fill
+        ..color = _colorForResult(p.result);
+      canvas.drawCircle(offset, 4.0, fill);
+      canvas.drawCircle(offset, 4.0, strokePaint);
+    }
+  }
+
+  List<_ScatterPoint> _parsePoints() {
+    final features = scatterGeoJSON['features'];
+    if (features is! List) return const [];
+
+    final result = <_ScatterPoint>[];
+    for (final feature in features) {
+      if (feature is! Map) continue;
+      final geometry = feature['geometry'];
+      if (geometry is! Map) continue;
+      final coords = geometry['coordinates'];
+      if (coords is! List || coords.length < 2) continue;
+      final x = (coords[0] as num?)?.toDouble();
+      final y = (coords[1] as num?)?.toDouble();
+      if (x == null || y == null) continue;
+
+      String? resultLabel;
+      final props = feature['properties'];
+      if (props is Map) {
+        resultLabel =
+            (props['result'] ?? props['outcome'] ?? props['type'])?.toString();
+      }
+      result.add(_ScatterPoint(x: x, y: y, result: resultLabel));
+    }
+    return result;
+  }
+
+  /// Maps a shot outcome to its dispersion colour. Values mirror the legend
+  /// (fairway/green = safe, rough = caution, hazard/OB = danger).
+  Color _colorForResult(String? result) {
+    switch (result?.toUpperCase()) {
+      case 'FAIRWAY':
+      case 'FAIRWAY_HIT':
+      case 'GREEN':
+      case 'GREEN_HIT':
+        return const Color(0xFF22C55E); // green
+      case 'ROUGH':
+        return const Color(0xFFEAB308); // amber
+      case 'BUNKER':
+        return const Color(0xFFF97316); // orange
+      case 'WATER':
+      case 'HAZARD':
+      case 'PENALTY':
+        return const Color(0xFF3B82F6); // blue
+      case 'OB':
+      case 'OUT_OF_BOUNDS':
+        return const Color(0xFFEF4444); // red
+      default:
+        return const Color(0xFF94A3B8); // slate
+    }
   }
 
   @override
   bool shouldRepaint(_ScatterPointsPainter oldDelegate) {
-    return scatterGeoJSON != oldDelegate.scatterGeoJSON;
+    return scatterGeoJSON != oldDelegate.scatterGeoJSON ||
+        centerX != oldDelegate.centerX ||
+        centerY != oldDelegate.centerY;
   }
+}
+
+/// A single parsed scatter point in hole-local metres.
+class _ScatterPoint {
+  final double x;
+  final double y;
+  final String? result;
+
+  const _ScatterPoint({required this.x, required this.y, this.result});
 }
 
 // ─── Scale Reference ───────────────────────────────────────────────────────────

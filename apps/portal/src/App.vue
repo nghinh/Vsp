@@ -15,6 +15,7 @@ const navigation = [
   { label: 'Hiệu chỉnh', icon: 'edit_notifications', to: '/corrections' },
   { label: 'Chất lượng dữ liệu', icon: 'fact_check', to: '/admin/data-quality' },
   { label: 'Giải đấu', icon: 'emoji_events', to: '/tournaments' },
+  { label: 'Thị trường & Tích hợp', icon: 'public', to: '/market-integrations' },
   { label: 'Người dùng & Vai trò', icon: 'group', to: '/users' },
 ];
 </script>

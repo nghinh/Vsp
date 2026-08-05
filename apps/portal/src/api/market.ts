@@ -139,4 +139,3 @@ export class MarketApi {
 }
 
 export const marketApi = new MarketApi();
-</content>

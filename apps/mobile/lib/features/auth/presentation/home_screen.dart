@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
+import '../../analytics/presentation/analytics_hub_screen.dart';
 import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
 import '../../privacy/presentation/privacy_screen.dart';
@@ -227,6 +228,15 @@ class _MoreTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: VspSpacing.lg),
+          _SettingsTile(
+            icon: Icons.insights,
+            title: 'Phân tích & Hiệu suất',
+            subtitle: 'Hiệu suất gậy, vùng phát bóng, Strokes Gained, Smart Target',
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const AnalyticsHubScreen()),
+            ),
+          ),
+          const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.golf_course,
             title: 'Túi gậy của tôi',

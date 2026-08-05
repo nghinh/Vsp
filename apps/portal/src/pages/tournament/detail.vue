@@ -415,6 +415,7 @@ import type {
   TournamentUpdateRequest,
   TournamentBulkImportRequest,
 } from '@/types/tournament';
+import { parseBulkImport } from '@/pages/tournament/bulk-import';
 
 const route = useRoute();
 
@@ -663,25 +664,6 @@ async function handleSaveEdit() {
   } finally {
     actionLoading.value = false;
   }
-}
-
-/** Parse the bulk-import textarea into a request. Exposed for unit testing. */
-function parseBulkImport(text: string): TournamentBulkImportRequest {
-  const players = text
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0)
-    .map((line) => {
-      const [idPart, hcpPart] = line.split(',').map((s) => s.trim());
-      const playerId = Number.parseInt(idPart, 10);
-      if (!Number.isFinite(playerId)) {
-        throw new Error(`Invalid player ID in line: "${line}"`);
-      }
-      const handicap = hcpPart !== undefined && hcpPart !== '' ? Number.parseFloat(hcpPart) : undefined;
-      return { playerId, handicap };
-    });
-  if (players.length === 0) throw new Error('No players to import.');
-  return { players };
 }
 
 async function handleBulkImport() {

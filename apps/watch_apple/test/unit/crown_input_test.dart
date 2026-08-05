@@ -7,6 +7,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:watch_apple/application/crown_input_handler.dart';
+import 'package:watch_apple/application/battery_manager.dart';
 
 void main() {
   group('CrownInputHandler', () {

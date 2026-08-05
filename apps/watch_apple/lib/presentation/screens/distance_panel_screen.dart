@@ -88,7 +88,6 @@ class DistancePanelScreen extends StatelessWidget {
     final par = session?.currentPar ?? 4;
     final gpsQuality = session?.gpsQuality.name ?? 'unknown';
     final gpsAccuracy = session?.gpsAccuracyMeters;
-    final syncStatus = session?.syncStatus ?? 'local';
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,6 +106,8 @@ class DistancePanelScreen extends StatelessWidget {
   }
 
   Widget _buildDistancePanel() {
+    final syncStatus = session?.syncStatus ?? 'local';
+
     // If no distance data, show placeholder
     if (distanceData == null) {
       return _DistancePlaceholder();

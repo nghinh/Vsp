@@ -67,6 +67,30 @@ class WatchHoleScore extends Equatable {
         enteredAt: enteredAt ?? this.enteredAt,
       );
 
+  Map<String, dynamic> toMap() => {
+        'playerId': playerId,
+        'holeNumber': holeNumber,
+        'strokes': strokes,
+        'putts': putts,
+        'penalties': penalties,
+        'fairwayHit': fairwayHit,
+        'gir': gir,
+        'enteredAt': enteredAt?.toIso8601String(),
+      };
+
+  factory WatchHoleScore.fromMap(Map<String, dynamic> map) => WatchHoleScore(
+        playerId: map['playerId'] as String,
+        holeNumber: map['holeNumber'] as int,
+        strokes: map['strokes'] as int?,
+        putts: map['putts'] as int?,
+        penalties: map['penalties'] as int?,
+        fairwayHit: map['fairwayHit'] as bool?,
+        gir: map['gir'] as bool?,
+        enteredAt: map['enteredAt'] != null
+            ? DateTime.parse(map['enteredAt'] as String)
+            : null,
+      );
+
   @override
   List<Object?> get props => [
         playerId,
@@ -175,6 +199,63 @@ class WatchRoundSession extends Equatable {
       syncStatus: syncStatus ?? this.syncStatus,
     );
   }
+
+  /// Serialize to a persistence-friendly map (used for local durability and
+  /// restart recovery).
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'roundId': roundId,
+        'courseId': courseId,
+        'courseName': courseName,
+        'teeSetId': teeSetId,
+        'currentHole': currentHole,
+        'currentPar': currentPar,
+        'totalHoles': totalHoles,
+        'status': status.name,
+        'gpsQuality': gpsQuality.name,
+        'gpsAccuracyMeters': gpsAccuracyMeters,
+        'hasGpsFix': hasGpsFix,
+        'scores': scores.map((s) => s.toMap()).toList(),
+        'startedAt': startedAt.toIso8601String(),
+        'updatedAt': updatedAt.toIso8601String(),
+        'endedAt': endedAt?.toIso8601String(),
+        'packageVersion': packageVersion,
+        'syncStatus': syncStatus,
+      };
+
+  /// Restore from a persisted map. Tolerant of unknown enum values.
+  factory WatchRoundSession.fromMap(Map<String, dynamic> map) =>
+      WatchRoundSession(
+        id: map['id'] as String,
+        roundId: map['roundId'] as String?,
+        courseId: map['courseId'] as int,
+        courseName: map['courseName'] as String,
+        teeSetId: map['teeSetId'] as String,
+        currentHole: map['currentHole'] as int,
+        currentPar: map['currentPar'] as int,
+        totalHoles: map['totalHoles'] as int? ?? 18,
+        status: WatchRoundStatus.values.firstWhere(
+          (e) => e.name == map['status'],
+          orElse: () => WatchRoundStatus.active,
+        ),
+        gpsQuality: WatchGpsQuality.values.firstWhere(
+          (e) => e.name == map['gpsQuality'],
+          orElse: () => WatchGpsQuality.unknown,
+        ),
+        gpsAccuracyMeters: (map['gpsAccuracyMeters'] as num?)?.toDouble() ?? 0,
+        hasGpsFix: map['hasGpsFix'] as bool? ?? false,
+        scores: (map['scores'] as List<dynamic>?)
+                ?.map((e) => WatchHoleScore.fromMap(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        startedAt: DateTime.parse(map['startedAt'] as String),
+        updatedAt: DateTime.parse(map['updatedAt'] as String),
+        endedAt: map['endedAt'] != null
+            ? DateTime.parse(map['endedAt'] as String)
+            : null,
+        packageVersion: map['packageVersion'] as String,
+        syncStatus: map['syncStatus'] as String? ?? 'local',
+      );
 
   @override
   List<Object?> get props => [

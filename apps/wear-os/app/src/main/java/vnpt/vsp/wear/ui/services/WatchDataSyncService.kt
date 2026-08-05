@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import vnpt.vsp.wear.data.local.WearDatabase
-import vnpt.vsp.wear.data.local.WearHoleScoreEntity
-import vnpt.vsp.wear.data.local.WearRoundEntity
 
 /**
  * Sync service for Wear OS round data.
@@ -66,67 +64,27 @@ class WatchDataSyncService(
     }
 
     private suspend fun syncPendingData() {
-        if (!connectivityService.isCurrentlyOnline()) {
-            Log.d("WatchDataSyncService", "Skipping sync — offline")
-            return
-        }
-
         isSyncing = true
-        _syncState.value = SyncState.Syncing
-
         try {
-            // Sync pending rounds
-            val pendingRounds = database.roundDao()
-                .getRoundsBySyncStatus(listOf("LOCAL", "PENDING"))
-            for (roundEntity in pendingRounds) {
-                syncRound(roundEntity)
-            }
-
-            // Sync pending scores
-            val pendingScores = database.scoreDao()
-                .getScoresBySyncStatus(listOf("LOCAL", "PENDING"))
-            for (scoreEntity in pendingScores) {
-                syncScore(scoreEntity)
-            }
-
-            _syncState.value = SyncState.Success
-            Log.d("WatchDataSyncService", "Sync completed")
+            // Shared stepping (also used by WatchSyncWorker) keeps a single
+            // source of truth for the local-first, idempotent sync policy.
+            vnpt.vsp.wear.data.sync.WearSyncEngine.syncPending(
+                database = database,
+                connectivity = connectivityService,
+            ) { state -> _syncState.value = state }
         } catch (e: Exception) {
+            // State already set to Failed by the engine; swallow so the
+            // connectivity observer keeps running.
             Log.e("WatchDataSyncService", "Sync failed", e)
-            _syncState.value = SyncState.Failed(e.message ?: "Unknown error")
         } finally {
             isSyncing = false
             refreshPendingCount()
         }
     }
 
-    private suspend fun syncRound(entity: WearRoundEntity) {
-        // TODO: Replace with actual OpenAPI client call to backend
-        // For now: mark as synced (idempotent — no real network call)
-        database.roundDao().updateSyncStatus(
-            id = entity.id,
-            status = "SYNCED",
-            updatedAt = System.currentTimeMillis()
-        )
-        Log.d("WatchDataSyncService", "Synced round ${entity.id}")
-    }
-
-    private suspend fun syncScore(entity: WearHoleScoreEntity) {
-        // TODO: Replace with actual OpenAPI client call to backend
-        database.scoreDao().updateSyncStatus(
-            id = entity.id,
-            status = "SYNCED",
-            updatedAt = System.currentTimeMillis()
-        )
-        Log.d("WatchDataSyncService", "Synced score ${entity.id}")
-    }
-
     private suspend fun refreshPendingCount() {
-        val rounds = database.roundDao()
-            .getRoundsBySyncStatus(listOf("LOCAL", "PENDING")).size
-        val scores = database.scoreDao()
-            .getScoresBySyncStatus(listOf("LOCAL", "PENDING")).size
-        _pendingCount.value = rounds + scores
+        _pendingCount.value =
+            vnpt.vsp.wear.data.sync.WearSyncEngine.pendingCount(database)
     }
 }
 

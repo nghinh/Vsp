@@ -21,7 +21,8 @@ class WatchBatteryState extends Equatable {
   });
 
   bool get isLow => levelPercent <= 20;
-  bool get isCritical => levelPercent <= 10;
+  // Critical == last-gasp / minimal band (see BatteryManager._minimalThreshold).
+  bool get isCritical => levelPercent <= 5;
 
   @override
   List<Object?> get props => [levelPercent, isCharging, powerMode];

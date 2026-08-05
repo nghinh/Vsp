@@ -12,7 +12,9 @@ import 'package:intl/intl.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../domain/models/round.dart';
+import '../../../presentation/screens/analytics/round_review_screen.dart';
 import '../data/round_history_repository.dart';
 
 /// Home-screen tab showing the golfer's round history.
@@ -291,12 +293,48 @@ class _RoundDetailsSheet extends StatelessWidget {
             const SizedBox(height: VspSpacing.lg),
             SizedBox(
               width: double.infinity,
+              child: FilledButton.tonalIcon(
+                onPressed: () => _openRoundReview(context),
+                icon: const Icon(Icons.query_stats),
+                label: const Text('Xem lại vòng đấu'),
+              ),
+            ),
+            const SizedBox(height: VspSpacing.sm),
+            SizedBox(
+              width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: const Text('Đóng'),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// Opens the Round Review analytics screen for this round. The player id is
+  /// resolved from the round's locally-recorded shots so scoring/shot metrics
+  /// render for the right golfer; the screen shows its own empty state when no
+  /// shots have been captured yet.
+  Future<void> _openRoundReview(BuildContext context) async {
+    final navigator = Navigator.of(context);
+    var playerId = 'me';
+    try {
+      final shots = await ShotRepositoryImpl().getShotsForRound(round.id);
+      if (shots.isNotEmpty) {
+        playerId = shots.first.playerId;
+      }
+    } catch (_) {
+      // No local shot store (e.g. preview) — fall back to the default id and
+      // let the review screen render its empty state.
+    }
+    if (!navigator.mounted) return;
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => RoundReviewScreen(
+          roundId: round.id,
+          playerId: playerId,
         ),
       ),
     );

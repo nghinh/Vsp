@@ -15,8 +15,10 @@ import vnpt.vsp.wear.data.local.WearDatabase
 import vnpt.vsp.wear.data.repository.WearRoundRepository
 import vnpt.vsp.wear.data.repository.WearScoreRepository
 import vnpt.vsp.wear.data.sync.WatchSyncWorker
+import vnpt.vsp.wear.domain.distance.WearDistanceCalculator
 import vnpt.vsp.wear.domain.model.GpsQuality
 import vnpt.vsp.wear.domain.model.SyncStatus
+import vnpt.vsp.wear.domain.model.WearCourseSubset
 import vnpt.vsp.wear.domain.model.WearHoleScore
 import vnpt.vsp.wear.domain.model.WearRound
 import vnpt.vsp.wear.ui.services.AlwaysOnService
@@ -55,6 +57,15 @@ class WatchStateHolder(application: Application) : AndroidViewModel(application)
 
     private val _watchUiState = MutableStateFlow(WatchUiState())
     val watchUiState: StateFlow<WatchUiState> = _watchUiState.asStateFlow()
+
+    /**
+     * Offline course geometry for the active round. Populated at runtime from
+     * the paired phone via the Wearable Data Layer (see WatchDataSyncService /
+     * WatchConnectivityService); that transport requires a paired device and is
+     * therefore verified only on real hardware. Once set, distances are computed
+     * on-device from GPS with no further phone round-trips.
+     */
+    private var courseSubset: WearCourseSubset? = null
 
     // ── Init ──────────────────────────────────────────────────────────────────
 
@@ -127,7 +138,19 @@ class WatchStateHolder(application: Application) : AndroidViewModel(application)
             val updated = round.copy(currentHole = hole, updatedAt = System.currentTimeMillis())
             roundRepository.updateRound(updated)
             loadScoreForCurrentHole()
+            // Refresh the distance panel for the new hole using the last fix.
+            recomputeDistance(locationService.latestLocation.value, hole)
         }
+    }
+
+    /**
+     * Provide (or replace) the offline course geometry used to compute
+     * distances. Called at runtime once the paired phone has synced the course
+     * subset for the active round.
+     */
+    fun setCourseSubset(subset: WearCourseSubset) {
+        courseSubset = subset
+        recomputeDistance(locationService.latestLocation.value, _roundUiState.value.currentHole)
     }
 
     fun completeRound() {
@@ -266,5 +289,32 @@ class WatchStateHolder(application: Application) : AndroidViewModel(application)
             )
             roundRepository.updateRound(updated)
         }
+        // Recompute glanceable distances from the new fix (no-op until a course
+        // subset has been synced from the paired phone).
+        recomputeDistance(location, _roundUiState.value.currentHole)
+    }
+
+    /**
+     * Recompute front-center-back / pin / hazard distances for [hole] from the
+     * given fix. Sets `distance` to null when there is no fix or no course
+     * geometry, so the UI falls back to its placeholder rather than showing
+     * stale values.
+     */
+    private fun recomputeDistance(location: Location?, hole: Int) {
+        val subset = courseSubset
+        val holeSubset = subset?.holes?.firstOrNull { it.holeNumber == hole }
+        if (location == null || holeSubset == null) {
+            if (_roundUiState.value.distance != null) {
+                _roundUiState.value = _roundUiState.value.copy(distance = null)
+            }
+            return
+        }
+        val distance = WearDistanceCalculator.compute(
+            playerLat = location.latitude,
+            playerLon = location.longitude,
+            accuracyMeters = location.accuracy.toDouble(),
+            hole = holeSubset,
+        )
+        _roundUiState.value = _roundUiState.value.copy(distance = distance)
     }
 }

@@ -10,6 +10,8 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import java.util.concurrent.TimeUnit
+import vnpt.vsp.wear.data.local.WearDatabase
+import vnpt.vsp.wear.ui.services.WatchConnectivityService
 
 /**
  * WorkManager worker for periodic background sync of watch data.
@@ -23,9 +25,13 @@ class WatchSyncWorker(
     override suspend fun doWork(): Result {
         Log.d(TAG, "WatchSyncWorker starting")
         return try {
-            // TODO: Inject WearDataSyncService and call trySyncPending()
-            // For now, the WatchDataSyncService handles its own background observation.
-            // This worker serves as a periodic trigger when WorkManager is the preferred path.
+            // Run the shared sync engine directly against app-scoped
+            // dependencies. We deliberately do NOT construct WatchDataSyncService
+            // here — that class starts long-lived background collectors that
+            // would leak inside a one-shot worker. The engine is stateless.
+            val database = WearDatabase.getInstance(applicationContext)
+            val connectivity = WatchConnectivityService(applicationContext)
+            WearSyncEngine.syncPending(database, connectivity)
             Log.d(TAG, "WatchSyncWorker completed")
             Result.success()
         } catch (e: Exception) {

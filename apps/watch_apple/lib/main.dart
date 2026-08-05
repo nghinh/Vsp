@@ -37,6 +37,7 @@ class _VspWatchAppState extends State<VspWatchApp> {
   final List<String> _playerNames = ['Player 1', 'Player 2'];
   final BatteryManager _batteryManager = BatteryManager();
   CrownAction? _lastCrownAction;
+  int? _pendingScore;
 
   @override
   void initState() {
@@ -133,6 +134,35 @@ class _VspWatchAppState extends State<VspWatchApp> {
   }
 
   void _handleScoreSubmit() {
+    // Record the entered score into the active session so it is reflected on
+    // the distance panel and kept locally durable (AC: quick score entry).
+    final score = _pendingScore;
+    final session = _session;
+    final playerId = _selectedPlayerId;
+    if (score != null && score > 0 && session != null && playerId != null) {
+      final hole = session.currentHole;
+      final entry = WatchHoleScore(
+        playerId: playerId,
+        holeNumber: hole,
+        strokes: score,
+        enteredAt: DateTime.now(),
+      );
+      // Replace any existing score for this player/hole (idempotent update).
+      final updatedScores = [
+        ...session.scores.where(
+          (s) => !(s.playerId == playerId && s.holeNumber == hole),
+        ),
+        entry,
+      ];
+      setState(() {
+        _session = session.copyWith(
+          scores: updatedScores,
+          syncStatus: 'pending',
+          updatedAt: DateTime.now(),
+        );
+        _pendingScore = null;
+      });
+    }
     _navigateToScreen(WatchScreen.distancePanel);
   }
 
@@ -180,7 +210,7 @@ class _VspWatchAppState extends State<VspWatchApp> {
           selectedPlayerId: _selectedPlayerId,
           existingScore: _getExistingScore(),
           onPlayerSelected: (id) => setState(() => _selectedPlayerId = id),
-          onScoreEntered: (score) {},
+          onScoreEntered: (score) => _pendingScore = score,
           onCancel: () => _navigateToScreen(WatchScreen.distancePanel),
           onConfirm: _handleScoreSubmit,
         );

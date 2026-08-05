@@ -14,13 +14,27 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../application/score/scorecard_cubit.dart';
 import '../../../application/score/scorecard_state.dart';
+import '../../../application/services/shot_sync_service.dart';
+import '../../../application/services/shot_tracking_service.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/bag_sync_store.dart';
 import '../../../data/repositories/score_repository_impl.dart';
+import '../../../data/repositories/shot_repository_impl.dart';
+import '../../../data/services/location_service_impl.dart';
 import '../../../domain/models/score.dart';
+import '../../../domain/models/shot.dart';
 import '../../../domain/models/sync_status.dart';
+import '../../../domain/services/lie_detector.dart';
+import '../../../features/bag/data/bag_dto.dart';
+import '../../../features/bag/data/bag_repository.dart';
+import '../../../features/bag/data/bag_service.dart';
+import '../../../infrastructure/persistence/sync_queue_repository.dart';
+import '../../sheets/shot_entry_sheet.dart';
 import '../../widgets/score/hole_navigation_bar.dart';
 import '../../widgets/score/hole_score_header.dart';
 import '../../widgets/score/score_entry_card.dart';
 import '../../widgets/sync_status_badge.dart';
+import '../shot/shot_review_screen.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -72,6 +86,111 @@ class ScorecardScreen extends StatelessWidget {
 class _ScorecardScreenContent extends StatelessWidget {
   const _ScorecardScreenContent();
 
+  // ─── Shot tracking (Story 10.3) ────────────────────────────────────────────
+  //
+  // The scorecard is the reachable in-round screen. These handlers wire the
+  // existing shot-entry sheet and shot-review screen against the local
+  // shot store + sync queue (which syncs to POST /rounds/{roundId}/shots via
+  // the shot sync worker). All services are constructed lazily on tap so the
+  // scorecard itself stays free of GPS/DB side effects at build time.
+
+  /// Loads the active bag's clubs; returns an empty list if unavailable.
+  Future<List<ClubDTO>> _loadClubs() async {
+    try {
+      final apiClient = ApiClient();
+      final repository = BagRepository(
+        bagService: BagService(apiClient: apiClient),
+        syncStore: BagSyncStore(),
+        apiClient: apiClient,
+      );
+      final active = await repository.getActiveBag();
+      return active?.clubs ?? const <ClubDTO>[];
+    } catch (_) {
+      return const <ClubDTO>[];
+    }
+  }
+
+  /// Opens the 2-tap shot-entry sheet for the current hole and lead player.
+  Future<void> _trackShot(
+    BuildContext context,
+    ScorecardScreenState state,
+  ) async {
+    final roundId = state.flightId;
+    final playerId = state.playerIds.isNotEmpty ? state.playerIds.first : 'me';
+    final holeNumber = state.currentHoleNumber;
+
+    final shotRepository = ShotRepositoryImpl();
+    final clubs = await _loadClubs();
+
+    var shotNumber = 1;
+    try {
+      final existing = await shotRepository.getShotsForRound(roundId);
+      shotNumber = existing
+              .where((s) => s.holeNumber == holeNumber && s.playerId == playerId)
+              .length +
+          1;
+    } catch (_) {
+      // No local shots yet — start at 1.
+    }
+
+    final trackingService = ShotTrackingService(
+      shotSyncService: ShotSyncService(
+        shotRepo: shotRepository,
+        syncQueue: SyncQueueRepository(),
+      ),
+      locationService: LocationServiceImpl(),
+    );
+
+    if (!context.mounted) return;
+    await ShotEntrySheet.show(
+      context: context,
+      roundId: roundId,
+      flightId: roundId,
+      playerId: playerId,
+      holeNumber: holeNumber,
+      shotNumber: shotNumber,
+      clubs: clubs,
+      trackingService: trackingService,
+      lieDetector: LieDetector(),
+    );
+  }
+
+  /// Opens the shot-review screen with the round's captured shots.
+  Future<void> _reviewShots(
+    BuildContext context,
+    ScorecardScreenState state,
+  ) async {
+    final roundId = state.flightId;
+    final playerId = state.playerIds.isNotEmpty ? state.playerIds.first : 'me';
+    final navigator = Navigator.of(context);
+
+    final shotRepository = ShotRepositoryImpl();
+    var shots = const <Shot>[];
+    try {
+      shots = await shotRepository.getShotsForRound(roundId);
+    } catch (_) {
+      // No local shot store — show the review screen's empty state.
+    }
+    final clubs = await _loadClubs();
+    final shotSyncService = ShotSyncService(
+      shotRepo: shotRepository,
+      syncQueue: SyncQueueRepository(),
+    );
+
+    if (!navigator.mounted) return;
+    navigator.push(
+      MaterialPageRoute(
+        builder: (_) => ShotReviewScreen(
+          roundId: roundId,
+          playerId: playerId,
+          shots: shots,
+          clubs: clubs,
+          shotSyncService: shotSyncService,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ScorecardCubit, ScorecardScreenState>(
@@ -88,6 +207,18 @@ class _ScorecardScreenContent extends StatelessWidget {
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.add_location_alt_outlined),
+                tooltip: 'Track Shot',
+                onPressed: () => _trackShot(context, state),
+              ),
+              IconButton(
+                icon: const Icon(Icons.sports_golf),
+                tooltip: 'Review Shots',
+                onPressed: () => _reviewShots(context, state),
+              ),
+            ],
           ),
           body: Column(
             children: [
