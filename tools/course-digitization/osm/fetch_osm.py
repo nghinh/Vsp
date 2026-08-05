@@ -51,12 +51,30 @@ USER_AGENT = "vsp-course-digitization/1.0 (Vietnam Smart Golf Platform; data pip
 
 
 def facilities_query(bbox: str) -> str:
+    # Two `out` statements over the same set: Overpass returns the centre on one
+    # pass and the ring on the other (asking for both at once silently drops the
+    # geometry). The centre is what matches a course to a seeded facility; the
+    # ring is what tells the satellite pipeline where the course ends and the
+    # neighbouring fish ponds begin.
     return (
         "[out:json][timeout:180];"
         f'(way["leisure"="golf_course"]({bbox});'
-        f'relation["leisure"="golf_course"]({bbox}););'
-        "out center tags;"
+        f'relation["leisure"="golf_course"]({bbox});)->.c;'
+        ".c out center tags;"
+        ".c out geom;"
     )
+
+
+def merge_facility_elements(elements: list[dict]) -> list[dict]:
+    """Fold the two passes back into one element per OSM object."""
+    merged: dict[tuple[str, int], dict] = {}
+    for el in elements:
+        key = (el["type"], el["id"])
+        target = merged.setdefault(key, {"type": el["type"], "id": el["id"]})
+        for field in ("tags", "center", "geometry", "members", "bounds"):
+            if field in el:
+                target[field] = el[field]
+    return list(merged.values())
 
 
 def features_query(bbox: str) -> str:
@@ -69,8 +87,15 @@ def features_query(bbox: str) -> str:
     )
 
 
-def overpass(query: str, endpoints: list[str], attempts: int = 3) -> list[dict]:
-    """POST a query, trying each endpoint in turn. Overpass 429/504 is routine."""
+def overpass(query: str, endpoints: list[str], attempts: int = 3) -> tuple[list[dict], str, str]:
+    """POST a query, trying each endpoint in turn. Overpass 429/504 is routine.
+
+    Returns (elements, endpoint, osm_base_timestamp). That timestamp matters:
+    the public mirrors replicate independently and one of them was three months
+    behind the other on the day this was written, answering the identical query
+    with 13% fewer bunkers and no error of any kind. A snapshot half-filled from
+    each would be quietly, undetectably wrong.
+    """
     body = urllib.parse.urlencode({"data": query}).encode()
     last = None
     for attempt in range(attempts):
@@ -78,7 +103,9 @@ def overpass(query: str, endpoints: list[str], attempts: int = 3) -> list[dict]:
             req = urllib.request.Request(endpoint, data=body, headers={"User-Agent": USER_AGENT})
             try:
                 with urllib.request.urlopen(req, timeout=600) as resp:
-                    return json.load(resp)["elements"]
+                    payload = json.load(resp)
+                base = payload.get("osm3s", {}).get("timestamp_osm_base", "unknown")
+                return payload["elements"], endpoint, base
             except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
                 last = f"{endpoint}: {exc}"
                 print(f"  ! {last}", file=sys.stderr)
@@ -103,12 +130,21 @@ def main() -> None:
 
     print(f"bbox {args.bbox}")
     print("fetching leisure=golf_course …")
-    facilities = overpass(facilities_query(args.bbox), endpoints)
-    print(f"  {len(facilities)} facilities")
+    raw, endpoint, base_a = overpass(facilities_query(args.bbox), endpoints)
+    facilities = merge_facility_elements(raw)
+    with_ring = sum(1 for f in facilities if f.get("geometry"))
+    print(f"  {len(facilities)} facilities ({with_ring} with a boundary ring)"
+          f"  [{endpoint.split('/')[2]}, OSM base {base_a}]")
 
+    # Same server for the second query, so both halves see the same map.
     print(f"fetching golf={'|'.join(FEATURE_KINDS)} …")
-    features = overpass(features_query(args.bbox), endpoints)
-    print(f"  {len(features)} features")
+    features, endpoint_b, base_b = overpass(features_query(args.bbox), [endpoint] + endpoints)
+    print(f"  {len(features)} features  [{endpoint_b.split('/')[2]}, OSM base {base_b}]")
+
+    if base_a != base_b:
+        sys.exit(f"Refusing to write a mixed snapshot: facilities are from {base_a} "
+                 f"({endpoint}) but features are from {base_b} ({endpoint_b}). "
+                 "Re-run; the mirrors replicate independently.")
 
     counts: dict[str, int] = {}
     for el in features:
@@ -119,6 +155,8 @@ def main() -> None:
 
     snapshot = {
         "fetched_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
+        "osm_base": base_a,          # the map state this snapshot describes
+        "endpoint": endpoint,
         "bbox": args.bbox,
         "endpoints": endpoints,
         "queries": {

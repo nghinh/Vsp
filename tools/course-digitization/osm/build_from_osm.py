@@ -245,6 +245,27 @@ def wkt_for(el: dict, kind: str) -> str | None:
     return f"LINESTRING({coords})"
 
 
+def boundary_rows(elements: list[dict]) -> list[tuple]:
+    """Course outlines, staged alongside the features as kind='course_boundary'.
+
+    Nothing in this pipeline needs them — the satellite pipeline does. It is the
+    difference between "water within 120 m of a hole" and "water on the course",
+    which in the Mekong delta is the difference between a hazard and a neighbour's
+    fish pond.
+    """
+    rows = []
+    for el in elements:
+        if el["type"] != "way" or not el.get("geometry"):
+            continue
+        wkt = wkt_for(el, "green")  # any area kind: closes the ring if it can
+        if wkt is None or not wkt.startswith("POLYGON"):
+            continue
+        name = (el.get("tags") or {}).get("name")
+        rows.append((el["id"], f"way/{el['id']}", "course_boundary", name, wkt))
+    rows.sort(key=lambda r: r[0])
+    return rows
+
+
 def staging_rows(elements: list[dict]) -> tuple[list[tuple], int]:
     """(rows, skipped_relations). Relations are multipolygons that `out geom`
     only returns member-wise; they are 1.3% of features and are left out rather
@@ -671,7 +692,11 @@ def main() -> None:
     print(f"snapshot     {snapshot_path.name}  (fetched {snap.get('fetched_at', 'unknown')})")
 
     rows, skipped = staging_rows(snap["features"])
-    print(f"features     {len(rows)} ways loaded, {skipped} relations/degenerate ways skipped")
+    bounds = boundary_rows(snap["facilities"])
+    rows = rows + bounds
+    print(f"features     {len(rows) - len(bounds)} ways loaded, "
+          f"{skipped} relations/degenerate ways skipped")
+    print(f"boundaries   {len(bounds)} course outlines staged")
 
     osm_courses = osm_courses_from(snap["facilities"])
     db_facilities = [

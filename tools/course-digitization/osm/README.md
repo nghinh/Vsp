@@ -36,6 +36,12 @@ Nothing to install: standard library only, and `psql` inside the existing
 `vsp_postgres` container. Point it elsewhere with
 `--psql "psql postgresql://user:pw@host:5432/vsp"`.
 
+`fetch_osm.py` refuses to write a snapshot whose two halves came from different
+Overpass mirrors at different replication states. That is not hypothetical: on
+the day this was written one public mirror was three months behind the other and
+answered the identical query with 13% fewer bunkers, no error, no warning. The
+snapshot records `osm_base`, the map timestamp it describes.
+
 Re-running is safe. Against an unchanged snapshot the second run reports 0 for
 every update — that is the check that it is idempotent, and it is worth reading
 the report for exactly that reason. Derived and imported feature rows are
@@ -143,6 +149,13 @@ offset and relabels it `derived:facility-offset`, `UNVERIFIED`, confidence 0.20.
 Otherwise the database keeps geometry that no input explains, which is the exact
 condition this pipeline exists to end. Eight holes were in that state when it
 first ran.
+
+## What else is staged
+
+`osm_golf_staging` also carries `kind = 'course_boundary'`: the outline of each
+`leisure=golf_course` way (156 of them). Nothing in this pipeline uses it — the
+satellite pipeline does, to tell a water hazard from the fish pond over the
+fence. It is staged here because this is where OSM data enters the system.
 
 ## Why there is no migration
 

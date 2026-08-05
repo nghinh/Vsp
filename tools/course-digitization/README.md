@@ -4,13 +4,17 @@
 rest of Vietnam's courses are not mapped hole-by-hole). Those holes still carry
 seeded coordinates, so their fairways are derived and labelled unverified.
 
-Two pipelines feed the same tables:
+Three pipelines feed the same tables, in this order:
 
-* [`osm/`](osm/) — **automatic**, and the source of everything the database
-  currently knows: facility coordinates, 61 real holes, and the OSM greens,
-  bunkers and water hazards around them. Run that first; it is reproducible and
-  idempotent.
-* this directory — **manual**, for the 839 holes OSM cannot supply.
+1. [`osm/`](osm/) — **automatic**, and the source of everything the database
+   currently knows: facility coordinates, 61 real holes, and the OSM greens,
+   bunkers and water hazards around them. Reproducible from a committed
+   snapshot and idempotent.
+2. [`satellite/`](satellite/) — **automatic**, free Sentinel-2 imagery, water
+   hazards only. Adds 40 ponds nobody had mapped. It finds 40% of the hazards
+   OSM already knows about, and it cannot see bunkers at all — read that
+   directory's README before quoting either number.
+3. this directory — **manual**, for the 839 holes neither of them can supply.
 
 ## 1. `holes_todo.geojson` — the work list
 
