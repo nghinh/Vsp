@@ -12,7 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bag/presentation/bag_screen.dart';
+import '../../course_search/presentation/course_search_screen.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../domain/models/course_search_result.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/nearby_course_service.dart';
@@ -427,8 +429,29 @@ class _CourseSelector extends StatelessWidget {
     );
   }
 
+  /// Opens the full course search as a picker and applies the chosen course.
+  ///
+  /// This is the escape hatch when GPS is off or the golfer has no history:
+  /// the nearby/recent lists are empty and the sheet alone would dead-end.
+  Future<void> _searchForCourse(BuildContext context) async {
+    final bloc = context.read<RoundSetupBloc>();
+    final picked = await Navigator.of(context).push<CourseSearchResult>(
+      MaterialPageRoute(
+        builder: (_) => const CourseSearchScreen(selectionMode: true),
+      ),
+    );
+    if (picked == null) return;
+    // packageId is resolved from the local manifest by the bloc — the search
+    // result only tells us whether a package exists at all.
+    bloc.add(
+      CourseSelected(
+        courseId: picked.courseId,
+        courseName: picked.displayName,
+      ),
+    );
+  }
+
   void _showCoursePicker(BuildContext context) {
-    // TODO: Navigate to course picker screen or show bottom sheet
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -498,11 +521,23 @@ class _CourseSelector extends StatelessWidget {
               ],
               if (state.nearbyCourses.isEmpty && state.recentCourses.isEmpty)
                 const Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: EdgeInsets.symmetric(vertical: 24),
                   child: Center(
-                    child: Text('No courses available.'),
+                    child: Text(
+                      'No nearby or recent courses yet — search for one.',
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
+              const SizedBox(height: 8),
+              ListTile(
+                leading: const Icon(Icons.search),
+                title: const Text('Search all courses'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _searchForCourse(context);
+                },
+              ),
                 ],
               ),
             ),

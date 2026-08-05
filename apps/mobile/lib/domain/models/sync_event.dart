@@ -250,7 +250,7 @@ class SyncEvent extends Equatable {
       entityId: map['entity_id'] as String,
       payload: map['payload'] as String,
       state: parseSyncStatus(map['state'] as String),
-      attemptCount: map['attempt_count'] as int? ?? 0,
+      attemptCount: (map['attempt_count'] as num?)?.toInt() ?? 0,
       createdAt: DateTime.parse(map['created_at'] as String),
       lastAttemptAt: map['last_attempt_at'] != null
           ? DateTime.parse(map['last_attempt_at'] as String)

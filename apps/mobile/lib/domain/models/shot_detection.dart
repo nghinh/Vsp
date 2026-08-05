@@ -430,7 +430,7 @@ class ShotDetectionSignals extends Equatable {
             )
           : null,
       capturedAt: DateTime.parse(json['capturedAt'] as String),
-      windowSeconds: json['windowSeconds'] as int? ?? 30,
+      windowSeconds: (json['windowSeconds'] as num?)?.toInt() ?? 30,
     );
   }
 
@@ -921,8 +921,8 @@ class ShotDetectionWindows extends Equatable {
 
   factory ShotDetectionWindows.fromJson(Map<String, dynamic> json) {
     return ShotDetectionWindows(
-      detectionWindowSeconds: json['detectionWindowSeconds'] as int? ?? 30,
-      minTimeBetweenShots: json['minTimeBetweenShots'] as int? ?? 15,
+      detectionWindowSeconds: (json['detectionWindowSeconds'] as num?)?.toInt() ?? 30,
+      minTimeBetweenShots: (json['minTimeBetweenShots'] as num?)?.toInt() ?? 15,
       maxShortShotDistanceMeters:
           (json['maxShortShotDistanceMeters'] as num?)?.toDouble() ?? 10.0,
     );

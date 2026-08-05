@@ -127,7 +127,7 @@ class TournamentRepository {
       name: map['name'] as String,
       format: TournamentFormatExtension.fromString(map['format'] as String),
       status: TournamentStatusExtension.fromString(map['status'] as String),
-      courseId: map['course_id'] as int,
+      courseId: (map['course_id'] as num).toInt(),
       courseName: map['course_name'] as String?,
       startDate: DateTime.parse(map['start_date'] as String),
       endDate: DateTime.parse(map['end_date'] as String),
@@ -135,12 +135,12 @@ class TournamentRepository {
       registrationDeadline: map['registration_deadline'] != null
           ? DateTime.parse(map['registration_deadline'] as String)
           : null,
-      maxPlayers: map['max_players'] as int?,
+      maxPlayers: (map['max_players'] as num?)?.toInt(),
       description: map['description'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),
-      createdBy: map['created_by'] as int,
-      version: map['version'] as int? ?? 1,
-      leaderboardVersion: map['leaderboard_version'] as int? ?? 0,
+      createdBy: (map['created_by'] as num).toInt(),
+      version: (map['version'] as num?)?.toInt() ?? 1,
+      leaderboardVersion: (map['leaderboard_version'] as num?)?.toInt() ?? 0,
     );
   }
 

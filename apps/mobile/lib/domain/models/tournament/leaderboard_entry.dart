@@ -32,17 +32,17 @@ class LeaderboardEntry extends Equatable {
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) {
     return LeaderboardEntry(
-      rank: json['rank'] as int? ?? 0,
+      rank: (json['rank'] as num?)?.toInt() ?? 0,
       isTied: json['tied'] as bool? ?? false,
       playerId: json['playerId'] is String
           ? int.parse(json['playerId'] as String)
-          : json['playerId'] as int,
+          : (json['playerId'] as num).toInt(),
       playerName: json['playerName'] as String?,
-      score: json['score'] as int?,
-      scoreToPar: json['scoreToPar'] as int?,
+      score: (json['score'] as num?)?.toInt(),
+      scoreToPar: (json['scoreToPar'] as num?)?.toInt(),
       status: json['status'] as String? ?? 'UNKNOWN',
       flightId: json['flightId'] as String?,
-      roundNumber: json['roundNumber'] as int?,
+      roundNumber: (json['roundNumber'] as num?)?.toInt(),
     );
   }
 
@@ -89,7 +89,7 @@ class Leaderboard extends Equatable {
   factory Leaderboard.fromJson(Map<String, dynamic> json) {
     return Leaderboard(
       tournamentId: json['tournamentId'] as String,
-      version: json['version'] as int? ?? 0,
+      version: (json['version'] as num?)?.toInt() ?? 0,
       updatedAt: json['updatedAt'] != null
           ? DateTime.parse(json['updatedAt'] as String)
           : DateTime.now(),

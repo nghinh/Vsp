@@ -84,7 +84,7 @@ class StrategyOption extends Equatable {
       hazardsAtLanding: (json['hazardsAtLanding'] as List<dynamic>)
           .map((e) => HazardAtLanding.fromJson(e as Map<String, dynamic>))
           .toList(),
-      riskScore: json['riskScore'] as int,
+      riskScore: (json['riskScore'] as num).toInt(),
       confidenceScore: (json['confidenceScore'] as num).toDouble(),
       explanation: json['explanation'] as String,
     );

@@ -337,7 +337,7 @@ class TelemetryDao {
       recordedAt: DateTime.parse(row['recorded_at'] as String),
       jsonPayload: row['json_payload'] as String,
       syncStatus: row['sync_status'] as String,
-      version: row['version'] as int,
+      version: (row['version'] as num).toInt(),
       updatedAt: DateTime.parse(row['updated_at'] as String),
     );
   }

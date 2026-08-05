@@ -75,7 +75,7 @@ class Flight extends Equatable {
     return Flight(
       id: map['id'] as String,
       roundId: map['round_id'] as String,
-      flightIndex: map['flight_index'] as int,
+      flightIndex: (map['flight_index'] as num).toInt(),
       playerIds: (map['player_ids'] as String).isNotEmpty
           ? (map['player_ids'] as String).split(',')
           : <String>[],
@@ -101,7 +101,7 @@ class Flight extends Equatable {
     return Flight(
       id: json['id'] as String,
       roundId: json['roundId'] as String,
-      flightIndex: json['flightIndex'] as int,
+      flightIndex: (json['flightIndex'] as num).toInt(),
       playerIds: (json['playerIds'] as List<dynamic>).cast<String>(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),

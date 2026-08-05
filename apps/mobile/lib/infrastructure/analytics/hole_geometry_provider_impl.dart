@@ -192,8 +192,8 @@ class SqliteHoleGeometryProvider implements HoleGeometryProvider {
 
     return HoleContext(
       holeId: map['id'] as String,
-      holeNumber: map['hole_number'] as int,
-      par: map['par'] as int,
+      holeNumber: (map['hole_number'] as num).toInt(),
+      par: (map['par'] as num).toInt(),
       pinPosition: LatLng(
         latitude: (map['pin_position_lat'] as num).toDouble(),
         longitude: (map['pin_position_lon'] as num).toDouble(),

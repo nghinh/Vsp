@@ -138,8 +138,8 @@ class IncompleteDataWarning extends Equatable {
       ),
       title: json['title'] as String,
       message: json['message'] as String,
-      requiredMinimum: json['requiredMinimum'] as int,
-      actualCount: json['actualCount'] as int,
+      requiredMinimum: (json['requiredMinimum'] as num).toInt(),
+      actualCount: (json['actualCount'] as num).toInt(),
       recommendedAction: json['recommendedAction'] as String?,
       generatedAt: json['generatedAt'] == null
           ? null

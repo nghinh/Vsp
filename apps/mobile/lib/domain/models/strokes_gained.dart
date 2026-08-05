@@ -281,7 +281,7 @@ class StrokesGainedResult extends Equatable {
       strokesGained: (json['strokesGained'] as num).toDouble(),
       baselineStrokes: (json['baselineStrokes'] as num).toDouble(),
       actualStrokes: (json['actualStrokes'] as num).toDouble(),
-      sampleCount: json['sampleCount'] as int,
+      sampleCount: (json['sampleCount'] as num).toInt(),
       limitation: SGLimitation.fromString(json['limitation'] as String?),
       confidence: (json['confidence'] as num).toDouble(),
     );

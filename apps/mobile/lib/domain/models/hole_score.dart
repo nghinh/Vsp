@@ -99,15 +99,15 @@ class HoleScore extends Equatable {
     return HoleScore(
       id: map['id'] as String,
       roundId: map['round_id'] as String,
-      holeNumber: map['hole_number'] as int,
-      par: map['par'] as int,
-      strokes: map['strokes'] as int,
-      putts: map['putts'] as int?,
-      penalties: map['penalties'] as int?,
+      holeNumber: (map['hole_number'] as num).toInt(),
+      par: (map['par'] as num).toInt(),
+      strokes: (map['strokes'] as num).toInt(),
+      putts: (map['putts'] as num?)?.toInt(),
+      penalties: (map['penalties'] as num?)?.toInt(),
       fairwayHit: map['fairway_hit'] != null
-          ? (map['fairway_hit'] as int) == 1
+          ? ((map['fairway_hit'] as num).toInt()) == 1
           : null,
-      gir: map['gir'] != null ? (map['gir'] as int) == 1 : null,
+      gir: map['gir'] != null ? ((map['gir'] as num).toInt()) == 1 : null,
       clubUsed: map['club_used'] as String?,
       notes: map['notes'] as String?,
       createdAt: DateTime.parse(map['created_at'] as String),

@@ -28,12 +28,12 @@ class RecentCourse extends Equatable {
   /// Parse from API response JSON (RecentCourseDto).
   factory RecentCourse.fromJson(Map<String, dynamic> json) {
     return RecentCourse(
-      courseId: json['courseId'] as int,
-      facilityId: json['facilityId'] as int,
+      courseId: (json['courseId'] as num).toInt(),
+      facilityId: (json['facilityId'] as num).toInt(),
       facilityName: json['facilityName'] as String,
       courseName: json['courseName'] as String?,
       address: json['address'] as String?,
-      holesCount: json['holesCount'] as int,
+      holesCount: (json['holesCount'] as num).toInt(),
       viewedAt: DateTime.parse(json['viewedAt'] as String),
     );
   }

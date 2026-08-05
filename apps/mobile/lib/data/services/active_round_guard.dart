@@ -253,7 +253,7 @@ class ActiveRoundGuard {
     // Return the most recently deferred update
     final row = rows.first;
     return DeferredUpdate(
-      courseId: row['course_id'] as int,
+      courseId: (row['course_id'] as num).toInt(),
       newVersion: row['new_version'] as String,
       newEtag: row['new_etag'] as String,
       deferredAt: DateTime.parse(row['deferred_at'] as String),

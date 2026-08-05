@@ -55,18 +55,18 @@ class CourseSearchResult extends Equatable {
   /// Parse from API response JSON (CourseSearchResultDto).
   factory CourseSearchResult.fromJson(Map<String, dynamic> json) {
     return CourseSearchResult(
-      courseId: json['courseId'] as int,
-      facilityId: json['facilityId'] as int,
+      courseId: (json['courseId'] as num).toInt(),
+      facilityId: (json['facilityId'] as num).toInt(),
       facilityName: json['facilityName'] as String,
       courseName: json['courseName'] as String?,
       address: json['address'] as String?,
       // Coordinates may be absent for text-search results — tolerate null.
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-      holesCount: json['holesCount'] as int,
-      parTotal: json['parTotal'] as int?,
+      holesCount: (json['holesCount'] as num).toInt(),
+      parTotal: (json['parTotal'] as num?)?.toInt(),
       rating: (json['rating'] as num?)?.toDouble(),
-      slope: json['slope'] as int?,
+      slope: (json['slope'] as num?)?.toInt(),
       distanceMeters: (json['distanceMeters'] as num?)?.toDouble(),
       hasPackage: json['hasPackage'] as bool? ?? false,
       updateAvailable: json['updateAvailable'] as bool? ?? false,
@@ -198,10 +198,10 @@ class CourseSearchPage extends Equatable {
       content: (json['content'] as List<dynamic>)
           .map((e) => CourseSearchResult.fromJson(e as Map<String, dynamic>))
           .toList(),
-      page: json['page'] as int,
-      size: json['size'] as int,
-      totalElements: json['totalElements'] as int,
-      totalPages: json['totalPages'] as int,
+      page: (json['page'] as num).toInt(),
+      size: (json['size'] as num).toInt(),
+      totalElements: (json['totalElements'] as num).toInt(),
+      totalPages: (json['totalPages'] as num).toInt(),
       first: json['first'] as bool,
       last: json['last'] as bool,
     );

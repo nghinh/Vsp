@@ -37,7 +37,7 @@ class DistanceBucket extends Equatable {
     return DistanceBucket(
       minYards: (json['minYards'] as num).toDouble(),
       maxYards: (json['maxYards'] as num).toDouble(),
-      shotCount: json['shotCount'] as int,
+      shotCount: (json['shotCount'] as num).toInt(),
       percentage: (json['percentage'] as num).toDouble(),
     );
   }
@@ -67,7 +67,7 @@ class LieDistribution extends Equatable {
   factory LieDistribution.fromJson(Map<String, dynamic> json) {
     return LieDistribution(
       lie: json['lie'] as String,
-      shotCount: json['shotCount'] as int,
+      shotCount: (json['shotCount'] as num).toInt(),
       percentage: (json['percentage'] as num).toDouble(),
     );
   }
@@ -155,7 +155,7 @@ class ClubShotMetrics extends Equatable {
     return ClubShotMetrics(
       clubId: json['clubId'] as String,
       clubName: json['clubName'] as String?,
-      totalShots: json['totalShots'] as int,
+      totalShots: (json['totalShots'] as num).toInt(),
       averageDistanceYards: (json['averageDistanceYards'] as num?)?.toDouble(),
       averageDistanceMeters: (json['averageDistanceMeters'] as num?)
           ?.toDouble(),
@@ -174,7 +174,7 @@ class ClubShotMetrics extends Equatable {
               ?.map((e) => LieDistribution.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      bestResultCount: json['bestResultCount'] as int?,
+      bestResultCount: (json['bestResultCount'] as num?)?.toInt(),
       bestResultRate: (json['bestResultRate'] as num?)?.toDouble(),
     );
   }
@@ -265,7 +265,7 @@ class ShotMetrics extends Equatable {
               ?.map((e) => ClubShotMetrics.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      totalShots: json['totalShots'] as int? ?? 0,
+      totalShots: (json['totalShots'] as num?)?.toInt() ?? 0,
       fromDate: json['fromDate'] != null
           ? DateTime.parse(json['fromDate'] as String)
           : null,

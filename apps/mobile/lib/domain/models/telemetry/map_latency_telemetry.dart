@@ -174,14 +174,14 @@ class MapLatencyTelemetry extends Equatable {
       eventType: MapEventTypeDto.fromString(
         map['event_type'] as String? ?? 'initialLoad',
       ),
-      durationMilliseconds: map['duration_milliseconds'] as int,
-      tilesRendered: map['tiles_rendered'] as int?,
-      symbolsRendered: map['symbols_rendered'] as int?,
-      servedFromCache: (map['served_from_cache'] as int) == 1,
-      zoomLevel: map['zoom_level'] as double,
+      durationMilliseconds: (map['duration_milliseconds'] as num).toInt(),
+      tilesRendered: (map['tiles_rendered'] as num?)?.toInt(),
+      symbolsRendered: (map['symbols_rendered'] as num?)?.toInt(),
+      servedFromCache: ((map['served_from_cache'] as num).toInt()) == 1,
+      zoomLevel: (map['zoom_level'] as num).toDouble(),
       deviceModel: map['device_model'] as String?,
-      batteryLevel: map['battery_level'] as double,
-      memoryUsageMb: map['memory_usage_mb'] as double?,
+      batteryLevel: (map['battery_level'] as num).toDouble(),
+      memoryUsageMb: (map['memory_usage_mb'] as num?)?.toDouble(),
     );
   }
 

@@ -29,7 +29,7 @@ class TeeSetSummary extends Equatable {
 
   factory TeeSetSummary.fromJson(Map<String, dynamic> json) {
     return TeeSetSummary(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       gender: json['gender'] as String?,
       totalPar: (json['totalPar'] as num?)?.toInt() ?? 0,
@@ -40,7 +40,7 @@ class TeeSetSummary extends Equatable {
           ) ??
           {},
       rating: (json['rating'] as num?)?.toDouble(),
-      slope: json['slope'] as int?,
+      slope: (json['slope'] as num?)?.toInt(),
       accuracyClass: json['accuracyClass'] as String? ?? 'D',
     );
   }

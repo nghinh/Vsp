@@ -128,8 +128,8 @@ class PrivacyRequestDTO extends Equatable {
   /// Parse from GET /privacy/requests JSON response.
   factory PrivacyRequestDTO.fromJson(Map<String, dynamic> json) {
     return PrivacyRequestDTO(
-      id: json['id'] as int,
-      requesterGolferAccountId: json['requesterGolferAccountId'] as int,
+      id: (json['id'] as num).toInt(),
+      requesterGolferAccountId: (json['requesterGolferAccountId'] as num).toInt(),
       requestType: PrivacyRequestType.fromString(
         json['requestType'] as String? ?? 'DATA_EXPORT',
       ),
@@ -141,7 +141,7 @@ class PrivacyRequestDTO extends Equatable {
       processedAt: json['processedAt'] != null
           ? DateTime.tryParse(json['processedAt'] as String)
           : null,
-      processedBy: json['processedBy'] as int?,
+      processedBy: (json['processedBy'] as num?)?.toInt(),
       rejectionReason: json['rejectionReason'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)
@@ -281,7 +281,7 @@ class RoundSummaryDTO extends Equatable {
       playedAt: json['playedAt'] != null
           ? DateTime.tryParse(json['playedAt'] as String)
           : null,
-      score: json['score'] as int?,
+      score: (json['score'] as num?)?.toInt(),
     );
   }
 

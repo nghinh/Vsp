@@ -51,9 +51,9 @@ class AuthTokens extends Equatable {
     return AuthTokens(
       accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
-      expiresIn: json['expiresIn'] as int,
+      expiresIn: (json['expiresIn'] as num).toInt(),
       tokenType: json['tokenType'] as String? ?? 'Bearer',
-      userId: json['userId'] as int,
+      userId: (json['userId'] as num).toInt(),
       displayName: json['displayName'] as String?,
       status: json['status'] as String?,
       sessionId: json['sessionId'] as String?,
@@ -297,9 +297,9 @@ class SocialAuthResponse extends Equatable {
     return SocialAuthResponse(
       accessToken: json['accessToken'] as String,
       refreshToken: json['refreshToken'] as String,
-      expiresIn: json['expiresIn'] as int,
+      expiresIn: (json['expiresIn'] as num).toInt(),
       tokenType: json['tokenType'] as String? ?? 'Bearer',
-      userId: json['userId'] as int,
+      userId: (json['userId'] as num).toInt(),
       displayName: json['displayName'] as String?,
       status: json['status'] as String?,
       provider: json['provider'] as String? ?? 'unknown',
@@ -345,7 +345,7 @@ class GolferProfile extends Equatable {
 
   factory GolferProfile.fromJson(Map<String, dynamic> json) {
     return GolferProfile(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       phone: json['phone'] as String?,
       email: json['email'] as String?,
       displayName: json['displayName'] as String?,
@@ -398,7 +398,7 @@ class TokenRefreshResponse extends Equatable {
   factory TokenRefreshResponse.fromJson(Map<String, dynamic> json) {
     return TokenRefreshResponse(
       accessToken: json['accessToken'] as String,
-      expiresIn: json['expiresIn'] as int,
+      expiresIn: (json['expiresIn'] as num).toInt(),
       tokenType: json['tokenType'] as String? ?? 'Bearer',
     );
   }

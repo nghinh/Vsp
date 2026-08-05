@@ -19,8 +19,8 @@ class HoleSummary extends Equatable {
 
   factory HoleSummary.fromJson(Map<String, dynamic> json) {
     return HoleSummary(
-      holeNumber: json['holeNumber'] as int,
-      par: json['par'] as int,
+      holeNumber: (json['holeNumber'] as num).toInt(),
+      par: (json['par'] as num).toInt(),
       // API sends this as a decimal (e.g. 362.0) — accept any number.
       playingLengthMeters: (json['playingLengthMeters'] as num?)?.toInt(),
     );

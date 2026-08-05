@@ -151,14 +151,14 @@ class CoursePackageRepository {
     return DownloadProgress(
       courseId: courseId,
       state: state,
-      totalBytes: row['total_bytes'] as int,
-      downloadedBytes: row['downloaded_bytes'] as int,
+      totalBytes: (row['total_bytes'] as num).toInt(),
+      downloadedBytes: (row['downloaded_bytes'] as num).toInt(),
       currentFile: row['current_file'] as String?,
-      currentFileIndex: row['current_file_index'] as int,
-      totalFiles: row['total_files'] as int,
+      currentFileIndex: (row['current_file_index'] as num).toInt(),
+      totalFiles: (row['total_files'] as num).toInt(),
       errorMessage: row['error_message'] as String?,
       error: error,
-      retryCount: row['retry_count'] as int,
+      retryCount: (row['retry_count'] as num).toInt(),
     );
   }
 

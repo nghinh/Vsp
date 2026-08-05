@@ -67,7 +67,7 @@ class TournamentPlayer extends Equatable {
       tournamentId: json['tournamentId'] as String,
       playerId: json['playerId'] is String
           ? int.parse(json['playerId'] as String)
-          : json['playerId'] as int,
+          : (json['playerId'] as num).toInt(),
       playerName: json['playerName'] as String?,
       handicap: (json['handicap'] as num?)?.toDouble(),
       flightId: json['flightId'] as String?,

@@ -79,9 +79,9 @@ class ZoneCell extends Equatable {
 
   factory ZoneCell.fromJson(Map<String, dynamic> json) {
     return ZoneCell(
-      horizontalZone: json['horizontalZone'] as int,
-      distanceBand: json['distanceBand'] as int,
-      shotCount: json['shotCount'] as int,
+      horizontalZone: (json['horizontalZone'] as num).toInt(),
+      distanceBand: (json['distanceBand'] as num).toInt(),
+      shotCount: (json['shotCount'] as num).toInt(),
       percentage: (json['percentage'] as num).toDouble(),
     );
   }
@@ -153,10 +153,10 @@ class HoleZoneStats extends Equatable {
 
   factory HoleZoneStats.fromJson(Map<String, dynamic> json) {
     return HoleZoneStats(
-      holeNumber: json['holeNumber'] as int,
+      holeNumber: (json['holeNumber'] as num).toInt(),
       clubId: json['clubId'] as String,
       clubName: json['clubName'] as String?,
-      totalShots: json['totalShots'] as int,
+      totalShots: (json['totalShots'] as num).toInt(),
       zoneCells: (json['zoneCells'] as List<dynamic>)
           .map((e) => ZoneCell.fromJson(e as Map<String, dynamic>))
           .toList(),

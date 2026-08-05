@@ -27,7 +27,7 @@ class Correction {
   factory Correction.fromMap(Map<String, dynamic> map) {
     return Correction(
       field: map['field'] as String,
-      holeNumber: map['holeNumber'] as int,
+      holeNumber: (map['holeNumber'] as num).toInt(),
       oldValue: map['oldValue'] as String,
       newValue: map['newValue'] as String,
     );

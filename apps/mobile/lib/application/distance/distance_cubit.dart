@@ -161,7 +161,7 @@ class DistanceCubit extends Cubit<DistanceState> {
     } else if (locationEvent is Map) {
       // Flexible map-based location (e.g. from repository)
       position = locationEvent['position'] as LatLng?;
-      accuracy = locationEvent['accuracy'] as double?;
+      accuracy = (locationEvent['accuracy'] as num?)?.toDouble();
     } else {
       // Try to extract via reflection-like access
       position = _extractPosition(locationEvent);

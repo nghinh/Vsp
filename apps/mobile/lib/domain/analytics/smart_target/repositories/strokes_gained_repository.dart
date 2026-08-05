@@ -34,7 +34,7 @@ class StrokesGainedResult extends Equatable {
       clubId: json['clubId'] as String,
       strokesGainedPerShot: (json['strokesGainedPerShot'] as num).toDouble(),
       strokesGainedTotal: (json['strokesGainedTotal'] as num).toDouble(),
-      shotCount: json['shotCount'] as int,
+      shotCount: (json['shotCount'] as num).toInt(),
       benchmarkAvgMeters: (json['benchmarkAvgMeters'] as num).toDouble(),
       actualAvgMeters: (json['actualAvgMeters'] as num).toDouble(),
       benchmarkType: json['benchmarkType'] as String,
@@ -95,7 +95,7 @@ class StrokesGainedSummary {
       totalStrokesGained: (json['totalStrokesGained'] as num).toDouble(),
       avgStrokesGainedPerRound: (json['avgStrokesGainedPerRound'] as num)
           .toDouble(),
-      totalShotCount: json['totalShotCount'] as int,
+      totalShotCount: (json['totalShotCount'] as num).toInt(),
       strokesGainedByClub: (json['strokesGainedByClub'] as Map<String, dynamic>)
           .map((k, v) => MapEntry(k, (v as num).toDouble())),
     );

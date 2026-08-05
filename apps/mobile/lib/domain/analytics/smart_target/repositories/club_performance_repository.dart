@@ -42,7 +42,7 @@ class ClubPerformanceStats extends Equatable {
       dispersionMeters: (json['dispersionMeters'] as num).toDouble(),
       leftBiasMeters: (json['leftBiasMeters'] as num).toDouble(),
       rightBiasMeters: (json['rightBiasMeters'] as num).toDouble(),
-      sampleCount: json['sampleCount'] as int,
+      sampleCount: (json['sampleCount'] as num).toInt(),
       confidence: (json['confidence'] as num).toDouble(),
     );
   }

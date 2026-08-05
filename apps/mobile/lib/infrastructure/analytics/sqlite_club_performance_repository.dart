@@ -123,7 +123,7 @@ class SqliteClubPerformanceRepository implements ClubPerformanceRepository {
       dispersionMeters: (map['dispersion_meters'] as num).toDouble(),
       leftBiasMeters: (map['left_bias_meters'] as num).toDouble(),
       rightBiasMeters: (map['right_bias_meters'] as num).toDouble(),
-      sampleCount: map['sample_count'] as int,
+      sampleCount: (map['sample_count'] as num).toInt(),
       confidence: (map['confidence'] as num).toDouble(),
     );
   }

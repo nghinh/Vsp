@@ -69,7 +69,7 @@ class PinEntity extends Equatable {
   factory PinEntity.fromJson(Map<String, dynamic> json) {
     return PinEntity(
       holeId: json['holeId'] as String,
-      holeNumber: json['holeNumber'] as int,
+      holeNumber: (json['holeNumber'] as num).toInt(),
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       source: PinSource.values.firstWhere(

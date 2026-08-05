@@ -28,12 +28,12 @@ class FavoriteCourse extends Equatable {
   /// Parse from API response JSON (FavoriteCourseDto).
   factory FavoriteCourse.fromJson(Map<String, dynamic> json) {
     return FavoriteCourse(
-      courseId: json['courseId'] as int,
-      facilityId: json['facilityId'] as int,
+      courseId: (json['courseId'] as num).toInt(),
+      facilityId: (json['facilityId'] as num).toInt(),
       facilityName: json['facilityName'] as String,
       courseName: json['courseName'] as String?,
       address: json['address'] as String?,
-      holesCount: json['holesCount'] as int,
+      holesCount: (json['holesCount'] as num).toInt(),
       favoritedAt: DateTime.parse(json['favoritedAt'] as String),
     );
   }

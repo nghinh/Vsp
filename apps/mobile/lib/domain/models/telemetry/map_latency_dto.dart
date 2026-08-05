@@ -109,9 +109,9 @@ class MapLatencyDto {
       eventType: MapEventTypeDto.fromString(
         json['eventType'] as String? ?? 'initialLoad',
       ),
-      durationMilliseconds: json['durationMilliseconds'] as int,
-      tilesRendered: json['tilesRendered'] as int?,
-      symbolsRendered: json['symbolsRendered'] as int?,
+      durationMilliseconds: (json['durationMilliseconds'] as num).toInt(),
+      tilesRendered: (json['tilesRendered'] as num?)?.toInt(),
+      symbolsRendered: (json['symbolsRendered'] as num?)?.toInt(),
       servedFromCache: json['servedFromCache'] as bool? ?? false,
       zoomLevel: (json['zoomLevel'] as num).toDouble(),
       deviceModel: json['deviceModel'] as String?,

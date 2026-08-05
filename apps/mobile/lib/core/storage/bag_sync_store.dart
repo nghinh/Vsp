@@ -44,8 +44,8 @@ class QueuedBagUpdate {
         (e) => e.name == row['operation'],
         orElse: () => BagSyncOperation.createBag,
       ),
-      bagId: row['bag_id'] as int?,
-      clubId: row['club_id'] as int?,
+      bagId: (row['bag_id'] as num?)?.toInt(),
+      clubId: (row['club_id'] as num?)?.toInt(),
       payload: row['payload'] as String,
       createdAt: DateTime.parse(row['created_at'] as String),
       syncedAt: row['synced_at'] != null

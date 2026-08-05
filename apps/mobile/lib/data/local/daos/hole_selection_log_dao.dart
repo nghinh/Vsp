@@ -120,13 +120,13 @@ class HoleSelectionLogDao {
         (r) => r.name == map['reason'],
         orElse: () => ManualSelectionReason.userChoice,
       ),
-      confidenceBefore: map['confidence_before'] as double?,
+      confidenceBefore: (map['confidence_before'] as num?)?.toDouble(),
       locationAtSelection: QualifiedLocation(
-        latitude: map['latitude'] as double,
-        longitude: map['longitude'] as double,
+        latitude: (map['latitude'] as num).toDouble(),
+        longitude: (map['longitude'] as num).toDouble(),
         isStale: false,
-        accuracyMeters: map['accuracy_meters'] as double?,
-        heading: map['heading'] as double?,
+        accuracyMeters: (map['accuracy_meters'] as num?)?.toDouble(),
+        heading: (map['heading'] as num?)?.toDouble(),
         source: LocationSource.values.firstWhere(
           (s) => s.name == map['location_source'],
           orElse: () => LocationSource.gps,

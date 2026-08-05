@@ -166,8 +166,8 @@ class ProfileDTO extends Equatable {
   /// Parse from GET /profiles/me JSON response.
   factory ProfileDTO.fromJson(Map<String, dynamic> json) {
     return ProfileDTO(
-      id: json['id'] as int,
-      golferAccountId: json['golferAccountId'] as int,
+      id: (json['id'] as num).toInt(),
+      golferAccountId: (json['golferAccountId'] as num).toInt(),
       handicap: (json['handicap'] as num?)?.toDouble(),
       homeClub: json['homeClub'] as String?,
       distanceUnit: DistanceUnit.fromString(
@@ -179,13 +179,13 @@ class ProfileDTO extends Equatable {
       skillLevel: SkillLevel.fromString(
         json['skillLevel'] as String? ?? 'INTERMEDIATE',
       ),
-      targetScore: json['targetScore'] as int?,
+      targetScore: (json['targetScore'] as num?)?.toInt(),
       driverDistance: (json['driverDistance'] as num?)?.toDouble(),
       swingSpeed: (json['swingSpeed'] as num?)?.toDouble(),
       gender: json['gender'] != null
           ? Gender.fromString(json['gender'] as String)
           : null,
-      birthYear: json['birthYear'] as int?,
+      birthYear: (json['birthYear'] as num?)?.toInt(),
       country: json['country'] as String?,
       imageUrl: json['imageUrl'] as String?,
       createdAt: json['createdAt'] != null
@@ -361,11 +361,11 @@ class UpdateProfileRequest extends Equatable {
       distanceUnit: json['distanceUnit'] as String?,
       dominantHand: json['dominantHand'] as String?,
       skillLevel: json['skillLevel'] as String?,
-      targetScore: json['targetScore'] as int?,
+      targetScore: (json['targetScore'] as num?)?.toInt(),
       driverDistance: (json['driverDistance'] as num?)?.toDouble(),
       swingSpeed: (json['swingSpeed'] as num?)?.toDouble(),
       gender: json['gender'] as String?,
-      birthYear: json['birthYear'] as int?,
+      birthYear: (json['birthYear'] as num?)?.toInt(),
       country: json['country'] as String?,
       imageUrl: json['imageUrl'] as String?,
     );

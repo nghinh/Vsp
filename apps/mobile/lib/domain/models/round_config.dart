@@ -249,7 +249,7 @@ class RoundConfig extends Equatable {
       bagId: json['bagId'] != null
           ? int.parse(json['bagId'].toString().split('/').last)
           : null,
-      startHole: json['startHole'] as int? ?? 1,
+      startHole: (json['startHole'] as num?)?.toInt() ?? 1,
       holes: json['holes'] as String?,
       startTime: DateTime.parse(json['startTime'] as String),
       packageId: json['packageId'] as String?,

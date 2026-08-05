@@ -115,8 +115,8 @@ class ClubDTO extends Equatable {
   /// Parse from GET /bags/{bagId}/clubs JSON response.
   factory ClubDTO.fromJson(Map<String, dynamic> json) {
     return ClubDTO(
-      id: json['id'] as int,
-      golfBagId: json['golfBagId'] as int,
+      id: (json['id'] as num).toInt(),
+      golfBagId: (json['golfBagId'] as num).toInt(),
       clubType: ClubType.fromString(json['clubType'] as String? ?? 'IRON'),
       loft: (json['loft'] as num?)?.toDouble(),
       carryDistance: (json['carryDistance'] as num?)?.toDouble(),
@@ -245,8 +245,8 @@ class BagDTO extends Equatable {
   /// Parse from GET /bags JSON response (list item).
   factory BagDTO.fromJson(Map<String, dynamic> json) {
     return BagDTO(
-      id: json['id'] as int,
-      golferAccountId: json['golferAccountId'] as int,
+      id: (json['id'] as num).toInt(),
+      golferAccountId: (json['golferAccountId'] as num).toInt(),
       name: json['name'] as String,
       isActive: json['isActive'] as bool? ?? false,
       clubs:

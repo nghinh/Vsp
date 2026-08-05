@@ -70,9 +70,9 @@ class PlayerScoreSummary {
               ?.map((h) => ScoreEntry.fromMap(h as Map<String, dynamic>))
               .toList() ??
           [],
-      totalStrokes: map['totalStrokes'] as int,
-      totalPar: map['totalPar'] as int,
-      relativeScore: map['relativeScore'] as int,
+      totalStrokes: (map['totalStrokes'] as num).toInt(),
+      totalPar: (map['totalPar'] as num).toInt(),
+      relativeScore: (map['relativeScore'] as num).toInt(),
       syncState: SyncState.values.firstWhere(
         (s) => s.name == map['syncState'],
         orElse: () => SyncState.pending,

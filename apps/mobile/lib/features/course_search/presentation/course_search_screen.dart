@@ -32,7 +32,13 @@ import 'widgets/course_card.dart';
 import 'widgets/empty_search_state.dart';
 
 class CourseSearchScreen extends StatelessWidget {
-  const CourseSearchScreen({super.key});
+  /// When true the screen acts as a picker: tapping a course pops the route
+  /// with that [CourseSearchResult] instead of opening the course detail.
+  /// Used by round setup so a golfer with no nearby/recent course can still
+  /// find one and start a round.
+  final bool selectionMode;
+
+  const CourseSearchScreen({super.key, this.selectionMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +53,15 @@ class CourseSearchScreen extends StatelessWidget {
           // Populate the default "All" tab with the full course list.
           ..add(const SearchSubmitted(''));
       },
-      child: const _CourseSearchScreenBody(),
+      child: _CourseSearchScreenBody(selectionMode: selectionMode),
     );
   }
 }
 
 class _CourseSearchScreenBody extends StatefulWidget {
-  const _CourseSearchScreenBody();
+  final bool selectionMode;
+
+  const _CourseSearchScreenBody({this.selectionMode = false});
 
   @override
   State<_CourseSearchScreenBody> createState() =>
@@ -103,7 +111,7 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Find Courses'),
+        title: Text(widget.selectionMode ? 'Select Course' : 'Find Courses'),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(108),
           child: Column(
@@ -157,10 +165,16 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
         controller: _tabController,
         children: [
           // Tab 0: All (text search)
-          _SearchResultsTab(scrollController: _scrollController),
+          _SearchResultsTab(
+            scrollController: _scrollController,
+            selectionMode: widget.selectionMode,
+          ),
 
           // Tab 1: Nearby
-          _NearbyTab(scrollController: _scrollController),
+          _NearbyTab(
+            scrollController: _scrollController,
+            selectionMode: widget.selectionMode,
+          ),
 
           // Tab 2: Favorites
           const _FavoritesTab(),
@@ -258,8 +272,12 @@ class _SearchBar extends StatelessWidget {
 
 class _SearchResultsTab extends StatelessWidget {
   final ScrollController scrollController;
+  final bool selectionMode;
 
-  const _SearchResultsTab({required this.scrollController});
+  const _SearchResultsTab({
+    required this.scrollController,
+    this.selectionMode = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -302,6 +320,7 @@ class _SearchResultsTab extends StatelessWidget {
             scrollController: scrollController,
             isLoadingMore: state.isLoadingMore,
             hasNext: state.hasNext,
+            selectionMode: selectionMode,
           );
         }
 
@@ -320,8 +339,12 @@ class _SearchResultsTab extends StatelessWidget {
 
 class _NearbyTab extends StatelessWidget {
   final ScrollController scrollController;
+  final bool selectionMode;
 
-  const _NearbyTab({required this.scrollController});
+  const _NearbyTab({
+    required this.scrollController,
+    this.selectionMode = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -358,18 +381,23 @@ class _NearbyTab extends StatelessWidget {
         if (state is CourseSearchLoaded &&
             state.activeTab == SearchTab.nearby &&
             state.results.isEmpty) {
+          final lat = state.lastLatitude;
+          final lng = state.lastLongitude;
           return EmptySearchState(
             message: 'No courses nearby',
             icon: Icons.golf_course,
             subtitle: 'Try increasing the search radius',
             actionLabel: 'Expand Search',
             onAction: () {
+              // Widen around the last fix; re-acquire GPS if we never had one.
               context.read<CourseSearchBloc>().add(
-                NearbyLocationUpdated(
-                  latitude: state.lastLatitude!,
-                  longitude: state.lastLongitude!,
-                  radiusMeters: 100000, // 100km
-                ),
+                lat != null && lng != null
+                    ? NearbyLocationUpdated(
+                        latitude: lat,
+                        longitude: lng,
+                        radiusMeters: 100000, // 100km
+                      )
+                    : const SearchNearby(radiusMeters: 100000),
               );
             },
           );
@@ -382,22 +410,16 @@ class _NearbyTab extends StatelessWidget {
             scrollController: scrollController,
             isLoadingMore: state.isLoadingMore,
             hasNext: state.hasNext,
+            selectionMode: selectionMode,
           );
         }
 
-        // Default: prompt to enable location
+        // Default: prompt to enable location. The bloc resolves the real GPS
+        // fix and surfaces an error state if permission/location is missing.
         return EmptySearchState.locationDenied(
           actionLabel: 'Find Nearby',
           onAction: () {
-            // In production, this would use geolocator package
-            // For now, simulate with a default location (Hanoi)
-            context.read<CourseSearchBloc>().add(
-              const NearbyLocationUpdated(
-                latitude: 21.0285,
-                longitude: 105.8542,
-                radiusMeters: 50000,
-              ),
-            );
+            context.read<CourseSearchBloc>().add(const SearchNearby());
           },
         );
       },
@@ -543,11 +565,15 @@ class _ResultsList extends StatelessWidget {
   final bool isLoadingMore;
   final bool hasNext;
 
+  /// When true, tapping a card returns it to the caller instead of navigating.
+  final bool selectionMode;
+
   const _ResultsList({
     required this.results,
     required this.scrollController,
     required this.isLoadingMore,
     required this.hasNext,
+    this.selectionMode = false,
   });
 
   @override
@@ -578,6 +604,10 @@ class _ResultsList extends StatelessWidget {
               context.read<CourseSearchBloc>().add(
                 RecordCourseView(course.courseId),
               );
+              if (selectionMode) {
+                Navigator.of(context).pop(course);
+                return;
+              }
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>

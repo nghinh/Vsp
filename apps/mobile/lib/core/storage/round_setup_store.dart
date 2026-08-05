@@ -127,18 +127,18 @@ class LocalRoundConfigRecord {
   factory LocalRoundConfigRecord.fromMap(Map<String, dynamic> map) {
     return LocalRoundConfigRecord(
       localId: map['local_id'] as String,
-      courseId: map['course_id'] as int,
+      courseId: (map['course_id'] as num).toInt(),
       courseName: map['course_name'] as String,
-      layoutId: map['layout_id'] as int?,
-      teeId: map['tee_id'] as int?,
+      layoutId: (map['layout_id'] as num?)?.toInt(),
+      teeId: (map['tee_id'] as num?)?.toInt(),
       format: map['format'] as String,
       playerIds: (jsonDecode(map['player_ids'] as String) as List)
           .cast<String>(),
       playersJson: (jsonDecode(map['players_json'] as String) as List)
           .cast<Map<String, dynamic>>(),
       mode: map['mode'] as String,
-      bagId: map['bag_id'] as int?,
-      startHole: map['start_hole'] as int,
+      bagId: (map['bag_id'] as num?)?.toInt(),
+      startHole: (map['start_hole'] as num).toInt(),
       holes: map['holes'] as String?,
       startTime: DateTime.parse(map['start_time'] as String),
       packageId: map['package_id'] as String?,
@@ -153,7 +153,7 @@ class LocalRoundConfigRecord {
       lastAttemptAt: map['last_attempt_at'] != null
           ? DateTime.parse(map['last_attempt_at'] as String)
           : null,
-      syncAttempts: map['sync_attempts'] as int? ?? 0,
+      syncAttempts: (map['sync_attempts'] as num?)?.toInt() ?? 0,
     );
   }
 

@@ -200,7 +200,7 @@ class DrivingZoneFilter extends Equatable {
           const [],
       teeSetId: json['teeSetId'] as String?,
       windCondition: WindCondition.fromString(json['windCondition'] as String?),
-      minimumShotCount: json['minimumShotCount'] as int? ?? 5,
+      minimumShotCount: (json['minimumShotCount'] as num?)?.toInt() ?? 5,
     );
   }
 }

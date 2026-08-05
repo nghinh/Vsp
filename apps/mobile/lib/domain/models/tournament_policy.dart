@@ -181,7 +181,7 @@ class TournamentPolicy extends Equatable {
       isLocked: json['isLocked'] as bool? ?? false,
       createdAt: DateTime.parse(json['createdAt'] as String),
       createdBy: json['createdBy'] as String,
-      version: json['version'] as int? ?? 1,
+      version: (json['version'] as num?)?.toInt() ?? 1,
     );
   }
 

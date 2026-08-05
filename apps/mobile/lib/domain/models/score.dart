@@ -222,14 +222,14 @@ class Score extends Equatable {
       flightId: map['flight_id'] as String,
       holeId: map['hole_id'] as String,
       playerId: map['player_id'] as String,
-      grossScore: map['gross_score'] as int?,
-      putts: map['putts'] as int?,
-      penalties: map['penalties'] as int?,
+      grossScore: (map['gross_score'] as num?)?.toInt(),
+      putts: (map['putts'] as num?)?.toInt(),
+      penalties: (map['penalties'] as num?)?.toInt(),
       fairwayHit: map['fairway_hit'] != null
-          ? (map['fairway_hit'] as int) == 1
+          ? ((map['fairway_hit'] as num).toInt()) == 1
           : null,
-      gir: map['gir'] != null ? (map['gir'] as int) == 1 : null,
-      bunker: map['bunker'] != null ? (map['bunker'] as int) == 1 : null,
+      gir: map['gir'] != null ? ((map['gir'] as num).toInt()) == 1 : null,
+      bunker: map['bunker'] != null ? ((map['bunker'] as num).toInt()) == 1 : null,
       notes: map['notes'] as String?,
       enteredAt: map['entered_at'] != null
           ? DateTime.parse(map['entered_at'] as String)
@@ -237,7 +237,7 @@ class Score extends Equatable {
       syncStatus: ScoreSyncStatus.fromString(
         map['sync_status'] as String? ?? 'local',
       ),
-      version: map['version'] as int? ?? 1,
+      version: (map['version'] as num?)?.toInt() ?? 1,
       updatedAt: DateTime.parse(map['updated_at'] as String),
     );
   }
@@ -249,9 +249,9 @@ class Score extends Equatable {
       flightId: json['flightId'] as String,
       holeId: json['holeId'] as String,
       playerId: json['playerId'] as String,
-      grossScore: json['grossScore'] as int?,
-      putts: json['putts'] as int?,
-      penalties: json['penalties'] as int?,
+      grossScore: (json['grossScore'] as num?)?.toInt(),
+      putts: (json['putts'] as num?)?.toInt(),
+      penalties: (json['penalties'] as num?)?.toInt(),
       fairwayHit: json['fairwayHit'] as bool?,
       gir: json['gir'] as bool?,
       bunker: json['bunker'] as bool?,
@@ -262,7 +262,7 @@ class Score extends Equatable {
       syncStatus: ScoreSyncStatus.fromString(
         json['syncStatus'] as String? ?? 'local',
       ),
-      version: json['version'] as int? ?? 1,
+      version: (json['version'] as num?)?.toInt() ?? 1,
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );
   }

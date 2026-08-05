@@ -69,7 +69,7 @@ class Tournament extends Equatable {
       status: TournamentStatusExtension.fromString(json['status'] as String),
       courseId: json['courseId'] is String
           ? int.parse(json['courseId'] as String)
-          : json['courseId'] as int,
+          : (json['courseId'] as num).toInt(),
       courseName: json['courseName'] as String?,
       startDate: DateTime.parse(json['startDate'] as String),
       endDate: DateTime.parse(json['endDate'] as String),
@@ -77,14 +77,14 @@ class Tournament extends Equatable {
       registrationDeadline: json['registrationDeadline'] != null
           ? DateTime.parse(json['registrationDeadline'] as String)
           : null,
-      maxPlayers: json['maxPlayers'] as int?,
+      maxPlayers: (json['maxPlayers'] as num?)?.toInt(),
       description: json['description'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       createdBy: json['createdBy'] is String
           ? int.parse(json['createdBy'] as String)
-          : json['createdBy'] as int,
-      version: json['version'] as int? ?? 1,
-      leaderboardVersion: json['leaderboardVersion'] as int? ?? 0,
+          : (json['createdBy'] as num).toInt(),
+      version: (json['version'] as num?)?.toInt() ?? 1,
+      leaderboardVersion: (json['leaderboardVersion'] as num?)?.toInt() ?? 0,
     );
   }
 

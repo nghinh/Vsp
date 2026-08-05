@@ -125,7 +125,7 @@ class SqliteStrokesGainedRepository implements StrokesGainedRepository {
       clubId: map['club_id'] as String,
       strokesGainedPerShot: (map['strokes_gained_per_shot'] as num).toDouble(),
       strokesGainedTotal: (map['strokes_gained_total'] as num).toDouble(),
-      shotCount: map['shot_count'] as int,
+      shotCount: (map['shot_count'] as num).toInt(),
       benchmarkAvgMeters: (map['benchmark_avg_meters'] as num).toDouble(),
       actualAvgMeters: (map['actual_avg_meters'] as num).toDouble(),
       benchmarkType: map['benchmark_type'] as String,
@@ -150,7 +150,7 @@ class SqliteStrokesGainedRepository implements StrokesGainedRepository {
       totalStrokesGained: (map['total_strokes_gained'] as num).toDouble(),
       avgStrokesGainedPerRound: (map['avg_strokes_gained_per_round'] as num)
           .toDouble(),
-      totalShotCount: map['total_shot_count'] as int,
+      totalShotCount: (map['total_shot_count'] as num).toInt(),
       strokesGainedByClub: sgByClub,
     );
   }

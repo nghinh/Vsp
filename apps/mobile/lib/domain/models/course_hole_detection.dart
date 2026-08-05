@@ -164,7 +164,7 @@ class CourseHoleDetectionResult extends Equatable {
     return CourseHoleDetectionResult(
       facilityId: json['facilityId'] as String?,
       courseId: json['courseId'] as String?,
-      holeNumber: json['holeNumber'] as int?,
+      holeNumber: (json['holeNumber'] as num?)?.toInt(),
       teeBoxId: json['teeBoxId'] as String?,
       greenId: json['greenId'] as String?,
       confidence: (json['confidence'] as num).toDouble(),

@@ -93,9 +93,9 @@ class BatteryTelemetryDto {
         json['batteryState'] as String? ?? 'unknown',
       ),
       temperatureCelsius: (json['temperatureCelsius'] as num?)?.toDouble(),
-      estimatedRemainingSeconds: json['estimatedRemainingSeconds'] as int?,
-      holesCompleted: json['holesCompleted'] as int? ?? 0,
-      holesRemaining: json['holesRemaining'] as int? ?? 18,
+      estimatedRemainingSeconds: (json['estimatedRemainingSeconds'] as num?)?.toInt(),
+      holesCompleted: (json['holesCompleted'] as num?)?.toInt() ?? 0,
+      holesRemaining: (json['holesRemaining'] as num?)?.toInt() ?? 18,
       gpsPollingFrequencyHz:
           (json['gpsPollingFrequencyHz'] as num?)?.toDouble(),
       batterySaverActive: json['batterySaverActive'] as bool? ?? false,

@@ -240,7 +240,7 @@ class StrokesGainedDao {
           SGCategory.fromString(map['category'] as String) ??
           SGCategory.offTheTee,
       baselineStrokesPerShot: (map['baseline_strokes'] as num).toDouble(),
-      minSampleForCredibility: map['sample_count'] as int? ?? 20,
+      minSampleForCredibility: (map['sample_count'] as num?)?.toInt() ?? 20,
     );
   }
 

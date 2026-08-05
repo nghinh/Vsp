@@ -75,7 +75,7 @@ class DataQuality extends Equatable {
   factory DataQuality.fromJson(Map<String, dynamic> json) {
     return DataQuality(
       publishedAt: DateTime.parse(json['publishedAt'] as String),
-      versionNumber: json['versionNumber'] as int,
+      versionNumber: (json['versionNumber'] as num).toInt(),
       publisher: json['publisher'] as String?,
       verificationStatus: VerificationStatus.fromString(
         json['verificationStatus'] as String? ?? 'UNVERIFIED',

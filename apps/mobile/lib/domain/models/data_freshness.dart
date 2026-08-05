@@ -69,7 +69,7 @@ class DataFreshness extends Equatable {
   factory DataFreshness.fromJson(Map<String, dynamic> json) {
     return DataFreshness(
       publishedAt: DateTime.parse(json['publishedAt'] as String),
-      versionNumber: json['versionNumber'] as int,
+      versionNumber: (json['versionNumber'] as num).toInt(),
       publisher: json['publisher'] as String?,
       verificationStatus: VerificationStatus.fromString(
         json['verificationStatus'] as String? ?? 'UNVERIFIED',

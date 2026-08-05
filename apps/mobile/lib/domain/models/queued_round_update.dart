@@ -52,7 +52,7 @@ class QueuedRoundUpdate extends Equatable {
       syncedAt: row['synced_at'] != null
           ? DateTime.parse(row['synced_at'] as String)
           : null,
-      retryCount: (row['retry_count'] as int?) ?? 0,
+      retryCount: ((row['retry_count'] as num?)?.toInt()) ?? 0,
     );
   }
 

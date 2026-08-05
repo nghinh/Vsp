@@ -71,8 +71,8 @@ class Player extends Equatable {
     return Player(
       id: map['id'] as String,
       name: map['name'] as String,
-      handicap: map['handicap'] as double?,
-      isPrimary: (map['is_current_user'] as int) == 1,
+      handicap: (map['handicap'] as num?)?.toDouble(),
+      isPrimary: ((map['is_current_user'] as num).toInt()) == 1,
     );
   }
 

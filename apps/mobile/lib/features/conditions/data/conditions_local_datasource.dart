@@ -246,7 +246,7 @@ class ConditionsLocalDatasource implements ConditionsRepository {
       source: row['source'] != null
           ? ConditionSource.fromString(row['source'] as String)
           : null,
-      confidence: row['confidence'] as double?,
+      confidence: (row['confidence'] as num?)?.toDouble(),
       expiryDate: row['expiry_date'] != null
           ? DateTime.tryParse(row['expiry_date'] as String)
           : null,
@@ -276,14 +276,14 @@ class ConditionsLocalDatasource implements ConditionsRepository {
   PinEntity _pinEntityFromRow(Map<String, dynamic> row) {
     return PinEntity(
       holeId: row['hole_id'] as String,
-      holeNumber: row['hole_number'] as int,
+      holeNumber: (row['hole_number'] as num).toInt(),
       latitude: (row['latitude'] as num).toDouble(),
       longitude: (row['longitude'] as num).toDouble(),
       source: PinSource.values.firstWhere(
         (e) => e.name == (row['source'] as String),
         orElse: () => PinSource.manual,
       ),
-      confidence: row['confidence'] as double?,
+      confidence: (row['confidence'] as num?)?.toDouble(),
       snapshotDate: row['snapshot_date'] != null
           ? DateTime.tryParse(row['snapshot_date'] as String)
           : null,

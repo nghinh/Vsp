@@ -124,7 +124,7 @@ class NearbyCourseService {
 
     final row = rows.first;
     return RecentCourse(
-      courseId: row['course_id'] as int,
+      courseId: (row['course_id'] as num).toInt(),
       courseName: row['course_name'] as String,
       lastPlayedAt: DateTime.parse(row['last_played_at'] as String),
       packageId: row['package_id'] as String?,
@@ -164,7 +164,7 @@ class NearbyCourseService {
 
     return rows.map((row) {
       return RecentCourse(
-        courseId: row['course_id'] as int,
+        courseId: (row['course_id'] as num).toInt(),
         courseName: row['course_name'] as String,
         lastPlayedAt: DateTime.parse(row['last_played_at'] as String),
         packageId: row['package_id'] as String?,

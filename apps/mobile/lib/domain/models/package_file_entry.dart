@@ -25,7 +25,7 @@ class PackageFileEntry extends Equatable {
     return PackageFileEntry(
       path: json['path'] as String,
       checksum: json['checksum'] as String,
-      sizeBytes: json['sizeBytes'] as int,
+      sizeBytes: (json['sizeBytes'] as num).toInt(),
       contentType: PackageContentType.fromString(json['contentType'] as String),
     );
   }

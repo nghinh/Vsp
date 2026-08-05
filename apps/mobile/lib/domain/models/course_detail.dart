@@ -60,8 +60,8 @@ class CourseDetail extends Equatable {
   /// Parse from API response JSON.
   factory CourseDetail.fromJson(Map<String, dynamic> json) {
     return CourseDetail(
-      courseId: json['courseId'] as int,
-      facilityId: json['facilityId'] as int,
+      courseId: (json['courseId'] as num).toInt(),
+      facilityId: (json['facilityId'] as num).toInt(),
       facilityName: json['facilityName'] as String,
       phone: json['phone'] as String?,
       website: json['website'] as String?,
@@ -69,9 +69,9 @@ class CourseDetail extends Equatable {
       latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
       holesCount: (json['holesCount'] as num?)?.toInt() ?? 0,
-      parTotal: json['parTotal'] as int?,
+      parTotal: (json['parTotal'] as num?)?.toInt(),
       rating: (json['rating'] as num?)?.toDouble(),
-      slope: json['slope'] as int?,
+      slope: (json['slope'] as num?)?.toInt(),
       imageUrls:
           (json['imageUrls'] as List<dynamic>?)
               ?.map((e) => e as String)

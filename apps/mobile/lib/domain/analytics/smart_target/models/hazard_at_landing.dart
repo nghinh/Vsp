@@ -48,7 +48,7 @@ class HazardAtLanding extends Equatable {
       hazardName: json['hazardName'] as String,
       hazardType: json['hazardType'] as String,
       proximityFactor: (json['proximityFactor'] as num).toDouble(),
-      penaltyWeight: json['penaltyWeight'] as int,
+      penaltyWeight: (json['penaltyWeight'] as num).toInt(),
     );
   }
 

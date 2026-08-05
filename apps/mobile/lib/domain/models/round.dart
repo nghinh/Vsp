@@ -131,7 +131,7 @@ class Round extends Equatable {
     }
     return Round(
       id: map['id'] as String,
-      courseId: map['course_id'] as int,
+      courseId: (map['course_id'] as num).toInt(),
       courseName: map['course_name'] as String,
       status: RoundStatus.values.firstWhere(
         (e) => e.name == map['status'],
@@ -144,7 +144,7 @@ class Round extends Equatable {
       packageVersion: map['package_version'] as String,
       tournamentPolicyId: map['tournament_policy_id'] as String?,
       tournamentId: map['tournament_id'] as String?,
-      tournamentPolicyVersion: map['tournament_policy_version'] as int?,
+      tournamentPolicyVersion: (map['tournament_policy_version'] as num?)?.toInt(),
       tournamentPolicy: policy,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),

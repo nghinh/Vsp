@@ -59,11 +59,11 @@ class ScoreEntry {
 
   factory ScoreEntry.fromMap(Map<String, dynamic> map) {
     return ScoreEntry(
-      holeNumber: map['holeNumber'] as int,
-      par: map['par'] as int,
-      strokes: map['strokes'] as int,
-      putts: map['putts'] as int?,
-      penalties: map['penalties'] as int?,
+      holeNumber: (map['holeNumber'] as num).toInt(),
+      par: (map['par'] as num).toInt(),
+      strokes: (map['strokes'] as num).toInt(),
+      putts: (map['putts'] as num?)?.toInt(),
+      penalties: (map['penalties'] as num?)?.toInt(),
       fairwayHit: map['fairwayHit'] as bool?,
       gir: map['gir'] as bool?,
       bunker: map['bunker'] as bool?,
