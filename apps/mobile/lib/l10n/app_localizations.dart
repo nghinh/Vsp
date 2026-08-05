@@ -3914,23 +3914,17 @@ abstract class AppLocalizations {
   /// **'End Round'**
   String get activeRoundEndRound;
 
+  /// No description provided for @activeRoundEndRoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the round from the flag button on the Score tab.'**
+  String get activeRoundEndRoundHint;
+
   /// No description provided for @activeRoundOptions.
   ///
   /// In en, this message translates to:
   /// **'Round Options'**
   String get activeRoundOptions;
-
-  /// No description provided for @activeRoundScoreHeading.
-  ///
-  /// In en, this message translates to:
-  /// **'Hole {holeNumber} score'**
-  String activeRoundScoreHeading(int holeNumber);
-
-  /// No description provided for @activeRoundScoreMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your score hole by hole. Scores are synced as soon as you have a connection.'**
-  String get activeRoundScoreMessage;
 
   /// No description provided for @activeRoundTargetHeading.
   ///
@@ -3944,17 +3938,35 @@ abstract class AppLocalizations {
   /// **'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.'**
   String get activeRoundTargetMessage;
 
-  /// No description provided for @activeRoundConditionsHeading.
+  /// No description provided for @activeRoundMapUnavailableHeading.
   ///
   /// In en, this message translates to:
-  /// **'Course conditions'**
-  String get activeRoundConditionsHeading;
+  /// **'No course package downloaded'**
+  String get activeRoundMapUnavailableHeading;
 
-  /// No description provided for @activeRoundConditionsMessage.
+  /// No description provided for @activeRoundMapUnavailableMessage.
   ///
   /// In en, this message translates to:
-  /// **'Wind, weather and pin position are shown live on the strategic map in the Map tab.'**
-  String get activeRoundConditionsMessage;
+  /// **'The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download {courseName} to use them during a round.'**
+  String activeRoundMapUnavailableMessage(String courseName);
+
+  /// No description provided for @activeRoundConditionsLocating.
+  ///
+  /// In en, this message translates to:
+  /// **'Finding your position…'**
+  String get activeRoundConditionsLocating;
+
+  /// No description provided for @activeRoundConditionsNoLocationHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'Conditions need your position'**
+  String get activeRoundConditionsNoLocationHeading;
+
+  /// No description provided for @activeRoundConditionsNoLocationMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.'**
+  String get activeRoundConditionsNoLocationMessage;
 
   /// No description provided for @activeRoundLengthMeters.
   ///

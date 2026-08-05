@@ -23,7 +23,8 @@ import '../../../core/storage/round_setup_store.dart';
 import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
 import '../../../domain/models/player.dart';
-import '../../../presentation/screens/score/scorecard_screen.dart';
+import '../../../data/services/location_service_impl.dart';
+import '../../round/presentation/active_round_screen.dart';
 import 'round_setup_bloc.dart';
 import 'round_setup_event.dart';
 import 'round_setup_state.dart';
@@ -96,9 +97,22 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
   /// can be opened with the correct players/holes when the round starts.
   RoundSetupReady? _lastReady;
 
-  void _openScorecard(BuildContext context, String flightId) {
+  /// Opens the active round.
+  ///
+  /// The round opens on [ActiveRoundScreen], not on the scorecard directly.
+  /// The scorecard is still what the golfer lands on — it is the Score tab —
+  /// but routing through the round screen is what makes the strategic hole
+  /// map, the satellite basemap, the measuring tool and the course-correction
+  /// flow reachable at all. Pushed as a replacement so Finish Round's
+  /// pop-to-first still lands on home rather than back in setup.
+  void _openActiveRound(BuildContext context, String flightId) {
     final ready = _lastReady;
     if (ready == null) return;
+    // A round cannot start without a course, so these are non-null by the time
+    // we get here; read them once rather than sprinkling `!` through the route.
+    final courseId = ready.courseId;
+    final courseName = ready.courseName;
+    if (courseId == null || courseName == null) return;
 
     final holeIds = _holeIdsFor(ready);
     final players = ready.players;
@@ -110,8 +124,20 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
     };
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (_) => ScorecardScreen(
-          flightId: flightId,
+        builder: (_) => ActiveRoundScreen(
+          roundId: flightId,
+          // Null when this course has no downloaded package: the map tab says
+          // so rather than being handed an id that resolves to nothing.
+          packageId: ready.packageId,
+          courseId: '$courseId',
+          courseName: courseName,
+          holeNumber: ready.startHole,
+          // Real par for the starting hole, or null when the course detail
+          // does not cover it. The scorecard keeps its own par-4 fallback so
+          // scoring is unchanged; the round header simply omits what it does
+          // not know.
+          par: ready.holePars[ready.startHole],
+          locationService: LocationServiceImpl(),
           holeIds: holeIds,
           playerIds: players.map((p) => p.id).toList(),
           playerNames: {for (final p in players) p.id: p.name},
@@ -152,7 +178,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
               duration: const Duration(seconds: 1),
             ),
           );
-          _openScorecard(context, state.roundId);
+          _openActiveRound(context, state.roundId);
         } else if (state is RoundSetupLocalRoundSaved) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -161,7 +187,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
               duration: const Duration(seconds: 1),
             ),
           );
-          _openScorecard(context, state.localRoundId);
+          _openActiveRound(context, state.localRoundId);
         } else if (state is RoundSetupError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

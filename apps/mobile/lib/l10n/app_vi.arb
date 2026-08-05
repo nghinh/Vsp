@@ -636,20 +636,22 @@
   "activeRoundLength": "Chiều dài",
   "activeRoundReportCorrection": "Báo lỗi dữ liệu",
   "activeRoundEndRound": "Kết thúc vòng đấu",
+  "activeRoundEndRoundHint": "Kết thúc vòng đấu bằng nút cờ ở tab Điểm.",
   "activeRoundOptions": "Tùy chọn vòng đấu",
-  "activeRoundScoreHeading": "Điểm hố {holeNumber}",
-  "@activeRoundScoreHeading": {
+  "activeRoundTargetHeading": "Khoảng cách mục tiêu",
+  "activeRoundTargetMessage": "Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.",
+  "activeRoundMapUnavailableHeading": "Chưa tải gói dữ liệu sân",
+  "activeRoundMapUnavailableMessage": "Bản đồ chiến thuật, ảnh vệ tinh và công cụ đo khoảng cách đọc dữ liệu hình học hố đã khảo sát từ gói dữ liệu sân đã tải. Hãy tải {courseName} để dùng các tính năng này trong vòng đấu.",
+  "@activeRoundMapUnavailableMessage": {
     "placeholders": {
-      "holeNumber": {
-        "type": "int"
+      "courseName": {
+        "type": "String"
       }
     }
   },
-  "activeRoundScoreMessage": "Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.",
-  "activeRoundTargetHeading": "Khoảng cách mục tiêu",
-  "activeRoundTargetMessage": "Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.",
-  "activeRoundConditionsHeading": "Điều kiện sân",
-  "activeRoundConditionsMessage": "Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ chiến thuật ở tab Bản đồ.",
+  "activeRoundConditionsLocating": "Đang xác định vị trí của bạn…",
+  "activeRoundConditionsNoLocationHeading": "Cần vị trí để xem điều kiện",
+  "activeRoundConditionsNoLocationMessage": "Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.",
   "activeRoundLengthMeters": "{meters} m",
   "@activeRoundLengthMeters": {
     "placeholders": {

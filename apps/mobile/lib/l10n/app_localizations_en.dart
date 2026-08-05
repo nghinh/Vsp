@@ -2111,16 +2111,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRoundEndRound => 'End Round';
 
   @override
+  String get activeRoundEndRoundHint =>
+      'Finish the round from the flag button on the Score tab.';
+
+  @override
   String get activeRoundOptions => 'Round Options';
-
-  @override
-  String activeRoundScoreHeading(int holeNumber) {
-    return 'Hole $holeNumber score';
-  }
-
-  @override
-  String get activeRoundScoreMessage =>
-      'Enter your score hole by hole. Scores are synced as soon as you have a connection.';
 
   @override
   String get activeRoundTargetHeading => 'Target distance';
@@ -2130,11 +2125,23 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.';
 
   @override
-  String get activeRoundConditionsHeading => 'Course conditions';
+  String get activeRoundMapUnavailableHeading => 'No course package downloaded';
 
   @override
-  String get activeRoundConditionsMessage =>
-      'Wind, weather and pin position are shown live on the strategic map in the Map tab.';
+  String activeRoundMapUnavailableMessage(String courseName) {
+    return 'The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download $courseName to use them during a round.';
+  }
+
+  @override
+  String get activeRoundConditionsLocating => 'Finding your position…';
+
+  @override
+  String get activeRoundConditionsNoLocationHeading =>
+      'Conditions need your position';
+
+  @override
+  String get activeRoundConditionsNoLocationMessage =>
+      'Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.';
 
   @override
   String activeRoundLengthMeters(int meters) {

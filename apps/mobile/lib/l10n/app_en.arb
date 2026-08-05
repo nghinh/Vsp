@@ -1216,20 +1216,22 @@
   "activeRoundLength": "Length",
   "activeRoundReportCorrection": "Report Correction",
   "activeRoundEndRound": "End Round",
+  "activeRoundEndRoundHint": "Finish the round from the flag button on the Score tab.",
   "activeRoundOptions": "Round Options",
-  "activeRoundScoreHeading": "Hole {holeNumber} score",
-  "@activeRoundScoreHeading": {
+  "activeRoundTargetHeading": "Target distance",
+  "activeRoundTargetMessage": "Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.",
+  "activeRoundMapUnavailableHeading": "No course package downloaded",
+  "activeRoundMapUnavailableMessage": "The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download {courseName} to use them during a round.",
+  "@activeRoundMapUnavailableMessage": {
     "placeholders": {
-      "holeNumber": {
-        "type": "int"
+      "courseName": {
+        "type": "String"
       }
     }
   },
-  "activeRoundScoreMessage": "Enter your score hole by hole. Scores are synced as soon as you have a connection.",
-  "activeRoundTargetHeading": "Target distance",
-  "activeRoundTargetMessage": "Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.",
-  "activeRoundConditionsHeading": "Course conditions",
-  "activeRoundConditionsMessage": "Wind, weather and pin position are shown live on the strategic map in the Map tab.",
+  "activeRoundConditionsLocating": "Finding your position…",
+  "activeRoundConditionsNoLocationHeading": "Conditions need your position",
+  "activeRoundConditionsNoLocationMessage": "Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.",
   "activeRoundLengthMeters": "{meters} m",
   "@activeRoundLengthMeters": {
     "placeholders": {

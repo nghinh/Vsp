@@ -2111,16 +2111,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeRoundEndRound => 'Kết thúc vòng đấu';
 
   @override
+  String get activeRoundEndRoundHint =>
+      'Kết thúc vòng đấu bằng nút cờ ở tab Điểm.';
+
+  @override
   String get activeRoundOptions => 'Tùy chọn vòng đấu';
-
-  @override
-  String activeRoundScoreHeading(int holeNumber) {
-    return 'Điểm hố $holeNumber';
-  }
-
-  @override
-  String get activeRoundScoreMessage =>
-      'Ghi điểm theo từng hố. Điểm của bạn được đồng bộ khi có kết nối mạng.';
 
   @override
   String get activeRoundTargetHeading => 'Khoảng cách mục tiêu';
@@ -2130,11 +2125,23 @@ class AppLocalizationsVi extends AppLocalizations {
       'Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.';
 
   @override
-  String get activeRoundConditionsHeading => 'Điều kiện sân';
+  String get activeRoundMapUnavailableHeading => 'Chưa tải gói dữ liệu sân';
 
   @override
-  String get activeRoundConditionsMessage =>
-      'Gió, thời tiết và vị trí cờ được hiển thị trực tiếp trên bản đồ chiến thuật ở tab Bản đồ.';
+  String activeRoundMapUnavailableMessage(String courseName) {
+    return 'Bản đồ chiến thuật, ảnh vệ tinh và công cụ đo khoảng cách đọc dữ liệu hình học hố đã khảo sát từ gói dữ liệu sân đã tải. Hãy tải $courseName để dùng các tính năng này trong vòng đấu.';
+  }
+
+  @override
+  String get activeRoundConditionsLocating => 'Đang xác định vị trí của bạn…';
+
+  @override
+  String get activeRoundConditionsNoLocationHeading =>
+      'Cần vị trí để xem điều kiện';
+
+  @override
+  String get activeRoundConditionsNoLocationMessage =>
+      'Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.';
 
   @override
   String activeRoundLengthMeters(int meters) {
