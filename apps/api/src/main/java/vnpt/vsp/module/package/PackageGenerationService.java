@@ -20,6 +20,7 @@ import vnpt.vsp.module.pkg.storage.ObjectStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -57,7 +58,12 @@ public class PackageGenerationService {
     private static final Logger log = LoggerFactory.getLogger(PackageGenerationService.class);
 
     // CDN URL pattern (immutable, versioned) — mirrors ObjectStorageService docs.
-    private static final String CDN_BASE = "https://cdn.vnptgolf.vn/packages";
+    /**
+     * Where clients fetch package files from. A CDN in front of object storage
+     * in production; the API itself in environments without one, so downloads
+     * work rather than pointing at a host that does not resolve.
+     */
+    private final String packageBaseUrl;
     private static final String DEFAULT_MINIMUM_CLIENT_VERSION = "1.0.0";
 
     private final PackageBuildJobRepository jobRepository;
@@ -76,12 +82,16 @@ public class PackageGenerationService {
             PackageManifestRepository manifestRepository,
             ObjectStorageService storageService,
             OperationsService operationsService,
-            CourseRepository courseRepository) {
+            CourseRepository courseRepository,
+            @Value("${vsp.packages.base-url:http://localhost:8080/packages}") String packageBaseUrl) {
         this.jobRepository = jobRepository;
         this.manifestRepository = manifestRepository;
         this.storageService = storageService;
         this.operationsService = operationsService;
         this.courseRepository = courseRepository;
+        this.packageBaseUrl = packageBaseUrl.endsWith("/")
+                ? packageBaseUrl.substring(0, packageBaseUrl.length() - 1)
+                : packageBaseUrl;
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
@@ -439,7 +449,7 @@ public class PackageGenerationService {
     }
 
     private String cdnUrl(Long courseId, String manifestVersion, String contentType, String filename) {
-        return CDN_BASE + "/" + courseId + "/" + manifestVersion + "/" + contentType + "/" + filename;
+        return packageBaseUrl + "/" + courseId + "/" + manifestVersion + "/" + contentType + "/" + filename;
     }
 
     private String sha256Hex(byte[] data) {

@@ -1,6 +1,7 @@
 package vnpt.vsp.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpMethod;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -50,6 +51,13 @@ public class SecurityConfig {
 
                         // Actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
+
+                        // Course package files. These are immutable, public
+                        // course data served in place of a CDN where none is
+                        // configured, and the download client fetches them as
+                        // plain URLs — exactly as it would from a CDN, which
+                        // would not carry the app's bearer token either.
+                        .requestMatchers(HttpMethod.GET, "/packages/**").permitAll()
 
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
