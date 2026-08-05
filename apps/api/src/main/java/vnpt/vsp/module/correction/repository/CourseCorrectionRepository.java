@@ -41,40 +41,11 @@ public interface CourseCorrectionRepository
 
     // ─── Geometry columns ────────────────────────────────────────────────────
     //
-    // PostGIS geometry columns cannot be written through the JPA mapping: every
-    // geometry column in this codebase is mapped as a Java String, and pgjdbc
-    // binds a String as `varchar`, which PostgreSQL refuses against a `geometry`
-    // column at statement-parse time ("column is of type geometry but expression
-    // is of type character varying") — even when the value is NULL. The geometry
-    // fields on CourseCorrection are therefore mapped read-only and written here,
-    // where the WKT goes through ST_GeomFromText and lands as a real geometry.
-
-    /**
-     * Writes the two geometry columns for a correction from WKT.
-     *
-     * @param id                 correction ID
-     * @param proposedWkt        the shape the reporter believes is correct (WKT, SRID 4326)
-     * @param reporterLng        reporter's longitude, or null if unknown
-     * @param reporterLat        reporter's latitude, or null if unknown
-     * @return number of rows updated (1 when the correction exists)
-     */
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query(value = """
-        UPDATE course_corrections
-           SET proposed_geometry     = ST_GeomFromText(:proposedWkt, 4326),
-               reporter_gps_location = CASE
-                   WHEN CAST(:reporterLng AS double precision) IS NULL
-                     OR CAST(:reporterLat AS double precision) IS NULL THEN NULL
-                   ELSE ST_SetSRID(ST_MakePoint(
-                            CAST(:reporterLng AS double precision),
-                            CAST(:reporterLat AS double precision)), 4326)
-               END
-         WHERE id = :id
-        """, nativeQuery = true)
-    int setGeometryColumns(@Param("id") Long id,
-                           @Param("proposedWkt") String proposedWkt,
-                           @Param("reporterLng") Double reporterLng,
-                           @Param("reporterLat") Double reporterLat);
+    // Both geometry columns are written through the JPA mapping, like every
+    // other geometry column in this codebase: WktGeometryType binds the WKT as
+    // Types.OTHER so PostgreSQL infers `geometry` from the column instead of
+    // rejecting a `varchar` bind. Only the reads need SQL, because a geometry
+    // column read back through JDBC is EWKB hex rather than WKT.
 
     /**
      * Reads a correction's proposed geometry back as WKT.

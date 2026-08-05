@@ -35,6 +35,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -137,18 +138,29 @@ class GeometryCorrectionServiceImplTest {
     }
 
     @Test
-    @DisplayName("writes the geometry columns through PostGIS, not the JPA mapping")
-    void submit_writesGeometryNatively() {
+    @DisplayName("both geometry columns are carried on the row that is saved — one INSERT, no follow-up UPDATE")
+    void submit_writesGeometryThroughTheMapping() {
         GeometryCorrectionRequest request = polygonRequest(GeometryLayer.GREEN, 3.0);
         request.setReporterLat(10.805);
         request.setReporterLng(106.705);
 
         service.submitGeometryCorrection(COURSE_ID, REPORTER_ID, request);
 
-        ArgumentCaptor<String> wkt = ArgumentCaptor.forClass(String.class);
-        verify(correctionRepository).setGeometryColumns(
-                eq(1234L), wkt.capture(), eq(106.705), eq(10.805));
-        assertTrue(wkt.getValue().startsWith("POLYGON"), wkt.getValue());
+        CourseCorrection saved = captureSaved();
+        assertTrue(saved.getProposedGeometry().startsWith("POLYGON"), saved.getProposedGeometry());
+        assertEquals("POINT(106.705 10.805)", saved.getReporterGpsLocation());
+    }
+
+    @Test
+    @DisplayName("a report filed without a GPS fix stores no position rather than a half one")
+    void submit_withoutGpsFix_storesNoPosition() {
+        GeometryCorrectionRequest request = polygonRequest(GeometryLayer.GREEN, 3.0);
+        request.setReporterLat(10.805);
+        request.setReporterLng(null);
+
+        service.submitGeometryCorrection(COURSE_ID, REPORTER_ID, request);
+
+        assertNull(captureSaved().getReporterGpsLocation());
     }
 
     @Test
@@ -159,9 +171,7 @@ class GeometryCorrectionServiceImplTest {
 
         service.submitGeometryCorrection(COURSE_ID, REPORTER_ID, request);
 
-        ArgumentCaptor<String> wkt = ArgumentCaptor.forClass(String.class);
-        verify(correctionRepository).setGeometryColumns(anyLong(), wkt.capture(), any(), any());
-        assertTrue(wkt.getValue().startsWith("POINT"), wkt.getValue());
+        assertTrue(captureSaved().getProposedGeometry().startsWith("POINT"));
     }
 
     @Test
@@ -173,9 +183,7 @@ class GeometryCorrectionServiceImplTest {
 
         service.submitGeometryCorrection(COURSE_ID, REPORTER_ID, request);
 
-        ArgumentCaptor<String> wkt = ArgumentCaptor.forClass(String.class);
-        verify(correctionRepository).setGeometryColumns(anyLong(), wkt.capture(), any(), any());
-        assertTrue(wkt.getValue().startsWith("POLYGON"), wkt.getValue());
+        assertTrue(captureSaved().getProposedGeometry().startsWith("POLYGON"));
     }
 
     @Test

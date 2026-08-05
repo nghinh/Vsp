@@ -117,12 +117,13 @@ public class GeometryCorrectionServiceImpl implements GeometryCorrectionService 
         GeometryLayer layer = request.getLayer();
 
         CourseCorrection correction = buildCorrection(courseId, reporterId, request, layer);
-        correction = correctionRepository.saveAndFlush(correction);
+        correction.setProposedGeometry(wkt);
+        correction.setReporterGpsLocation(
+                pointWkt(request.getReporterLng(), request.getReporterLat()));
 
-        // Geometry columns cannot be written through the JPA mapping — see
-        // CourseCorrectionRepository.setGeometryColumns.
-        correctionRepository.setGeometryColumns(
-                correction.getId(), wkt, request.getReporterLng(), request.getReporterLat());
+        // Flushed here, not at commit: the corroboration pass counts this report
+        // among the ones it clusters, and it counts them in SQL.
+        correction = correctionRepository.saveAndFlush(correction);
 
         CorroborationOutcome outcome = corroborate(hole.getId(), layer, wkt);
 
@@ -192,6 +193,17 @@ public class GeometryCorrectionServiceImpl implements GeometryCorrectionService 
                 holeId, layer.getWireValue(), promoted);
 
         return new CorroborationOutcome((int) clusterSize, true, VerificationStatus.PENDING_REVIEW);
+    }
+
+    /**
+     * The reporter's standing position as WKT, or null when the phone gave no
+     * fix. Half a position is no position, so one missing ordinate drops both.
+     */
+    static String pointWkt(Double lng, Double lat) {
+        if (lng == null || lat == null) {
+            return null;
+        }
+        return "POINT(" + lng + " " + lat + ")";
     }
 
     /** Result of the corroboration pass for one submission. */

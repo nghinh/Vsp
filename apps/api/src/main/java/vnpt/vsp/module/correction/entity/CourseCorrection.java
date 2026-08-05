@@ -1,8 +1,10 @@
 package vnpt.vsp.module.correction.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.Type;
 import vnpt.vsp.module.course.entity.DataQualityMetadata;
 import vnpt.vsp.module.course.entity.VerificationStatus;
+import vnpt.vsp.persistence.WktGeometryType;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -66,16 +68,14 @@ public class CourseCorrection {
     private String reporterEvidenceUrl;
 
     /**
-     * Reporter's GPS position when the correction was submitted, SRID 4326.
+     * Reporter's GPS position when the correction was submitted, as SRID 4326 WKT.
      *
-     * <p>Read-only through JPA for the same reason as {@link #proposedGeometry}:
-     * PostgreSQL rejects a {@code varchar} bind parameter against a
-     * {@code geometry} column, so an INSERT that carries this field — even as
-     * NULL — fails at statement-parse time. Written via
-     * {@link vnpt.vsp.module.correction.repository.CourseCorrectionRepository#setGeometryColumns}.</p>
+     * <p>Written through {@link WktGeometryType} like every other geometry column
+     * in this schema. Read it back as WKT with {@code findReporterGpsLocationWkt};
+     * a plain read of this field yields the EWKB hex JDBC returns.</p>
      */
-    @Column(name = "reporter_gps_location", columnDefinition = "geometry(Point,4326)",
-            insertable = false, updatable = false)
+    @Type(WktGeometryType.class)
+    @Column(name = "reporter_gps_location", columnDefinition = "geometry(Point,4326)")
     private String reporterGpsLocation;
 
     // ─── Classification ────────────────────────────────────────────────────────
@@ -103,20 +103,16 @@ public class CourseCorrection {
     private GeometryLayer geometryLayer;
 
     /**
-     * The shape the reporter believes is correct, as SRID 4326.
+     * The shape the reporter believes is correct, as SRID 4326 WKT.
      *
-     * <p><strong>Never written through JPA.</strong> PostgreSQL refuses a
-     * {@code varchar} bind parameter for a {@code geometry} column
-     * ("column is of type geometry but expression is of type character
-     * varying"), and every geometry column in this codebase is mapped as a
-     * {@code String}. The column is therefore declared read-only here — so
-     * Hibernate still creates it under {@code ddl-auto} — and is populated by
-     * {@link vnpt.vsp.module.correction.repository.CourseCorrectionRepository#setGeometryColumns}
-     * which wraps the WKT in {@code ST_GeomFromText}. Read it back as WKT with
-     * {@code findProposedGeometryWkt}; a plain read of this field yields EWKB hex.</p>
+     * <p>Written through {@link WktGeometryType}, which binds the value as
+     * {@link java.sql.Types#OTHER} so PostgreSQL infers {@code geometry} from the
+     * column rather than rejecting a {@code varchar} bind. Read it back as WKT
+     * with {@code findProposedGeometryWkt}; a plain read of this field yields the
+     * EWKB hex JDBC returns for a geometry column.</p>
      */
-    @Column(name = "proposed_geometry", columnDefinition = "geometry(Geometry,4326)",
-            insertable = false, updatable = false)
+    @Type(WktGeometryType.class)
+    @Column(name = "proposed_geometry", columnDefinition = "geometry(Geometry,4326)")
     private String proposedGeometry;
 
     /** Reporter's horizontal GPS accuracy in metres at submission time. */
@@ -317,12 +313,10 @@ public class CourseCorrection {
     public String getReporterEvidenceUrl() { return reporterEvidenceUrl; }
     public void setReporterEvidenceUrl(String reporterEvidenceUrl) { this.reporterEvidenceUrl = reporterEvidenceUrl; }
 
+    /** @return EWKB hex once loaded from the database, not WKT — see the field javadoc. */
     public String getReporterGpsLocation() { return reporterGpsLocation; }
 
-    /**
-     * In-memory only — the column is read-only through JPA. Persist the
-     * reporter fix with {@code CourseCorrectionRepository.setGeometryColumns}.
-     */
+    /** @param reporterGpsLocation SRID 4326 WKT, e.g. {@code POINT(106.72 10.85)}. */
     public void setReporterGpsLocation(String reporterGpsLocation) { this.reporterGpsLocation = reporterGpsLocation; }
 
     public CorrectionType getCorrectionType() { return correctionType; }
@@ -337,8 +331,11 @@ public class CourseCorrection {
     public GeometryLayer getGeometryLayer() { return geometryLayer; }
     public void setGeometryLayer(GeometryLayer geometryLayer) { this.geometryLayer = geometryLayer; }
 
-    /** @return EWKB hex as stored, not WKT — see the field javadoc. */
+    /** @return EWKB hex once loaded from the database, not WKT — see the field javadoc. */
     public String getProposedGeometry() { return proposedGeometry; }
+
+    /** @param proposedGeometry SRID 4326 WKT, e.g. {@code POLYGON((...))}. */
+    public void setProposedGeometry(String proposedGeometry) { this.proposedGeometry = proposedGeometry; }
 
     public Double getGpsAccuracyMeters() { return gpsAccuracyMeters; }
     public void setGpsAccuracyMeters(Double gpsAccuracyMeters) { this.gpsAccuracyMeters = gpsAccuracyMeters; }
