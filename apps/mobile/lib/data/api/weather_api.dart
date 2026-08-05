@@ -57,8 +57,9 @@ class WeatherApi {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    if (_accessToken != null) {
-      headers['Authorization'] = 'Bearer $_accessToken';
+    final token = _accessToken ?? ApiClient.sharedAccessToken;
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
     }
     return headers;
   }

@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../bag/presentation/bag_screen.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
@@ -141,7 +142,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
               duration: const Duration(seconds: 1),
             ),
           );
-          _openScorecard(context, state.roundId.toString());
+          _openScorecard(context, state.roundId);
         } else if (state is RoundSetupLocalRoundSaved) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -243,9 +244,10 @@ class _RoundSetupScaffold extends StatelessWidget {
                     // Package status banner
                     PackageStatusBanner(
                       packageReadiness: state.packageReadiness,
-                      onDownloadPressed: () {
-                        // TODO: Navigate to course download screen
-                      },
+                      // No in-setup download flow: scoring works offline and
+                      // the "Play Anyway" acknowledgement covers a missing
+                      // package, so we omit a non-functional download button.
+                      onDownloadPressed: null,
                       onWarningAcknowledged: () {
                         context.read<RoundSetupBloc>().add(
                           const PackageWarningAcknowledged(),
@@ -743,7 +745,9 @@ class _BagSection extends StatelessWidget {
         const SizedBox(height: 8),
         InkWell(
           onTap: () {
-            // TODO: Show bag picker
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const BagScreen()),
+            );
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(

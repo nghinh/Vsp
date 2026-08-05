@@ -8,6 +8,8 @@
 // Story 5.3 — Slice 3: Score Entry UI
 // Story 5.4 — Slice 4: SyncStatusBadge in bottom bar
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -18,9 +20,16 @@ import '../../../application/services/shot_sync_service.dart';
 import '../../../application/services/shot_tracking_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/bag_sync_store.dart';
+import '../../../core/storage/round_sync_store.dart';
+import '../../../data/api/round_api.dart';
+import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../data/repositories/round_repository.dart';
 import '../../../data/repositories/score_repository_impl.dart';
 import '../../../data/repositories/shot_repository_impl.dart';
+import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/location_service_impl.dart';
+import '../../../domain/models/round.dart';
+import '../../../domain/models/round_sync_operation.dart';
 import '../../../domain/models/score.dart';
 import '../../../domain/models/shot.dart';
 import '../../../domain/models/sync_status.dart';
@@ -191,6 +200,116 @@ class _ScorecardScreenContent extends StatelessWidget {
     );
   }
 
+  /// Finishes the round: confirms, completes it server-side, closes it locally
+  /// and returns to the home screen.
+  ///
+  /// The scorecard replaces the setup screen in the stack, so without this the
+  /// golfer has no way out of an in-progress round and the active-round guard
+  /// stays locked on the course forever.
+  Future<void> _finishRound(
+    BuildContext context,
+    ScorecardScreenState state,
+  ) async {
+    final roundId = state.flightId;
+    // scores is playerId → holeId → Score; a hole counts as scored once any
+    // player in the flight has a gross score on it.
+    final scoredHoles = state.holeIds
+        .where((id) => state.scores.values.any((byHole) => byHole[id] != null))
+        .length;
+    final remaining = state.holeIds.length - scoredHoles;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Finish round?'),
+        content: Text(
+          remaining > 0
+              ? '$remaining of ${state.holeIds.length} holes have no score yet. '
+                    'You can still finish — unscored holes stay blank.'
+              : 'All ${state.holeIds.length} holes are scored. '
+                    'Finishing ends the round and syncs it.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Keep playing'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Finish'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final syncStore = RoundSyncStore();
+    var syncedToServer = false;
+    try {
+      await RoundApi().completeRound(
+        roundId: roundId,
+        idempotencyKey: syncStore.generateIdempotencyKey(
+          roundId: roundId,
+          operation: RoundSyncOperation.endRound,
+        ),
+      );
+      syncedToServer = true;
+    } catch (_) {
+      // Offline or server error — queue the completion so it can be retried.
+      try {
+        await syncStore.enqueueRoundOp(
+          idempotencyKey: syncStore.generateIdempotencyKey(
+            roundId: roundId,
+            operation: RoundSyncOperation.endRound,
+          ),
+          operation: RoundSyncOperation.endRound,
+          roundId: roundId,
+          payload: jsonEncode({
+            'endedAt': DateTime.now().toUtc().toIso8601String(),
+          }),
+        );
+      } catch (_) {
+        // Queue unavailable — the local round below still records the finish.
+      }
+    }
+
+    // Close the round locally and release the active-round guard so a new
+    // round can be started and package updates can resume.
+    try {
+      final roundRepo = RoundRepository();
+      final round = await roundRepo.getRound(roundId);
+      if (round != null) {
+        final now = DateTime.now();
+        await roundRepo.updateRound(
+          round.copyWith(
+            status: RoundStatus.completed,
+            endedAt: now,
+            updatedAt: now,
+          ),
+        );
+        await ActiveRoundGuard(
+          manifestRepo: PackageManifestRepository(),
+        ).recordRoundEnd(round.courseId);
+      }
+    } catch (_) {
+      // Local store unavailable — the server-side completion still stands.
+    }
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          syncedToServer
+              ? 'Round finished.'
+              : 'Round finished. It will sync when you are back online.',
+        ),
+      ),
+    );
+    navigator.popUntil((route) => route.isFirst);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ScorecardCubit, ScorecardScreenState>(
@@ -217,6 +336,11 @@ class _ScorecardScreenContent extends StatelessWidget {
                 icon: const Icon(Icons.sports_golf),
                 tooltip: 'Review Shots',
                 onPressed: () => _reviewShots(context, state),
+              ),
+              IconButton(
+                icon: const Icon(Icons.flag_outlined),
+                tooltip: 'Finish Round',
+                onPressed: () => _finishRound(context, state),
               ),
             ],
           ),

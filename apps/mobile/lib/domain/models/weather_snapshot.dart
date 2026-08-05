@@ -324,7 +324,7 @@ class WeatherSnapshot extends Equatable {
       temperature: json['temperature'] != null
           ? Temperature.fromJson(json['temperature'] as Map<String, dynamic>)
           : null,
-      humidity: json['humidity'] as int?,
+      humidity: (json['humidity'] as num?)?.toInt(),
       condition: WeatherCondition.fromString(json['condition'] as String?),
       wind: json['wind'] != null
           ? WindData.fromJson(json['wind'] as Map<String, dynamic>)
@@ -340,9 +340,10 @@ class WeatherSnapshot extends Equatable {
       pressure: json['pressure'] != null
           ? Pressure.fromJson(json['pressure'] as Map<String, dynamic>)
           : null,
-      uvIndex: json['uvIndex'] as int?,
+      uvIndex: (json['uvIndex'] as num?)?.toInt(),
       feelsLike: (json['feelsLike'] as num?)?.toDouble(),
-      precipitationProbability: json['precipitationProbability'] as int?,
+      precipitationProbability: (json['precipitationProbability'] as num?)
+          ?.toInt(),
       source: WeatherSource.fromJson(json),
       freshness: DataFreshness.fromExpiresAt(expiresAt),
       expiresAt: expiresAt,

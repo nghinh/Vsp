@@ -98,6 +98,10 @@ class ApiClient {
     _accessToken = token;
   }
 
+  /// The shared bearer token, so other API clients (e.g. PerformanceApi) can
+  /// authenticate with the same session instead of holding their own token.
+  static String? get sharedAccessToken => _accessToken;
+
   /// Build request headers including auth token, idempotency key, and custom headers.
   Map<String, String> _headers({
     String? idempotencyKey,

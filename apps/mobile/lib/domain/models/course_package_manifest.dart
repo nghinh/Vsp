@@ -113,7 +113,7 @@ class CoursePackageManifest extends Equatable {
           ? DateTime.parse(json['expiresAt'] as String)
           : null,
       checksum: json['checksum'] as String,
-      sizeBytes: json['sizeBytes'] as int,
+      sizeBytes: (json['sizeBytes'] as num?)?.toInt() ?? 0,
       tilesFormat: TilesFormat.fromString(json['tilesFormat'] as String),
       tilesUrl: json['tilesUrl'] as String,
       geoJsonUrl: json['geoJsonUrl'] as String,

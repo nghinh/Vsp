@@ -32,11 +32,11 @@ class TeeSetSummary extends Equatable {
       id: json['id'] as int,
       name: json['name'] as String,
       gender: json['gender'] as String?,
-      totalPar: json['totalPar'] as int,
+      totalPar: (json['totalPar'] as num?)?.toInt() ?? 0,
       yardages:
           // Accept both typed and untyped (e.g. empty literal) maps.
           (json['yardages'] as Map?)?.map(
-            (k, v) => MapEntry(k as String, (v as num).toInt()),
+            (k, v) => MapEntry(k as String, (v as num?)?.toInt() ?? 0),
           ) ??
           {},
       rating: (json['rating'] as num?)?.toDouble(),

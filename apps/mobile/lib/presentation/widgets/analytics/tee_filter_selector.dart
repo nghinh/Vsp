@@ -41,6 +41,7 @@ class TeeFilterSelector extends StatelessWidget {
         const SizedBox(height: 8),
         DropdownButtonFormField<String?>(
           value: selectedTeeSetId,
+          isExpanded: true,
           decoration: InputDecoration(
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(

@@ -298,7 +298,9 @@ class BagOption extends Equatable {
 
 /// Round created and guard recorded — navigate to active round.
 class RoundSetupRoundStarted extends RoundSetupState {
-  final int roundId;
+  /// Server-assigned round id (UUID). Falls back to the local id when the
+  /// round was created offline.
+  final String roundId;
   final int courseId;
   final String courseName;
 

@@ -13,11 +13,13 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../data/api/course_search_api.dart';
+import '../../../data/api/round_api.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/package_readiness_service.dart';
 import '../../../data/services/nearby_course_service.dart';
+import '../../../domain/models/round.dart';
 import '../../../domain/models/round_config.dart';
 import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
@@ -48,6 +50,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   final NearbyCourseService _nearbyCourseService;
   final RoundSetupStore _roundSetupStore;
   final CourseSearchApi _courseSearchApi;
+  final RoundApi _roundApi;
   final Uuid _uuid;
 
   RoundSetupBloc({
@@ -58,6 +61,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     required NearbyCourseService nearbyCourseService,
     required RoundSetupStore roundSetupStore,
     CourseSearchApi? courseSearchApi,
+    RoundApi? roundApi,
     Uuid uuid = const Uuid(),
   }) : _manifestRepo = manifestRepo,
        _roundRepo = roundRepo,
@@ -67,6 +71,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
        _roundSetupStore = roundSetupStore,
        _courseSearchApi =
            courseSearchApi ?? CourseSearchApi(apiClient: ApiClient()),
+       _roundApi = roundApi ?? RoundApi(),
        _uuid = uuid,
        super(const RoundSetupInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
@@ -529,41 +534,49 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       );
       await _roundSetupStore.saveLocalRoundConfig(localRecord);
 
-      // Try to create round via API
-      // In real app, would call round creation API here
-      // For now, simulate success and navigate immediately
-      // try {
-      //   final round = await _roundRepo.createRound(config, idempotencyKey);
-      //   await _activeRoundGuard.recordRoundStart(config.courseId, roundId: round.id);
-      //   await _roundSetupStore.markSynced(localId, round.id);
-      //
-      //   emit(RoundSetupRoundStarted(
-      //     roundId: round.id,
-      //     courseId: config.courseId,
-      //     courseName: config.courseName,
-      //   ));
-      // } on ApiException catch (e) {
-      //   // API failed — save locally, navigate immediately, sync later
-      //   await _roundSetupStore.markSyncFailed(localId);
-      //
-      //   emit(RoundSetupLocalRoundSaved(
-      //     courseId: config.courseId,
-      //     courseName: config.courseName,
-      //     localRoundId: localId,
-      //   ));
-      // }
+      // Create the round server-side. On any API/network failure we keep the
+      // locally saved config and play on with the local id — the round is
+      // already persisted, so the golfer is never blocked from teeing off.
+      String roundId = localId;
+      var syncedToServer = false;
+      try {
+        final created = await _roundApi.createRound(
+          courseId: config.courseId,
+          idempotencyKey: idempotencyKey,
+          startTime: config.startTime,
+          packageId: int.tryParse(config.packageId ?? ''),
+          tournamentPolicyId: config.tournamentPolicyId,
+        );
+        roundId = created.id;
+        syncedToServer = true;
+        await _roundSetupStore.markSynced(localId, roundId);
+      } on VspApiException {
+        await _roundSetupStore.markSyncFailed(localId);
+      } catch (_) {
+        await _roundSetupStore.markSyncFailed(localId);
+      }
 
-      // Simulate successful round creation for MVP
-      final simulatedRoundId = 12345;
-
-      // Record round start in guard
-      await _activeRoundGuard.recordRoundStart(
-        config.courseId,
-        roundId: simulatedRoundId.toString(),
+      // Persist the round locally so the scorecard, the active-round guard and
+      // the completion flow all resolve the same round id.
+      await _roundRepo.createRound(
+        Round(
+          id: roundId,
+          courseId: config.courseId,
+          courseName: config.courseName,
+          status: RoundStatus.inProgress,
+          startedAt: config.startTime,
+          packageVersion: config.packageId ?? 'unknown',
+          tournamentPolicyId: config.tournamentPolicyId,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
       );
 
-      // Mark as synced
-      await _roundSetupStore.markSynced(localId, simulatedRoundId.toString());
+      // Record round start in guard (locks the package version for this round)
+      await _activeRoundGuard.recordRoundStart(
+        config.courseId,
+        roundId: roundId,
+      );
 
       // Record course as played (for recent/fallback)
       await _nearbyCourseService.recordCoursePlayed(
@@ -572,13 +585,23 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         packageId: config.packageId,
       );
 
-      emit(
-        RoundSetupRoundStarted(
-          roundId: simulatedRoundId,
-          courseId: config.courseId,
-          courseName: config.courseName,
-        ),
-      );
+      if (syncedToServer) {
+        emit(
+          RoundSetupRoundStarted(
+            roundId: roundId,
+            courseId: config.courseId,
+            courseName: config.courseName,
+          ),
+        );
+      } else {
+        emit(
+          RoundSetupLocalRoundSaved(
+            courseId: config.courseId,
+            courseName: config.courseName,
+            localRoundId: roundId,
+          ),
+        );
+      }
     } catch (ex) {
       emit(
         RoundSetupError(

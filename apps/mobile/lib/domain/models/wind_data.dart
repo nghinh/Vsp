@@ -209,7 +209,7 @@ class WindData extends Equatable {
       speed: (json['speed'] as num?)?.toDouble() ?? 0,
       unit: WindSpeedUnit.fromString(json['unit'] as String?),
       direction: WindDirection.fromString(json['direction'] as String?),
-      degrees: (json['degrees'] as int?) ?? 0,
+      degrees: (json['degrees'] as num?)?.toInt() ?? 0,
       gusts: (json['gusts'] as num?)?.toDouble(),
     );
   }

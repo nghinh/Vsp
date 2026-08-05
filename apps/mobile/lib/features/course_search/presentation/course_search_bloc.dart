@@ -12,7 +12,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/api/course_search_api.dart';
 import '../../../data/repositories/course_search_repository.dart';
+import '../../../data/services/location_service_impl.dart';
 import '../../../domain/models/course_search_result.dart';
+import '../../../domain/models/qualified_location.dart';
+import '../../../domain/services/location_service.dart';
 import 'course_search_event.dart';
 import 'course_search_state.dart';
 
@@ -26,6 +29,7 @@ import 'course_search_state.dart';
 /// - Pagination for search results
 class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
   final CourseSearchRepository _repository;
+  final LocationService _locationService;
 
   /// Debounce timer for text search.
   Timer? _debounceTimer;
@@ -33,9 +37,12 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
   /// Default page size.
   static const int _pageSize = 20;
 
-  CourseSearchBloc({required CourseSearchRepository repository})
-    : _repository = repository,
-      super(const CourseSearchInitial()) {
+  CourseSearchBloc({
+    required CourseSearchRepository repository,
+    LocationService? locationService,
+  }) : _repository = repository,
+       _locationService = locationService ?? LocationServiceImpl(),
+       super(const CourseSearchInitial()) {
     on<SearchTextChanged>(_onSearchTextChanged);
     on<SearchSubmitted>(_onSearchSubmitted);
     on<SearchNearby>(_onSearchNearby);
@@ -116,15 +123,53 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     SearchNearby event,
     Emitter<CourseSearchState> emit,
   ) async {
-    // Location will come from NearbyLocationUpdated with actual GPS coords
-    // For now, emit loading state — actual search is triggered by
-    // NearbyLocationUpdated after GPS resolves
     emit(
       CourseSearchLoading(
         activeTab: SearchTab.nearby,
         lastRadius: event.radiusMeters,
       ),
     );
+
+    // Acquire the device location, then run the nearby search. Never leave the
+    // tab spinning: a denied/disabled/timed-out fix emits an error state so the
+    // UI can prompt the user to enable location and retry.
+    try {
+      final available = await _locationService.isLocationAvailable();
+      if (!available) {
+        emit(
+          const CourseSearchError(
+            message:
+                'Bật vị trí và cấp quyền để tìm sân gần bạn.',
+            activeTab: SearchTab.nearby,
+          ),
+        );
+        return;
+      }
+      final loc = await _locationService.getCurrentLocation();
+      if (loc.source == LocationSource.unavailable) {
+        emit(
+          const CourseSearchError(
+            message: 'Không lấy được vị trí của bạn. Hãy thử lại.',
+            activeTab: SearchTab.nearby,
+          ),
+        );
+        return;
+      }
+      add(
+        NearbyLocationUpdated(
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          radiusMeters: event.radiusMeters,
+        ),
+      );
+    } catch (_) {
+      emit(
+        const CourseSearchError(
+          message: 'Không lấy được vị trí của bạn. Hãy thử lại.',
+          activeTab: SearchTab.nearby,
+        ),
+      );
+    }
   }
 
   Future<void> _onNearbyLocationUpdated(

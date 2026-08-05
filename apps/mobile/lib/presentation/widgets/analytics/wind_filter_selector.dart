@@ -38,6 +38,7 @@ class WindFilterSelector extends StatelessWidget {
         const SizedBox(height: 8),
         DropdownButtonFormField<WindCondition?>(
           value: selectedCondition,
+          isExpanded: true,
           decoration: InputDecoration(
             isDense: true,
             contentPadding: const EdgeInsets.symmetric(

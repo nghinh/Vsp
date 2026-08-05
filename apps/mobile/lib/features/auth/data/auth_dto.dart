@@ -302,8 +302,8 @@ class SocialAuthResponse extends Equatable {
       userId: json['userId'] as int,
       displayName: json['displayName'] as String?,
       status: json['status'] as String?,
-      provider: json['provider'] as String,
-      isNewAccount: json['isNewAccount'] as bool,
+      provider: json['provider'] as String? ?? 'unknown',
+      isNewAccount: json['isNewAccount'] as bool? ?? false,
     );
   }
 
@@ -431,13 +431,16 @@ class SessionInfo extends Equatable {
 
   factory SessionInfo.fromJson(Map<String, dynamic> json) {
     return SessionInfo(
-      sessionId: json['sessionId'] as String,
+      // API returns sessionId as an integer; coerce to String defensively.
+      sessionId: json['sessionId']?.toString() ?? '',
       deviceInfo: json['deviceInfo'] as String?,
       userAgent: json['userAgent'] as String?,
       ipAddress: json['ipAddress'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       expiresAt: DateTime.parse(json['expiresAt'] as String),
-      isCurrent: json['isCurrent'] as bool? ?? false,
+      // API field is `currentSession`; keep `isCurrent` as a fallback.
+      isCurrent:
+          json['currentSession'] as bool? ?? json['isCurrent'] as bool? ?? false,
     );
   }
 
