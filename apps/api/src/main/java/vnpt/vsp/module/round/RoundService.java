@@ -71,6 +71,23 @@ public interface RoundService {
     RoundResponse completeRound(Long accountId, UUID roundId, RoundCompleteRequest request);
 
     /**
+     * Abandons an in-progress round — marks it ABANDONED and sets endedAt.
+     *
+     * Lets a golfer discard a round they started but will not finish, so it
+     * stops showing as "in progress" and no longer clutters their history.
+     * Idempotent: if the round is already ABANDONED, returns it unchanged.
+     * Validates that the round exists, belongs to the golfer, and is not
+     * already COMPLETED (a finished round cannot be abandoned).
+     *
+     * @param accountId the authenticated golfer's account ID
+     * @param roundId   the round UUID
+     * @return the abandoned round response with status=ABANDONED and endedAt set
+     * @throws vnpt.vsp.api.error.VspApiException ROUND_001 if not found, AUTH_010
+     *         if not the owner, ROUND_003 if the round is already COMPLETED
+     */
+    RoundResponse abandonRound(Long accountId, UUID roundId);
+
+    /**
      * Returns the tournament policy for a round.
      *
      * @param roundId the round UUID

@@ -251,6 +251,58 @@ public class RoundServiceImpl implements RoundService {
     }
 
     @Override
+    @Transactional
+    public RoundResponse abandonRound(Long accountId, UUID roundId) {
+        log.info("Abandoning round {} for account {}", roundId, accountId);
+
+        Round round = roundRepository.findById(roundId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001, "roundId"));
+
+        // Validate ownership
+        if (!round.getGolferAccountId().equals(accountId)) {
+            throw new VspApiException(VspErrorCode.AUTH_010, "roundId");
+        }
+
+        // Idempotent: already abandoned → return as-is
+        if (round.getStatus() == Round.RoundStatus.ABANDONED) {
+            log.debug("Round {} already abandoned — returning idempotent success", roundId);
+            String courseName = round.getCourseId() != null
+                    ? courseService.getCourse(round.getCourseId()).getName()
+                    : null;
+            return toResponse(round, courseName);
+        }
+
+        // A completed round cannot be abandoned. ROUND_003 ("Round already
+        // completed") names what actually happened; ROUND_006 reads "Round
+        // cannot be completed in current status", which is about the wrong verb
+        // for a client that asked to abandon.
+        if (round.getStatus() == Round.RoundStatus.COMPLETED) {
+            throw new VspApiException(VspErrorCode.ROUND_003, "roundId");
+        }
+
+        if (round.getEndedAt() == null) {
+            round.setEndedAt(Instant.now());
+        }
+        round.setStatus(Round.RoundStatus.ABANDONED);
+        roundRepository.save(round);
+        log.debug("Round {} marked ABANDONED", roundId);
+
+        String courseName = round.getCourseId() != null
+                ? courseService.getCourse(round.getCourseId()).getName()
+                : null;
+        auditService.log(
+                AuditAction.ROUND_ABANDON,
+                "Round",
+                roundId.toString(),
+                null,
+                toJson(round, courseName, null),
+                buildCompletionMetadata(accountId)
+        );
+
+        return toResponse(round, courseName);
+    }
+
+    @Override
     public TournamentPolicyResponse getRoundTournamentPolicy(UUID roundId, Long accountId) {
         log.info("getRoundTournamentPolicy roundId={} accountId={}", roundId, accountId);
 

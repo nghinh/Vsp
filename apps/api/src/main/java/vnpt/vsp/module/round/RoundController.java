@@ -132,6 +132,31 @@ public class RoundController {
     }
 
     /**
+     * Abandon a round — marks it ABANDONED and sets endedAt.
+     *
+     * Lets a golfer discard a round they started but will not finish, so it
+     * stops showing as "in progress" in their history. Idempotent: abandoning
+     * an already-abandoned round returns 200 with the existing round.
+     *
+     * @param authentication the authenticated golfer
+     * @param roundId        the round UUID
+     * @return the abandoned round with 200 status
+     */
+    @PostMapping("/{roundId}/abandon")
+    @Idempotent(ttlSeconds = 86400)
+    public ResponseEntity<RoundResponse> abandonRound(
+            Authentication authentication,
+            @PathVariable UUID roundId) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        log.info("POST /rounds/{}/abandon - accountId={}", roundId, accountId);
+
+        RoundResponse response = roundService.abandonRound(accountId, roundId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Get the tournament policy for a round.
      *
      * Returns the tournament policy attached to a tournament-format round.
