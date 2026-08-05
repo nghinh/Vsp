@@ -34,7 +34,13 @@ public class CorrectionDetailResponse {
 
     // ─── Location (AC-2) ────────────────────────────────────────────────────
 
-    /** Reporter's GPS location as SRID 4326 WKT (e.g. "POINT(106.7205 10.8506)") */
+    /**
+     * Reporter's GPS location as SRID 4326 WKT (e.g. {@code "POINT(106.7205 10.8506)"}).
+     *
+     * <p>Must be supplied by the caller from {@code ST_AsText}, not copied off
+     * the entity: the mapped field holds whatever JDBC returns for a geometry
+     * column, which is EWKB hex.</p>
+     */
     private String reporterGpsLocation;
 
     // ─── Classification ─────────────────────────────────────────────────────
@@ -76,7 +82,13 @@ public class CorrectionDetailResponse {
 
     // ─── Factory method ───────────────────────────────────────────────────────
 
-    public static CorrectionDetailResponse fromEntity(CourseCorrection c, String courseName, Integer holeNumber) {
+    /**
+     * @param reporterGpsWkt the reporter's position read back with
+     *                       {@code ST_AsText} (SRID 4326 WKT), or null when the
+     *                       correction carries no position
+     */
+    public static CorrectionDetailResponse fromEntity(CourseCorrection c, String courseName, Integer holeNumber,
+                                                      String reporterGpsWkt) {
         CorrectionDetailResponse r = new CorrectionDetailResponse();
         r.setId(c.getId());
         r.setCourseId(c.getCourseId());
@@ -86,7 +98,7 @@ public class CorrectionDetailResponse {
         r.setReporterId(c.getReporterId());
         r.setReporterNote(c.getReporterNote());
         r.setReporterEvidenceUrl(c.getReporterEvidenceUrl());
-        r.setReporterGpsLocation(c.getReporterGpsLocation());
+        r.setReporterGpsLocation(reporterGpsWkt);
         r.setCorrectionType(c.getCorrectionType().name());
         r.setStatus(c.getStatus().name());
         r.setConfidence(c.getConfidence());

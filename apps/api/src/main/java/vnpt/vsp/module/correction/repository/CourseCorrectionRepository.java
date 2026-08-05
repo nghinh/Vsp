@@ -84,6 +84,18 @@ public interface CourseCorrectionRepository
            nativeQuery = true)
     String findProposedGeometryWkt(@Param("id") Long id);
 
+    /**
+     * Reads a correction's reporter GPS position back as WKT.
+     *
+     * <p>Same reason as {@link #findProposedGeometryWkt}: the mapped String
+     * field yields the EWKB hex JDBC hands back
+     * ({@code 0101000020E6100000…}), which is not what the admin detail
+     * response documents or what a reviewer's map can plot.</p>
+     */
+    @Query(value = "SELECT ST_AsText(reporter_gps_location) FROM course_corrections WHERE id = :id",
+           nativeQuery = true)
+    String findReporterGpsLocationWkt(@Param("id") Long id);
+
     // ─── Corroboration (spatial aggregation) ──────────────────────────────────
 
     /**
