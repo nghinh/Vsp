@@ -5,6 +5,7 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:mobile_theme/tokens/vsp_color.dart';
 import 'package:mobile_theme/tokens/vsp_spacing.dart';
 
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/password_recovery_screen.dart';
@@ -35,6 +36,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onGoogleSignIn() async {
+    // Resolved before the first await so the message survives the async gap.
+    final failedMessage = AppLocalizations.of(context).authGoogleFailed;
     try {
       final account = await GoogleSignIn(
         serverClientId: const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
@@ -44,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       final token = (await account.authentication).idToken;
       if (token == null) {
-        _showError('Google sign-in failed. Please try again.');
+        if (mounted) _showError(failedMessage);
         return;
       }
       if (!mounted) {
@@ -55,12 +58,13 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (_) {
       if (mounted) {
-        _showError('Google sign-in failed. Please try again.');
+        _showError(failedMessage);
       }
     }
   }
 
   Future<void> _onAppleSignIn() async {
+    final failedMessage = AppLocalizations.of(context).authAppleFailed;
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: const [
@@ -82,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
     } catch (_) {
       if (mounted) {
-        _showError('Apple sign-in failed. Please try again.');
+        _showError(failedMessage);
       }
     }
   }
@@ -168,13 +172,14 @@ class _WelcomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: VspSpacing.xl),
       child: Column(
         children: [
           Semantics(
             image: true,
-            label: 'Vietnam Smart Golf',
+            label: l10n.appTitle,
             child: Container(
               width: 96,
               height: 96,
@@ -191,7 +196,7 @@ class _WelcomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: VspSpacing.lg),
           Text(
-            'Play with Confidence',
+            l10n.authTagline,
             textAlign: TextAlign.center,
             style: textTheme.headlineLarge?.copyWith(
               color: VspColorDark.textPrimary,
@@ -200,7 +205,7 @@ class _WelcomeHeader extends StatelessWidget {
           ),
           const SizedBox(height: VspSpacing.sm),
           Text(
-            'Accurate GPS, official course data, and offline play for the perfect round.',
+            l10n.authSubtitle,
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
               color: VspColorDark.textSecondary,
@@ -229,6 +234,7 @@ class _AuthActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: VspSpacing.xxl),
       child: Column(
@@ -236,22 +242,22 @@ class _AuthActions extends StatelessWidget {
         children: [
           FilledButton(
             onPressed: onPhone,
-            child: const Text('Continue with Phone Number'),
+            child: Text(l10n.authContinueWithPhone),
           ),
           const SizedBox(height: VspSpacing.md),
           OutlinedButton(
             onPressed: onEmail,
-            child: const Text('Continue with Email'),
+            child: Text(l10n.authContinueWithEmail),
           ),
           const SizedBox(height: VspSpacing.md),
-          const Row(
+          Row(
             children: [
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: VspSpacing.md),
-                child: Text('OR'),
+                padding: const EdgeInsets.symmetric(horizontal: VspSpacing.md),
+                child: Text(l10n.commonOr),
               ),
-              Expanded(child: Divider()),
+              const Expanded(child: Divider()),
             ],
           ),
           const SizedBox(height: VspSpacing.md),
@@ -261,7 +267,7 @@ class _AuthActions extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onGoogle,
                   icon: const Icon(Icons.g_mobiledata),
-                  label: const Text('Google'),
+                  label: Text(l10n.authGoogle),
                 ),
               ),
               const SizedBox(width: VspSpacing.md),
@@ -269,7 +275,7 @@ class _AuthActions extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onApple,
                   icon: const Icon(Icons.apple),
-                  label: const Text('Apple'),
+                  label: Text(l10n.authApple),
                 ),
               ),
             ],
@@ -279,8 +285,8 @@ class _AuthActions extends StatelessWidget {
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              const Text("Don't have an account?"),
-              TextButton(onPressed: onRegister, child: const Text('Sign Up')),
+              Text(l10n.authNoAccount),
+              TextButton(onPressed: onRegister, child: Text(l10n.authSignUp)),
             ],
           ),
         ],
@@ -330,6 +336,7 @@ class _SignInSheetState extends State<_SignInSheet> {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final l10n = AppLocalizations.of(context);
     return Material(
       color: VspColorDark.surface,
       borderRadius: const BorderRadius.vertical(
@@ -364,13 +371,13 @@ class _SignInSheetState extends State<_SignInSheet> {
                   children: [
                     Expanded(
                       child: Text(
-                        'Sign In',
+                        l10n.authSignIn,
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Close sign in',
+                      tooltip: l10n.authCloseSignIn,
                       onPressed: () => Navigator.pop(context),
                       icon: const Icon(Icons.close),
                     ),
@@ -381,13 +388,13 @@ class _SignInSheetState extends State<_SignInSheet> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(
+                      SizedBox(
                         width: 88,
                         child: InputDecorator(
                           decoration: InputDecoration(
-                            labelText: 'Country code',
+                            labelText: l10n.authCountryCode,
                           ),
-                          child: Text('+84'),
+                          child: const Text('+84'),
                         ),
                       ),
                       const SizedBox(width: VspSpacing.sm),
@@ -404,11 +411,11 @@ class _SignInSheetState extends State<_SignInSheet> {
                   textInputAction: TextInputAction.done,
                   onFieldSubmitted: (_) => _submit(),
                   decoration: InputDecoration(
-                    labelText: 'Password',
+                    labelText: l10n.authPassword,
                     suffixIcon: IconButton(
                       tooltip: _obscurePassword
-                          ? 'Show password'
-                          : 'Hide password',
+                          ? l10n.authShowPassword
+                          : l10n.authHidePassword,
                       onPressed: () =>
                           setState(() => _obscurePassword = !_obscurePassword),
                       icon: Icon(
@@ -419,7 +426,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                     ),
                   ),
                   validator: (value) => value == null || value.isEmpty
-                      ? 'Please enter your password'
+                      ? l10n.authEnterPassword
                       : null,
                 ),
                 Align(
@@ -429,7 +436,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                       Navigator.pop(context);
                       widget.onRecovery();
                     },
-                    child: const Text('Forgot Password?'),
+                    child: Text(l10n.authForgotPassword),
                   ),
                 ),
                 const SizedBox(height: VspSpacing.md),
@@ -445,7 +452,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                               dimension: 24,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Sign In'),
+                          : Text(l10n.authSignIn),
                     );
                   },
                 ),
@@ -458,7 +465,8 @@ class _SignInSheetState extends State<_SignInSheet> {
   }
 
   Widget _identifierField() {
-    final label = widget.usePhone ? 'Phone Number' : 'Email';
+    final l10n = AppLocalizations.of(context);
+    final label = widget.usePhone ? l10n.authPhoneNumber : l10n.authEmail;
     return TextFormField(
       controller: _identifierController,
       autofocus: true,
@@ -471,7 +479,7 @@ class _SignInSheetState extends State<_SignInSheet> {
       textInputAction: TextInputAction.next,
       decoration: InputDecoration(labelText: label),
       validator: (value) => value == null || value.trim().isEmpty
-          ? 'Please enter your ${widget.usePhone ? 'phone number' : 'email'}'
+          ? (widget.usePhone ? l10n.authEnterPhoneNumber : l10n.authEnterEmail)
           : null,
     );
   }

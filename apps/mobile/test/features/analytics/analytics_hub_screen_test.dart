@@ -8,12 +8,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/features/analytics/presentation/analytics_hub_screen.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('AnalyticsHubScreen', () {
     testWidgets('renders the hub title', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: AnalyticsHubScreen()),
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: const AnalyticsHubScreen(),
+        ),
       );
 
       expect(find.text('Phân tích & Hiệu suất'), findsOneWidget);
@@ -21,7 +28,12 @@ void main() {
 
     testWidgets('lists every analytics destination', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: AnalyticsHubScreen()),
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: const AnalyticsHubScreen(),
+        ),
       );
 
       expect(find.text('Hiệu suất gậy & Độ phân tán'), findsOneWidget);
@@ -32,7 +44,12 @@ void main() {
 
     testWidgets('renders one navigable tile per destination', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(home: AnalyticsHubScreen()),
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: const AnalyticsHubScreen(),
+        ),
       );
 
       // Each tile ends with a chevron affordance; four destinations ⇒ four.

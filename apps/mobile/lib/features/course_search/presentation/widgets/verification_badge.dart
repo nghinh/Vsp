@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/data_freshness.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Verification badge widget — displays verification status with color + icon.
 class VerificationBadge extends StatelessWidget {
@@ -29,7 +30,7 @@ class VerificationBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final brightness = theme.colorScheme.brightness;
 
-    final config = _resolveConfig(brightness);
+    final config = _resolveConfig(context, brightness);
 
     if (compact) {
       return _buildPill(context, config, theme);
@@ -38,11 +39,11 @@ class VerificationBadge extends StatelessWidget {
     return _buildPill(context, config, theme);
   }
 
-  _BadgeConfig _resolveConfig(Brightness brightness) {
+  _BadgeConfig _resolveConfig(BuildContext context, Brightness brightness) {
     switch (status) {
       case VerificationStatus.verified:
         return _BadgeConfig(
-          label: 'Verified',
+          label: AppLocalizations.of(context).verificationVerified,
           icon: Icons.verified,
           backgroundColor: brightness == Brightness.dark
               ? VspColorDark.accent
@@ -58,7 +59,7 @@ class VerificationBadge extends StatelessWidget {
 
       case VerificationStatus.pendingReview:
         return _BadgeConfig(
-          label: 'Pending',
+          label: AppLocalizations.of(context).verificationPending,
           icon: Icons.pending,
           backgroundColor: Colors.transparent,
           textColor: VspColorSemantic.of(
@@ -76,7 +77,7 @@ class VerificationBadge extends StatelessWidget {
 
       case VerificationStatus.unverified:
         return _BadgeConfig(
-          label: 'Unverified',
+          label: AppLocalizations.of(context).verificationUnverified,
           icon: Icons.help_outline,
           backgroundColor: Colors.transparent,
           textColor: brightness == Brightness.dark
@@ -92,7 +93,7 @@ class VerificationBadge extends StatelessWidget {
 
       case VerificationStatus.rejected:
         return _BadgeConfig(
-          label: 'Rejected',
+          label: AppLocalizations.of(context).verificationRejected,
           icon: Icons.cancel,
           backgroundColor: Colors.transparent,
           textColor: VspColorSemantic.of(
@@ -119,7 +120,7 @@ class VerificationBadge extends StatelessWidget {
     final borderColor = config.borderColor;
 
     return Semantics(
-      label: 'Verification status: ${config.label}',
+      label: AppLocalizations.of(context).verificationStatusLabel(config.label),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,

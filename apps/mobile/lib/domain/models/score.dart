@@ -226,10 +226,10 @@ class Score extends Equatable {
       putts: (map['putts'] as num?)?.toInt(),
       penalties: (map['penalties'] as num?)?.toInt(),
       fairwayHit: map['fairway_hit'] != null
-          ? ((map['fairway_hit'] as num).toInt()) == 1
+          ? (map['fairway_hit'] as num).toInt() == 1
           : null,
-      gir: map['gir'] != null ? ((map['gir'] as num).toInt()) == 1 : null,
-      bunker: map['bunker'] != null ? ((map['bunker'] as num).toInt()) == 1 : null,
+      gir: map['gir'] != null ? (map['gir'] as num).toInt() == 1 : null,
+      bunker: map['bunker'] != null ? (map['bunker'] as num).toInt() == 1 : null,
       notes: map['notes'] as String?,
       enteredAt: map['entered_at'] != null
           ? DateTime.parse(map['entered_at'] as String)

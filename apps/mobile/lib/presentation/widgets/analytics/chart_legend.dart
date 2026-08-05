@@ -4,6 +4,7 @@
 // Per Story 11.2 AC3: non-color indicators for accessibility.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A single legend item combining color, shape, and label.
 class LegendItem {
@@ -44,7 +45,7 @@ class ChartLegend extends StatelessWidget {
         direction == AxisDirection.left || direction == AxisDirection.right;
 
     return Semantics(
-      label: 'Chart legend',
+      label: AppLocalizations.of(context).analyticsChartLegend,
       child: Wrap(
         direction: isHorizontal ? Axis.horizontal : Axis.vertical,
         spacing: 16,
@@ -84,7 +85,7 @@ class _LegendEntry extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           // Shape indicator for non-color identification
-          _buildShapeIndicator(),
+          _buildShapeIndicator(context),
           const SizedBox(width: 4),
           // Label
           Text(item.label, style: const TextStyle(fontSize: 12)),
@@ -93,11 +94,11 @@ class _LegendEntry extends StatelessWidget {
     );
   }
 
-  Widget _buildShapeIndicator() {
+  Widget _buildShapeIndicator(BuildContext context) {
     // Assign shapes based on index for non-color differentiation
     final shapeName = _shapeName(shapeIndex);
     return Tooltip(
-      message: 'Shape: $shapeName',
+      message: AppLocalizations.of(context).analyticsShapeLabel(shapeName),
       child: Icon(
         _shapeIcon(shapeIndex),
         size: 12,

@@ -16,6 +16,7 @@ import 'bag_bloc.dart';
 import 'club_form_screen.dart';
 import 'widgets/club_card.dart';
 import 'widgets/recommendations_disabled_banner.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -66,14 +67,14 @@ class _BagDetailScreenState extends State<BagDetailScreen> {
       builder: (context, state) {
         if (state is BagLoading || state is BagInitial) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Bag Details')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).bagDetailsTitle)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is BagError && state.lastBags == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Bag Details')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).bagDetailsTitle)),
             body: _ErrorView(
               message: state.message,
               onRetry: () {
@@ -106,7 +107,7 @@ class _BagDetailScreenState extends State<BagDetailScreen> {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Bag Details')),
+          appBar: AppBar(title: Text(AppLocalizations.of(context).bagDetailsTitle)),
           body: const Center(child: CircularProgressIndicator()),
         );
       },
@@ -193,7 +194,7 @@ class _BagDetailBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _navigateToClubForm(context, bag.id, null),
-        tooltip: 'Add club',
+        tooltip: AppLocalizations.of(context).bagAddClub,
         child: const Icon(Icons.add),
       ),
     );
@@ -395,7 +396,7 @@ class _EmptyClubsView extends StatelessWidget {
             color: colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 12),
-          Text('No Clubs Yet', style: theme.textTheme.titleMedium),
+          Text(AppLocalizations.of(context).bagNoClubs, style: theme.textTheme.titleMedium),
           const SizedBox(height: VspSpacing.xs),
           Text(
             'Add clubs to track distances and enable recommendations.',
@@ -406,7 +407,7 @@ class _EmptyClubsView extends StatelessWidget {
           ),
           const SizedBox(height: VspSpacing.md),
           VspButton(
-            label: 'Add First Club',
+            label: AppLocalizations.of(context).bagAddFirstClub,
             icon: Icons.add,
             onPressed: onAddClub,
             size: VspButtonSize.small,
@@ -452,7 +453,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Try Again',
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
               variant: VspButtonVariant.secondary,
               icon: Icons.refresh,

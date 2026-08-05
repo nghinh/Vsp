@@ -17,6 +17,7 @@ import '../../../domain/value_objects/distance_type.dart';
 import '../../../features/profile/data/profile_dto.dart' show DistanceUnit;
 import 'distance_value_display.dart';
 import 'gps_accuracy_chip.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Primary distance panel widget.
 ///
@@ -102,7 +103,7 @@ class PrimaryDistancePanel extends StatelessWidget {
 
         // Unit toggle button — minimum 44pt touch target
         Semantics(
-          label: 'Toggle distance unit. Currently ${state.selectedUnit.value}',
+          label: AppLocalizations.of(context).distanceToggleUnit(state.selectedUnit.value),
           button: true,
           child: GestureDetector(
             onTap: onUnitToggle,
@@ -139,11 +140,11 @@ class PrimaryDistancePanel extends StatelessWidget {
 
     // If GPS is unavailable, show last known or placeholder
     if (!state.hasGps) {
-      return _NoDataRow(message: 'Waiting for GPS...');
+      return _NoDataRow(message: AppLocalizations.of(context).distanceWaitingGps);
     }
 
     if (state.status == DistanceStatus.noHoleGeometry) {
-      return _NoDataRow(message: 'No hole data');
+      return _NoDataRow(message: AppLocalizations.of(context).distanceNoHoleData);
     }
 
     return Row(
@@ -154,7 +155,7 @@ class PrimaryDistancePanel extends StatelessWidget {
             measurement:
                 front ?? _placeholderMeasurement(DistanceType.frontGreen),
             useYards: useYards,
-            label: 'FRONT',
+            label: AppLocalizations.of(context).distanceFront,
             excludeFromSemantics: false,
           ),
         ),
@@ -165,7 +166,7 @@ class PrimaryDistancePanel extends StatelessWidget {
             measurement:
                 center ?? _placeholderMeasurement(DistanceType.centerGreen),
             useYards: useYards,
-            label: 'CENTER',
+            label: AppLocalizations.of(context).distanceCenter,
             excludeFromSemantics: false,
           ),
         ),
@@ -176,7 +177,7 @@ class PrimaryDistancePanel extends StatelessWidget {
             measurement:
                 back ?? _placeholderMeasurement(DistanceType.backGreen),
             useYards: useYards,
-            label: 'BACK',
+            label: AppLocalizations.of(context).distanceBack,
             excludeFromSemantics: false,
           ),
         ),
@@ -276,7 +277,7 @@ class _ConfidenceLabel extends StatelessWidget {
     final (color, label) = _parts(level);
 
     return Semantics(
-      label: 'Distance confidence: $label',
+      label: AppLocalizations.of(context).distanceConfidenceDetail(label),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

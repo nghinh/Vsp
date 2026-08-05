@@ -4,6 +4,7 @@
 // Per UX spec error/retry state requirements.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Error state shown when analytics loading fails.
 class AnalyticsErrorState extends StatelessWidget {
@@ -29,7 +30,7 @@ class AnalyticsErrorState extends StatelessWidget {
               Icons.error_outline,
               size: 64,
               color: colorScheme.error,
-              semanticLabel: 'Error loading analytics',
+              semanticLabel: AppLocalizations.of(context).analyticsErrorLoading,
             ),
             const SizedBox(height: 16),
             Text(
@@ -54,7 +55,7 @@ class AnalyticsErrorState extends StatelessWidget {
               OutlinedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context).commonRetry),
               ),
             ],
           ],

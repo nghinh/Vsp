@@ -360,10 +360,10 @@ class StrokesGainedSummary extends Equatable {
           ? SGDateRange.fromJson(json['dateRange'] as Map<String, dynamic>)
           : null,
       overallStrokesGained: (json['overallStrokesGained'] as num).toDouble(),
-      categoryBreakdown: (json['categoryBreakdown'] as List)
+      categoryBreakdown: (json['categoryBreakdown'] as List? ?? const [])
           .map((r) => StrokesGainedResult.fromJson(r as Map<String, dynamic>))
           .toList(),
-      limitations: (json['limitations'] as List)
+      limitations: (json['limitations'] as List? ?? const [])
           .map(
             (l) =>
                 SGLimitation.fromString(l as String) ??

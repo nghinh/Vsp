@@ -10,6 +10,8 @@ import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/otp_screen.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {
   final List<AuthEvent> recordedEvents = [];
@@ -50,6 +52,10 @@ void main() {
         BlocProvider<AuthBloc>.value(
           value: authBloc,
           child: MaterialApp(
+            // These assertions are written against the Vietnamese copy.
+            locale: const Locale('vi'),
+            supportedLocales: kSupportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             home: OtpScreen(
               identifier: identifier,
               otpType: type,

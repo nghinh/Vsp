@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/profile_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Skill level dropdown picker.
 class SkillLevelPicker extends StatelessWidget {
@@ -24,7 +25,7 @@ class SkillLevelPicker extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Skill level, currently ${selectedLevel.displayName}',
+      label: AppLocalizations.of(context).profileSkillCurrent(selectedLevel.displayName),
       button: true,
       child: InkWell(
         onTap: () => _showPicker(context),

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/models/score.dart';
 import 'player_score_row.dart';
 import 'progressive_disclosure_panel.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card widget containing score rows for all players on one hole.
 class ScoreEntryCard extends StatefulWidget {
@@ -103,7 +104,7 @@ class _ScoreEntryCardState extends State<ScoreEntryCard> {
                 child: Row(
                   children: [
                     Text(
-                      'Scores',
+                      AppLocalizations.of(context).scorecardScores,
                       style: theme.textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: theme.colorScheme.primary,

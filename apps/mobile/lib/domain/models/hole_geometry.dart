@@ -178,7 +178,7 @@ class HoleGeometry extends Equatable {
 
     return HoleGeometry(
       holeNumber: holeNumber,
-      par: ((featureMap['hole']?['properties']?['par'] as num?)?.toInt()) ?? 4,
+      par: (featureMap['hole']?['properties']?['par'] as num?)?.toInt() ?? 4,
       greenPolygon: greenPolygon,
       pinPosition: pinPosition,
       teeBox: teeBox,

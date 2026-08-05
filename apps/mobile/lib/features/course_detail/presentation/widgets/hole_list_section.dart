@@ -7,6 +7,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/hole_summary.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class HoleListSection extends StatelessWidget {
   final CourseDetail course;
@@ -43,7 +44,7 @@ class HoleListSection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Holes',
+                AppLocalizations.of(context).sectionHoles,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -61,7 +62,7 @@ class HoleListSection extends StatelessWidget {
                 SizedBox(
                   width: 40,
                   child: Text(
-                    'Hole',
+                    AppLocalizations.of(context).fieldHole,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurfaceVariant,
@@ -70,7 +71,7 @@ class HoleListSection extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    'Par',
+                    AppLocalizations.of(context).fieldPar,
                     style: theme.textTheme.bodySmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: colorScheme.onSurfaceVariant,
@@ -78,7 +79,7 @@ class HoleListSection extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Length',
+                  AppLocalizations.of(context).fieldLength,
                   style: theme.textTheme.bodySmall?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurfaceVariant,
@@ -95,7 +96,7 @@ class HoleListSection extends StatelessWidget {
           // Front 9
           if (sortedHoles.any((h) => h.holeNumber <= 9)) ...[
             _HoleGroup(
-              label: 'Front 9',
+              label: AppLocalizations.of(context).roundSetupFront9,
               holes: sortedHoles.where((h) => h.holeNumber <= 9).toList(),
             ),
             const SizedBox(height: VspSpacing.sm),
@@ -104,7 +105,7 @@ class HoleListSection extends StatelessWidget {
           // Back 9
           if (sortedHoles.any((h) => h.holeNumber >= 10)) ...[
             _HoleGroup(
-              label: 'Back 9',
+              label: AppLocalizations.of(context).roundSetupBack9,
               holes: sortedHoles.where((h) => h.holeNumber >= 10).toList(),
             ),
           ],

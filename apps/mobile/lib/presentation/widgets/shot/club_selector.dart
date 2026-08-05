@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../features/bag/data/bag_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom sheet club selector for shot entry.
 ///
@@ -153,7 +154,7 @@ class ClubSelector extends StatelessWidget {
             // Cancel button
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context).commonCancel),
             ),
           ],
         ),

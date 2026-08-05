@@ -10,6 +10,7 @@ import 'package:vsp_mobile/features/auth/data/auth_dto.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({
@@ -72,15 +73,15 @@ class _OtpScreenState extends State<OtpScreen> {
   bool get _isCodeComplete => _enteredCode.length == _digitCount;
 
   String get _title => switch (widget.otpType) {
-    OtpType.phoneVerify => 'Xác thực số điện thoại',
-    OtpType.emailVerify => 'Xác thực email',
-    OtpType.passwordRecovery => 'Khôi phục mật khẩu',
+    OtpType.phoneVerify => AppLocalizations.of(context).otpPhoneTitle,
+    OtpType.emailVerify => AppLocalizations.of(context).otpEmailTitle,
+    OtpType.passwordRecovery => AppLocalizations.of(context).otpRecoveryTitle,
   };
 
   String get _instruction => switch (widget.otpType) {
-    OtpType.phoneVerify => 'Vui lòng nhập mã OTP đã được gửi đến số điện thoại',
-    OtpType.emailVerify => 'Vui lòng nhập mã OTP đã được gửi đến email',
-    OtpType.passwordRecovery => 'Nhập mã OTP để tiếp tục khôi phục mật khẩu',
+    OtpType.phoneVerify => AppLocalizations.of(context).otpPhoneSubtitle,
+    OtpType.emailVerify => AppLocalizations.of(context).otpEmailSubtitle,
+    OtpType.passwordRecovery => AppLocalizations.of(context).otpRecoverySubtitle,
   };
 
   String get _maskedDestination {
@@ -172,7 +173,7 @@ class _OtpScreenState extends State<OtpScreen> {
       return;
     }
     if (!_isCodeComplete) {
-      setState(() => _codeError = 'Vui lòng nhập đủ 6 chữ số.');
+      setState(() => _codeError = AppLocalizations.of(context).otpIncomplete);
       return;
     }
 
@@ -203,12 +204,12 @@ class _OtpScreenState extends State<OtpScreen> {
   String _failureMessage(AuthFailure state) {
     if (state.code == 'VSP-ERR-AUTH-012' ||
         state.message.toLowerCase().contains('expired')) {
-      return 'Mã OTP đã hết hạn. Vui lòng gửi mã mới.';
+      return AppLocalizations.of(context).otpExpired;
     }
     if (state.code == 'NETWORK_ERROR' || state.isNetworkError) {
-      return 'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
+      return AppLocalizations.of(context).otpNetworkError;
     }
-    return 'Mã OTP không chính xác. Vui lòng thử lại.';
+    return AppLocalizations.of(context).otpIncorrect;
   }
 
   void _handleState(BuildContext context, AuthState state) {
@@ -271,7 +272,7 @@ class _OtpScreenState extends State<OtpScreen> {
               appBar: AppBar(
                 title: Text(_title),
                 leading: IconButton(
-                  tooltip: 'Quay lại',
+                  tooltip: AppLocalizations.of(context).commonBack,
                   onPressed: () => Navigator.of(context).maybePop(),
                   icon: const Icon(Icons.arrow_back),
                 ),
@@ -294,7 +295,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             Center(
                               child: Semantics(
                                 image: true,
-                                label: 'Bảo mật xác thực',
+                                label: AppLocalizations.of(context).otpSecurityLabel,
                                 child: Container(
                                   width: 56,
                                   height: 56,
@@ -332,7 +333,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             ),
                             const SizedBox(height: VspSpacing.xl),
                             Semantics(
-                              label: 'Mã OTP gồm 6 chữ số',
+                              label: AppLocalizations.of(context).otpFieldLabel,
                               explicitChildNodes: true,
                               child: Row(
                                 mainAxisAlignment:
@@ -352,7 +353,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                               _handleKey(index, event),
                                           child: Semantics(
                                             label:
-                                                'Chữ số OTP ${index + 1} trên 6',
+                                                AppLocalizations.of(context).otpDigitLabel('${index + 1}'),
                                             textField: true,
                                             child: TextField(
                                               key: Key('otp_digit_$index'),
@@ -466,10 +467,10 @@ class _OtpScreenState extends State<OtpScreen> {
                                   ? Semantics(
                                       liveRegion: _resendRemaining <= 10,
                                       label:
-                                          'Có thể gửi mã mới sau $_countdownLabel',
+                                          AppLocalizations.of(context).otpResendAfter(_countdownLabel),
                                       child: Text.rich(
                                         TextSpan(
-                                          text: 'Gửi lại mã sau ',
+                                          text: AppLocalizations.of(context).otpResendPrefix,
                                           children: [
                                             TextSpan(
                                               text: _countdownLabel,
@@ -487,7 +488,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                     )
                                   : TextButton(
                                       onPressed: _resend,
-                                      child: const Text('Gửi mã mới'),
+                                      child: Text(AppLocalizations.of(context).otpResendNow),
                                     ),
                             ),
                             const Spacer(),
@@ -511,7 +512,7 @@ class _OtpScreenState extends State<OtpScreen> {
                                           Text('Đang xác nhận...'),
                                         ],
                                       )
-                                    : const Text('Xác nhận'),
+                                    : Text(AppLocalizations.of(context).otpConfirm),
                               ),
                             ),
                             const SizedBox(height: VspSpacing.md),

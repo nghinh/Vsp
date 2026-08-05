@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card showing directional deviation statistics.
 /// Per Story 11.1 AC-1: left/right and short/long deviation.
@@ -45,7 +46,7 @@ class DirectionalStatsCard extends StatelessWidget {
             // Left/Right row
             _DirectionalRow(
               icon: Icons.swap_horiz,
-              label: 'Left / Right',
+              label: AppLocalizations.of(context).performanceLeftRight,
               description: 'Negative = left, Positive = right',
               avg: stats.formatLeftRight(),
               stdDev: stats.leftRightStdDev != null
@@ -61,7 +62,7 @@ class DirectionalStatsCard extends StatelessWidget {
             // Short/Long row
             _DirectionalRow(
               icon: Icons.straighten,
-              label: 'Short / Long',
+              label: AppLocalizations.of(context).performanceShortLong,
               description: 'Negative = short, Positive = long',
               avg: stats.formatShortLong(),
               stdDev: stats.shortLongStdDev != null

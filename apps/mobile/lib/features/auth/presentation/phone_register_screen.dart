@@ -11,6 +11,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class PhoneRegisterScreen extends StatefulWidget {
   const PhoneRegisterScreen({super.key});
@@ -57,36 +58,36 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
     bool isValid = true;
 
     if (phone.isEmpty) {
-      setState(() => _phoneError = 'Please enter your phone number');
+      setState(() => _phoneError = AppLocalizations.of(context).authPhoneRequired);
       isValid = false;
     } else if (!_isValidPhone(phone)) {
       setState(
-        () => _phoneError = 'Enter a valid phone number (e.g. +84-90-123-4567)',
+        () => _phoneError = AppLocalizations.of(context).authPhoneInvalid,
       );
       isValid = false;
     }
 
     if (displayName.isEmpty) {
-      setState(() => _displayNameError = 'Please enter your name');
+      setState(() => _displayNameError = AppLocalizations.of(context).authNameRequired);
       isValid = false;
     } else if (displayName.length < 2) {
-      setState(() => _displayNameError = 'Name must be at least 2 characters');
+      setState(() => _displayNameError = AppLocalizations.of(context).authNameTooShort);
       isValid = false;
     }
 
     if (password.isEmpty) {
-      setState(() => _passwordError = 'Please enter a password');
+      setState(() => _passwordError = AppLocalizations.of(context).authPasswordRequired);
       isValid = false;
     } else if (password.length < 8) {
-      setState(() => _passwordError = 'Password must be at least 8 characters');
+      setState(() => _passwordError = AppLocalizations.of(context).authPasswordTooShort);
       isValid = false;
     }
 
     if (confirmPassword.isEmpty) {
-      setState(() => _confirmPasswordError = 'Please confirm your password');
+      setState(() => _confirmPasswordError = AppLocalizations.of(context).authConfirmRequired);
       isValid = false;
     } else if (password != confirmPassword) {
-      setState(() => _confirmPasswordError = 'Passwords do not match');
+      setState(() => _confirmPasswordError = AppLocalizations.of(context).authPasswordMismatch);
       isValid = false;
     }
 
@@ -114,7 +115,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Phone Registration'),
+        title: Text(AppLocalizations.of(context).authPhoneRegistration),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -163,14 +164,14 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Create your account',
+                    AppLocalizations.of(context).authCreateYourAccount,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: VspFontWeight.semibold,
                     ),
                   ),
                   const SizedBox(height: VspSpacing.sm),
                   Text(
-                    'Enter your phone number to get started',
+                    AppLocalizations.of(context).authPhoneStart,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -180,7 +181,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
                   // ─── Phone Field ─────────────────────────────────────────────
                   VspTextField(
-                    label: 'Phone Number',
+                    label: AppLocalizations.of(context).authPhoneNumber,
                     placeholder: 'e.g. +84-90-123-4567',
                     controller: _phoneController,
                     onChanged: (_) {
@@ -198,8 +199,8 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
                   // ─── Display Name Field ───────────────────────────────────────
                   VspTextField(
-                    label: 'Display Name',
-                    placeholder: 'Your name as shown on the course',
+                    label: AppLocalizations.of(context).authDisplayName,
+                    placeholder: AppLocalizations.of(context).authDisplayNamePlaceholder,
                     controller: _displayNameController,
                     onChanged: (_) {
                       if (_displayNameError != null)
@@ -216,8 +217,8 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
                   // ─── Password Field ───────────────────────────────────────────
                   VspTextField(
-                    label: 'Password',
-                    placeholder: 'At least 8 characters',
+                    label: AppLocalizations.of(context).authPassword,
+                    placeholder: AppLocalizations.of(context).authPasswordPlaceholder,
                     controller: _passwordController,
                     onChanged: (_) {
                       if (_passwordError != null)
@@ -227,7 +228,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     errorText: _passwordError,
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscurePassword,
-                    helperText: 'Minimum 8 characters',
+                    helperText: AppLocalizations.of(context).authPasswordHelper,
                     autofillHints: const [AutofillHints.newPassword],
                   ),
 
@@ -235,8 +236,8 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
                   // ─── Confirm Password Field ───────────────────────────────────
                   VspTextField(
-                    label: 'Confirm Password',
-                    placeholder: 'Re-enter your password',
+                    label: AppLocalizations.of(context).authConfirmPassword,
+                    placeholder: AppLocalizations.of(context).authConfirmPasswordPlaceholder,
                     controller: _confirmPasswordController,
                     onChanged: (_) {
                       if (_confirmPasswordError != null)
@@ -258,7 +259,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
                     builder: (context, state) {
                       final isLoading = state is AuthLoading;
                       return VspButton(
-                        label: 'Create Account',
+                        label: AppLocalizations.of(context).authCreateAccount,
                         onPressed: isLoading ? null : _onRegister,
                         isLoading: isLoading,
                         size: VspButtonSize.large,
@@ -270,7 +271,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
 
                   // ─── Terms Notice ─────────────────────────────────────────────
                   Text(
-                    'By creating an account, you agree to our Terms of Service and Privacy Policy.',
+                    AppLocalizations.of(context).authTermsNotice,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

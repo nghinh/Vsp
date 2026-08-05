@@ -44,6 +44,7 @@ import '../../widgets/score/hole_score_header.dart';
 import '../../widgets/score/score_entry_card.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../shot/shot_review_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -221,22 +222,23 @@ class _ScorecardScreenContent extends StatelessWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Finish round?'),
+        title: Text(AppLocalizations.of(context).scorecardFinishTitle),
         content: Text(
           remaining > 0
-              ? '$remaining of ${state.holeIds.length} holes have no score yet. '
-                    'You can still finish — unscored holes stay blank.'
-              : 'All ${state.holeIds.length} holes are scored. '
-                    'Finishing ends the round and syncs it.',
+              ? AppLocalizations.of(context).scorecardFinishUnscored(
+                  '$remaining',
+                  '${state.holeIds.length}',
+                )
+              : AppLocalizations.of(context).scorecardFinishAllScored('${state.holeIds.length}'),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Keep playing'),
+            child: Text(AppLocalizations.of(context).scorecardKeepPlaying),
           ),
           FilledButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Finish'),
+            child: Text(AppLocalizations.of(context).scorecardFinish),
           ),
         ],
       ),
@@ -302,8 +304,8 @@ class _ScorecardScreenContent extends StatelessWidget {
       SnackBar(
         content: Text(
           syncedToServer
-              ? 'Round finished.'
-              : 'Round finished. It will sync when you are back online.',
+              ? AppLocalizations.of(context).scorecardFinished
+              : AppLocalizations.of(context).scorecardFinishedOffline,
         ),
       ),
     );
@@ -322,24 +324,24 @@ class _ScorecardScreenContent extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Scorecard'),
+            title: Text(AppLocalizations.of(context).scorecardTitle),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [
               IconButton(
                 icon: const Icon(Icons.add_location_alt_outlined),
-                tooltip: 'Track Shot',
+                tooltip: AppLocalizations.of(context).scorecardTrackShot,
                 onPressed: () => _trackShot(context, state),
               ),
               IconButton(
                 icon: const Icon(Icons.sports_golf),
-                tooltip: 'Review Shots',
+                tooltip: AppLocalizations.of(context).scorecardReviewShots,
                 onPressed: () => _reviewShots(context, state),
               ),
               IconButton(
                 icon: const Icon(Icons.flag_outlined),
-                tooltip: 'Finish Round',
+                tooltip: AppLocalizations.of(context).scorecardFinishRound,
                 onPressed: () => _finishRound(context, state),
               ),
             ],
@@ -364,7 +366,7 @@ class _ScorecardScreenContent extends StatelessWidget {
               // Score entry card
               Expanded(
                 child: state.currentHoleId == null
-                    ? const Center(child: Text('No hole data'))
+                    ? Center(child: Text(AppLocalizations.of(context).scorecardNoHoleData))
                     : _ScorecardBody(state: state),
               ),
 
@@ -588,7 +590,7 @@ class _ScoreKeypad extends StatelessWidget {
         children: [
           // Title
           Text(
-            'Enter Score — $playerName',
+            AppLocalizations.of(context).scorecardEnterScoreFor(playerName),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -654,7 +656,7 @@ class _ScoreKeypad extends StatelessWidget {
                   }
                 }
               },
-              child: const Text('Confirm'),
+              child: Text(AppLocalizations.of(context).commonConfirm),
             ),
           ),
 
@@ -719,7 +721,7 @@ class _NotesBottomSheet extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Notes — $playerName',
+            AppLocalizations.of(context).scorecardNotesFor(playerName),
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -729,9 +731,9 @@ class _NotesBottomSheet extends StatelessWidget {
             controller: controller,
             maxLength: 200,
             maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Add notes for this hole...',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              hintText: AppLocalizations.of(context).scorecardNotesHint,
+              border: const OutlineInputBorder(),
             ),
             autofocus: true,
           ),
@@ -741,12 +743,12 @@ class _NotesBottomSheet extends StatelessWidget {
             children: [
               TextButton(
                 onPressed: () => onConfirm(null),
-                child: const Text('Clear'),
+                child: Text(AppLocalizations.of(context).scorecardClear),
               ),
               const SizedBox(width: 8),
               FilledButton(
                 onPressed: () => onConfirm(controller.text),
-                child: const Text('Save'),
+                child: Text(AppLocalizations.of(context).commonSave),
               ),
             ],
           ),

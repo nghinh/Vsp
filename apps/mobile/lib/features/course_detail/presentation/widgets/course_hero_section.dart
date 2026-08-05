@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class CourseHeroSection extends StatelessWidget {
   final CourseDetail course;
@@ -47,7 +48,7 @@ class CourseHeroSection extends StatelessWidget {
               ),
               if (course.parTotal != null) ...[
                 const SizedBox(width: VspSpacing.sm),
-                _InfoChip(icon: Icons.flag, label: 'Par ${course.parTotal}'),
+                _InfoChip(icon: Icons.flag, label: AppLocalizations.of(context).coursePar('${course.parTotal}')),
               ],
             ],
           ),
@@ -84,7 +85,7 @@ class CourseHeroSection extends StatelessWidget {
               child: FilledButton.icon(
                 onPressed: onDownloadPressed,
                 icon: const Icon(Icons.download),
-                label: const Text('Download Course'),
+                label: Text(AppLocalizations.of(context).courseDownloadCourse),
               ),
             ),
         ],

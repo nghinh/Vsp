@@ -29,6 +29,7 @@ import '../../bag/data/bag_service.dart';
 import '../../performance/presentation/bag_performance_screen.dart';
 import '../../performance/presentation/performance_bloc.dart';
 import 'smart_target_preview_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Hub listing every analytics / smart-caddie feature, reachable from Home.
 class AnalyticsHubScreen extends StatelessWidget {
@@ -41,7 +42,7 @@ class AnalyticsHubScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Phân tích & Hiệu suất'),
+        title: Text(AppLocalizations.of(context).homeAnalytics),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -53,7 +54,7 @@ class AnalyticsHubScreen extends StatelessWidget {
           children: [
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Số liệu gậy, vùng phát bóng và gợi ý chiến thuật.',
+              AppLocalizations.of(context).analyticsHubSubtitle,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -61,8 +62,8 @@ class AnalyticsHubScreen extends StatelessWidget {
             const SizedBox(height: VspSpacing.lg),
             _AnalyticsTile(
               icon: Icons.sports_golf,
-              title: 'Hiệu suất gậy & Độ phân tán',
-              subtitle: 'Carry, độ lệch và bản đồ phân tán theo từng gậy',
+              title: AppLocalizations.of(context).analyticsClubPerformance,
+              subtitle: AppLocalizations.of(context).analyticsClubPerformanceSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const _ClubPerformanceLoader(),
@@ -72,8 +73,8 @@ class AnalyticsHubScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _AnalyticsTile(
               icon: Icons.my_location,
-              title: 'Vùng phát bóng (Driving Zone)',
-              subtitle: 'Phân bố điểm rơi theo gậy, tee và điều kiện gió',
+              title: AppLocalizations.of(context).analyticsDrivingZone,
+              subtitle: AppLocalizations.of(context).analyticsDrivingZoneSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const DrivingZoneScreen()),
               ),
@@ -81,8 +82,8 @@ class AnalyticsHubScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _AnalyticsTile(
               icon: Icons.trending_up,
-              title: 'Strokes Gained',
-              subtitle: 'So sánh theo nhóm gậy với các mốc chuẩn',
+              title: AppLocalizations.of(context).analyticsStrokesGained,
+              subtitle: AppLocalizations.of(context).analyticsStrokesGainedSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const _StrokesGainedLoader(),
@@ -92,8 +93,8 @@ class AnalyticsHubScreen extends StatelessWidget {
             const SizedBox(height: 12),
             _AnalyticsTile(
               icon: Icons.center_focus_strong,
-              title: 'Smart Target (Caddie)',
-              subtitle: 'Gợi ý chiến thuật an toàn / cân bằng / mạo hiểm',
+              title: AppLocalizations.of(context).analyticsSmartTarget,
+              subtitle: AppLocalizations.of(context).analyticsSmartTargetSubtitle,
               onTap: () => Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => const SmartTargetPreviewScreen(),
@@ -169,7 +170,7 @@ class _ClubPerformanceLoaderState extends State<_ClubPerformanceLoader> {
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _error = 'Không tải được túi gậy. Thử lại sau.';
+        _error = AppLocalizations.of(context).analyticsBagLoadFailed;
         _loading = false;
       });
     }
@@ -179,14 +180,14 @@ class _ClubPerformanceLoaderState extends State<_ClubPerformanceLoader> {
   Widget build(BuildContext context) {
     if (_loading) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Hiệu suất gậy')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).analyticsClubPerformanceTitle)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     if (_error != null || _activeBagId == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Hiệu suất gậy')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).analyticsClubPerformanceTitle)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
@@ -200,7 +201,7 @@ class _ClubPerformanceLoaderState extends State<_ClubPerformanceLoader> {
                 ),
                 const SizedBox(height: VspSpacing.md),
                 Text(
-                  _error ?? 'Chưa có túi gậy nào để phân tích.',
+                  _error ?? AppLocalizations.of(context).analyticsNoBag,
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
@@ -208,7 +209,7 @@ class _ClubPerformanceLoaderState extends State<_ClubPerformanceLoader> {
                 FilledButton.icon(
                   onPressed: _load,
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Thử lại'),
+                  label: Text(AppLocalizations.of(context).commonRetry),
                 ),
               ],
             ),

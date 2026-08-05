@@ -33,6 +33,7 @@ import 'widgets/conditions_section.dart';
 import 'widgets/ratings_section.dart';
 import 'widgets/local_rules_section.dart';
 import 'widgets/data_quality_section.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -111,7 +112,7 @@ class _CourseDetailScreenBody extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.golf_course),
-              label: const Text('Bắt đầu vòng đấu'),
+              label: Text(AppLocalizations.of(context).homeStartRound),
             ),
           );
         },
@@ -142,14 +143,14 @@ class _LoadingBody extends StatelessWidget {
             background: Container(color: colorScheme.surface),
           ),
         ),
-        const SliverFillRemaining(
+        SliverFillRemaining(
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircularProgressIndicator(),
-                SizedBox(height: VspSpacing.md),
-                Text('Loading course details...'),
+                const CircularProgressIndicator(),
+                const SizedBox(height: VspSpacing.md),
+                Text(AppLocalizations.of(context).courseDetailLoading),
               ],
             ),
           ),
@@ -194,7 +195,7 @@ class _ErrorBody extends StatelessWidget {
                   Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                   const SizedBox(height: VspSpacing.md),
                   Text(
-                    'Failed to load course',
+                    AppLocalizations.of(context).courseDetailLoadFailed,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: VspSpacing.sm),
@@ -209,7 +210,7 @@ class _ErrorBody extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh),
-                    label: const Text('Try Again'),
+                    label: Text(AppLocalizations.of(context).commonTryAgain),
                   ),
                 ],
               ),

@@ -8,11 +8,16 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/features/course_search/presentation/widgets/verification_badge.dart';
 import 'package:vsp_mobile/domain/models/data_freshness.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('VerificationBadge', () {
     Widget buildBadge(VerificationStatus status, {bool compact = false}) {
       return MaterialApp(
+        locale: const Locale('en'),
+      supportedLocales: kSupportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: VspTheme.light(),
         home: Scaffold(
           body: Center(

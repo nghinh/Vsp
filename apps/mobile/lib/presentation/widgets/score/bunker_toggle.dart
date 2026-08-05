@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'fairway_gir_toggle.dart' show StatToggleState;
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Minimum touch target size in logical pixels (44pt iOS / 48dp Android).
 const double kMinTouchTarget = 44.0;
@@ -52,7 +53,7 @@ class BunkerToggle extends StatelessWidget {
         children: [
           // Label
           Text(
-            'Bunker',
+            AppLocalizations.of(context).scoreBunker,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onSurface.withOpacity(0.7),
             ),
@@ -62,7 +63,7 @@ class BunkerToggle extends StatelessWidget {
 
           // Yes button
           _BunkerButton(
-            label: 'Yes',
+            label: AppLocalizations.of(context).scoreYes,
             isSelected: state == StatToggleState.yes,
             color: theme.colorScheme.secondaryContainer,
             selectedColor: theme.colorScheme.secondary,
@@ -95,7 +96,7 @@ class BunkerToggle extends StatelessWidget {
                 onClear();
               },
               child: Text(
-                'Clear',
+                AppLocalizations.of(context).scorecardClear,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.primary.withOpacity(0.7),
                 ),
@@ -133,7 +134,7 @@ class _BunkerButton extends StatelessWidget {
         : theme.colorScheme.onSurfaceVariant;
 
     return Semantics(
-      label: 'Bunker $label${isSelected ? ' selected' : ''}',
+      label: '${AppLocalizations.of(context).scoreBunker} $label',
       button: true,
       child: Material(
         color: backgroundColor,

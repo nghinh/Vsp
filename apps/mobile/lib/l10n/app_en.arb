@@ -1,0 +1,1183 @@
+{
+  "@@locale": "en",
+  "appTitle": "Vietnam Smart Golf",
+  "@appTitle": {
+    "description": "Application name"
+  },
+  "commonCancel": "Cancel",
+  "commonSave": "Save",
+  "commonDelete": "Delete",
+  "commonClose": "Close",
+  "commonRetry": "Retry",
+  "commonTryAgain": "Try Again",
+  "commonDismiss": "Dismiss",
+  "commonBack": "Back",
+  "commonNext": "Next",
+  "commonDone": "Done",
+  "commonConfirm": "Confirm",
+  "commonSearch": "Search",
+  "commonLoading": "Loading…",
+  "commonOffline": "Offline",
+  "commonOr": "OR",
+  "commonError": "Something went wrong",
+  "commonNoData": "No data available",
+  "commonMeters": "meters",
+  "commonYards": "yards",
+  "settingsTitle": "Settings",
+  "settingsLanguage": "Language",
+  "settingsLanguageSubtitle": "Choose the app display language",
+  "settingsLanguageSystem": "System default",
+  "settingsLanguageEnglish": "English",
+  "settingsLanguageVietnamese": "Tiếng Việt",
+  "settingsLanguageChanged": "Language updated",
+  "authTagline": "Play with Confidence",
+  "authSubtitle": "Accurate GPS, official course data, and offline play for the perfect round.",
+  "authContinueWithPhone": "Continue with Phone Number",
+  "authContinueWithEmail": "Continue with Email",
+  "authGoogle": "Google",
+  "authApple": "Apple",
+  "authNoAccount": "Don't have an account?",
+  "authSignUp": "Sign Up",
+  "authSignIn": "Sign In",
+  "authSigningIn": "Signing in…",
+  "authCloseSignIn": "Close sign in",
+  "authCountryCode": "Country code",
+  "authPassword": "Password",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
+  "authEnterPassword": "Please enter your password",
+  "authForgotPassword": "Forgot Password?",
+  "authPhoneNumber": "Phone Number",
+  "authEmail": "Email",
+  "authEnterPhoneNumber": "Please enter your phone number",
+  "authEnterEmail": "Please enter your email",
+  "authGoogleFailed": "Google sign-in failed. Please try again.",
+  "authAppleFailed": "Apple sign-in failed. Please try again.",
+  "authSignOut": "Sign out",
+  "authSessions": "Sessions",
+  "authSessionsSubtitle": "Review and sign out of devices",
+  "navPlay": "Play",
+  "navCourses": "Courses",
+  "navRounds": "Rounds",
+  "navProfile": "Profile",
+  "navMore": "More",
+  "homeReadyToPlay": "Ready to Play",
+  "homeFindCourse": "Find a course to start your round",
+  "homeStartRound": "Start a round",
+  "moreTitle": "Golfer tools",
+  "moreSubtitle": "Manage devices, your bag and account options.",
+  "homeAnalytics": "Analytics & Performance",
+  "homeAnalyticsSubtitle": "Club performance, driving zones, Strokes Gained, Smart Target",
+  "homeMyBag": "My Bag",
+  "homeMyBagSubtitle": "Manage clubs and reference distances",
+  "homePrivacy": "Security & Privacy",
+  "homePrivacySubtitle": "Manage data, permissions and account",
+  "authCreateAccount": "Create Account",
+  "authJoinTitle": "Join Vietnam Smart Golf",
+  "authJoinSubtitle": "Create an account to get started",
+  "authRegisterPhoneDesc": "Register with your mobile number",
+  "authEmailAddress": "Email Address",
+  "authRegisterEmailDesc": "Register with your email",
+  "authContinueWithGoogle": "Continue with Google",
+  "authSignInWithApple": "Sign in with Apple",
+  "authAlreadyHaveAccount": "Already have an account? ",
+  "authEmailRegistration": "Email Registration",
+  "authPhoneRegistration": "Phone Registration",
+  "authCreateYourAccount": "Create your account",
+  "authEmailStart": "Enter your email to get started",
+  "authPhoneStart": "Enter your phone number to get started",
+  "authDisplayName": "Display Name",
+  "authDisplayNamePlaceholder": "Your name as shown on the course",
+  "authPasswordPlaceholder": "At least 8 characters",
+  "authPasswordHelper": "Minimum 8 characters",
+  "authConfirmPassword": "Confirm Password",
+  "authConfirmPasswordPlaceholder": "Re-enter your password",
+  "authTermsNotice": "By creating an account, you agree to our Terms of Service and Privacy Policy.",
+  "authEmailRequired": "Please enter your email address",
+  "authEmailInvalid": "Enter a valid email address",
+  "authNameRequired": "Please enter your name",
+  "authNameTooShort": "Name must be at least 2 characters",
+  "authPasswordRequired": "Please enter a password",
+  "authPasswordTooShort": "Password must be at least 8 characters",
+  "authConfirmRequired": "Please confirm your password",
+  "authPasswordMismatch": "Passwords do not match",
+  "authPhoneRequired": "Please enter your phone number",
+  "authPhoneInvalid": "Enter a valid phone number (e.g. +84-90-123-4567)",
+  "otpPhoneTitle": "Verify phone number",
+  "otpEmailTitle": "Verify email",
+  "otpRecoveryTitle": "Password recovery",
+  "otpPhoneSubtitle": "Enter the OTP code sent to your phone number",
+  "otpEmailSubtitle": "Enter the OTP code sent to your email",
+  "otpRecoverySubtitle": "Enter the OTP code to continue recovering your password",
+  "otpIncomplete": "Please enter all 6 digits.",
+  "otpExpired": "The OTP code has expired. Please request a new one.",
+  "otpNetworkError": "Cannot connect. Check your network and try again.",
+  "otpIncorrect": "The OTP code is incorrect. Please try again.",
+  "otpSecurityLabel": "Verification security",
+  "otpFieldLabel": "6-digit OTP code",
+  "otpConfirm": "Confirm",
+  "otpResendNow": "Send a new code",
+  "otpResendPrefix": "Resend code in ",
+  "authForgotPasswordTitle": "Forgot Password",
+  "authResetSuccess": "Password reset successful. Please sign in.",
+  "authResetTitle": "Reset your password",
+  "authResetSubtitle": "Enter the phone number or email associated with your account. We'll send you a code to reset your password.",
+  "authPhoneOrEmail": "Phone or Email",
+  "authPhoneOrEmailPlaceholder": "Enter your registered phone or email",
+  "authSendRecoveryCode": "Send Recovery Code",
+  "authIdentifierRequired": "Please enter your phone number or email",
+  "sessionsRevokeTitle": "Revoke Session",
+  "sessionsRevoke": "Revoke",
+  "sessionsActiveTitle": "Active Sessions",
+  "sessionsSignedOutThisDevice": "You signed out of this device.",
+  "sessionsRevokedSuccess": "Session revoked successfully.",
+  "sessionsLoadFailed": "Failed to load sessions",
+  "sessionsEmptyTitle": "No Active Sessions",
+  "sessionsEmptySubtitle": "Pull down to refresh.",
+  "sessionThisDevice": "This device",
+  "sessionRevokeTooltip": "Revoke session",
+  "sessionsRevokeMessage": "Are you sure you want to sign out of \"{device}\"? This session will be immediately terminated.",
+  "@sessionsRevokeMessage": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionActiveSince": "Active {time}",
+  "@sessionActiveSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionSemanticCurrent": "Current session on {device}, active {time}",
+  "@sessionSemanticCurrent": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionSemantic": "Session on {device}, active {time}",
+  "@sessionSemantic": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "sessionRevokeLabel": "Revoke session on {device}",
+  "@sessionRevokeLabel": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "otpDigitLabel": "OTP digit {index} of 6",
+  "@otpDigitLabel": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      }
+    }
+  },
+  "otpResendAfter": "A new code can be sent in {countdown}",
+  "@otpResendAfter": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupTitle": "Start a Round",
+  "roundSetupCourse": "Course",
+  "roundSetupSelectCourse": "Select a course",
+  "roundSetupNoCourseSelected": "No course selected. Tap to select.",
+  "roundSetupSelectCourseTitle": "Select Course",
+  "roundSetupCourses": "Courses",
+  "roundSetupRecent": "Recent",
+  "roundSetupNoCoursesYet": "No nearby or recent courses yet — search for one.",
+  "roundSetupSearchAll": "Search all courses",
+  "roundSetupLayout": "Layout",
+  "roundSetupTee": "Tee",
+  "roundSetupPlayers": "Players",
+  "roundSetupMaxPlayers": "Maximum 4 players reached",
+  "roundSetupMaxPlayersShort": "Maximum 4 Players",
+  "roundSetupAddPlayer": "Add Player",
+  "roundSetupAddPlayerHint": "Add a player",
+  "roundSetupPlayerName": "Name",
+  "roundSetupPlayerNameHint": "Player name",
+  "roundSetupHandicap": "Handicap (optional)",
+  "roundSetupRoundSavedLocally": "Round saved locally. Will sync when online.",
+  "roundSetupYou": "You",
+  "roundSetupFormat": "Format",
+  "roundSetupScoringMode": "Scoring Mode",
+  "roundSetupStartHole": "Start Hole",
+  "roundSetupSelectStartHole": "Select Start Hole",
+  "roundSetupMorningRound": "Morning round",
+  "roundSetupAfternoonRound": "Afternoon round",
+  "roundSetupFront9": "Front 9",
+  "roundSetupBack9": "Back 9",
+  "roundSetupHoles1to9": "Holes 1-9",
+  "roundSetupHoles10to18": "Holes 10-18",
+  "roundSetupHolesFront9Label": "Holes 1-9 (Front 9)",
+  "roundSetupHolesBack9Label": "Holes 10-18 (Back 9)",
+  "packageChecking": "Checking package…",
+  "packageOfflineReady": "Offline Ready",
+  "packageNotDownloaded": "Course data not downloaded",
+  "packageNotDownloadedSubtitle": "Download for offline use, or play now (needs network)",
+  "packagePlayNow": "Play now",
+  "packageDownload": "Download",
+  "packageOutdated": "Course data may be outdated",
+  "packageExpired": "Package expired",
+  "packagePlayAnyway": "Play Anyway",
+  "packageCorrupted": "Course data is corrupted",
+  "packageCorruptedSubtitle": "Please re-download the course package",
+  "packageRedownload": "Re-download",
+  "roundSetupRoundStartedAt": "Round started at {course}",
+  "@roundSetupRoundStartedAt": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupCourseTapToChange": "Course: {course}. Tap to change.",
+  "@roundSetupCourseTapToChange": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupLastPlayed": "Last played {date}",
+  "@roundSetupLastPlayed": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupRemovePlayer": "Remove {name}",
+  "@roundSetupRemovePlayer": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupPlayerHandicap": "Handicap {value}",
+  "@roundSetupPlayerHandicap": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupSuggestedHole": "Suggested: Hole {hole}",
+  "@roundSetupSuggestedHole": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupHoleNumber": "Hole {hole}",
+  "@roundSetupHoleNumber": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupSelectedTapToChange": "Selected: {label}. Tap to change.",
+  "@roundSetupSelectedTapToChange": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "packageExpiredOn": "Expired {date}",
+  "@packageExpiredOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAdd": "Add",
+  "scorecardTitle": "Scorecard",
+  "scorecardTrackShot": "Track Shot",
+  "scorecardReviewShots": "Review Shots",
+  "scorecardFinishRound": "Finish Round",
+  "scorecardFinishTitle": "Finish round?",
+  "scorecardKeepPlaying": "Keep playing",
+  "scorecardFinish": "Finish",
+  "scorecardFinished": "Round finished.",
+  "scorecardFinishedOffline": "Round finished. It will sync when you are back online.",
+  "scorecardNoHoleData": "No hole data",
+  "scorecardNotesHint": "Add notes for this hole…",
+  "scorecardClear": "Clear",
+  "scorecardScores": "Scores",
+  "scorecardTapToEnter": "Tap to enter",
+  "scorecardScoreNotEntered": "Score not entered",
+  "scorecardHoleNotPlayed": "Hole not played",
+  "scoreBunker": "Bunker",
+  "scoreYes": "Yes",
+  "scoreFairway": "Fairway",
+  "scoreFairwayHit": "Fairway hit",
+  "scoreGir": "Green in regulation",
+  "scorePutts": "Putts",
+  "scorePenalties": "Penalties",
+  "scoreNotes": "Notes",
+  "holeNavPrev": "Prev Hole",
+  "holeNavNext": "Next Hole",
+  "holeNavComplete": "Complete Round",
+  "roundsTitle": "Your rounds",
+  "roundsLoadFailed": "Could not load your round history. Try again later.",
+  "roundsLoadFailedShort": "Could not load rounds",
+  "roundsEmptyTitle": "No rounds yet",
+  "roundsEmptySubtitle": "Finish a round to see your history here",
+  "roundsStart": "Start",
+  "roundsEnd": "End",
+  "roundsType": "Type",
+  "roundsTournamentRound": "Tournament round",
+  "roundsReview": "Review round",
+  "roundStatusInProgress": "In progress",
+  "roundStatusCompleted": "Completed",
+  "roundStatusAbandoned": "Abandoned",
+  "roundStatusCancelled": "Cancelled",
+  "summaryTitle": "Round Summary",
+  "summaryComplete": "Round Complete",
+  "summaryNoScores": "No score data yet",
+  "summaryNoScoresSubtitle": "Complete your round to see the summary",
+  "summarySynced": "All scores synced",
+  "summaryOffline": "Scores saved offline. Will sync when online.",
+  "summarySyncing": "Syncing scores…",
+  "summarySyncFailed": "Sync failed. Tap to retry.",
+  "summaryEditScores": "Edit Scores",
+  "summaryShare": "Share",
+  "scorecardFinishUnscored": "{remaining} of {total} holes have no score yet. You can still finish — unscored holes stay blank.",
+  "@scorecardFinishUnscored": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "scorecardFinishAllScored": "All {total} holes are scored. Finishing ends the round and syncs it.",
+  "@scorecardFinishAllScored": {
+    "placeholders": {
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "scorecardEnterScoreFor": "Enter Score — {player}",
+  "@scorecardEnterScoreFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scorecardNotesFor": "Notes — {player}",
+  "@scorecardNotesFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreDecreaseFor": "Decrease score for {player}",
+  "@scoreDecreaseFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreIncreaseFor": "Increase score for {player}",
+  "@scoreIncreaseFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreEnteredValue": "Score entered: {value}",
+  "@scoreEnteredValue": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreStatsFor": "Stats — {player}",
+  "@scoreStatsFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scorePuttsFor": "Putts for {player}",
+  "@scorePuttsFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scorePenaltiesFor": "Penalties for {player}",
+  "@scorePenaltiesFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreBunkerFor": "Bunker shot for {player}",
+  "@scoreBunkerFor": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreDecreaseLabel": "Decrease {label}",
+  "@scoreDecreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreIncreaseLabel": "Increase {label}",
+  "@scoreIncreaseLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "holeOfTotal": "Hole {current} of {total}",
+  "@holeOfTotal": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "holeNumberLabel": "Hole {hole}",
+  "@holeNumberLabel": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "holeParLabel": "Par {par}",
+  "@holeParLabel": {
+    "placeholders": {
+      "par": {
+        "type": "String"
+      }
+    }
+  },
+  "courseSearchTitle": "Find Courses",
+  "courseSearchSelectTitle": "Select Course",
+  "courseTabAll": "All",
+  "courseTabNearby": "Nearby",
+  "courseTabFavorites": "Favorites",
+  "courseTabRecent": "Recent",
+  "courseSearchHint": "Search by name, city, or province",
+  "courseSearchNearbyTooltip": "Find nearby courses",
+  "courseSearchClear": "Clear Search",
+  "courseSearchPrompt": "Search for courses",
+  "courseSearchPromptSubtitle": "Enter a course name or use the nearby button",
+  "courseSearchNoResults": "No courses found",
+  "courseSearchNoResultsSubtitle": "Try adjusting your search or filters",
+  "courseFavoritesEmpty": "No Favorites Yet",
+  "courseFavoritesEmptySubtitle": "Courses you favorite will appear here",
+  "courseRecentEmpty": "No Recent Courses",
+  "courseRecentEmptySubtitle": "Courses you view will appear here",
+  "courseLocationUnavailable": "Location Unavailable",
+  "courseLocationUnavailableSubtitle": "Enable location to find nearby courses",
+  "courseEnableLocation": "Enable Location",
+  "courseOfflineTitle": "You're Offline",
+  "courseOfflineSubtitle": "Connect to the internet to search for courses",
+  "courseAddFavorite": "Add to favorites",
+  "courseRemoveFavorite": "Remove from favorites",
+  "courseNoCoursesNearby": "No courses nearby",
+  "courseExpandSearchSubtitle": "Try increasing the search radius",
+  "courseExpandSearch": "Expand Search",
+  "courseFindNearby": "Find Nearby",
+  "courseFindingNearby": "Finding nearby courses…",
+  "downloadDownloaded": "Downloaded",
+  "downloadUpdate": "Update",
+  "downloadDownload": "Download",
+  "downloadDownloading": "Downloading",
+  "downloadStarting": "Starting…",
+  "freshnessUnknown": "Unknown",
+  "freshnessUnknownLabel": "Data freshness unknown",
+  "freshnessToday": "Today",
+  "freshnessYesterday": "Yesterday",
+  "freshnessStale": "Stale",
+  "freshnessStaleLabel": "Data is stale",
+  "verificationVerified": "Verified",
+  "verificationPending": "Pending",
+  "verificationUnverified": "Unverified",
+  "verificationRejected": "Rejected",
+  "courseDetailLoading": "Loading course details…",
+  "courseDetailLoadFailed": "Failed to load course",
+  "courseDownloadCourse": "Download Course",
+  "sectionConditions": "Conditions",
+  "sectionContact": "Contact",
+  "sectionCoordinates": "Coordinates",
+  "sectionDataQuality": "Data Quality",
+  "sectionFacilities": "Facilities",
+  "sectionHoles": "Holes",
+  "sectionLocalRules": "Local Rules",
+  "sectionRatings": "Ratings",
+  "fieldPhone": "Phone",
+  "fieldWebsite": "Website",
+  "fieldAddress": "Address",
+  "fieldVersion": "Version",
+  "fieldLastUpdated": "Last Updated",
+  "fieldPublisher": "Publisher",
+  "fieldCourseRating": "Course Rating",
+  "fieldSlope": "Slope",
+  "fieldHole": "Hole",
+  "fieldPar": "Par",
+  "fieldLength": "Length",
+  "coordinatesCopied": "Coordinates copied",
+  "coordinatesCopyTooltip": "Copy coordinates",
+  "dataOlderThan30Days": "Data is older than 30 days",
+  "dataQualityUnknown": "Data quality unknown",
+  "dataQualityOfficial": "Official",
+  "dataQualityOfficialLabel": "Official verified data",
+  "dataQualityEstimated": "Estimated",
+  "dataQualityEstimatedLabel": "Estimated data quality",
+  "dataQualityCommunity": "Community",
+  "dataQualityCommunityLabel": "Community contributed data",
+  "conditionsCached": "Cached",
+  "conditionsStaleData": "Stale data",
+  "coursePar": "Par {par}",
+  "@coursePar": {
+    "placeholders": {
+      "par": {
+        "type": "String"
+      }
+    }
+  },
+  "courseSlope": "Slope {slope}",
+  "@courseSlope": {
+    "placeholders": {
+      "slope": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadStatusLabel": "Course {status}",
+  "@downloadStatusLabel": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadProgressLabel": "Downloading course package {percent}%",
+  "@downloadProgressLabel": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "freshnessUpdatedLabel": "Data updated {when}",
+  "@freshnessUpdatedLabel": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationStatusLabel": "Verification status: {status}",
+  "@verificationStatusLabel": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "conditionsOfflineCached": "Offline, cached {when}",
+  "@conditionsOfflineCached": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "conditionsEffective": "Effective: {date}",
+  "@conditionsEffective": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "conditionsExpired": "Expired {date}",
+  "@conditionsExpired": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "conditionsExpires": "Expires: {date}",
+  "@conditionsExpires": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "conditionsAccuracyClass": "Class {value}",
+  "@conditionsAccuracyClass": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEdit": "Edit Profile",
+  "profileSavedOffline": "Saved offline",
+  "profileSectionIdentity": "Identity",
+  "profileSectionGolfStats": "Golf Stats",
+  "profileSectionDistance": "Distance",
+  "profileSectionPersonal": "Personal",
+  "profileGolfer": "Golfer",
+  "profileHomeClub": "Home Club",
+  "profileCountry": "Country",
+  "profileHandicap": "Handicap",
+  "profileTargetScore": "Target Score",
+  "profileDistanceUnit": "Distance Unit",
+  "profileDominantHand": "Dominant Hand",
+  "profileSwingSpeed": "Swing Speed (mph)",
+  "profileBirthYear": "Birth Year",
+  "bagTitle": "My Golf Bags",
+  "bagAddNew": "Add new bag",
+  "bagNewTitle": "New Golf Bag",
+  "bagName": "Bag Name",
+  "bagCreate": "Create",
+  "bagSyncing": "Syncing…",
+  "bagSavedOffline": "Changes saved offline",
+  "bagEmptyTitle": "No Golf Bags Yet",
+  "bagEmptySubtitle": "Create your first bag to start tracking your clubs.",
+  "bagCreateFirst": "Create First Bag",
+  "bagLoadFailed": "Failed to load bags",
+  "analyticsHubSubtitle": "Club metrics, driving zones and tactical suggestions.",
+  "analyticsClubPerformance": "Club Performance & Dispersion",
+  "analyticsClubPerformanceSubtitle": "Carry, deviation and dispersion map per club",
+  "analyticsDrivingZone": "Driving Zone",
+  "analyticsDrivingZoneSubtitle": "Landing distribution by club, tee and wind conditions",
+  "analyticsStrokesGained": "Strokes Gained",
+  "analyticsStrokesGainedSubtitle": "Compare club groups against benchmarks",
+  "analyticsSmartTarget": "Smart Target (Caddie)",
+  "analyticsSmartTargetSubtitle": "Safe / balanced / aggressive tactical suggestions",
+  "analyticsClubPerformanceTitle": "Club performance",
+  "analyticsBagLoadFailed": "Could not load your bag. Try again later.",
+  "analyticsNoBag": "No bag to analyse yet.",
+  "privacyTitle": "Privacy & Data",
+  "privacyRequestSubmitted": "Request submitted successfully",
+  "privacyRequestFailed": "Failed to submit request",
+  "privacyNewRequest": "New Request",
+  "privacyNewRequestTooltip": "Submit a new privacy request",
+  "privacyYourRequests": "YOUR REQUESTS",
+  "privacyNewRequestTitle": "New Privacy Request",
+  "privacyWhatToDo": "What would you like to do?",
+  "privacySubmitRequest": "Submit Request",
+  "privacyDeleteAccountTitle": "Delete Account?",
+  "privacyDeleteAccountWarning": "This will permanently delete your account and all your data. This action cannot be undone.",
+  "privacyTypeDelete": "Type DELETE to confirm:",
+  "privacyDeleteForever": "Delete Forever",
+  "privacySelectRound": "Select Round to Delete",
+  "privacySelectRoundSubtitle": "Choose the round you want to delete. This will also delete all scores for that round.",
+  "privacyRoundSelected": "Round selected",
+  "privacyTapSelectRound": "Tap to select a round",
+  "privacyDestructiveAction": "Destructive Action",
+  "profileIdLabel": "ID: {id}",
+  "@profileIdLabel": {
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDriverDistance": "Driver Distance ({unit})",
+  "@profileDriverDistance": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "profileDriverDistanceHelper": "Average drive distance in {unit}",
+  "@profileDriverDistanceHelper": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "shotPenalty": "Penalty",
+  "shotProvisional": "Provisional",
+  "shotMulligan": "Mulligan",
+  "shotMarkPenalty": "Mark as penalty stroke",
+  "shotMarkProvisional": "Mark as provisional ball",
+  "shotMarkMulligan": "Mark as mulligan",
+  "shotMerge": "Merge",
+  "shotEdit": "Edit",
+  "shotEditTooltip": "Edit shot",
+  "shotCancelShot": "Cancel Shot",
+  "shotEndShot": "End shot",
+  "shotSaving": "Saving shot…",
+  "shotSaveChanges": "Save Changes",
+  "shotDeleteTitle": "Delete Shot?",
+  "shotReviewTitle": "Shot Review",
+  "shotTotalShots": "Total Shots",
+  "shotAvgDistance": "Avg Distance",
+  "shotPenalties": "Penalties",
+  "shotLieLabel": "Lie: {lie}",
+  "@shotLieLabel": {
+    "placeholders": {
+      "lie": {
+        "type": "String"
+      }
+    }
+  },
+  "shotResultLabel": "Result: {result}",
+  "@shotResultLabel": {
+    "placeholders": {
+      "result": {
+        "type": "String"
+      }
+    }
+  },
+  "shotNumberLabel": "Shot {number}",
+  "@shotNumberLabel": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsWindLabel": "Wind:",
+  "analyticsAny": "Any",
+  "analyticsTeeLabel": "Tee:",
+  "analyticsAllTeeSets": "All Tee Sets",
+  "analyticsClubsLabel": "Clubs:",
+  "analyticsNoZoneData": "No zone data available",
+  "analyticsShort": "Short",
+  "analyticsMid": "Mid",
+  "analyticsLong": "Long",
+  "analyticsTotalShots": "Total Shots",
+  "analyticsAvgDispersion": "Avg Dispersion",
+  "analyticsClubs": "Clubs",
+  "analyticsBenchmark": "Benchmark",
+  "analyticsActual": "Actual",
+  "analyticsErrorLoading": "Error loading analytics",
+  "analyticsChartLegend": "Chart legend",
+  "analyticsClearAll": "Clear All",
+  "analyticsTimeLabel": "Time:",
+  "analyticsNoData": "No analytics data",
+  "analyticsGross": "Gross",
+  "analyticsPutts": "Putts",
+  "analyticsPenalties": "Penalties",
+  "analyticsGir": "GIR",
+  "analyticsFir": "FIR",
+  "analyticsUpAndDown": "Up & Down",
+  "analyticsBirdiePlus": "Birdie+",
+  "analyticsPar": "Par",
+  "analyticsBogeyPlus": "Bogey+",
+  "analyticsScoreToPar": "Score to Par: ",
+  "analyticsClubUsage": "Club Usage",
+  "analyticsClubUsageChart": "Club usage distribution chart",
+  "analyticsAvg": "Avg",
+  "analyticsMed": "Med",
+  "analyticsStdDev": "Std Dev",
+  "analyticsConsistency": "Consistency",
+  "analyticsLieChart": "Lie distribution pie chart",
+  "smartTargetIcon": "Smart Target icon",
+  "smartTargetDismiss": "Dismiss Smart Target",
+  "smartTargetAnalyzing": "Analyzing strategies…",
+  "smartTargetRestricted": "Restricted",
+  "smartTargetInformation": "Information",
+  "commonErrorLabel": "Error",
+  "smartTargetSelected": "Selected",
+  "smartTargetNotSelected": "Not selected",
+  "smartTargetCarry": "Carry",
+  "smartTargetToPin": "To Pin",
+  "smartTargetExplanation": "Explanation",
+  "roundReviewTitle": "Round Review",
+  "commonRefresh": "Refresh",
+  "roundReviewNoData": "No Round Data",
+  "roundReviewNoDataSubtitle": "No data found for this round.",
+  "drivingZoneTitle": "Driving Zone",
+  "drivingZoneNoShotData": "No Shot Data",
+  "strokesGainedRecalculate": "Recalculate",
+  "commonNoDataShort": "No data",
+  "dispersionFairway": "Fairway",
+  "dispersionRough": "Rough",
+  "dispersionBunker": "Bunker",
+  "dispersionWater": "Water",
+  "dispersionOb": "OB",
+  "dispersionScatter": "Scatter",
+  "dispersionHazards": "Hazards",
+  "performanceCachedData": "Showing cached data",
+  "performanceRobust": "Robust",
+  "performanceNoData": "No Performance Data",
+  "performanceBagTitle": "Bag Performance",
+  "performanceClubLoadFailed": "Failed to load club performance. Please try again.",
+  "performanceBagLoadFailed": "Failed to load bag performance. Please try again.",
+  "performanceDispersionLoadFailed": "Failed to load dispersion overlay. Please try again.",
+  "performanceCarryDistance": "Carry Distance",
+  "performanceTotalDistance": "Total Distance",
+  "performanceViewDispersion": "View Dispersion",
+  "performanceMedian": "Median",
+  "performanceMin": "Min",
+  "performanceMax": "Max",
+  "performanceLeftRight": "Left / Right",
+  "performanceShortLong": "Short / Long",
+  "analyticsFilterByClub": "Filter by {club}",
+  "@analyticsFilterByClub": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsHoleLabel": "Hole {hole}",
+  "@analyticsHoleLabel": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsLimitation": "Limitation: {name}",
+  "@analyticsLimitation": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "analyticsShapeLabel": "Shape: {shape}",
+  "@analyticsShapeLabel": {
+    "placeholders": {
+      "shape": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetRiskLabel": "Risk: {risk}",
+  "@smartTargetRiskLabel": {
+    "placeholders": {
+      "risk": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetStrategyLabel": "Strategy: {strategy}",
+  "@smartTargetStrategyLabel": {
+    "placeholders": {
+      "strategy": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetRiskDetail": "Risk: {label}, {score} out of 100",
+  "@smartTargetRiskDetail": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetConfidence": "Confidence: {percentage} percent, {label} confidence",
+  "@smartTargetConfidence": {
+    "placeholders": {
+      "percentage": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "roundReviewLoadFailed": "Failed to load round review: {error}",
+  "@roundReviewLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "drivingZoneLoadFailed": "Failed to load driving zone statistics: {error}",
+  "@drivingZoneLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "dispersionMapLabel": "Dispersion map showing {count} shots",
+  "@dispersionMapLabel": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceSampleSize": "Sample size: {count} shots, {quality}",
+  "@performanceSampleSize": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "quality": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceConfidence": "Confidence: {label}",
+  "@performanceConfidence": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "performanceConfidenceDetail": "Confidence: {label}. {description}",
+  "@performanceConfidenceDetail": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "description": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherLoading": "Loading weather data",
+  "weatherUnavailable": "Weather data not available",
+  "weatherWindAdjustment": "Wind adjustment",
+  "weatherTemperature": "Temperature",
+  "weatherFeelsLike": "Feels like",
+  "weatherHumidity": "Humidity",
+  "weatherPrecipitation": "Precipitation",
+  "weatherWindGusts": "Wind gusts",
+  "mapGeometryNotFound": "Hole geometry not found in course package",
+  "layerFairway": "Fairway",
+  "layerGreen": "Green",
+  "layerRough": "Rough",
+  "layerBunker": "Bunker",
+  "layerWater": "Water",
+  "layerPenalty": "Penalty",
+  "layerOb": "O.B.",
+  "layerCartPath": "Cart Path",
+  "layerLandmarks": "Landmarks",
+  "targetBallToTarget": "BALL → TARGET",
+  "targetToPin": "TARGET → PIN",
+  "holeSwitchCurrent": "Current",
+  "holeSwitchSuggested": "Suggested",
+  "holeSwitchSwitchingTo": "Switching to",
+  "bagDetailsTitle": "Bag Details",
+  "bagAddClub": "Add club",
+  "bagNoClubs": "No Clubs Yet",
+  "bagAddFirstClub": "Add First Club",
+  "bagSetActive": "Set Active",
+  "bagDeleteTitle": "Delete Bag?",
+  "bagLoadFailedRetry": "Failed to load bags. Please try again.",
+  "bagDeleted": "Bag deleted",
+  "bagDetailLoadFailed": "Failed to load bag details.",
+  "clubDeleted": "Club deleted",
+  "commonSynced": "Synced",
+  "clubType": "CLUB TYPE",
+  "clubLoft": "LOFT (DEGREES)",
+  "clubCarryDistance": "CARRY DISTANCE (METERS)",
+  "clubCarryHelper": "Distance the ball travels in the air",
+  "clubTotalDistance": "TOTAL DISTANCE (METERS)",
+  "clubTotalHelper": "Full distance including roll",
+  "clubDispersion": "DISPERSION (DEGREES)",
+  "clubShaft": "SHAFT",
+  "clubInUseDate": "DATE PUT INTO USE",
+  "clubDelete": "Delete Club",
+  "clubDeleteTitle": "Delete Club?",
+  "clubLoftTooltip": "Loft",
+  "clubCarryTooltip": "Carry distance",
+  "clubTotalTooltip": "Total distance",
+  "profileLoadFailed": "Failed to load profile. Please try again.",
+  "profileSaveFailed": "Failed to save. Please try again.",
+  "unitMeters": "Meters",
+  "unitYards": "Yards",
+  "handLeft": "Left",
+  "handRight": "Right",
+  "distanceNear": "Near",
+  "distanceCarry": "Carry",
+  "distanceFar": "Far",
+  "distanceWaitingGps": "Waiting for GPS…",
+  "distanceNoHoleData": "No hole data",
+  "distanceFront": "FRONT",
+  "distanceCenter": "CENTER",
+  "distanceBack": "BACK",
+  "weatherErrorLabel": "Weather error: {message}",
+  "@weatherErrorLabel": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherUvIndex": "UV {value}",
+  "@weatherUvIndex": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherWindDirection": "Wind direction {direction}",
+  "@weatherWindDirection": {
+    "placeholders": {
+      "direction": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherConditionLabel": "Condition: {condition}",
+  "@weatherConditionLabel": {
+    "placeholders": {
+      "condition": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherSourceLabel": "Weather source: {source}",
+  "@weatherSourceLabel": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "mapLoadFailed": "Failed to load hole map: {error}",
+  "@mapLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "mapHoleLabel": "Strategic hole map for hole {hole}",
+  "@mapHoleLabel": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "mapDistanceRings": "Distance rings: {rings}",
+  "@mapDistanceRings": {
+    "placeholders": {
+      "rings": {
+        "type": "String"
+      }
+    }
+  },
+  "holeSwitchConfidence": "Confidence: {level}",
+  "@holeSwitchConfidence": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "profileUnitCurrent": "Distance unit, currently {unit}",
+  "@profileUnitCurrent": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "profileSkillCurrent": "Skill level, currently {level}",
+  "@profileSkillCurrent": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "profileHandCurrent": "Dominant hand, currently {hand}",
+  "@profileHandCurrent": {
+    "placeholders": {
+      "hand": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceConfidenceLabel": "Confidence: {label}",
+  "@distanceConfidenceLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceSourceLabel": "Source: {source}",
+  "@distanceSourceLabel": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceToggleUnit": "Toggle distance unit. Currently {unit}",
+  "@distanceToggleUnit": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceConfidenceDetail": "Distance confidence: {label}",
+  "@distanceConfidenceDetail": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  }
+}

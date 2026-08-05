@@ -157,7 +157,7 @@ class HoleZoneStats extends Equatable {
       clubId: json['clubId'] as String,
       clubName: json['clubName'] as String?,
       totalShots: (json['totalShots'] as num).toInt(),
-      zoneCells: (json['zoneCells'] as List<dynamic>)
+      zoneCells: (json['zoneCells'] as List<dynamic>? ?? const [])
           .map((e) => ZoneCell.fromJson(e as Map<String, dynamic>))
           .toList(),
       averageDistanceYards: (json['averageDistanceYards'] as num?)?.toDouble(),
@@ -217,7 +217,7 @@ class DrivingZoneStatistics extends Equatable {
       filter: DrivingZoneFilter.fromJson(
         json['filter'] as Map<String, dynamic>,
       ),
-      holeStats: (json['holeStats'] as List<dynamic>)
+      holeStats: (json['holeStats'] as List<dynamic>? ?? const [])
           .map((e) => HoleZoneStats.fromJson(e as Map<String, dynamic>))
           .toList(),
       generatedAt: DateTime.parse(json['generatedAt'] as String),

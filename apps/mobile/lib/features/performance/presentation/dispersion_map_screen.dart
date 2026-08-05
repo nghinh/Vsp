@@ -19,6 +19,7 @@ import 'performance_event.dart';
 import 'performance_state.dart';
 import 'dispersion_map_widget.dart';
 import 'dispersion_legend_widget.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -400,7 +401,7 @@ class _ErrorBody extends StatelessWidget {
             ElevatedButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Try Again'),
+              label: Text(AppLocalizations.of(context).commonTryAgain),
             ),
           ],
         ),

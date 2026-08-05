@@ -11,6 +11,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class EmailRegisterScreen extends StatefulWidget {
   const EmailRegisterScreen({super.key});
@@ -57,34 +58,34 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
     bool isValid = true;
 
     if (email.isEmpty) {
-      setState(() => _emailError = 'Please enter your email address');
+      setState(() => _emailError = AppLocalizations.of(context).authEmailRequired);
       isValid = false;
     } else if (!_isValidEmail(email)) {
-      setState(() => _emailError = 'Enter a valid email address');
+      setState(() => _emailError = AppLocalizations.of(context).authEmailInvalid);
       isValid = false;
     }
 
     if (displayName.isEmpty) {
-      setState(() => _displayNameError = 'Please enter your name');
+      setState(() => _displayNameError = AppLocalizations.of(context).authNameRequired);
       isValid = false;
     } else if (displayName.length < 2) {
-      setState(() => _displayNameError = 'Name must be at least 2 characters');
+      setState(() => _displayNameError = AppLocalizations.of(context).authNameTooShort);
       isValid = false;
     }
 
     if (password.isEmpty) {
-      setState(() => _passwordError = 'Please enter a password');
+      setState(() => _passwordError = AppLocalizations.of(context).authPasswordRequired);
       isValid = false;
     } else if (password.length < 8) {
-      setState(() => _passwordError = 'Password must be at least 8 characters');
+      setState(() => _passwordError = AppLocalizations.of(context).authPasswordTooShort);
       isValid = false;
     }
 
     if (confirmPassword.isEmpty) {
-      setState(() => _confirmPasswordError = 'Please confirm your password');
+      setState(() => _confirmPasswordError = AppLocalizations.of(context).authConfirmRequired);
       isValid = false;
     } else if (password != confirmPassword) {
-      setState(() => _confirmPasswordError = 'Passwords do not match');
+      setState(() => _confirmPasswordError = AppLocalizations.of(context).authPasswordMismatch);
       isValid = false;
     }
 
@@ -111,7 +112,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Email Registration'),
+        title: Text(AppLocalizations.of(context).authEmailRegistration),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -160,14 +161,14 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    'Create your account',
+                    AppLocalizations.of(context).authCreateYourAccount,
                     style: theme.textTheme.headlineSmall?.copyWith(
                       fontWeight: VspFontWeight.semibold,
                     ),
                   ),
                   const SizedBox(height: VspSpacing.sm),
                   Text(
-                    'Enter your email to get started',
+                    AppLocalizations.of(context).authEmailStart,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -177,7 +178,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
                   // ─── Email Field ──────────────────────────────────────────────
                   VspTextField(
-                    label: 'Email Address',
+                    label: AppLocalizations.of(context).authEmailAddress,
                     placeholder: 'e.g. golfer@example.com',
                     controller: _emailController,
                     onChanged: (_) {
@@ -195,8 +196,8 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
                   // ─── Display Name Field ───────────────────────────────────────
                   VspTextField(
-                    label: 'Display Name',
-                    placeholder: 'Your name as shown on the course',
+                    label: AppLocalizations.of(context).authDisplayName,
+                    placeholder: AppLocalizations.of(context).authDisplayNamePlaceholder,
                     controller: _displayNameController,
                     onChanged: (_) {
                       if (_displayNameError != null)
@@ -213,8 +214,8 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
                   // ─── Password Field ───────────────────────────────────────────
                   VspTextField(
-                    label: 'Password',
-                    placeholder: 'At least 8 characters',
+                    label: AppLocalizations.of(context).authPassword,
+                    placeholder: AppLocalizations.of(context).authPasswordPlaceholder,
                     controller: _passwordController,
                     onChanged: (_) {
                       if (_passwordError != null)
@@ -224,7 +225,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     errorText: _passwordError,
                     variant: VspTextFieldVariant.text,
                     obscureText: _obscurePassword,
-                    helperText: 'Minimum 8 characters',
+                    helperText: AppLocalizations.of(context).authPasswordHelper,
                     autofillHints: const [AutofillHints.newPassword],
                   ),
 
@@ -232,8 +233,8 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
                   // ─── Confirm Password Field ───────────────────────────────────
                   VspTextField(
-                    label: 'Confirm Password',
-                    placeholder: 'Re-enter your password',
+                    label: AppLocalizations.of(context).authConfirmPassword,
+                    placeholder: AppLocalizations.of(context).authConfirmPasswordPlaceholder,
                     controller: _confirmPasswordController,
                     onChanged: (_) {
                       if (_confirmPasswordError != null)
@@ -255,7 +256,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
                     builder: (context, state) {
                       final isLoading = state is AuthLoading;
                       return VspButton(
-                        label: 'Create Account',
+                        label: AppLocalizations.of(context).authCreateAccount,
                         onPressed: isLoading ? null : _onRegister,
                         isLoading: isLoading,
                         size: VspButtonSize.large,
@@ -267,7 +268,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
 
                   // ─── Terms Notice ─────────────────────────────────────────────
                   Text(
-                    'By creating an account, you agree to our Terms of Service and Privacy Policy.',
+                    AppLocalizations.of(context).authTermsNotice,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

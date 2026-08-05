@@ -9,6 +9,7 @@
 // Story 5.1 — Slice B: Round Setup UI Screen
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Hole picker for starting hole selection.
 class HolePicker extends StatelessWidget {
@@ -36,7 +37,7 @@ class HolePicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Start Hole',
+          AppLocalizations.of(context).roundSetupStartHole,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -47,8 +48,8 @@ class HolePicker extends StatelessWidget {
         // Auto-suggested hole chip
         if (selectedHole == suggestedHole && holes == null)
           _SuggestionChip(
-            label: 'Suggested: Hole $suggestedHole',
-            subtitle: suggestedHole == 1 ? 'Morning round' : 'Afternoon round',
+            label: AppLocalizations.of(context).roundSetupSuggestedHole('$suggestedHole'),
+            subtitle: suggestedHole == 1 ? AppLocalizations.of(context).roundSetupMorningRound : AppLocalizations.of(context).roundSetupAfternoonRound,
             icon: Icons.schedule,
             onTap: () => _showHolePicker(context),
           )
@@ -159,15 +160,15 @@ class _SelectedHoleChip extends StatelessWidget {
 
     String label;
     if (holes == 'front9') {
-      label = 'Holes 1-9 (Front 9)';
+      label = AppLocalizations.of(context).roundSetupHolesFront9Label;
     } else if (holes == 'back9') {
-      label = 'Holes 10-18 (Back 9)';
+      label = AppLocalizations.of(context).roundSetupHolesBack9Label;
     } else {
-      label = 'Hole $hole';
+      label = AppLocalizations.of(context).roundSetupHoleNumber('$hole');
     }
 
     return Semantics(
-      label: 'Selected: $label. Tap to change.',
+      label: AppLocalizations.of(context).roundSetupSelectedTapToChange(label),
       button: true,
       child: InkWell(
         onTap: onTap,
@@ -257,7 +258,7 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
 
             // Title
             Text(
-              'Select Start Hole',
+              AppLocalizations.of(context).roundSetupSelectStartHole,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
@@ -276,8 +277,8 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
               children: [
                 Expanded(
                   child: _HoleOption(
-                    label: 'Front 9',
-                    holes: 'Holes 1-9',
+                    label: AppLocalizations.of(context).roundSetupFront9,
+                    holes: AppLocalizations.of(context).roundSetupHoles1to9,
                     isSelected: _holes == 'front9',
                     onTap: () {
                       setState(() {
@@ -290,8 +291,8 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: _HoleOption(
-                    label: 'Back 9',
-                    holes: 'Holes 10-18',
+                    label: AppLocalizations.of(context).roundSetupBack9,
+                    holes: AppLocalizations.of(context).roundSetupHoles10to18,
                     isSelected: _holes == 'back9',
                     onTap: () {
                       setState(() {
@@ -350,7 +351,7 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
                   widget.onHolesChanged?.call(_holes);
                   Navigator.pop(context);
                 },
-                child: const Text('Confirm'),
+                child: Text(AppLocalizations.of(context).commonConfirm),
               ),
             ),
           ],
@@ -449,7 +450,7 @@ class _HoleNumberButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Hole $hole${isSuggested ? ', suggested' : ''}',
+      label: AppLocalizations.of(context).roundSetupHoleNumber('$hole'),
       button: true,
       child: InkWell(
         onTap: onTap,

@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge displaying the sample size label with appropriate color coding.
 class SampleSizeBadge extends StatelessWidget {
@@ -27,7 +28,7 @@ class SampleSizeBadge extends StatelessWidget {
     final (color, bgColor, labelText) = _badgeStyle(context);
 
     return Semantics(
-      label: 'Sample size: $sampleSize shots, $labelText',
+      label: AppLocalizations.of(context).performanceSampleSize('$sampleSize', labelText),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

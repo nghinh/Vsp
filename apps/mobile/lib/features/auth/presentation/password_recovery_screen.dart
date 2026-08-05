@@ -13,6 +13,7 @@ import '../data/auth_dto.dart';
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
 import 'login_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class PasswordRecoveryScreen extends StatefulWidget {
   const PasswordRecoveryScreen({super.key});
@@ -43,7 +44,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
     if (identifier.isEmpty) {
       setState(
-        () => _identifierError = 'Please enter your phone number or email',
+        () => _identifierError = AppLocalizations.of(context).authIdentifierRequired,
       );
       return;
     }
@@ -61,7 +62,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Forgot Password'),
+        title: Text(AppLocalizations.of(context).authForgotPasswordTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -93,9 +94,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
           } else if (state is PasswordResetSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: const Text(
-                  'Password reset successful. Please sign in.',
-                ),
+                content: Text(AppLocalizations.of(context).authResetSuccess),
                 backgroundColor: colorScheme.primary,
               ),
             );
@@ -115,14 +114,14 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Reset your password',
+                  AppLocalizations.of(context).authResetTitle,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: VspFontWeight.semibold,
                   ),
                 ),
                 const SizedBox(height: VspSpacing.sm),
                 Text(
-                  "Enter the phone number or email associated with your account. We'll send you a code to reset your password.",
+                  AppLocalizations.of(context).authResetSubtitle,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -132,8 +131,8 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
                 // ─── Identifier Field ───────────────────────────────────────────
                 VspTextField(
-                  label: 'Phone or Email',
-                  placeholder: 'Enter your registered phone or email',
+                  label: AppLocalizations.of(context).authPhoneOrEmail,
+                  placeholder: AppLocalizations.of(context).authPhoneOrEmailPlaceholder,
                   controller: _identifierController,
                   onChanged: (_) {
                     if (_identifierError != null) {
@@ -183,7 +182,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
                 // ─── Send Code Button ────────────────────────────────────────────
                 VspButton(
-                  label: 'Send Recovery Code',
+                  label: AppLocalizations.of(context).authSendRecoveryCode,
                   onPressed: _isLoading ? null : _onSendRecoveryCode,
                   isLoading: _isLoading,
                   size: VspButtonSize.large,
@@ -196,7 +195,7 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     child: Text(
-                      'Cancel',
+                      AppLocalizations.of(context).commonCancel,
                       style: theme.textTheme.labelLarge?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

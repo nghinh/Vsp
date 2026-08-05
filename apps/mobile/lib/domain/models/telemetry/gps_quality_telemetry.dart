@@ -212,9 +212,9 @@ class GpsQualityTelemetry extends Equatable {
       ),
       speedMetersPerSecond: (map['speed_meters_per_second'] as num?)?.toDouble(),
       headingDegrees: (map['heading_degrees'] as num?)?.toDouble(),
-      isStale: ((map['is_stale'] as num).toInt()) == 1,
+      isStale: (map['is_stale'] as num).toInt() == 1,
       batteryLevel: (map['battery_level'] as num).toDouble(),
-      batterySaverActive: ((map['battery_saver_active'] as num).toInt()) == 1,
+      batterySaverActive: (map['battery_saver_active'] as num).toInt() == 1,
     );
   }
 

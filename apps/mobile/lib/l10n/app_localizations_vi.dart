@@ -1,0 +1,2002 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
+import 'app_localizations.dart';
+
+// ignore_for_file: type=lint
+
+/// The translations for Vietnamese (`vi`).
+class AppLocalizationsVi extends AppLocalizations {
+  AppLocalizationsVi([String locale = 'vi']) : super(locale);
+
+  @override
+  String get appTitle => 'Vietnam Smart Golf';
+
+  @override
+  String get commonCancel => 'Huỷ';
+
+  @override
+  String get commonSave => 'Lưu';
+
+  @override
+  String get commonDelete => 'Xoá';
+
+  @override
+  String get commonClose => 'Đóng';
+
+  @override
+  String get commonRetry => 'Thử lại';
+
+  @override
+  String get commonTryAgain => 'Thử lại';
+
+  @override
+  String get commonDismiss => 'Bỏ qua';
+
+  @override
+  String get commonBack => 'Quay lại';
+
+  @override
+  String get commonNext => 'Tiếp tục';
+
+  @override
+  String get commonDone => 'Xong';
+
+  @override
+  String get commonConfirm => 'Xác nhận';
+
+  @override
+  String get commonSearch => 'Tìm kiếm';
+
+  @override
+  String get commonLoading => 'Đang tải…';
+
+  @override
+  String get commonOffline => 'Ngoại tuyến';
+
+  @override
+  String get commonOr => 'HOẶC';
+
+  @override
+  String get commonError => 'Đã có lỗi xảy ra';
+
+  @override
+  String get commonNoData => 'Chưa có dữ liệu';
+
+  @override
+  String get commonMeters => 'mét';
+
+  @override
+  String get commonYards => 'yard';
+
+  @override
+  String get settingsTitle => 'Cài đặt';
+
+  @override
+  String get settingsLanguage => 'Ngôn ngữ';
+
+  @override
+  String get settingsLanguageSubtitle => 'Chọn ngôn ngữ hiển thị của ứng dụng';
+
+  @override
+  String get settingsLanguageSystem => 'Theo thiết bị';
+
+  @override
+  String get settingsLanguageEnglish => 'English';
+
+  @override
+  String get settingsLanguageVietnamese => 'Tiếng Việt';
+
+  @override
+  String get settingsLanguageChanged => 'Đã đổi ngôn ngữ';
+
+  @override
+  String get authTagline => 'Chơi golf tự tin';
+
+  @override
+  String get authSubtitle =>
+      'GPS chính xác, dữ liệu sân chính thức và chơi ngoại tuyến cho vòng đấu hoàn hảo.';
+
+  @override
+  String get authContinueWithPhone => 'Tiếp tục bằng số điện thoại';
+
+  @override
+  String get authContinueWithEmail => 'Tiếp tục bằng email';
+
+  @override
+  String get authGoogle => 'Google';
+
+  @override
+  String get authApple => 'Apple';
+
+  @override
+  String get authNoAccount => 'Chưa có tài khoản?';
+
+  @override
+  String get authSignUp => 'Đăng ký';
+
+  @override
+  String get authSignIn => 'Đăng nhập';
+
+  @override
+  String get authSigningIn => 'Đang đăng nhập…';
+
+  @override
+  String get authCloseSignIn => 'Đóng đăng nhập';
+
+  @override
+  String get authCountryCode => 'Mã vùng';
+
+  @override
+  String get authPassword => 'Mật khẩu';
+
+  @override
+  String get authShowPassword => 'Hiện mật khẩu';
+
+  @override
+  String get authHidePassword => 'Ẩn mật khẩu';
+
+  @override
+  String get authEnterPassword => 'Vui lòng nhập mật khẩu';
+
+  @override
+  String get authForgotPassword => 'Quên mật khẩu?';
+
+  @override
+  String get authPhoneNumber => 'Số điện thoại';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authEnterPhoneNumber => 'Vui lòng nhập số điện thoại';
+
+  @override
+  String get authEnterEmail => 'Vui lòng nhập email';
+
+  @override
+  String get authGoogleFailed => 'Đăng nhập Google thất bại. Vui lòng thử lại.';
+
+  @override
+  String get authAppleFailed => 'Đăng nhập Apple thất bại. Vui lòng thử lại.';
+
+  @override
+  String get authSignOut => 'Đăng xuất';
+
+  @override
+  String get authSessions => 'Phiên đăng nhập';
+
+  @override
+  String get authSessionsSubtitle => 'Kiểm tra và đăng xuất thiết bị';
+
+  @override
+  String get navPlay => 'Chơi golf';
+
+  @override
+  String get navCourses => 'Sân golf';
+
+  @override
+  String get navRounds => 'Vòng đấu';
+
+  @override
+  String get navProfile => 'Hồ sơ';
+
+  @override
+  String get navMore => 'Thêm';
+
+  @override
+  String get homeReadyToPlay => 'Sẵn sàng ra sân';
+
+  @override
+  String get homeFindCourse => 'Chọn sân để bắt đầu vòng đấu';
+
+  @override
+  String get homeStartRound => 'Bắt đầu vòng đấu';
+
+  @override
+  String get moreTitle => 'Tiện ích golfer';
+
+  @override
+  String get moreSubtitle => 'Quản lý thiết bị, túi gậy và tùy chọn tài khoản.';
+
+  @override
+  String get homeAnalytics => 'Phân tích & Hiệu suất';
+
+  @override
+  String get homeAnalyticsSubtitle =>
+      'Hiệu suất gậy, vùng phát bóng, Strokes Gained, Smart Target';
+
+  @override
+  String get homeMyBag => 'Túi gậy của tôi';
+
+  @override
+  String get homeMyBagSubtitle => 'Quản lý gậy và khoảng cách tham chiếu';
+
+  @override
+  String get homePrivacy => 'Bảo mật & Quyền riêng tư';
+
+  @override
+  String get homePrivacySubtitle => 'Quản lý dữ liệu, quyền và tài khoản';
+
+  @override
+  String get authCreateAccount => 'Tạo tài khoản';
+
+  @override
+  String get authJoinTitle => 'Tham gia Vietnam Smart Golf';
+
+  @override
+  String get authJoinSubtitle => 'Tạo tài khoản để bắt đầu';
+
+  @override
+  String get authRegisterPhoneDesc => 'Đăng ký bằng số điện thoại';
+
+  @override
+  String get authEmailAddress => 'Địa chỉ email';
+
+  @override
+  String get authRegisterEmailDesc => 'Đăng ký bằng email';
+
+  @override
+  String get authContinueWithGoogle => 'Tiếp tục với Google';
+
+  @override
+  String get authSignInWithApple => 'Đăng nhập với Apple';
+
+  @override
+  String get authAlreadyHaveAccount => 'Đã có tài khoản? ';
+
+  @override
+  String get authEmailRegistration => 'Đăng ký bằng email';
+
+  @override
+  String get authPhoneRegistration => 'Đăng ký bằng số điện thoại';
+
+  @override
+  String get authCreateYourAccount => 'Tạo tài khoản của bạn';
+
+  @override
+  String get authEmailStart => 'Nhập email của bạn để bắt đầu';
+
+  @override
+  String get authPhoneStart => 'Nhập số điện thoại của bạn để bắt đầu';
+
+  @override
+  String get authDisplayName => 'Tên hiển thị';
+
+  @override
+  String get authDisplayNamePlaceholder => 'Tên hiển thị khi ra sân';
+
+  @override
+  String get authPasswordPlaceholder => 'Tối thiểu 8 ký tự';
+
+  @override
+  String get authPasswordHelper => 'Tối thiểu 8 ký tự';
+
+  @override
+  String get authConfirmPassword => 'Xác nhận mật khẩu';
+
+  @override
+  String get authConfirmPasswordPlaceholder => 'Nhập lại mật khẩu';
+
+  @override
+  String get authTermsNotice =>
+      'Khi tạo tài khoản, bạn đồng ý với Điều khoản dịch vụ và Chính sách quyền riêng tư của chúng tôi.';
+
+  @override
+  String get authEmailRequired => 'Vui lòng nhập địa chỉ email';
+
+  @override
+  String get authEmailInvalid => 'Email không hợp lệ';
+
+  @override
+  String get authNameRequired => 'Vui lòng nhập tên của bạn';
+
+  @override
+  String get authNameTooShort => 'Tên phải có ít nhất 2 ký tự';
+
+  @override
+  String get authPasswordRequired => 'Vui lòng nhập mật khẩu';
+
+  @override
+  String get authPasswordTooShort => 'Mật khẩu phải có ít nhất 8 ký tự';
+
+  @override
+  String get authConfirmRequired => 'Vui lòng xác nhận mật khẩu';
+
+  @override
+  String get authPasswordMismatch => 'Mật khẩu không khớp';
+
+  @override
+  String get authPhoneRequired => 'Vui lòng nhập số điện thoại';
+
+  @override
+  String get authPhoneInvalid =>
+      'Số điện thoại không hợp lệ (ví dụ +84-90-123-4567)';
+
+  @override
+  String get otpPhoneTitle => 'Xác thực số điện thoại';
+
+  @override
+  String get otpEmailTitle => 'Xác thực email';
+
+  @override
+  String get otpRecoveryTitle => 'Khôi phục mật khẩu';
+
+  @override
+  String get otpPhoneSubtitle =>
+      'Vui lòng nhập mã OTP đã được gửi đến số điện thoại';
+
+  @override
+  String get otpEmailSubtitle => 'Vui lòng nhập mã OTP đã được gửi đến email';
+
+  @override
+  String get otpRecoverySubtitle =>
+      'Nhập mã OTP để tiếp tục khôi phục mật khẩu';
+
+  @override
+  String get otpIncomplete => 'Vui lòng nhập đủ 6 chữ số.';
+
+  @override
+  String get otpExpired => 'Mã OTP đã hết hạn. Vui lòng gửi mã mới.';
+
+  @override
+  String get otpNetworkError =>
+      'Không thể kết nối. Vui lòng kiểm tra mạng và thử lại.';
+
+  @override
+  String get otpIncorrect => 'Mã OTP không chính xác. Vui lòng thử lại.';
+
+  @override
+  String get otpSecurityLabel => 'Bảo mật xác thực';
+
+  @override
+  String get otpFieldLabel => 'Mã OTP gồm 6 chữ số';
+
+  @override
+  String get otpConfirm => 'Xác nhận';
+
+  @override
+  String get otpResendNow => 'Gửi mã mới';
+
+  @override
+  String get otpResendPrefix => 'Gửi lại mã sau ';
+
+  @override
+  String get authForgotPasswordTitle => 'Quên mật khẩu';
+
+  @override
+  String get authResetSuccess =>
+      'Đặt lại mật khẩu thành công. Vui lòng đăng nhập.';
+
+  @override
+  String get authResetTitle => 'Đặt lại mật khẩu';
+
+  @override
+  String get authResetSubtitle =>
+      'Nhập số điện thoại hoặc email gắn với tài khoản của bạn. Chúng tôi sẽ gửi mã để đặt lại mật khẩu.';
+
+  @override
+  String get authPhoneOrEmail => 'Số điện thoại hoặc email';
+
+  @override
+  String get authPhoneOrEmailPlaceholder =>
+      'Nhập số điện thoại hoặc email đã đăng ký';
+
+  @override
+  String get authSendRecoveryCode => 'Gửi mã khôi phục';
+
+  @override
+  String get authIdentifierRequired => 'Vui lòng nhập số điện thoại hoặc email';
+
+  @override
+  String get sessionsRevokeTitle => 'Thu hồi phiên';
+
+  @override
+  String get sessionsRevoke => 'Thu hồi';
+
+  @override
+  String get sessionsActiveTitle => 'Phiên đang hoạt động';
+
+  @override
+  String get sessionsSignedOutThisDevice =>
+      'Bạn đã đăng xuất khỏi thiết bị này.';
+
+  @override
+  String get sessionsRevokedSuccess => 'Đã thu hồi phiên thành công.';
+
+  @override
+  String get sessionsLoadFailed => 'Không tải được danh sách phiên';
+
+  @override
+  String get sessionsEmptyTitle => 'Không có phiên nào';
+
+  @override
+  String get sessionsEmptySubtitle => 'Kéo xuống để làm mới.';
+
+  @override
+  String get sessionThisDevice => 'Thiết bị này';
+
+  @override
+  String get sessionRevokeTooltip => 'Thu hồi phiên';
+
+  @override
+  String sessionsRevokeMessage(String device) {
+    return 'Bạn có chắc muốn đăng xuất khỏi \"$device\"? Phiên này sẽ bị chấm dứt ngay lập tức.';
+  }
+
+  @override
+  String sessionActiveSince(String time) {
+    return 'Hoạt động $time';
+  }
+
+  @override
+  String sessionSemanticCurrent(String device, String time) {
+    return 'Phiên hiện tại trên $device, hoạt động $time';
+  }
+
+  @override
+  String sessionSemantic(String device, String time) {
+    return 'Phiên trên $device, hoạt động $time';
+  }
+
+  @override
+  String sessionRevokeLabel(String device) {
+    return 'Thu hồi phiên trên $device';
+  }
+
+  @override
+  String otpDigitLabel(String index) {
+    return 'Chữ số OTP $index trên 6';
+  }
+
+  @override
+  String otpResendAfter(String countdown) {
+    return 'Có thể gửi mã mới sau $countdown';
+  }
+
+  @override
+  String get roundSetupTitle => 'Bắt đầu vòng đấu';
+
+  @override
+  String get roundSetupCourse => 'Sân golf';
+
+  @override
+  String get roundSetupSelectCourse => 'Chọn sân golf';
+
+  @override
+  String get roundSetupNoCourseSelected => 'Chưa chọn sân. Chạm để chọn.';
+
+  @override
+  String get roundSetupSelectCourseTitle => 'Chọn sân golf';
+
+  @override
+  String get roundSetupCourses => 'Sân golf';
+
+  @override
+  String get roundSetupRecent => 'Gần đây';
+
+  @override
+  String get roundSetupNoCoursesYet =>
+      'Chưa có sân gần bạn hoặc sân đã chơi — hãy tìm sân.';
+
+  @override
+  String get roundSetupSearchAll => 'Tìm tất cả sân golf';
+
+  @override
+  String get roundSetupLayout => 'Bố cục sân';
+
+  @override
+  String get roundSetupTee => 'Điểm phát bóng';
+
+  @override
+  String get roundSetupPlayers => 'Người chơi';
+
+  @override
+  String get roundSetupMaxPlayers => 'Đã đạt tối đa 4 người chơi';
+
+  @override
+  String get roundSetupMaxPlayersShort => 'Tối đa 4 người chơi';
+
+  @override
+  String get roundSetupAddPlayer => 'Thêm người chơi';
+
+  @override
+  String get roundSetupAddPlayerHint => 'Thêm một người chơi';
+
+  @override
+  String get roundSetupPlayerName => 'Tên';
+
+  @override
+  String get roundSetupPlayerNameHint => 'Tên người chơi';
+
+  @override
+  String get roundSetupHandicap => 'Handicap (tuỳ chọn)';
+
+  @override
+  String get roundSetupRoundSavedLocally =>
+      'Đã lưu vòng đấu trên máy. Sẽ đồng bộ khi có mạng.';
+
+  @override
+  String get roundSetupYou => 'Bạn';
+
+  @override
+  String get roundSetupFormat => 'Thể thức';
+
+  @override
+  String get roundSetupScoringMode => 'Chế độ tính điểm';
+
+  @override
+  String get roundSetupStartHole => 'Hố xuất phát';
+
+  @override
+  String get roundSetupSelectStartHole => 'Chọn hố xuất phát';
+
+  @override
+  String get roundSetupMorningRound => 'Vòng buổi sáng';
+
+  @override
+  String get roundSetupAfternoonRound => 'Vòng buổi chiều';
+
+  @override
+  String get roundSetupFront9 => '9 hố đầu';
+
+  @override
+  String get roundSetupBack9 => '9 hố sau';
+
+  @override
+  String get roundSetupHoles1to9 => 'Hố 1-9';
+
+  @override
+  String get roundSetupHoles10to18 => 'Hố 10-18';
+
+  @override
+  String get roundSetupHolesFront9Label => 'Hố 1-9 (9 hố đầu)';
+
+  @override
+  String get roundSetupHolesBack9Label => 'Hố 10-18 (9 hố sau)';
+
+  @override
+  String get packageChecking => 'Đang kiểm tra gói dữ liệu…';
+
+  @override
+  String get packageOfflineReady => 'Sẵn sàng ngoại tuyến';
+
+  @override
+  String get packageNotDownloaded => 'Chưa tải dữ liệu sân';
+
+  @override
+  String get packageNotDownloadedSubtitle =>
+      'Tải để dùng offline, hoặc chơi luôn (cần mạng)';
+
+  @override
+  String get packagePlayNow => 'Chơi luôn';
+
+  @override
+  String get packageDownload => 'Tải';
+
+  @override
+  String get packageOutdated => 'Dữ liệu sân có thể đã cũ';
+
+  @override
+  String get packageExpired => 'Gói dữ liệu đã hết hạn';
+
+  @override
+  String get packagePlayAnyway => 'Vẫn chơi';
+
+  @override
+  String get packageCorrupted => 'Dữ liệu sân bị hỏng';
+
+  @override
+  String get packageCorruptedSubtitle => 'Vui lòng tải lại gói dữ liệu sân';
+
+  @override
+  String get packageRedownload => 'Tải lại';
+
+  @override
+  String roundSetupRoundStartedAt(String course) {
+    return 'Đã bắt đầu vòng đấu tại $course';
+  }
+
+  @override
+  String roundSetupCourseTapToChange(String course) {
+    return 'Sân: $course. Chạm để đổi.';
+  }
+
+  @override
+  String roundSetupLastPlayed(String date) {
+    return 'Chơi lần cuối $date';
+  }
+
+  @override
+  String roundSetupRemovePlayer(String name) {
+    return 'Xoá $name';
+  }
+
+  @override
+  String roundSetupPlayerHandicap(String value) {
+    return 'Handicap $value';
+  }
+
+  @override
+  String roundSetupSuggestedHole(String hole) {
+    return 'Gợi ý: Hố $hole';
+  }
+
+  @override
+  String roundSetupHoleNumber(String hole) {
+    return 'Hố $hole';
+  }
+
+  @override
+  String roundSetupSelectedTapToChange(String label) {
+    return 'Đã chọn: $label. Chạm để đổi.';
+  }
+
+  @override
+  String packageExpiredOn(String date) {
+    return 'Hết hạn $date';
+  }
+
+  @override
+  String get commonAdd => 'Thêm';
+
+  @override
+  String get scorecardTitle => 'Bảng điểm';
+
+  @override
+  String get scorecardTrackShot => 'Ghi cú đánh';
+
+  @override
+  String get scorecardReviewShots => 'Xem lại cú đánh';
+
+  @override
+  String get scorecardFinishRound => 'Kết thúc vòng đấu';
+
+  @override
+  String get scorecardFinishTitle => 'Kết thúc vòng đấu?';
+
+  @override
+  String get scorecardKeepPlaying => 'Tiếp tục chơi';
+
+  @override
+  String get scorecardFinish => 'Kết thúc';
+
+  @override
+  String get scorecardFinished => 'Đã kết thúc vòng đấu.';
+
+  @override
+  String get scorecardFinishedOffline =>
+      'Đã kết thúc vòng đấu. Sẽ đồng bộ khi có mạng.';
+
+  @override
+  String get scorecardNoHoleData => 'Không có dữ liệu hố';
+
+  @override
+  String get scorecardNotesHint => 'Thêm ghi chú cho hố này…';
+
+  @override
+  String get scorecardClear => 'Xoá';
+
+  @override
+  String get scorecardScores => 'Điểm số';
+
+  @override
+  String get scorecardTapToEnter => 'Chạm để nhập';
+
+  @override
+  String get scorecardScoreNotEntered => 'Chưa nhập điểm';
+
+  @override
+  String get scorecardHoleNotPlayed => 'Chưa chơi hố này';
+
+  @override
+  String get scoreBunker => 'Hố cát';
+
+  @override
+  String get scoreYes => 'Có';
+
+  @override
+  String get scoreFairway => 'Fairway';
+
+  @override
+  String get scoreFairwayHit => 'Trúng fairway';
+
+  @override
+  String get scoreGir => 'Lên green đúng chuẩn';
+
+  @override
+  String get scorePutts => 'Số gạt';
+
+  @override
+  String get scorePenalties => 'Điểm phạt';
+
+  @override
+  String get scoreNotes => 'Ghi chú';
+
+  @override
+  String get holeNavPrev => 'Hố trước';
+
+  @override
+  String get holeNavNext => 'Hố sau';
+
+  @override
+  String get holeNavComplete => 'Hoàn thành vòng đấu';
+
+  @override
+  String get roundsTitle => 'Vòng đấu của bạn';
+
+  @override
+  String get roundsLoadFailed =>
+      'Không tải được lịch sử vòng đấu. Thử lại sau.';
+
+  @override
+  String get roundsLoadFailedShort => 'Không tải được vòng đấu';
+
+  @override
+  String get roundsEmptyTitle => 'Chưa có vòng đấu nào';
+
+  @override
+  String get roundsEmptySubtitle =>
+      'Hoàn thành một vòng đấu để xem lịch sử tại đây';
+
+  @override
+  String get roundsStart => 'Bắt đầu';
+
+  @override
+  String get roundsEnd => 'Kết thúc';
+
+  @override
+  String get roundsType => 'Loại';
+
+  @override
+  String get roundsTournamentRound => 'Vòng đấu giải';
+
+  @override
+  String get roundsReview => 'Xem lại vòng đấu';
+
+  @override
+  String get roundStatusInProgress => 'Đang chơi';
+
+  @override
+  String get roundStatusCompleted => 'Hoàn thành';
+
+  @override
+  String get roundStatusAbandoned => 'Bỏ dở';
+
+  @override
+  String get roundStatusCancelled => 'Đã huỷ';
+
+  @override
+  String get summaryTitle => 'Tổng kết vòng đấu';
+
+  @override
+  String get summaryComplete => 'Vòng đấu hoàn tất';
+
+  @override
+  String get summaryNoScores => 'Chưa có dữ liệu điểm';
+
+  @override
+  String get summaryNoScoresSubtitle => 'Hoàn thành vòng đấu để xem tổng kết';
+
+  @override
+  String get summarySynced => 'Đã đồng bộ toàn bộ điểm';
+
+  @override
+  String get summaryOffline =>
+      'Đã lưu điểm ngoại tuyến. Sẽ đồng bộ khi có mạng.';
+
+  @override
+  String get summarySyncing => 'Đang đồng bộ điểm…';
+
+  @override
+  String get summarySyncFailed => 'Đồng bộ thất bại. Chạm để thử lại.';
+
+  @override
+  String get summaryEditScores => 'Sửa điểm';
+
+  @override
+  String get summaryShare => 'Chia sẻ';
+
+  @override
+  String scorecardFinishUnscored(String remaining, String total) {
+    return '$remaining trên $total hố chưa có điểm. Bạn vẫn có thể kết thúc — các hố chưa nhập sẽ để trống.';
+  }
+
+  @override
+  String scorecardFinishAllScored(String total) {
+    return 'Đã nhập điểm đủ $total hố. Kết thúc sẽ đóng vòng đấu và đồng bộ.';
+  }
+
+  @override
+  String scorecardEnterScoreFor(String player) {
+    return 'Nhập điểm — $player';
+  }
+
+  @override
+  String scorecardNotesFor(String player) {
+    return 'Ghi chú — $player';
+  }
+
+  @override
+  String scoreDecreaseFor(String player) {
+    return 'Giảm điểm cho $player';
+  }
+
+  @override
+  String scoreIncreaseFor(String player) {
+    return 'Tăng điểm cho $player';
+  }
+
+  @override
+  String scoreEnteredValue(String value) {
+    return 'Đã nhập điểm: $value';
+  }
+
+  @override
+  String scoreStatsFor(String player) {
+    return 'Chỉ số — $player';
+  }
+
+  @override
+  String scorePuttsFor(String player) {
+    return 'Số gạt của $player';
+  }
+
+  @override
+  String scorePenaltiesFor(String player) {
+    return 'Điểm phạt của $player';
+  }
+
+  @override
+  String scoreBunkerFor(String player) {
+    return 'Cú đánh hố cát của $player';
+  }
+
+  @override
+  String scoreDecreaseLabel(String label) {
+    return 'Giảm $label';
+  }
+
+  @override
+  String scoreIncreaseLabel(String label) {
+    return 'Tăng $label';
+  }
+
+  @override
+  String holeOfTotal(String current, String total) {
+    return 'Hố $current trên $total';
+  }
+
+  @override
+  String holeNumberLabel(String hole) {
+    return 'Hố $hole';
+  }
+
+  @override
+  String holeParLabel(String par) {
+    return 'Par $par';
+  }
+
+  @override
+  String get courseSearchTitle => 'Tìm sân golf';
+
+  @override
+  String get courseSearchSelectTitle => 'Chọn sân golf';
+
+  @override
+  String get courseTabAll => 'Tất cả';
+
+  @override
+  String get courseTabNearby => 'Gần đây';
+
+  @override
+  String get courseTabFavorites => 'Yêu thích';
+
+  @override
+  String get courseTabRecent => 'Đã xem';
+
+  @override
+  String get courseSearchHint => 'Tìm theo tên, thành phố hoặc tỉnh';
+
+  @override
+  String get courseSearchNearbyTooltip => 'Tìm sân gần bạn';
+
+  @override
+  String get courseSearchClear => 'Xoá tìm kiếm';
+
+  @override
+  String get courseSearchPrompt => 'Tìm sân golf';
+
+  @override
+  String get courseSearchPromptSubtitle =>
+      'Nhập tên sân hoặc dùng nút tìm gần bạn';
+
+  @override
+  String get courseSearchNoResults => 'Không tìm thấy sân nào';
+
+  @override
+  String get courseSearchNoResultsSubtitle => 'Thử đổi từ khoá hoặc bộ lọc';
+
+  @override
+  String get courseFavoritesEmpty => 'Chưa có sân yêu thích';
+
+  @override
+  String get courseFavoritesEmptySubtitle =>
+      'Các sân bạn yêu thích sẽ hiện ở đây';
+
+  @override
+  String get courseRecentEmpty => 'Chưa xem sân nào';
+
+  @override
+  String get courseRecentEmptySubtitle => 'Các sân bạn xem sẽ hiện ở đây';
+
+  @override
+  String get courseLocationUnavailable => 'Không có vị trí';
+
+  @override
+  String get courseLocationUnavailableSubtitle =>
+      'Bật vị trí để tìm sân gần bạn';
+
+  @override
+  String get courseEnableLocation => 'Bật vị trí';
+
+  @override
+  String get courseOfflineTitle => 'Bạn đang ngoại tuyến';
+
+  @override
+  String get courseOfflineSubtitle => 'Kết nối mạng để tìm sân golf';
+
+  @override
+  String get courseAddFavorite => 'Thêm vào yêu thích';
+
+  @override
+  String get courseRemoveFavorite => 'Bỏ khỏi yêu thích';
+
+  @override
+  String get courseNoCoursesNearby => 'Không có sân nào gần bạn';
+
+  @override
+  String get courseExpandSearchSubtitle => 'Thử mở rộng bán kính tìm kiếm';
+
+  @override
+  String get courseExpandSearch => 'Mở rộng tìm kiếm';
+
+  @override
+  String get courseFindNearby => 'Tìm gần bạn';
+
+  @override
+  String get courseFindingNearby => 'Đang tìm sân gần bạn…';
+
+  @override
+  String get downloadDownloaded => 'Đã tải';
+
+  @override
+  String get downloadUpdate => 'Cập nhật';
+
+  @override
+  String get downloadDownload => 'Tải xuống';
+
+  @override
+  String get downloadDownloading => 'Đang tải';
+
+  @override
+  String get downloadStarting => 'Đang bắt đầu…';
+
+  @override
+  String get freshnessUnknown => 'Không rõ';
+
+  @override
+  String get freshnessUnknownLabel => 'Không rõ độ mới của dữ liệu';
+
+  @override
+  String get freshnessToday => 'Hôm nay';
+
+  @override
+  String get freshnessYesterday => 'Hôm qua';
+
+  @override
+  String get freshnessStale => 'Dữ liệu cũ';
+
+  @override
+  String get freshnessStaleLabel => 'Dữ liệu đã cũ';
+
+  @override
+  String get verificationVerified => 'Đã xác minh';
+
+  @override
+  String get verificationPending => 'Chờ xác minh';
+
+  @override
+  String get verificationUnverified => 'Chưa xác minh';
+
+  @override
+  String get verificationRejected => 'Bị từ chối';
+
+  @override
+  String get courseDetailLoading => 'Đang tải thông tin sân…';
+
+  @override
+  String get courseDetailLoadFailed => 'Không tải được thông tin sân';
+
+  @override
+  String get courseDownloadCourse => 'Tải dữ liệu sân';
+
+  @override
+  String get sectionConditions => 'Tình trạng sân';
+
+  @override
+  String get sectionContact => 'Liên hệ';
+
+  @override
+  String get sectionCoordinates => 'Toạ độ';
+
+  @override
+  String get sectionDataQuality => 'Chất lượng dữ liệu';
+
+  @override
+  String get sectionFacilities => 'Tiện ích';
+
+  @override
+  String get sectionHoles => 'Các hố';
+
+  @override
+  String get sectionLocalRules => 'Luật sân';
+
+  @override
+  String get sectionRatings => 'Chỉ số sân';
+
+  @override
+  String get fieldPhone => 'Điện thoại';
+
+  @override
+  String get fieldWebsite => 'Website';
+
+  @override
+  String get fieldAddress => 'Địa chỉ';
+
+  @override
+  String get fieldVersion => 'Phiên bản';
+
+  @override
+  String get fieldLastUpdated => 'Cập nhật lần cuối';
+
+  @override
+  String get fieldPublisher => 'Đơn vị phát hành';
+
+  @override
+  String get fieldCourseRating => 'Course Rating';
+
+  @override
+  String get fieldSlope => 'Slope';
+
+  @override
+  String get fieldHole => 'Hố';
+
+  @override
+  String get fieldPar => 'Par';
+
+  @override
+  String get fieldLength => 'Chiều dài';
+
+  @override
+  String get coordinatesCopied => 'Đã sao chép toạ độ';
+
+  @override
+  String get coordinatesCopyTooltip => 'Sao chép toạ độ';
+
+  @override
+  String get dataOlderThan30Days => 'Dữ liệu đã cũ hơn 30 ngày';
+
+  @override
+  String get dataQualityUnknown => 'Không rõ chất lượng dữ liệu';
+
+  @override
+  String get dataQualityOfficial => 'Chính thức';
+
+  @override
+  String get dataQualityOfficialLabel => 'Dữ liệu chính thức đã xác minh';
+
+  @override
+  String get dataQualityEstimated => 'Ước tính';
+
+  @override
+  String get dataQualityEstimatedLabel => 'Dữ liệu ước tính';
+
+  @override
+  String get dataQualityCommunity => 'Cộng đồng';
+
+  @override
+  String get dataQualityCommunityLabel => 'Dữ liệu do cộng đồng đóng góp';
+
+  @override
+  String get conditionsCached => 'Đã lưu tạm';
+
+  @override
+  String get conditionsStaleData => 'Dữ liệu cũ';
+
+  @override
+  String coursePar(String par) {
+    return 'Par $par';
+  }
+
+  @override
+  String courseSlope(String slope) {
+    return 'Slope $slope';
+  }
+
+  @override
+  String downloadStatusLabel(String status) {
+    return 'Sân: $status';
+  }
+
+  @override
+  String downloadProgressLabel(String percent) {
+    return 'Đang tải gói dữ liệu sân $percent%';
+  }
+
+  @override
+  String freshnessUpdatedLabel(String when) {
+    return 'Dữ liệu cập nhật $when';
+  }
+
+  @override
+  String verificationStatusLabel(String status) {
+    return 'Trạng thái xác minh: $status';
+  }
+
+  @override
+  String conditionsOfflineCached(String when) {
+    return 'Ngoại tuyến, lưu tạm $when';
+  }
+
+  @override
+  String conditionsEffective(String date) {
+    return 'Hiệu lực từ: $date';
+  }
+
+  @override
+  String conditionsExpired(String date) {
+    return 'Hết hạn $date';
+  }
+
+  @override
+  String conditionsExpires(String date) {
+    return 'Hết hạn: $date';
+  }
+
+  @override
+  String conditionsAccuracyClass(String value) {
+    return 'Hạng $value';
+  }
+
+  @override
+  String get profileEdit => 'Sửa hồ sơ';
+
+  @override
+  String get profileSavedOffline => 'Đã lưu ngoại tuyến';
+
+  @override
+  String get profileSectionIdentity => 'Thông tin cá nhân';
+
+  @override
+  String get profileSectionGolfStats => 'Chỉ số golf';
+
+  @override
+  String get profileSectionDistance => 'Khoảng cách';
+
+  @override
+  String get profileSectionPersonal => 'Cá nhân';
+
+  @override
+  String get profileGolfer => 'Golfer';
+
+  @override
+  String get profileHomeClub => 'Sân nhà';
+
+  @override
+  String get profileCountry => 'Quốc gia';
+
+  @override
+  String get profileHandicap => 'Handicap';
+
+  @override
+  String get profileTargetScore => 'Điểm mục tiêu';
+
+  @override
+  String get profileDistanceUnit => 'Đơn vị khoảng cách';
+
+  @override
+  String get profileDominantHand => 'Tay thuận';
+
+  @override
+  String get profileSwingSpeed => 'Tốc độ swing (mph)';
+
+  @override
+  String get profileBirthYear => 'Năm sinh';
+
+  @override
+  String get bagTitle => 'Túi gậy của tôi';
+
+  @override
+  String get bagAddNew => 'Thêm túi gậy mới';
+
+  @override
+  String get bagNewTitle => 'Túi gậy mới';
+
+  @override
+  String get bagName => 'Tên túi gậy';
+
+  @override
+  String get bagCreate => 'Tạo';
+
+  @override
+  String get bagSyncing => 'Đang đồng bộ…';
+
+  @override
+  String get bagSavedOffline => 'Đã lưu thay đổi ngoại tuyến';
+
+  @override
+  String get bagEmptyTitle => 'Chưa có túi gậy nào';
+
+  @override
+  String get bagEmptySubtitle =>
+      'Tạo túi gậy đầu tiên để bắt đầu theo dõi gậy của bạn.';
+
+  @override
+  String get bagCreateFirst => 'Tạo túi gậy đầu tiên';
+
+  @override
+  String get bagLoadFailed => 'Không tải được túi gậy';
+
+  @override
+  String get analyticsHubSubtitle =>
+      'Số liệu gậy, vùng phát bóng và gợi ý chiến thuật.';
+
+  @override
+  String get analyticsClubPerformance => 'Hiệu suất gậy & Độ phân tán';
+
+  @override
+  String get analyticsClubPerformanceSubtitle =>
+      'Carry, độ lệch và bản đồ phân tán theo từng gậy';
+
+  @override
+  String get analyticsDrivingZone => 'Vùng phát bóng (Driving Zone)';
+
+  @override
+  String get analyticsDrivingZoneSubtitle =>
+      'Phân bố điểm rơi theo gậy, tee và điều kiện gió';
+
+  @override
+  String get analyticsStrokesGained => 'Strokes Gained';
+
+  @override
+  String get analyticsStrokesGainedSubtitle =>
+      'So sánh theo nhóm gậy với các mốc chuẩn';
+
+  @override
+  String get analyticsSmartTarget => 'Smart Target (Caddie)';
+
+  @override
+  String get analyticsSmartTargetSubtitle =>
+      'Gợi ý chiến thuật an toàn / cân bằng / mạo hiểm';
+
+  @override
+  String get analyticsClubPerformanceTitle => 'Hiệu suất gậy';
+
+  @override
+  String get analyticsBagLoadFailed => 'Không tải được túi gậy. Thử lại sau.';
+
+  @override
+  String get analyticsNoBag => 'Chưa có túi gậy nào để phân tích.';
+
+  @override
+  String get privacyTitle => 'Quyền riêng tư & Dữ liệu';
+
+  @override
+  String get privacyRequestSubmitted => 'Đã gửi yêu cầu thành công';
+
+  @override
+  String get privacyRequestFailed => 'Gửi yêu cầu thất bại';
+
+  @override
+  String get privacyNewRequest => 'Yêu cầu mới';
+
+  @override
+  String get privacyNewRequestTooltip => 'Gửi yêu cầu quyền riêng tư mới';
+
+  @override
+  String get privacyYourRequests => 'YÊU CẦU CỦA BẠN';
+
+  @override
+  String get privacyNewRequestTitle => 'Yêu cầu quyền riêng tư mới';
+
+  @override
+  String get privacyWhatToDo => 'Bạn muốn làm gì?';
+
+  @override
+  String get privacySubmitRequest => 'Gửi yêu cầu';
+
+  @override
+  String get privacyDeleteAccountTitle => 'Xoá tài khoản?';
+
+  @override
+  String get privacyDeleteAccountWarning =>
+      'Thao tác này sẽ xoá vĩnh viễn tài khoản và toàn bộ dữ liệu của bạn. Không thể hoàn tác.';
+
+  @override
+  String get privacyTypeDelete => 'Nhập DELETE để xác nhận:';
+
+  @override
+  String get privacyDeleteForever => 'Xoá vĩnh viễn';
+
+  @override
+  String get privacySelectRound => 'Chọn vòng đấu cần xoá';
+
+  @override
+  String get privacySelectRoundSubtitle =>
+      'Chọn vòng đấu bạn muốn xoá. Toàn bộ điểm của vòng đó cũng sẽ bị xoá.';
+
+  @override
+  String get privacyRoundSelected => 'Đã chọn vòng đấu';
+
+  @override
+  String get privacyTapSelectRound => 'Chạm để chọn vòng đấu';
+
+  @override
+  String get privacyDestructiveAction => 'Hành động không thể hoàn tác';
+
+  @override
+  String profileIdLabel(String id) {
+    return 'ID: $id';
+  }
+
+  @override
+  String profileDriverDistance(String unit) {
+    return 'Khoảng cách Driver ($unit)';
+  }
+
+  @override
+  String profileDriverDistanceHelper(String unit) {
+    return 'Khoảng cách phát bóng trung bình theo $unit';
+  }
+
+  @override
+  String get shotPenalty => 'Điểm phạt';
+
+  @override
+  String get shotProvisional => 'Bóng tạm';
+
+  @override
+  String get shotMulligan => 'Đánh lại (mulligan)';
+
+  @override
+  String get shotMarkPenalty => 'Đánh dấu là cú phạt';
+
+  @override
+  String get shotMarkProvisional => 'Đánh dấu là bóng tạm';
+
+  @override
+  String get shotMarkMulligan => 'Đánh dấu là mulligan';
+
+  @override
+  String get shotMerge => 'Gộp';
+
+  @override
+  String get shotEdit => 'Sửa';
+
+  @override
+  String get shotEditTooltip => 'Sửa cú đánh';
+
+  @override
+  String get shotCancelShot => 'Huỷ cú đánh';
+
+  @override
+  String get shotEndShot => 'Kết thúc cú đánh';
+
+  @override
+  String get shotSaving => 'Đang lưu cú đánh…';
+
+  @override
+  String get shotSaveChanges => 'Lưu thay đổi';
+
+  @override
+  String get shotDeleteTitle => 'Xoá cú đánh?';
+
+  @override
+  String get shotReviewTitle => 'Xem lại cú đánh';
+
+  @override
+  String get shotTotalShots => 'Tổng số cú';
+
+  @override
+  String get shotAvgDistance => 'Khoảng cách TB';
+
+  @override
+  String get shotPenalties => 'Điểm phạt';
+
+  @override
+  String shotLieLabel(String lie) {
+    return 'Vị trí bóng: $lie';
+  }
+
+  @override
+  String shotResultLabel(String result) {
+    return 'Kết quả: $result';
+  }
+
+  @override
+  String shotNumberLabel(String number) {
+    return 'Cú đánh $number';
+  }
+
+  @override
+  String get analyticsWindLabel => 'Gió:';
+
+  @override
+  String get analyticsAny => 'Bất kỳ';
+
+  @override
+  String get analyticsTeeLabel => 'Tee:';
+
+  @override
+  String get analyticsAllTeeSets => 'Tất cả bộ tee';
+
+  @override
+  String get analyticsClubsLabel => 'Gậy:';
+
+  @override
+  String get analyticsNoZoneData => 'Chưa có dữ liệu vùng phát bóng';
+
+  @override
+  String get analyticsShort => 'Ngắn';
+
+  @override
+  String get analyticsMid => 'Trung bình';
+
+  @override
+  String get analyticsLong => 'Xa';
+
+  @override
+  String get analyticsTotalShots => 'Tổng số cú';
+
+  @override
+  String get analyticsAvgDispersion => 'Độ phân tán TB';
+
+  @override
+  String get analyticsClubs => 'Gậy';
+
+  @override
+  String get analyticsBenchmark => 'Mốc chuẩn';
+
+  @override
+  String get analyticsActual => 'Thực tế';
+
+  @override
+  String get analyticsErrorLoading => 'Lỗi khi tải dữ liệu phân tích';
+
+  @override
+  String get analyticsChartLegend => 'Chú giải biểu đồ';
+
+  @override
+  String get analyticsClearAll => 'Xoá tất cả';
+
+  @override
+  String get analyticsTimeLabel => 'Thời gian:';
+
+  @override
+  String get analyticsNoData => 'Chưa có dữ liệu phân tích';
+
+  @override
+  String get analyticsGross => 'Gross';
+
+  @override
+  String get analyticsPutts => 'Số gạt';
+
+  @override
+  String get analyticsPenalties => 'Điểm phạt';
+
+  @override
+  String get analyticsGir => 'GIR';
+
+  @override
+  String get analyticsFir => 'FIR';
+
+  @override
+  String get analyticsUpAndDown => 'Up & Down';
+
+  @override
+  String get analyticsBirdiePlus => 'Birdie+';
+
+  @override
+  String get analyticsPar => 'Par';
+
+  @override
+  String get analyticsBogeyPlus => 'Bogey+';
+
+  @override
+  String get analyticsScoreToPar => 'Điểm so với par: ';
+
+  @override
+  String get analyticsClubUsage => 'Tần suất dùng gậy';
+
+  @override
+  String get analyticsClubUsageChart => 'Biểu đồ phân bố tần suất dùng gậy';
+
+  @override
+  String get analyticsAvg => 'TB';
+
+  @override
+  String get analyticsMed => 'Trung vị';
+
+  @override
+  String get analyticsStdDev => 'Độ lệch chuẩn';
+
+  @override
+  String get analyticsConsistency => 'Độ ổn định';
+
+  @override
+  String get analyticsLieChart => 'Biểu đồ phân bố vị trí bóng';
+
+  @override
+  String get smartTargetIcon => 'Biểu tượng Smart Target';
+
+  @override
+  String get smartTargetDismiss => 'Đóng Smart Target';
+
+  @override
+  String get smartTargetAnalyzing => 'Đang phân tích chiến thuật…';
+
+  @override
+  String get smartTargetRestricted => 'Bị giới hạn';
+
+  @override
+  String get smartTargetInformation => 'Thông tin';
+
+  @override
+  String get commonErrorLabel => 'Lỗi';
+
+  @override
+  String get smartTargetSelected => 'Đã chọn';
+
+  @override
+  String get smartTargetNotSelected => 'Chưa chọn';
+
+  @override
+  String get smartTargetCarry => 'Carry';
+
+  @override
+  String get smartTargetToPin => 'Tới cờ';
+
+  @override
+  String get smartTargetExplanation => 'Giải thích';
+
+  @override
+  String get roundReviewTitle => 'Xem lại vòng đấu';
+
+  @override
+  String get commonRefresh => 'Làm mới';
+
+  @override
+  String get roundReviewNoData => 'Chưa có dữ liệu vòng đấu';
+
+  @override
+  String get roundReviewNoDataSubtitle =>
+      'Không tìm thấy dữ liệu cho vòng đấu này.';
+
+  @override
+  String get drivingZoneTitle => 'Vùng phát bóng';
+
+  @override
+  String get drivingZoneNoShotData => 'Chưa có dữ liệu cú đánh';
+
+  @override
+  String get strokesGainedRecalculate => 'Tính lại';
+
+  @override
+  String get commonNoDataShort => 'Chưa có dữ liệu';
+
+  @override
+  String get dispersionFairway => 'Fairway';
+
+  @override
+  String get dispersionRough => 'Rough';
+
+  @override
+  String get dispersionBunker => 'Hố cát';
+
+  @override
+  String get dispersionWater => 'Nước';
+
+  @override
+  String get dispersionOb => 'OB';
+
+  @override
+  String get dispersionScatter => 'Điểm rơi';
+
+  @override
+  String get dispersionHazards => 'Chướng ngại';
+
+  @override
+  String get performanceCachedData => 'Đang hiển thị dữ liệu đã lưu';
+
+  @override
+  String get performanceRobust => 'Đủ tin cậy';
+
+  @override
+  String get performanceNoData => 'Chưa có dữ liệu hiệu suất';
+
+  @override
+  String get performanceBagTitle => 'Hiệu suất túi gậy';
+
+  @override
+  String get performanceClubLoadFailed =>
+      'Không tải được hiệu suất gậy. Vui lòng thử lại.';
+
+  @override
+  String get performanceBagLoadFailed =>
+      'Không tải được hiệu suất túi gậy. Vui lòng thử lại.';
+
+  @override
+  String get performanceDispersionLoadFailed =>
+      'Không tải được lớp phân tán. Vui lòng thử lại.';
+
+  @override
+  String get performanceCarryDistance => 'Khoảng cách carry';
+
+  @override
+  String get performanceTotalDistance => 'Tổng khoảng cách';
+
+  @override
+  String get performanceViewDispersion => 'Xem độ phân tán';
+
+  @override
+  String get performanceMedian => 'Trung vị';
+
+  @override
+  String get performanceMin => 'Nhỏ nhất';
+
+  @override
+  String get performanceMax => 'Lớn nhất';
+
+  @override
+  String get performanceLeftRight => 'Trái / Phải';
+
+  @override
+  String get performanceShortLong => 'Ngắn / Dài';
+
+  @override
+  String analyticsFilterByClub(String club) {
+    return 'Lọc theo $club';
+  }
+
+  @override
+  String analyticsHoleLabel(String hole) {
+    return 'Hố $hole';
+  }
+
+  @override
+  String analyticsLimitation(String name) {
+    return 'Giới hạn: $name';
+  }
+
+  @override
+  String analyticsShapeLabel(String shape) {
+    return 'Hình dạng: $shape';
+  }
+
+  @override
+  String smartTargetRiskLabel(String risk) {
+    return 'Rủi ro: $risk';
+  }
+
+  @override
+  String smartTargetStrategyLabel(String strategy) {
+    return 'Chiến thuật: $strategy';
+  }
+
+  @override
+  String smartTargetRiskDetail(String label, String score) {
+    return 'Rủi ro: $label, $score trên 100';
+  }
+
+  @override
+  String smartTargetConfidence(String percentage, String label) {
+    return 'Độ tin cậy: $percentage phần trăm, mức $label';
+  }
+
+  @override
+  String roundReviewLoadFailed(String error) {
+    return 'Không tải được phần xem lại vòng đấu: $error';
+  }
+
+  @override
+  String drivingZoneLoadFailed(String error) {
+    return 'Không tải được thống kê vùng phát bóng: $error';
+  }
+
+  @override
+  String dispersionMapLabel(String count) {
+    return 'Bản đồ phân tán của $count cú đánh';
+  }
+
+  @override
+  String performanceSampleSize(String count, String quality) {
+    return 'Cỡ mẫu: $count cú đánh, $quality';
+  }
+
+  @override
+  String performanceConfidence(String label) {
+    return 'Độ tin cậy: $label';
+  }
+
+  @override
+  String performanceConfidenceDetail(String label, String description) {
+    return 'Độ tin cậy: $label. $description';
+  }
+
+  @override
+  String get weatherLoading => 'Đang tải dữ liệu thời tiết';
+
+  @override
+  String get weatherUnavailable => 'Không có dữ liệu thời tiết';
+
+  @override
+  String get weatherWindAdjustment => 'Hiệu chỉnh theo gió';
+
+  @override
+  String get weatherTemperature => 'Nhiệt độ';
+
+  @override
+  String get weatherFeelsLike => 'Cảm giác như';
+
+  @override
+  String get weatherHumidity => 'Độ ẩm';
+
+  @override
+  String get weatherPrecipitation => 'Lượng mưa';
+
+  @override
+  String get weatherWindGusts => 'Gió giật';
+
+  @override
+  String get mapGeometryNotFound =>
+      'Không tìm thấy hình thể hố trong gói dữ liệu sân';
+
+  @override
+  String get layerFairway => 'Fairway';
+
+  @override
+  String get layerGreen => 'Green';
+
+  @override
+  String get layerRough => 'Rough';
+
+  @override
+  String get layerBunker => 'Hố cát';
+
+  @override
+  String get layerWater => 'Nước';
+
+  @override
+  String get layerPenalty => 'Khu phạt';
+
+  @override
+  String get layerOb => 'O.B.';
+
+  @override
+  String get layerCartPath => 'Đường xe';
+
+  @override
+  String get layerLandmarks => 'Mốc định vị';
+
+  @override
+  String get targetBallToTarget => 'BÓNG → MỤC TIÊU';
+
+  @override
+  String get targetToPin => 'MỤC TIÊU → CỜ';
+
+  @override
+  String get holeSwitchCurrent => 'Hiện tại';
+
+  @override
+  String get holeSwitchSuggested => 'Gợi ý';
+
+  @override
+  String get holeSwitchSwitchingTo => 'Chuyển sang';
+
+  @override
+  String get bagDetailsTitle => 'Chi tiết túi gậy';
+
+  @override
+  String get bagAddClub => 'Thêm gậy';
+
+  @override
+  String get bagNoClubs => 'Chưa có gậy nào';
+
+  @override
+  String get bagAddFirstClub => 'Thêm gậy đầu tiên';
+
+  @override
+  String get bagSetActive => 'Đặt làm mặc định';
+
+  @override
+  String get bagDeleteTitle => 'Xoá túi gậy?';
+
+  @override
+  String get bagLoadFailedRetry => 'Không tải được túi gậy. Vui lòng thử lại.';
+
+  @override
+  String get bagDeleted => 'Đã xoá túi gậy';
+
+  @override
+  String get bagDetailLoadFailed => 'Không tải được chi tiết túi gậy.';
+
+  @override
+  String get clubDeleted => 'Đã xoá gậy';
+
+  @override
+  String get commonSynced => 'Đã đồng bộ';
+
+  @override
+  String get clubType => 'LOẠI GẬY';
+
+  @override
+  String get clubLoft => 'ĐỘ LOFT (ĐỘ)';
+
+  @override
+  String get clubCarryDistance => 'KHOẢNG CÁCH CARRY (MÉT)';
+
+  @override
+  String get clubCarryHelper => 'Quãng đường bóng bay trên không';
+
+  @override
+  String get clubTotalDistance => 'TỔNG KHOẢNG CÁCH (MÉT)';
+
+  @override
+  String get clubTotalHelper => 'Tổng quãng đường tính cả bóng lăn';
+
+  @override
+  String get clubDispersion => 'ĐỘ PHÂN TÁN (ĐỘ)';
+
+  @override
+  String get clubShaft => 'CÁN GẬY';
+
+  @override
+  String get clubInUseDate => 'NGÀY BẮT ĐẦU DÙNG';
+
+  @override
+  String get clubDelete => 'Xoá gậy';
+
+  @override
+  String get clubDeleteTitle => 'Xoá gậy?';
+
+  @override
+  String get clubLoftTooltip => 'Độ loft';
+
+  @override
+  String get clubCarryTooltip => 'Khoảng cách carry';
+
+  @override
+  String get clubTotalTooltip => 'Tổng khoảng cách';
+
+  @override
+  String get profileLoadFailed => 'Không tải được hồ sơ. Vui lòng thử lại.';
+
+  @override
+  String get profileSaveFailed => 'Lưu thất bại. Vui lòng thử lại.';
+
+  @override
+  String get unitMeters => 'Mét';
+
+  @override
+  String get unitYards => 'Yard';
+
+  @override
+  String get handLeft => 'Trái';
+
+  @override
+  String get handRight => 'Phải';
+
+  @override
+  String get distanceNear => 'Gần';
+
+  @override
+  String get distanceCarry => 'Carry';
+
+  @override
+  String get distanceFar => 'Xa';
+
+  @override
+  String get distanceWaitingGps => 'Đang chờ GPS…';
+
+  @override
+  String get distanceNoHoleData => 'Không có dữ liệu hố';
+
+  @override
+  String get distanceFront => 'TRƯỚC';
+
+  @override
+  String get distanceCenter => 'GIỮA';
+
+  @override
+  String get distanceBack => 'SAU';
+
+  @override
+  String weatherErrorLabel(String message) {
+    return 'Lỗi thời tiết: $message';
+  }
+
+  @override
+  String weatherUvIndex(String value) {
+    return 'UV $value';
+  }
+
+  @override
+  String weatherWindDirection(String direction) {
+    return 'Hướng gió $direction';
+  }
+
+  @override
+  String weatherConditionLabel(String condition) {
+    return 'Điều kiện: $condition';
+  }
+
+  @override
+  String weatherSourceLabel(String source) {
+    return 'Nguồn thời tiết: $source';
+  }
+
+  @override
+  String mapLoadFailed(String error) {
+    return 'Không tải được bản đồ hố: $error';
+  }
+
+  @override
+  String mapHoleLabel(String hole) {
+    return 'Bản đồ chiến thuật hố $hole';
+  }
+
+  @override
+  String mapDistanceRings(String rings) {
+    return 'Vòng khoảng cách: $rings';
+  }
+
+  @override
+  String holeSwitchConfidence(String level) {
+    return 'Độ tin cậy: $level';
+  }
+
+  @override
+  String profileUnitCurrent(String unit) {
+    return 'Đơn vị khoảng cách, hiện tại $unit';
+  }
+
+  @override
+  String profileSkillCurrent(String level) {
+    return 'Trình độ, hiện tại $level';
+  }
+
+  @override
+  String profileHandCurrent(String hand) {
+    return 'Tay thuận, hiện tại $hand';
+  }
+
+  @override
+  String distanceConfidenceLabel(String label) {
+    return 'Độ tin cậy: $label';
+  }
+
+  @override
+  String distanceSourceLabel(String source) {
+    return 'Nguồn: $source';
+  }
+
+  @override
+  String distanceToggleUnit(String unit) {
+    return 'Đổi đơn vị khoảng cách. Hiện tại $unit';
+  }
+
+  @override
+  String distanceConfidenceDetail(String label) {
+    return 'Độ tin cậy khoảng cách: $label';
+  }
+}

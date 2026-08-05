@@ -17,6 +17,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/strokes_gained.dart';
 import 'package:vsp_mobile/presentation/widgets/analytics/strokes_gained_card.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('StrokesGainedCard', () {
@@ -48,6 +50,9 @@ void main() {
       VoidCallback? onTap,
     }) {
       return MaterialApp(
+        locale: const Locale('en'),
+        supportedLocales: kSupportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
           useMaterial3: true,

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/models/round_format.dart';
 import '../../../../domain/models/round_mode.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Format selector with Casual / Practice / Tournament pill toggle.
 class FormatSelector extends StatelessWidget {
@@ -33,7 +34,7 @@ class FormatSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Format',
+          AppLocalizations.of(context).roundSetupFormat,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -134,7 +135,7 @@ class ModeSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Scoring Mode',
+          AppLocalizations.of(context).roundSetupScoringMode,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,

@@ -17,6 +17,7 @@ import '../../../application/services/tournament_feature_guard.dart';
 import '../../../domain/models/tournament_feature.dart';
 import '../../../domain/models/tournament_policy.dart';
 import '../../round/widgets/restriction_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Toggle control for wind adjustment feature.
 ///
@@ -90,7 +91,7 @@ class WindAdjustmentToggle extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('Wind adjustment', style: Theme.of(context).textTheme.bodyMedium),
+        Text(AppLocalizations.of(context).weatherWindAdjustment, style: Theme.of(context).textTheme.bodyMedium),
         const SizedBox(width: 8),
         Switch.adaptive(
           value: value,

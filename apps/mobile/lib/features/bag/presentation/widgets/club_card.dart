@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/bag_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A card displaying a single club with its key data.
 class ClubCard extends StatelessWidget {
@@ -95,7 +96,7 @@ class ClubCard extends StatelessWidget {
                           if (club.loft != null) ...[
                             _InfoChip(
                               label: '${club.loft!.toStringAsFixed(1)}°',
-                              tooltip: 'Loft',
+                              tooltip: AppLocalizations.of(context).clubLoftTooltip,
                             ),
                             const SizedBox(width: VspSpacing.xs),
                           ],
@@ -103,7 +104,7 @@ class ClubCard extends StatelessWidget {
                             label: club.formatCarryDistance(
                               displayUnit: displayUnit,
                             ),
-                            tooltip: 'Carry distance',
+                            tooltip: AppLocalizations.of(context).clubCarryTooltip,
                             isPrimary: true,
                           ),
                           if (club.totalDistance != null) ...[
@@ -112,7 +113,7 @@ class ClubCard extends StatelessWidget {
                               label: club.formatTotalDistance(
                                 displayUnit: displayUnit,
                               ),
-                              tooltip: 'Total distance',
+                              tooltip: AppLocalizations.of(context).clubTotalTooltip,
                             ),
                           ],
                         ],
@@ -172,21 +173,21 @@ class ClubCard extends StatelessWidget {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Club?'),
+            title: Text(AppLocalizations.of(context).clubDeleteTitle),
             content: Text(
               'Are you sure you want to delete this ${club.clubType.displayName}?',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).commonCancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
                 ),
-                child: const Text('Delete'),
+                child: Text(AppLocalizations.of(context).commonDelete),
               ),
             ],
           ),

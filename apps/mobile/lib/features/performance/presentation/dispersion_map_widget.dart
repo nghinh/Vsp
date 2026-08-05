@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../../../../domain/models/performance/dispersion_overlay.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Widget ───────────────────────────────────────────────────────────────────
 
@@ -103,7 +104,7 @@ class _DispersionMapWidgetState extends State<DispersionMapWidget> {
     final bounds = _calculateBounds();
 
     return Semantics(
-      label: 'Dispersion map showing ${widget.overlay.shotCount} shots',
+      label: AppLocalizations.of(context).dispersionMapLabel('${widget.overlay.shotCount}'),
       child: Stack(
         children: [
           MapLibreMap(

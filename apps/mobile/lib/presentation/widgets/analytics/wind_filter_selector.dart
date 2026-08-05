@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/driving_zone_filter.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Wind filter dropdown selector.
 ///
@@ -32,7 +33,7 @@ class WindFilterSelector extends StatelessWidget {
           children: [
             const Icon(Icons.air, size: 18),
             const SizedBox(width: 8),
-            const Text('Wind:', style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(AppLocalizations.of(context).analyticsWindLabel, style: TextStyle(fontWeight: FontWeight.w500)),
           ],
         ),
         const SizedBox(height: 8),
@@ -46,12 +47,12 @@ class WindFilterSelector extends StatelessWidget {
               vertical: 10,
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            hintText: 'Any',
+            hintText: AppLocalizations.of(context).analyticsAny,
           ),
           items: [
-            const DropdownMenuItem<WindCondition?>(
+            DropdownMenuItem<WindCondition?>(
               value: null,
-              child: Text('Any'),
+              child: Text(AppLocalizations.of(context).analyticsAny),
             ),
             ...WindCondition.values.map((condition) {
               return DropdownMenuItem<WindCondition?>(

@@ -15,6 +15,7 @@ import '../../../domain/value_objects/distance_measurement.dart';
 import '../../../domain/value_objects/distance_type.dart';
 import '../../../features/profile/data/profile_dto.dart' show DistanceUnit;
 import 'distance_value_display.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Hazard distance list widget.
 ///
@@ -176,7 +177,7 @@ class _HazardRow extends StatelessWidget {
               Expanded(
                 flex: 2,
                 child: _DistanceChip(
-                  label: 'Near',
+                  label: AppLocalizations.of(context).distanceNear,
                   measurement: nearDist,
                   useYards: useYards,
                 ),
@@ -189,14 +190,14 @@ class _HazardRow extends StatelessWidget {
                 flex: 2,
                 child: carryDist != null
                     ? _DistanceChip(
-                        label: 'Carry',
+                        label: AppLocalizations.of(context).distanceCarry,
                         measurement: carryDist,
                         useYards: useYards,
                         isCarry: true,
                       )
                     : farDist != null
                     ? _DistanceChip(
-                        label: 'Far',
+                        label: AppLocalizations.of(context).distanceFar,
                         measurement: farDist,
                         useYards: useYards,
                       )

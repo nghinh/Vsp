@@ -25,6 +25,7 @@ import 'privacy_bloc.dart';
 import 'widgets/privacy_request_card.dart';
 import 'widgets/request_type_selector.dart';
 import 'widgets/round_picker_for_deletion.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ class _PrivacyScreenBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacy & Data'),
+        title: Text(AppLocalizations.of(context).privacyTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -78,7 +79,7 @@ class _PrivacyScreenBody extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Request submitted successfully',
+                            AppLocalizations.of(context).privacyRequestSubmitted,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -103,7 +104,7 @@ class _PrivacyScreenBody extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            result.errorMessage ?? 'Failed to submit request',
+                            result.errorMessage ?? AppLocalizations.of(context).privacyRequestFailed,
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),
@@ -158,8 +159,8 @@ class _PrivacyScreenBody extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showSubmitRequestSheet(context),
         icon: const Icon(Icons.add),
-        label: const Text('New Request'),
-        tooltip: 'Submit a new privacy request',
+        label: Text(AppLocalizations.of(context).privacyNewRequest),
+        tooltip: AppLocalizations.of(context).privacyNewRequestTooltip,
       ),
     );
   }
@@ -204,7 +205,7 @@ class _PrivacyContent extends StatelessWidget {
           _EmptyView()
         else ...[
           Text(
-            'YOUR REQUESTS',
+            AppLocalizations.of(context).privacyYourRequests,
             style: theme.textTheme.labelSmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
               letterSpacing: VspLetterSpacing.wide,
@@ -284,7 +285,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'New Privacy Request',
+                      AppLocalizations.of(context).privacyNewRequestTitle,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -312,7 +313,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                 children: [
                   // ─── Request Type Selector ────────────────────────────────────
                   Text(
-                    'What would you like to do?',
+                    AppLocalizations.of(context).privacyWhatToDo,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -372,7 +373,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: VspButton(
-                  label: 'Submit Request',
+                  label: AppLocalizations.of(context).privacySubmitRequest,
                   icon: Icons.send,
                   isLoading: _isSubmitting,
                   onPressed: _canSubmit() ? _submit : null,
@@ -442,7 +443,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                       : VspColorLight.destructive),
                 ),
                 const SizedBox(width: 8),
-                const Text('Delete Account?'),
+                Text(AppLocalizations.of(context).privacyDeleteAccountTitle),
               ],
             ),
             content: Column(
@@ -450,13 +451,12 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'This will permanently delete your account and all your data. '
-                  'This action cannot be undone.',
+                  AppLocalizations.of(context).privacyDeleteAccountWarning,
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: VspSpacing.md),
                 Text(
-                  'Type DELETE to confirm:',
+                  AppLocalizations.of(context).privacyTypeDelete,
                   style: theme.textTheme.labelMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
@@ -482,7 +482,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).commonCancel),
               ),
               TextButton(
                 onPressed: () {
@@ -495,7 +495,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                       ? VspColorDark.destructive
                       : VspColorLight.destructive),
                 ),
-                child: const Text('Delete Forever'),
+                child: Text(AppLocalizations.of(context).privacyDeleteForever),
               ),
             ],
           ),
@@ -525,14 +525,14 @@ class _RoundPickerSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Select Round to Delete',
+          AppLocalizations.of(context).privacySelectRound,
           style: theme.textTheme.titleSmall?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: VspSpacing.sm),
         Text(
-          'Choose the round you want to delete. This will also delete all scores for that round.',
+          AppLocalizations.of(context).privacySelectRoundSubtitle,
           style: theme.textTheme.bodySmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -574,8 +574,8 @@ class _RoundPickerSection extends StatelessWidget {
                 Expanded(
                   child: Text(
                     selectedRoundId != null
-                        ? 'Round selected'
-                        : 'Tap to select a round',
+                        ? AppLocalizations.of(context).privacyRoundSelected
+                        : AppLocalizations.of(context).privacyTapSelectRound,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: selectedRoundId != null
                           ? null
@@ -632,7 +632,7 @@ class _AccountDeletionWarning extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                'Destructive Action',
+                AppLocalizations.of(context).privacyDestructiveAction,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: (colorScheme.brightness == Brightness.dark

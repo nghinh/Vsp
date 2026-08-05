@@ -17,6 +17,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/shot.dart';
 import 'package:vsp_mobile/domain/models/strokes_gained.dart';
 import 'package:vsp_mobile/presentation/screens/analytics/strokes_gained_screen.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('StrokesGainedScreen', () {
@@ -85,6 +87,9 @@ void main() {
       Set<SGBenchmarkType>? benchmarkTypes,
     }) {
       return MaterialApp(
+        locale: const Locale('en'),
+        supportedLocales: kSupportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
           useMaterial3: true,

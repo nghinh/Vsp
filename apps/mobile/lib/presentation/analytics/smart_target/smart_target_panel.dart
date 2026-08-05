@@ -19,6 +19,7 @@ import '../../../domain/analytics/smart_target/models/strategy_option.dart';
 import '../../../domain/analytics/smart_target/models/strategy_type.dart';
 import 'smart_target_card.dart';
 import 'strategy_option_tile.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Smart Target panel widget.
 ///
@@ -117,7 +118,7 @@ class SmartTargetPanel extends StatelessWidget {
             Icons.gps_fixed,
             size: 20,
             color: colorScheme.primary,
-            semanticLabel: 'Smart Target icon',
+            semanticLabel: AppLocalizations.of(context).smartTargetIcon,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -132,7 +133,7 @@ class SmartTargetPanel extends StatelessWidget {
             IconButton(
               icon: const Icon(Icons.close, size: 20),
               onPressed: onDismiss,
-              tooltip: 'Dismiss Smart Target',
+              tooltip: AppLocalizations.of(context).smartTargetDismiss,
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
             ),
@@ -142,7 +143,7 @@ class SmartTargetPanel extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.all(32),
       child: Column(
         children: [
@@ -152,7 +153,7 @@ class SmartTargetPanel extends StatelessWidget {
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
           SizedBox(height: 12),
-          Text('Analyzing strategies...', style: TextStyle(fontSize: 14)),
+          Text(AppLocalizations.of(context).smartTargetAnalyzing, style: TextStyle(fontSize: 14)),
         ],
       ),
     );
@@ -169,7 +170,7 @@ class SmartTargetPanel extends StatelessWidget {
             Icons.lock_outline,
             size: 24,
             color: colorScheme.error,
-            semanticLabel: 'Restricted',
+            semanticLabel: AppLocalizations.of(context).smartTargetRestricted,
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -200,7 +201,7 @@ class SmartTargetPanel extends StatelessWidget {
                 Icons.info_outline,
                 size: 24,
                 color: colorScheme.onSurfaceVariant,
-                semanticLabel: 'Information',
+                semanticLabel: AppLocalizations.of(context).smartTargetInformation,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -221,7 +222,7 @@ class SmartTargetPanel extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context).commonRetry),
               ),
             ),
           ],
@@ -244,7 +245,7 @@ class SmartTargetPanel extends StatelessWidget {
                 Icons.error_outline,
                 size: 24,
                 color: colorScheme.error,
-                semanticLabel: 'Error',
+                semanticLabel: AppLocalizations.of(context).commonErrorLabel,
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -262,7 +263,7 @@ class SmartTargetPanel extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh, size: 18),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context).commonRetry),
               ),
             ),
           ],

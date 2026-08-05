@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/analytics/smart_target/models/strategy_option.dart';
 import '../../../domain/analytics/smart_target/models/strategy_type.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Strategy option tile for Smart Target selection.
 ///
@@ -115,14 +116,14 @@ class StrategyOptionTile extends StatelessWidget {
                   Icons.check_circle,
                   size: 20,
                   color: _selectedColor(colorScheme),
-                  semanticLabel: 'Selected',
+                  semanticLabel: AppLocalizations.of(context).smartTargetSelected,
                 )
               else
                 Icon(
                   Icons.chevron_right,
                   size: 20,
                   color: colorScheme.onSurfaceVariant,
-                  semanticLabel: 'Not selected',
+                  semanticLabel: AppLocalizations.of(context).smartTargetNotSelected,
                 ),
             ],
           ),
@@ -223,7 +224,7 @@ class _RiskIndicator extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Risk: $riskScore',
+      label: AppLocalizations.of(context).smartTargetRiskLabel('$riskScore'),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
         decoration: BoxDecoration(

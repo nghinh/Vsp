@@ -9,6 +9,7 @@
 // Story 5.3 — Slice 3: Score Entry UI
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Score entry state for a single player on a single hole.
 enum PlayerScoreStatus {
@@ -76,7 +77,7 @@ class PlayerScoreRow extends StatelessWidget {
         child: Row(
           children: [
             // Score status indicator (shapes + number — non-color-only)
-            _buildScoreIndicator(theme),
+            _buildScoreIndicator(context, theme),
 
             const SizedBox(width: 12),
 
@@ -98,7 +99,7 @@ class PlayerScoreRow extends StatelessWidget {
               _buildScoreButton(
                 icon: Icons.remove,
                 onPressed: onDecrement,
-                semanticLabel: 'Decrease score for $playerName',
+                semanticLabel: AppLocalizations.of(context).scoreDecreaseFor(playerName),
                 theme: theme,
               ),
 
@@ -109,13 +110,13 @@ class PlayerScoreRow extends StatelessWidget {
               _buildScoreButton(
                 icon: Icons.add,
                 onPressed: onIncrement,
-                semanticLabel: 'Increase score for $playerName',
+                semanticLabel: AppLocalizations.of(context).scoreIncreaseFor(playerName),
                 theme: theme,
               ),
             ] else
               // Placeholder when not expanded
               Text(
-                'Tap to enter',
+                AppLocalizations.of(context).scorecardTapToEnter,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withOpacity(0.4),
                 ),
@@ -126,11 +127,11 @@ class PlayerScoreRow extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreIndicator(ThemeData theme) {
+  Widget _buildScoreIndicator(BuildContext context, ThemeData theme) {
     final (icon, label) = switch (status) {
-      PlayerScoreStatus.entered => ('●', 'Score entered: ${grossScore ?? ""}'),
-      PlayerScoreStatus.notEntered => ('○', 'Score not entered'),
-      PlayerScoreStatus.notPlayed => ('—', 'Hole not played'),
+      PlayerScoreStatus.entered => ('●', AppLocalizations.of(context).scoreEnteredValue('${grossScore ?? ""}')),
+      PlayerScoreStatus.notEntered => ('○', AppLocalizations.of(context).scorecardScoreNotEntered),
+      PlayerScoreStatus.notPlayed => ('—', AppLocalizations.of(context).scorecardHoleNotPlayed),
     };
 
     return Semantics(

@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
 
 import '../../data/profile_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Unit toggle — METERS / YARDS.
 class UnitPicker extends StatelessWidget {
@@ -31,7 +32,7 @@ class UnitPicker extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Distance unit, currently ${selectedUnit.value}',
+      label: AppLocalizations.of(context).profileUnitCurrent(selectedUnit.value),
       button: true,
       child: Container(
         decoration: BoxDecoration(
@@ -42,13 +43,13 @@ class UnitPicker extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _UnitOption(
-              label: 'Meters',
+              label: AppLocalizations.of(context).unitMeters,
               isSelected: selectedUnit == DistanceUnit.meters,
               onTap: () => onChanged(DistanceUnit.meters),
               isLeft: true,
             ),
             _UnitOption(
-              label: 'Yards',
+              label: AppLocalizations.of(context).unitYards,
               isSelected: selectedUnit == DistanceUnit.yards,
               onTap: () => onChanged(DistanceUnit.yards),
               isLeft: false,

@@ -16,6 +16,7 @@ import 'package:flutter/services.dart';
 
 import '../../../domain/models/course_hole_detection.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Dialog shown when hole auto-switch is blocked but user can confirm manually.
 ///
@@ -90,7 +91,7 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
             _confidenceIcon(confidenceLevel),
             color: _confidenceColor(confidenceLevel, theme),
             size: 28,
-            semanticLabel: 'Confidence: ${confidenceLevel.displayLabel}',
+            semanticLabel: AppLocalizations.of(context).holeSwitchConfidence(confidenceLevel.displayLabel),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -141,7 +142,7 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _HoleIndicator(
-                label: 'Current',
+                label: AppLocalizations.of(context).holeSwitchCurrent,
                 holeNumber: currentHoleNumber,
                 isCurrent: true,
               ),
@@ -151,11 +152,11 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
                   Icons.arrow_forward,
                   color: theme.colorScheme.outline,
                   size: 24,
-                  semanticLabel: 'Switching to',
+                  semanticLabel: AppLocalizations.of(context).holeSwitchSwitchingTo,
                 ),
               ),
               _HoleIndicator(
-                label: 'Suggested',
+                label: AppLocalizations.of(context).holeSwitchSuggested,
                 holeNumber: suggestedHoleNumber,
                 isCurrent: false,
               ),

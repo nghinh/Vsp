@@ -4,6 +4,7 @@
 // Per AC1: club filter wired to cubit.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Club filter chips for selecting which clubs to include in analytics.
 ///
@@ -38,7 +39,7 @@ class ClubFilterChips extends StatelessWidget {
           children: [
             const Icon(Icons.golf_course, size: 18),
             const SizedBox(width: 8),
-            const Text('Clubs:', style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(AppLocalizations.of(context).analyticsClubsLabel, style: TextStyle(fontWeight: FontWeight.w500)),
             const Spacer(),
             if (selectedClubIds.isNotEmpty)
               Text(
@@ -65,7 +66,7 @@ class ClubFilterChips extends StatelessWidget {
                   // Accessibility: 44dp minimum touch target
                   visualDensity: VisualDensity.standard,
                   avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
-                  tooltip: 'Filter by ${entry.value}',
+                  tooltip: AppLocalizations.of(context).analyticsFilterByClub(entry.value),
                 ),
               );
             }).toList(),

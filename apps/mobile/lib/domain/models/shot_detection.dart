@@ -506,7 +506,7 @@ class ShotDetectionResult extends Equatable {
 
   factory ShotDetectionResult.fromJson(Map<String, dynamic> json) {
     return ShotDetectionResult(
-      suggestions: (json['suggestions'] as List)
+      suggestions: (json['suggestions'] as List? ?? const [])
           .map(
             (s) => ShotDetectionSuggestion.fromJson(s as Map<String, dynamic>),
           )

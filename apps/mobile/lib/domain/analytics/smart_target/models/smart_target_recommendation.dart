@@ -125,7 +125,7 @@ class SmartTargetRecommendation extends Equatable {
       );
     }
     return SmartTargetRecommendation.available(
-      strategyOptions: (json['strategyOptions'] as List<dynamic>)
+      strategyOptions: (json['strategyOptions'] as List<dynamic>? ?? const [])
           .map((e) => StrategyOption.fromJson(e as Map<String, dynamic>))
           .toList(),
       dataSourceVersions: (json['dataSourceVersions'] as Map<String, dynamic>?)

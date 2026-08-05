@@ -13,6 +13,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Toggle state for penalty markers.
 enum PenaltyToggleState {
@@ -159,30 +160,30 @@ class PenaltyToggleRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         PenaltyToggle(
-          label: 'Penalty',
+          label: AppLocalizations.of(context).shotPenalty,
           icon: Icons.warning_amber_rounded,
           state: isPenalty ? PenaltyToggleState.set : PenaltyToggleState.unset,
           onToggleOn: () => onPenaltyChanged(true),
           onToggleOff: () => onPenaltyChanged(false),
-          semanticLabel: 'Mark as penalty stroke',
+          semanticLabel: AppLocalizations.of(context).shotMarkPenalty,
         ),
         PenaltyToggle(
-          label: 'Provisional',
+          label: AppLocalizations.of(context).shotProvisional,
           icon: Icons.refresh,
           state: isProvisional
               ? PenaltyToggleState.set
               : PenaltyToggleState.unset,
           onToggleOn: () => onProvisionalChanged(true),
           onToggleOff: () => onProvisionalChanged(false),
-          semanticLabel: 'Mark as provisional ball',
+          semanticLabel: AppLocalizations.of(context).shotMarkProvisional,
         ),
         PenaltyToggle(
-          label: 'Mulligan',
+          label: AppLocalizations.of(context).shotMulligan,
           icon: Icons.replay,
           state: isMulligan ? PenaltyToggleState.set : PenaltyToggleState.unset,
           onToggleOn: () => onMulliganChanged(true),
           onToggleOff: () => onMulliganChanged(false),
-          semanticLabel: 'Mark as mulligan',
+          semanticLabel: AppLocalizations.of(context).shotMarkMulligan,
         ),
       ],
     );

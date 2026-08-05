@@ -13,6 +13,7 @@ import '../../../../domain/models/data_freshness.dart';
 import 'download_state_badge.dart';
 import 'freshness_badge.dart';
 import 'verification_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A card displaying course search result with all AC-3 status indicators.
 class CourseCard extends StatelessWidget {
@@ -42,7 +43,7 @@ class CourseCard extends StatelessWidget {
     final downloadState = _resolveDownloadState();
 
     return Semantics(
-      label: _buildSemanticLabel(),
+      label: _buildSemanticLabel(context),
       button: true,
       child: InkWell(
         onTap: onTap,
@@ -123,8 +124,8 @@ class CourseCard extends StatelessWidget {
                         minHeight: compact ? 36 : 44,
                       ),
                       tooltip: isFavorite
-                          ? 'Remove from favorites'
-                          : 'Add to favorites',
+                          ? AppLocalizations.of(context).courseRemoveFavorite
+                          : AppLocalizations.of(context).courseAddFavorite,
                     )
                   else
                     Icon(
@@ -151,7 +152,7 @@ class CourseCard extends StatelessWidget {
                       const SizedBox(width: VspSpacing.sm),
                       _InfoChip(
                         icon: Icons.straighten,
-                        label: 'Par ${course.parTotal}',
+                        label: AppLocalizations.of(context).coursePar('${course.parTotal}'),
                       ),
                     ],
 
@@ -161,7 +162,7 @@ class CourseCard extends StatelessWidget {
                         icon: Icons.star,
                         label: course.rating != null
                             ? '${course.rating!.toStringAsFixed(1)}'
-                            : 'Slope ${course.slope}',
+                            : AppLocalizations.of(context).courseSlope('${course.slope}'),
                         iconColor: Colors.amber,
                       ),
                     ],
@@ -217,11 +218,11 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  String _buildSemanticLabel() {
+  String _buildSemanticLabel(BuildContext context) {
     final parts = <String>[
       course.displayName,
       '${course.holesCount} holes',
-      if (course.parTotal != null) 'Par ${course.parTotal}',
+      if (course.parTotal != null) AppLocalizations.of(context).coursePar('${course.parTotal}'),
       if (course.dataFreshness?.isVerified == true) 'verified',
       if (course.dataFreshness?.isStale == true) 'stale data',
     ];

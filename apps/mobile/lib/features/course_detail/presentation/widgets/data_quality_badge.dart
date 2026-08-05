@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/data_quality.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Data quality badge — unified indicator for AC-3.
 class DataQualityBadge extends StatelessWidget {
@@ -47,7 +48,7 @@ class DataQualityBadge extends StatelessWidget {
 
   Widget _buildUnknown(BuildContext context) {
     return Semantics(
-      label: 'Data quality unknown',
+      label: AppLocalizations.of(context).dataQualityUnknown,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -77,7 +78,7 @@ class DataQualityBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Unknown',
+              AppLocalizations.of(context).freshnessUnknown,
               style: TextStyle(
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
@@ -101,7 +102,7 @@ class DataQualityBadge extends StatelessWidget {
     );
 
     return Semantics(
-      label: 'Official verified data',
+      label: AppLocalizations.of(context).dataQualityOfficialLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -123,7 +124,7 @@ class DataQualityBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Official',
+              AppLocalizations.of(context).dataQualityOfficial,
               style: TextStyle(
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
@@ -146,7 +147,7 @@ class DataQualityBadge extends StatelessWidget {
     );
 
     return Semantics(
-      label: 'Estimated data quality',
+      label: AppLocalizations.of(context).dataQualityEstimatedLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -163,7 +164,7 @@ class DataQualityBadge extends StatelessWidget {
             Icon(Icons.pending, size: compact ? 12 : 14, color: color),
             const SizedBox(width: 4),
             Text(
-              'Estimated',
+              AppLocalizations.of(context).dataQualityEstimated,
               style: TextStyle(
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
@@ -183,7 +184,7 @@ class DataQualityBadge extends StatelessWidget {
         : VspColorLight.textTertiary;
 
     return Semantics(
-      label: 'Community contributed data',
+      label: AppLocalizations.of(context).dataQualityCommunityLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -207,7 +208,7 @@ class DataQualityBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Community',
+              AppLocalizations.of(context).dataQualityCommunity,
               style: TextStyle(
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
@@ -227,7 +228,7 @@ class DataQualityBadge extends StatelessWidget {
     final color = VspColorSemantic.of(brightness, VspSemanticColorToken.stale);
 
     return Semantics(
-      label: 'Data is stale',
+      label: AppLocalizations.of(context).freshnessStaleLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -243,7 +244,7 @@ class DataQualityBadge extends StatelessWidget {
             Icon(Icons.warning_amber, size: compact ? 12 : 14, color: color),
             const SizedBox(width: 4),
             Text(
-              'Stale',
+              AppLocalizations.of(context).freshnessStale,
               style: TextStyle(
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,

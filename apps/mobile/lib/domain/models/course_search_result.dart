@@ -195,15 +195,15 @@ class CourseSearchPage extends Equatable {
 
   factory CourseSearchPage.fromJson(Map<String, dynamic> json) {
     return CourseSearchPage(
-      content: (json['content'] as List<dynamic>)
+      content: (json['content'] as List<dynamic>? ?? const [])
           .map((e) => CourseSearchResult.fromJson(e as Map<String, dynamic>))
           .toList(),
-      page: (json['page'] as num).toInt(),
-      size: (json['size'] as num).toInt(),
-      totalElements: (json['totalElements'] as num).toInt(),
-      totalPages: (json['totalPages'] as num).toInt(),
-      first: json['first'] as bool,
-      last: json['last'] as bool,
+      page: (json['page'] as num?)?.toInt() ?? 0,
+      size: (json['size'] as num?)?.toInt() ?? 0,
+      totalElements: (json['totalElements'] as num?)?.toInt() ?? 0,
+      totalPages: (json['totalPages'] as num?)?.toInt() ?? 0,
+      first: json['first'] as bool? ?? true,
+      last: json['last'] as bool? ?? true,
     );
   }
 

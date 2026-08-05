@@ -20,6 +20,7 @@ import '../../../data/repositories/strokes_gained_repository_impl.dart';
 import '../../../domain/models/shot.dart';
 import '../../../domain/models/strokes_gained.dart';
 import '../../widgets/analytics/strokes_gained_card.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Main screen for Strokes Gained analytics.
 class StrokesGainedScreen extends StatefulWidget {
@@ -113,7 +114,7 @@ class _StrokesGainedScreenState extends State<StrokesGainedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Strokes Gained'),
+        title: Text(AppLocalizations.of(context).analyticsStrokesGained),
         centerTitle: true,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -124,7 +125,7 @@ class _StrokesGainedScreenState extends State<StrokesGainedScreen> {
               HapticFeedback.lightImpact();
               _calculate();
             },
-            tooltip: 'Recalculate',
+            tooltip: AppLocalizations.of(context).strokesGainedRecalculate,
           ),
         ],
       ),
@@ -406,7 +407,7 @@ class _EmptyState extends StatelessWidget {
               Icons.golf_course_outlined,
               size: 64,
               color: theme.colorScheme.onSurfaceVariant,
-              semanticLabel: 'No data',
+              semanticLabel: AppLocalizations.of(context).commonNoDataShort,
             ),
             const SizedBox(height: 16),
             Text(
@@ -451,7 +452,7 @@ class _ErrorState extends StatelessWidget {
               Icons.error_outline,
               size: 64,
               color: theme.colorScheme.error,
-              semanticLabel: 'Error',
+              semanticLabel: AppLocalizations.of(context).commonErrorLabel,
             ),
             const SizedBox(height: 16),
             Text(
@@ -472,7 +473,7 @@ class _ErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(AppLocalizations.of(context).commonRetry),
             ),
           ],
         ),

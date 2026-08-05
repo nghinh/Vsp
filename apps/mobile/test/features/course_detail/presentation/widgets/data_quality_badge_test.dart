@@ -5,10 +5,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/data_quality.dart';
 import 'package:vsp_mobile/domain/models/data_freshness.dart';
 import 'package:vsp_mobile/features/course_detail/presentation/widgets/data_quality_badge.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   Widget buildBadge({DataQuality? dataQuality, bool compact = false}) {
     return MaterialApp(
+      locale: const Locale('en'),
+      supportedLocales: kSupportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: Scaffold(
         body: DataQualityBadge(
           dataQuality: dataQuality,

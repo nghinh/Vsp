@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'sample_size_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card showing club distance statistics.
 /// Per NFR-4: semantic labels for accessibility.
@@ -48,7 +49,7 @@ class ClubStatsCard extends StatelessWidget {
             // Carry distance stats
             _buildDistanceSection(
               context,
-              title: 'Carry Distance',
+              title: AppLocalizations.of(context).performanceCarryDistance,
               avg: stats.formatCarryAvg(unit: displayUnit),
               median: stats.formatCarryMedian(unit: displayUnit),
               variability: stats.formatVariability(unit: displayUnit),
@@ -67,7 +68,7 @@ class ClubStatsCard extends StatelessWidget {
             // Total distance stats
             _buildDistanceSection(
               context,
-              title: 'Total Distance',
+              title: AppLocalizations.of(context).performanceTotalDistance,
               avg: stats.formatTotalAvg(unit: displayUnit),
               median: stats.formatTotalMedian(unit: displayUnit),
               variability: stats.totalStdDev != null
@@ -89,7 +90,7 @@ class ClubStatsCard extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: onViewDispersion,
                   icon: const Icon(Icons.scatter_plot, size: 18),
-                  label: const Text('View Dispersion'),
+                  label: Text(AppLocalizations.of(context).performanceViewDispersion),
                 ),
               ),
             ],
@@ -159,10 +160,10 @@ class ClubStatsCard extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _StatItem(label: 'Avg', value: avg, isPrimary: true),
+              child: _StatItem(label: AppLocalizations.of(context).analyticsAvg, value: avg, isPrimary: true),
             ),
             Expanded(
-              child: _StatItem(label: 'Median', value: median),
+              child: _StatItem(label: AppLocalizations.of(context).performanceMedian, value: median),
             ),
             Expanded(
               child: _StatItem(label: '± Std Dev', value: variability),
@@ -173,10 +174,10 @@ class ClubStatsCard extends StatelessWidget {
         Row(
           children: [
             Expanded(
-              child: _StatItem(label: 'Min', value: min, isSmall: true),
+              child: _StatItem(label: AppLocalizations.of(context).performanceMin, value: min, isSmall: true),
             ),
             Expanded(
-              child: _StatItem(label: 'Max', value: max, isSmall: true),
+              child: _StatItem(label: AppLocalizations.of(context).performanceMax, value: max, isSmall: true),
             ),
             const Expanded(child: SizedBox()),
           ],

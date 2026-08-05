@@ -81,7 +81,7 @@ class StrategyOption extends Equatable {
       ),
       carryMeters: (json['carryMeters'] as num).toDouble(),
       remainingMeters: (json['remainingMeters'] as num).toDouble(),
-      hazardsAtLanding: (json['hazardsAtLanding'] as List<dynamic>)
+      hazardsAtLanding: (json['hazardsAtLanding'] as List<dynamic>? ?? const [])
           .map((e) => HazardAtLanding.fromJson(e as Map<String, dynamic>))
           .toList(),
       riskScore: (json['riskScore'] as num).toInt(),

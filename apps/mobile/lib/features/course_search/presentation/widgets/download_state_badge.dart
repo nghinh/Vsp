@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Download state of a course package.
 enum DownloadState {
@@ -43,7 +44,7 @@ class DownloadStateBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final brightness = theme.colorScheme.brightness;
 
-    final config = _resolveConfig(brightness);
+    final config = _resolveConfig(context, brightness);
 
     if (state == DownloadState.downloading) {
       return _buildDownloading(context, config, theme);
@@ -52,11 +53,11 @@ class DownloadStateBadge extends StatelessWidget {
     return _buildPill(context, config, theme);
   }
 
-  _BadgeConfig _resolveConfig(Brightness brightness) {
+  _BadgeConfig _resolveConfig(BuildContext context, Brightness brightness) {
     switch (state) {
       case DownloadState.downloaded:
         return _BadgeConfig(
-          label: 'Downloaded',
+          label: AppLocalizations.of(context).downloadDownloaded,
           icon: Icons.check_circle,
           // Tinted background so the accent label/icon stay legible; a solid
           // accent fill matched the text color and rendered the pill blank.
@@ -73,7 +74,7 @@ class DownloadStateBadge extends StatelessWidget {
 
       case DownloadState.updateAvailable:
         return _BadgeConfig(
-          label: 'Update',
+          label: AppLocalizations.of(context).downloadUpdate,
           icon: Icons.system_update_alt,
           // Tinted background so the secondary label/icon stay legible; a solid
           // secondary fill matched the text color and rendered the pill blank.
@@ -90,7 +91,7 @@ class DownloadStateBadge extends StatelessWidget {
 
       case DownloadState.notDownloaded:
         return _BadgeConfig(
-          label: 'Download',
+          label: AppLocalizations.of(context).downloadDownload,
           icon: Icons.download,
           backgroundColor: Colors.transparent,
           textColor: brightness == Brightness.dark
@@ -103,7 +104,7 @@ class DownloadStateBadge extends StatelessWidget {
 
       case DownloadState.downloading:
         return _BadgeConfig(
-          label: 'Downloading',
+          label: AppLocalizations.of(context).downloadDownloading,
           icon: Icons.downloading,
           backgroundColor: VspColorSemantic.syncPending.withOpacity(0.12),
           textColor: VspColorSemantic.syncPending,
@@ -118,7 +119,7 @@ class DownloadStateBadge extends StatelessWidget {
     ThemeData theme,
   ) {
     return Semantics(
-      label: 'Course ${config.label.toLowerCase()}',
+      label: AppLocalizations.of(context).downloadStatusLabel(config.label.toLowerCase()),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -156,7 +157,7 @@ class DownloadStateBadge extends StatelessWidget {
     final progressValue = (progress ?? 0.0).clamp(0.0, 1.0);
 
     return Semantics(
-      label: 'Downloading course package ${(progressValue * 100).round()}%',
+      label: AppLocalizations.of(context).downloadProgressLabel('${(progressValue * 100).round()}'),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -182,7 +183,7 @@ class DownloadStateBadge extends StatelessWidget {
             Text(
               progressValue > 0
                   ? '${(progressValue * 100).round()}%'
-                  : 'Starting...',
+                  : AppLocalizations.of(context).downloadStarting,
               style: TextStyle(
                 fontSize: compact ? 10 : 11,
                 fontWeight: FontWeight.w600,

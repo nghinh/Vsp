@@ -27,6 +27,7 @@ import 'widgets/profile_field_tile.dart';
 import 'widgets/unit_picker.dart';
 import 'widgets/skill_level_picker.dart';
 import 'widgets/hand_picker.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -115,7 +116,7 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Profile'),
+        title: Text(AppLocalizations.of(context).profileEdit),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -132,11 +133,11 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
               ScaffoldMessenger.of(context).hideCurrentSnackBar();
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Row(
+                  content: Row(
                     children: [
-                      Icon(Icons.cloud_off, color: Colors.white, size: 18),
-                      SizedBox(width: 8),
-                      Text('Saved offline'),
+                      const Icon(Icons.cloud_off, color: Colors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Text(AppLocalizations.of(context).profileSavedOffline),
                     ],
                   ),
                   backgroundColor: const Color(0xFF3B82F6),
@@ -242,13 +243,13 @@ class _ProfileContent extends StatelessWidget {
         ],
 
         // ─── Identity Section ───────────────────────────────────────────────
-        _SectionHeader(title: 'Identity'),
+        _SectionHeader(title: AppLocalizations.of(context).profileSectionIdentity),
         const SizedBox(height: VspSpacing.sm),
         _IdentitySection(profile: profile),
         const SizedBox(height: VspSpacing.lg),
 
         // ─── Golf Stats Section ──────────────────────────────────────────────
-        _SectionHeader(title: 'Golf Stats'),
+        _SectionHeader(title: AppLocalizations.of(context).profileSectionGolfStats),
         const SizedBox(height: VspSpacing.sm),
         _GolfStatsSection(
           profile: profile,
@@ -260,7 +261,7 @@ class _ProfileContent extends StatelessWidget {
         const SizedBox(height: VspSpacing.lg),
 
         // ─── Distance Section ────────────────────────────────────────────────
-        _SectionHeader(title: 'Distance'),
+        _SectionHeader(title: AppLocalizations.of(context).profileSectionDistance),
         const SizedBox(height: VspSpacing.sm),
         _DistanceSection(
           profile: profile,
@@ -270,7 +271,7 @@ class _ProfileContent extends StatelessWidget {
         const SizedBox(height: VspSpacing.lg),
 
         // ─── Personal Section ────────────────────────────────────────────────
-        _SectionHeader(title: 'Personal'),
+        _SectionHeader(title: AppLocalizations.of(context).profileSectionPersonal),
         const SizedBox(height: VspSpacing.sm),
         _PersonalSection(
           profile: profile,
@@ -336,9 +337,9 @@ class _IdentitySection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Golfer', style: theme.textTheme.titleMedium),
+                    Text(AppLocalizations.of(context).profileGolfer, style: theme.textTheme.titleMedium),
                     Text(
-                      'ID: ${profile.golferAccountId}',
+                      AppLocalizations.of(context).profileIdLabel('${profile.golferAccountId}'),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -351,8 +352,8 @@ class _IdentitySection extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(),
           const SizedBox(height: VspSpacing.sm),
-          _InfoRow(label: 'Home Club', value: profile.homeClub ?? '—'),
-          _InfoRow(label: 'Country', value: profile.country ?? '—'),
+          _InfoRow(label: AppLocalizations.of(context).profileHomeClub, value: profile.homeClub ?? '—'),
+          _InfoRow(label: AppLocalizations.of(context).profileCountry, value: profile.country ?? '—'),
         ],
       ),
     );
@@ -406,7 +407,7 @@ class _GolfStatsSection extends StatelessWidget {
       children: [
         // Handicap
         _EditableField(
-          label: 'Handicap',
+          label: AppLocalizations.of(context).profileHandicap,
           value: profile.handicap?.toString() ?? '',
           controller: handicapController,
           placeholder: 'e.g. 12.5',
@@ -424,7 +425,7 @@ class _GolfStatsSection extends StatelessWidget {
 
         // Home Club
         _EditableField(
-          label: 'Home Club',
+          label: AppLocalizations.of(context).profileHomeClub,
           value: profile.homeClub ?? '',
           controller: homeClubController,
           placeholder: 'e.g. Vietnam Golf & Country Club',
@@ -455,7 +456,7 @@ class _GolfStatsSection extends StatelessWidget {
 
         // Target Score
         _EditableField(
-          label: 'Target Score',
+          label: AppLocalizations.of(context).profileTargetScore,
           value: profile.targetScore?.toString() ?? '',
           controller: targetScoreController,
           placeholder: 'e.g. 90',
@@ -501,7 +502,7 @@ class _DistanceSection extends StatelessWidget {
       children: [
         // Unit Picker — AC-2: immediate display conversion
         Text(
-          'Distance Unit',
+          AppLocalizations.of(context).profileDistanceUnit,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -518,12 +519,12 @@ class _DistanceSection extends StatelessWidget {
 
         // Driver Distance
         _EditableField(
-          label: 'Driver Distance (${profile.distanceUnitLabel})',
+          label: AppLocalizations.of(context).profileDriverDistance(profile.distanceUnitLabel),
           value: profile.displayDriverDistance?.toString() ?? '',
           controller: driverDistanceController,
           placeholder: 'e.g. 220',
           keyboardType: TextInputType.number,
-          helperText: 'Average drive distance in ${profile.distanceUnitLabel}',
+          helperText: AppLocalizations.of(context).profileDriverDistanceHelper(profile.distanceUnitLabel),
           savingField: state?.savingField == ProfileField.driverDistance
               ? 'driverDistance'
               : null,
@@ -573,7 +574,7 @@ class _PersonalSection extends StatelessWidget {
       children: [
         // Dominant Hand
         Text(
-          'Dominant Hand',
+          AppLocalizations.of(context).profileDominantHand,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -594,7 +595,7 @@ class _PersonalSection extends StatelessWidget {
 
         // Swing Speed
         _EditableField(
-          label: 'Swing Speed (mph)',
+          label: AppLocalizations.of(context).profileSwingSpeed,
           value: profile.swingSpeed?.toString() ?? '',
           controller: swingSpeedController,
           placeholder: 'e.g. 95',
@@ -609,7 +610,7 @@ class _PersonalSection extends StatelessWidget {
 
         // Birth Year
         _EditableField(
-          label: 'Birth Year',
+          label: AppLocalizations.of(context).profileBirthYear,
           value: profile.birthYear?.toString() ?? '',
           controller: birthYearController,
           placeholder: 'e.g. 1985',
@@ -624,7 +625,7 @@ class _PersonalSection extends StatelessWidget {
 
         // Country
         _EditableField(
-          label: 'Country',
+          label: AppLocalizations.of(context).profileCountry,
           value: profile.country ?? '',
           controller: countryController,
           placeholder: 'e.g. Vietnam',
@@ -730,11 +731,11 @@ class _EditableFieldState extends State<_EditableField> {
                   widget.controller.text = widget.value;
                   setState(() => _isEditing = false);
                 },
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).commonCancel),
               ),
               const SizedBox(width: VspSpacing.sm),
               VspButton(
-                label: 'Save',
+                label: AppLocalizations.of(context).commonSave,
                 size: VspButtonSize.small,
                 onPressed: _commit,
               ),
@@ -870,7 +871,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Try Again',
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
               variant: VspButtonVariant.secondary,
               icon: Icons.refresh,

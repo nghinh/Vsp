@@ -18,6 +18,7 @@ import '../../../domain/models/course_hole_detection.dart';
 import '../../../domain/models/sync_status.dart';
 import '../detection_confidence_indicator.dart';
 import '../sync_status_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Widget for displaying a shot in a list.
 class ShotListTile extends StatelessWidget {
@@ -148,7 +149,7 @@ class ShotListTile extends StatelessWidget {
                             const SizedBox(width: VspSpacing.xs),
                             _FlagBadge(
                               icon: Icons.warning_amber_rounded,
-                              label: 'Penalty',
+                              label: AppLocalizations.of(context).shotPenalty,
                               color: colorScheme.error,
                             ),
                           ],
@@ -156,7 +157,7 @@ class ShotListTile extends StatelessWidget {
                             const SizedBox(width: VspSpacing.xs),
                             _FlagBadge(
                               icon: Icons.refresh,
-                              label: 'Provisional',
+                              label: AppLocalizations.of(context).shotProvisional,
                               color: Colors.orange,
                             ),
                           ],
@@ -164,7 +165,7 @@ class ShotListTile extends StatelessWidget {
                             const SizedBox(width: VspSpacing.xs),
                             _FlagBadge(
                               icon: Icons.replay,
-                              label: 'Mulligan',
+                              label: AppLocalizations.of(context).shotMulligan,
                               color: Colors.purple,
                             ),
                           ],
@@ -202,7 +203,7 @@ class ShotListTile extends StatelessWidget {
                       size: 20,
                       color: colorScheme.onSurfaceVariant,
                     ),
-                    tooltip: 'Edit shot',
+                    tooltip: AppLocalizations.of(context).shotEditTooltip,
                     constraints: const BoxConstraints(
                       minWidth: VspSpacingSemantic.touchTargetMin,
                       minHeight: VspSpacingSemantic.touchTargetMin,

@@ -19,6 +19,7 @@ import '../../widgets/analytics/analytics_loading_shimmer.dart';
 import '../../widgets/analytics/incomplete_data_banner.dart';
 import '../../widgets/analytics/round_summary_card.dart';
 import '../../widgets/analytics/shot_metrics_chart.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Round Review screen.
 ///
@@ -62,11 +63,11 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
       value: _cubit,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Round Review'),
+          title: Text(AppLocalizations.of(context).roundReviewTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh',
+              tooltip: AppLocalizations.of(context).commonRefresh,
               onPressed: () => _cubit.retry(),
             ),
           ],
@@ -77,8 +78,8 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
               RoundReviewInitial() ||
               RoundReviewLoading() => const AnalyticsLoadingShimmer(),
               RoundReviewEmpty(roundId: final id) => AnalyticsEmptyState(
-                title: 'No Round Data',
-                subtitle: 'No data found for this round.',
+                title: AppLocalizations.of(context).roundReviewNoData,
+                subtitle: AppLocalizations.of(context).roundReviewNoDataSubtitle,
               ),
               RoundReviewLoaded(metrics: final metrics) => _buildLoadedState(
                 context,

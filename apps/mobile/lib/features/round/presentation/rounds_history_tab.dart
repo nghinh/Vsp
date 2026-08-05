@@ -16,6 +16,7 @@ import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../domain/models/round.dart';
 import '../../../presentation/screens/analytics/round_review_screen.dart';
 import '../data/round_history_repository.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Home-screen tab showing the golfer's round history.
 class RoundsHistoryTab extends StatefulWidget {
@@ -70,7 +71,7 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
         return;
       }
       setState(() {
-        _errorMessage = 'Không tải được lịch sử vòng đấu. Thử lại sau.';
+        _errorMessage = AppLocalizations.of(context).roundsLoadFailed;
         _status = _Status.error;
       });
     }
@@ -80,7 +81,7 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(title: const Text('Vòng đấu của bạn')),
+        appBar: AppBar(title: Text(AppLocalizations.of(context).roundsTitle)),
         body: switch (_status) {
           _Status.loading => const Center(child: CircularProgressIndicator()),
           _Status.error => _RoundsErrorState(
@@ -130,7 +131,7 @@ class _RoundHistoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final statusStyle = _RoundStatusStyle.of(round.status, colorScheme.brightness);
+    final statusStyle = _RoundStatusStyle.of(context, round.status, colorScheme.brightness);
 
     return Semantics(
       label:
@@ -250,7 +251,7 @@ class _RoundDetailsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final statusStyle = _RoundStatusStyle.of(round.status, colorScheme.brightness);
+    final statusStyle = _RoundStatusStyle.of(context, round.status, colorScheme.brightness);
 
     return SafeArea(
       child: Padding(
@@ -275,20 +276,20 @@ class _RoundDetailsSheet extends StatelessWidget {
             const SizedBox(height: VspSpacing.lg),
             _DetailRow(
               icon: Icons.play_circle_outline,
-              label: 'Bắt đầu',
+              label: AppLocalizations.of(context).roundsStart,
               value: _formatDateTime(round.startedAt),
             ),
             if (round.endedAt != null)
               _DetailRow(
                 icon: Icons.stop_circle_outlined,
-                label: 'Kết thúc',
+                label: AppLocalizations.of(context).roundsEnd,
                 value: _formatDateTime(round.endedAt!),
               ),
             if (round.isTournamentRound)
-              const _DetailRow(
+              _DetailRow(
                 icon: Icons.emoji_events_outlined,
-                label: 'Loại',
-                value: 'Vòng đấu giải',
+                label: AppLocalizations.of(context).roundsType,
+                value: AppLocalizations.of(context).roundsTournamentRound,
               ),
             const SizedBox(height: VspSpacing.lg),
             SizedBox(
@@ -296,7 +297,7 @@ class _RoundDetailsSheet extends StatelessWidget {
               child: FilledButton.tonalIcon(
                 onPressed: () => _openRoundReview(context),
                 icon: const Icon(Icons.query_stats),
-                label: const Text('Xem lại vòng đấu'),
+                label: Text(AppLocalizations.of(context).roundsReview),
               ),
             ),
             const SizedBox(height: VspSpacing.sm),
@@ -304,7 +305,7 @@ class _RoundDetailsSheet extends StatelessWidget {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Đóng'),
+                child: Text(AppLocalizations.of(context).commonClose),
               ),
             ),
           ],
@@ -403,14 +404,14 @@ class _RoundsEmptyState extends StatelessWidget {
           ),
           const SizedBox(height: VspSpacing.md),
           Text(
-            'Chưa có vòng đấu nào',
+            AppLocalizations.of(context).roundsEmptyTitle,
             style: theme.textTheme.headlineSmall?.copyWith(
               fontWeight: VspFontWeight.semibold,
             ),
           ),
           const SizedBox(height: VspSpacing.sm),
           Text(
-            'Hoàn thành một vòng đấu để xem lịch sử tại đây',
+            AppLocalizations.of(context).roundsEmptySubtitle,
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colorScheme.onSurfaceVariant,
@@ -442,7 +443,7 @@ class _RoundsErrorState extends StatelessWidget {
             Icon(Icons.cloud_off, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Không tải được vòng đấu',
+              AppLocalizations.of(context).roundsLoadFailedShort,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: VspFontWeight.semibold,
               ),
@@ -459,7 +460,7 @@ class _RoundsErrorState extends StatelessWidget {
             FilledButton.icon(
               onPressed: onRetry,
               icon: const Icon(Icons.refresh),
-              label: const Text('Thử lại'),
+              label: Text(AppLocalizations.of(context).commonRetry),
             ),
           ],
         ),
@@ -481,11 +482,15 @@ class _RoundStatusStyle {
     required this.color,
   });
 
-  static _RoundStatusStyle of(RoundStatus status, Brightness brightness) {
+  static _RoundStatusStyle of(
+    BuildContext context,
+    RoundStatus status,
+    Brightness brightness,
+  ) {
     switch (status) {
       case RoundStatus.inProgress:
         return _RoundStatusStyle(
-          label: 'Đang chơi',
+          label: AppLocalizations.of(context).roundStatusInProgress,
           icon: Icons.play_arrow,
           color: VspColorSemantic.of(
             brightness,
@@ -494,7 +499,7 @@ class _RoundStatusStyle {
         );
       case RoundStatus.completed:
         return _RoundStatusStyle(
-          label: 'Hoàn thành',
+          label: AppLocalizations.of(context).roundStatusCompleted,
           icon: Icons.check_circle,
           color: VspColorSemantic.of(
             brightness,
@@ -503,7 +508,7 @@ class _RoundStatusStyle {
         );
       case RoundStatus.abandoned:
         return _RoundStatusStyle(
-          label: 'Bỏ dở',
+          label: AppLocalizations.of(context).roundStatusAbandoned,
           icon: Icons.pause_circle_outline,
           color: brightness == Brightness.dark
               ? VspColorDark.textTertiary
@@ -511,7 +516,7 @@ class _RoundStatusStyle {
         );
       case RoundStatus.cancelled:
         return _RoundStatusStyle(
-          label: 'Đã hủy',
+          label: AppLocalizations.of(context).roundStatusCancelled,
           icon: Icons.cancel_outlined,
           color: VspColorSemantic.of(brightness, VspSemanticColorToken.stale),
         );

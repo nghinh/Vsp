@@ -31,6 +31,7 @@ import 'widgets/format_selector.dart';
 import 'widgets/hole_picker.dart';
 import 'widgets/package_status_banner.dart';
 import 'widgets/player_card.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -139,7 +140,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
         if (state is RoundSetupRoundStarted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Round started at ${state.courseName}'),
+              content: Text(AppLocalizations.of(context).roundSetupRoundStartedAt(state.courseName)),
               backgroundColor: colorScheme.primary,
               duration: const Duration(seconds: 1),
             ),
@@ -148,7 +149,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
         } else if (state is RoundSetupLocalRoundSaved) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Round saved locally. Will sync when online.'),
+              content: Text(AppLocalizations.of(context).roundSetupRoundSavedLocally),
               backgroundColor: colorScheme.tertiary,
               duration: const Duration(seconds: 1),
             ),
@@ -166,14 +167,14 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
       builder: (context, state) {
         if (state is RoundSetupLoading || state is RoundSetupInitial) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Start a Round')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).roundSetupTitle)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is RoundSetupError && state.lastState == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Start a Round')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).roundSetupTitle)),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -188,7 +189,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
                         const LoadInitialData(),
                       );
                     },
-                    child: const Text('Retry'),
+                    child: Text(AppLocalizations.of(context).commonRetry),
                   ),
                 ],
               ),
@@ -218,7 +219,7 @@ class _RoundSetupScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Start a Round'),
+        title: Text(AppLocalizations.of(context).roundSetupTitle),
         actions: [
           if (state.isSubmitting)
             const Center(
@@ -349,7 +350,7 @@ class _CourseSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Course',
+          AppLocalizations.of(context).roundSetupCourse,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -382,8 +383,8 @@ class _CourseSelector extends StatelessWidget {
 
     return Semantics(
       label: state.hasCourse
-          ? 'Course: ${state.courseName}. Tap to change.'
-          : 'No course selected. Tap to select.',
+          ? AppLocalizations.of(context).roundSetupCourseTapToChange(state.courseName!)
+          : AppLocalizations.of(context).roundSetupNoCourseSelected,
       button: true,
       child: InkWell(
         onTap: () {
@@ -412,7 +413,7 @@ class _CourseSelector extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  state.hasCourse ? state.courseName! : 'Select a course',
+                  state.hasCourse ? state.courseName! : AppLocalizations.of(context).roundSetupSelectCourse,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: state.hasCourse
                         ? colorScheme.onSurface
@@ -468,12 +469,12 @@ class _CourseSelector extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Select Course',
+                    AppLocalizations.of(context).roundSetupSelectCourseTitle,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
               const SizedBox(height: 16),
               if (state.nearbyCourses.isNotEmpty) ...[
-                Text('Courses', style: Theme.of(context).textTheme.labelLarge),
+                Text(AppLocalizations.of(context).roundSetupCourses, style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 8),
                 ...state.nearbyCourses.map(
                   (c) => ListTile(
@@ -497,14 +498,14 @@ class _CourseSelector extends StatelessWidget {
               ],
               if (state.recentCourses.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Recent', style: Theme.of(context).textTheme.labelLarge),
+                Text(AppLocalizations.of(context).roundSetupRecent, style: Theme.of(context).textTheme.labelLarge),
                 const SizedBox(height: 8),
                 ...state.recentCourses.map(
                   (c) => ListTile(
                     leading: const Icon(Icons.history),
                     title: Text(c.courseName),
                     subtitle: Text(
-                      'Last played ${_formatDate(c.lastPlayedAt)}',
+                      AppLocalizations.of(context).roundSetupLastPlayed(_formatDate(c.lastPlayedAt)),
                     ),
                     onTap: () {
                       context.read<RoundSetupBloc>().add(
@@ -520,11 +521,11 @@ class _CourseSelector extends StatelessWidget {
                 ),
               ],
               if (state.nearbyCourses.isEmpty && state.recentCourses.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
                   child: Center(
                     child: Text(
-                      'No nearby or recent courses yet — search for one.',
+                      AppLocalizations.of(context).roundSetupNoCoursesYet,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -532,7 +533,7 @@ class _CourseSelector extends StatelessWidget {
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.search),
-                title: const Text('Search all courses'),
+                title: Text(AppLocalizations.of(context).roundSetupSearchAll),
                 onTap: () {
                   Navigator.pop(ctx);
                   _searchForCourse(context);
@@ -571,7 +572,7 @@ class _LayoutSelector extends StatelessWidget {
     return DropdownButtonFormField<int>(
       value: state.selectedLayoutId,
       decoration: InputDecoration(
-        labelText: 'Layout',
+        labelText: AppLocalizations.of(context).roundSetupLayout,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -605,7 +606,7 @@ class _TeeSelector extends StatelessWidget {
     return DropdownButtonFormField<int>(
       value: state.selectedTeeId,
       decoration: InputDecoration(
-        labelText: 'Tee',
+        labelText: AppLocalizations.of(context).roundSetupTee,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -643,7 +644,7 @@ class _PlayersSection extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Players',
+              AppLocalizations.of(context).roundSetupPlayers,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
@@ -681,7 +682,7 @@ class _PlayersSection extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
-              'Maximum 4 players reached',
+              AppLocalizations.of(context).roundSetupMaxPlayers,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -698,23 +699,23 @@ class _PlayersSection extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Add Player'),
+        title: Text(AppLocalizations.of(context).roundSetupAddPlayer),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                hintText: 'Player name',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context).roundSetupPlayerName,
+                hintText: AppLocalizations.of(context).roundSetupPlayerNameHint,
               ),
               textCapitalization: TextCapitalization.words,
             ),
             const SizedBox(height: 12),
             TextField(
               controller: handicapController,
-              decoration: const InputDecoration(
-                labelText: 'Handicap (optional)',
+              decoration: InputDecoration(
+                labelText: AppLocalizations.of(context).roundSetupHandicap,
                 hintText: '0.0',
               ),
               keyboardType: const TextInputType.numberWithOptions(
@@ -726,7 +727,7 @@ class _PlayersSection extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           FilledButton(
             onPressed: () {
@@ -747,7 +748,7 @@ class _PlayersSection extends StatelessWidget {
 
               Navigator.pop(ctx);
             },
-            child: const Text('Add'),
+            child: Text(AppLocalizations.of(context).commonAdd),
           ),
         ],
       ),

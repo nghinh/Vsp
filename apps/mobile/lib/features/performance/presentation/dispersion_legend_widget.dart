@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 
 import 'package:mobile_theme/mobile_theme.dart';
 import '../../../../domain/models/performance/dispersion_overlay.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Legend Widget ─────────────────────────────────────────────────────────────
 
@@ -63,27 +64,27 @@ class DispersionLegendWidget extends StatelessWidget {
           // Outcome legend
           _OutcomeLegendItem(
             color: _ResultColors.fairway(isDark),
-            label: 'Fairway',
+            label: AppLocalizations.of(context).dispersionFairway,
             count: overlay.fairwayCount,
           ),
           _OutcomeLegendItem(
             color: _ResultColors.rough(isDark),
-            label: 'Rough',
+            label: AppLocalizations.of(context).dispersionRough,
             count: overlay.outcomeCounts['ROUGH'] ?? 0,
           ),
           _OutcomeLegendItem(
             color: _ResultColors.bunker(isDark),
-            label: 'Bunker',
+            label: AppLocalizations.of(context).dispersionBunker,
             count: overlay.outcomeCounts['BUNKER'] ?? 0,
           ),
           _OutcomeLegendItem(
             color: _ResultColors.water(isDark),
-            label: 'Water',
+            label: AppLocalizations.of(context).dispersionWater,
             count: overlay.outcomeCounts['WATER'] ?? 0,
           ),
           _OutcomeLegendItem(
             color: _ResultColors.ob(isDark),
-            label: 'OB',
+            label: AppLocalizations.of(context).dispersionOb,
             count: overlay.obCount,
           ),
 
@@ -97,14 +98,14 @@ class DispersionLegendWidget extends StatelessWidget {
           // Layer toggles
           _LayerToggle(
             icon: Icons.scatter_plot,
-            label: 'Scatter',
+            label: AppLocalizations.of(context).dispersionScatter,
             isActive: showScatter,
             onTap: onToggleScatter,
           ),
           const SizedBox(height: 4),
           _LayerToggle(
             icon: Icons.warning_amber,
-            label: 'Hazards',
+            label: AppLocalizations.of(context).dispersionHazards,
             isActive: showHazards,
             onTap: onToggleHazards,
           ),

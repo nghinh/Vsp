@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/models/shot_metrics.dart';
 import 'accessible_bar_chart.dart';
 import 'accessible_pie_chart.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Chart widget showing shot metrics (club usage and distance distribution).
 ///
@@ -62,12 +63,12 @@ class _ClubUsageSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Club Usage', style: Theme.of(context).textTheme.titleMedium),
+        Text(AppLocalizations.of(context).analyticsClubUsage, style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 12),
         AccessibleBarChart(
           groups: groups,
           yAxisLabel: 'Shots',
-          title: 'Club usage distribution chart',
+          title: AppLocalizations.of(context).analyticsClubUsageChart,
         ),
       ],
     );
@@ -121,26 +122,26 @@ class _DistanceStatsRow extends StatelessWidget {
     return Row(
       children: [
         _StatChip(
-          label: 'Avg',
+          label: AppLocalizations.of(context).analyticsAvg,
           value:
               '${clubMetrics.averageDistanceYards?.toStringAsFixed(1) ?? '-'} yds',
         ),
         const SizedBox(width: 8),
         _StatChip(
-          label: 'Med',
+          label: AppLocalizations.of(context).analyticsMed,
           value:
               '${clubMetrics.medianDistanceYards?.toStringAsFixed(1) ?? '-'} yds',
         ),
         const SizedBox(width: 8),
         _StatChip(
-          label: 'Std Dev',
+          label: AppLocalizations.of(context).analyticsStdDev,
           value:
               '${clubMetrics.standardDeviationYards?.toStringAsFixed(1) ?? '-'} yds',
         ),
         if (clubMetrics.consistencyScore != null) ...[
           const SizedBox(width: 8),
           _StatChip(
-            label: 'Consistency',
+            label: AppLocalizations.of(context).analyticsConsistency,
             value: '${clubMetrics.consistencyScore!.toStringAsFixed(0)}%',
           ),
         ],
@@ -209,7 +210,7 @@ class _LieDistributionSection extends StatelessWidget {
         const SizedBox(height: 12),
         AccessiblePieChart(
           sections: sections,
-          title: 'Lie distribution pie chart',
+          title: AppLocalizations.of(context).analyticsLieChart,
         ),
       ],
     );

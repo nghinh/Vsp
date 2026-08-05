@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 
 import '../round_setup_state.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Banner showing package offline readiness status.
 ///
@@ -42,7 +43,7 @@ class PackageStatusBanner extends StatelessWidget {
         context: context,
         icon: Icons.hourglass_empty,
         iconColor: theme.colorScheme.outline,
-        label: 'Checking package...',
+        label: AppLocalizations.of(context).packageChecking,
         backgroundColor: theme.colorScheme.surfaceContainerHighest,
         textColor: theme.colorScheme.onSurfaceVariant,
       );
@@ -54,7 +55,7 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.offline_pin,
           iconColor: const Color(0xFF059669), // semantic green
-          label: 'Offline Ready',
+          label: AppLocalizations.of(context).packageOfflineReady,
           backgroundColor: const Color(0xFF059669).withOpacity(0.12),
           textColor: const Color(0xFF059669),
         );
@@ -64,18 +65,18 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.cloud_download_outlined,
           iconColor: const Color(0xFFF97316), // semantic amber
-          label: 'Chưa tải dữ liệu sân',
-          subtitle: 'Tải để dùng offline, hoặc chơi luôn (cần mạng)',
+          label: AppLocalizations.of(context).packageNotDownloaded,
+          subtitle: AppLocalizations.of(context).packageNotDownloadedSubtitle,
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),
           // "Play Anyway" lets the golfer start the round online without the
           // offline package (scoring only needs holes/par); Download is for
           // offline GPS use.
           secondaryAction: onWarningAcknowledged != null
-              ? _Action(label: 'Chơi luôn', onPressed: onWarningAcknowledged!)
+              ? _Action(label: AppLocalizations.of(context).packagePlayNow, onPressed: onWarningAcknowledged!)
               : null,
           action: onDownloadPressed != null
-              ? _Action(label: 'Tải', onPressed: onDownloadPressed!)
+              ? _Action(label: AppLocalizations.of(context).packageDownload, onPressed: onDownloadPressed!)
               : null,
         );
 
@@ -84,14 +85,14 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.warning_amber_rounded,
           iconColor: const Color(0xFFF97316), // semantic amber
-          label: 'Course data may be outdated',
+          label: AppLocalizations.of(context).packageOutdated,
           subtitle: packageReadiness!.expiresAt != null
-              ? 'Expired ${_formatDate(packageReadiness!.expiresAt!)}'
-              : 'Package expired',
+              ? AppLocalizations.of(context).packageExpiredOn(_formatDate(packageReadiness!.expiresAt!))
+              : AppLocalizations.of(context).packageExpired,
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),
           action: onWarningAcknowledged != null
-              ? _Action(label: 'Play Anyway', onPressed: onWarningAcknowledged!)
+              ? _Action(label: AppLocalizations.of(context).packagePlayAnyway, onPressed: onWarningAcknowledged!)
               : null,
         );
 
@@ -100,12 +101,12 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.error_outline,
           iconColor: const Color(0xFFDC2626), // semantic red
-          label: 'Course data is corrupted',
-          subtitle: 'Please re-download the course package',
+          label: AppLocalizations.of(context).packageCorrupted,
+          subtitle: AppLocalizations.of(context).packageCorruptedSubtitle,
           backgroundColor: const Color(0xFFDC2626).withOpacity(0.12),
           textColor: const Color(0xFFDC2626),
           action: onDownloadPressed != null
-              ? _Action(label: 'Re-download', onPressed: onDownloadPressed!)
+              ? _Action(label: AppLocalizations.of(context).packageRedownload, onPressed: onDownloadPressed!)
               : null,
         );
 
@@ -114,7 +115,7 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.hourglass_empty,
           iconColor: theme.colorScheme.outline,
-          label: 'Checking package...',
+          label: AppLocalizations.of(context).packageChecking,
           backgroundColor: theme.colorScheme.surfaceContainerHighest,
           textColor: theme.colorScheme.onSurfaceVariant,
         );

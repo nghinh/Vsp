@@ -4,6 +4,7 @@
 // Per slice plan §3.4 — "Weather unavailable" with retry.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Empty state view for weather panel.
 ///
@@ -19,7 +20,7 @@ class WeatherEmptyView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: 'Weather data not available',
+      label: AppLocalizations.of(context).weatherUnavailable,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -56,7 +57,7 @@ class WeatherEmptyView extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context).commonRetry),
                 style: FilledButton.styleFrom(minimumSize: const Size(44, 44)),
               ),
             ],

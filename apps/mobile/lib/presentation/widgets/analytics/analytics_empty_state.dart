@@ -4,6 +4,7 @@
 // Per UX spec empty state requirements.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Empty state shown when no analytics data is available.
 class AnalyticsEmptyState extends StatelessWidget {
@@ -41,7 +42,7 @@ class AnalyticsEmptyState extends StatelessWidget {
               Icons.analytics_outlined,
               size: 64,
               color: colorScheme.outline,
-              semanticLabel: 'No analytics data',
+              semanticLabel: AppLocalizations.of(context).analyticsNoData,
             ),
             const SizedBox(height: 16),
             Text(

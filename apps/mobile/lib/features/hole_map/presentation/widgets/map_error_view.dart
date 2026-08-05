@@ -3,6 +3,7 @@
 // Error state view for the hole map with retry action.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Error state view shown when the map fails to load.
 class MapErrorView extends StatelessWidget {
@@ -65,7 +66,7 @@ class MapErrorView extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: onRetry,
                     icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Retry'),
+                    label: Text(AppLocalizations.of(context).commonRetry),
                     style: FilledButton.styleFrom(
                       backgroundColor: const Color(0xFFEA580C),
                       foregroundColor: Colors.white,

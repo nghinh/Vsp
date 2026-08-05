@@ -12,6 +12,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/wind_data.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Compact wind indicator for map overlay.
 ///
@@ -88,7 +89,7 @@ class WindIndicator extends StatelessWidget {
                   Icons.navigation,
                   size: 18,
                   color: arrowColor,
-                  semanticLabel: 'Wind direction ${wind.direction.displayName}',
+                  semanticLabel: AppLocalizations.of(context).weatherWindDirection(wind.direction.displayName),
                 ),
               ),
               const SizedBox(width: 6),

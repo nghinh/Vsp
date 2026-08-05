@@ -265,7 +265,7 @@ class SyncQueueRepository {
         (e) => e.name == row['state'],
         orElse: () => SyncStatus.pending,
       ),
-      attemptCount: ((row['attempt_count'] as num?)?.toInt()) ?? 0,
+      attemptCount: (row['attempt_count'] as num?)?.toInt() ?? 0,
       createdAt: DateTime.fromMillisecondsSinceEpoch((row['created_at'] as num).toInt()),
       lastAttemptAt: row['last_attempt_at'] != null
           ? DateTime.fromMillisecondsSinceEpoch((row['last_attempt_at'] as num).toInt())

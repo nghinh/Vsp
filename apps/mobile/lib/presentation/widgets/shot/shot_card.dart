@@ -11,6 +11,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import '../../../domain/models/shot.dart';
 import '../../../domain/models/sync_status.dart';
 import '../sync_status_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card widget for displaying a shot.
 class ShotCard extends StatelessWidget {
@@ -148,14 +149,14 @@ class ShotCard extends StatelessWidget {
                         if (shot.isPenalty)
                           _MarkerChip(
                             icon: Icons.warning_amber_rounded,
-                            label: 'Penalty',
+                            label: AppLocalizations.of(context).shotPenalty,
                             color: colorScheme.error,
                           ),
                         if (shot.isProvisional) ...[
                           const SizedBox(width: 4),
                           _MarkerChip(
                             icon: Icons.refresh,
-                            label: 'Provisional',
+                            label: AppLocalizations.of(context).shotProvisional,
                             color: Colors.orange,
                           ),
                         ],
@@ -163,7 +164,7 @@ class ShotCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           _MarkerChip(
                             icon: Icons.replay,
-                            label: 'Mulligan',
+                            label: AppLocalizations.of(context).shotMulligan,
                             color: Colors.purple,
                           ),
                         ],
@@ -184,7 +185,7 @@ class ShotCard extends StatelessWidget {
                       TextButton.icon(
                         onPressed: onMerge,
                         icon: const Icon(Icons.merge_type, size: 18),
-                        label: const Text('Merge'),
+                        label: Text(AppLocalizations.of(context).shotMerge),
                         style: TextButton.styleFrom(
                           foregroundColor: colorScheme.onSurfaceVariant,
                         ),
@@ -193,7 +194,7 @@ class ShotCard extends StatelessWidget {
                       TextButton.icon(
                         onPressed: onEdit,
                         icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Edit'),
+                        label: Text(AppLocalizations.of(context).shotEdit),
                         style: TextButton.styleFrom(
                           foregroundColor: colorScheme.primary,
                         ),

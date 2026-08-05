@@ -9,6 +9,8 @@ import 'package:vsp_mobile/features/auth/data/auth_repository.dart';
 import 'package:vsp_mobile/features/auth/data/auth_service.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   late AuthBloc authBloc;
@@ -30,6 +32,9 @@ void main() {
     return BlocProvider.value(
       value: authBloc,
       child: MaterialApp(
+        locale: const Locale('en'),
+        supportedLocales: kSupportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: ThemeData.dark().copyWith(
           scaffoldBackgroundColor: VspColorDark.background,
         ),

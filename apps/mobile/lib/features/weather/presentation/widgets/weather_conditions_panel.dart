@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/models/weather_snapshot.dart';
 import '../../../../domain/models/wind_data.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Weather conditions panel widget.
 ///
@@ -136,7 +137,7 @@ class WeatherConditionsPanel extends StatelessWidget {
         Expanded(
           child: _MetricTile(
             icon: Icons.thermostat_outlined,
-            label: 'Temperature',
+            label: AppLocalizations.of(context).weatherTemperature,
             value: snapshot.temperature != null
                 ? '${snapshot.temperature!.value.toStringAsFixed(1)}°${snapshot.temperature!.unit}'
                 : '--',
@@ -148,7 +149,7 @@ class WeatherConditionsPanel extends StatelessWidget {
           Expanded(
             child: _MetricTile(
               icon: Icons.thermostat_outlined,
-              label: 'Feels like',
+              label: AppLocalizations.of(context).weatherFeelsLike,
               value:
                   '${snapshot.feelsLike!.toStringAsFixed(1)}°${snapshot.temperature?.unit ?? 'C'}',
               semanticsLabel: 'Feels like temperature',
@@ -159,7 +160,7 @@ class WeatherConditionsPanel extends StatelessWidget {
         Expanded(
           child: _MetricTile(
             icon: Icons.water_drop_outlined,
-            label: 'Humidity',
+            label: AppLocalizations.of(context).weatherHumidity,
             value: snapshot.humidity != null ? '${snapshot.humidity}%' : '--',
             semanticsLabel: 'Humidity',
           ),
@@ -177,7 +178,7 @@ class WeatherConditionsPanel extends StatelessWidget {
           Expanded(
             child: _MetricTile(
               icon: Icons.umbrella_outlined,
-              label: 'Precipitation',
+              label: AppLocalizations.of(context).weatherPrecipitation,
               value: '${snapshot.precipitationProbability}%',
               semanticsLabel: 'Precipitation probability',
             ),
@@ -194,7 +195,7 @@ class WeatherConditionsPanel extends StatelessWidget {
       safetyFields.add(
         _SafetyBadge(
           icon: Icons.wb_sunny_outlined,
-          label: 'UV ${snapshot.uvIndex}',
+          label: AppLocalizations.of(context).weatherUvIndex('${snapshot.uvIndex}'),
           semanticsLabel: 'UV index ${snapshot.uvIndex}',
         ),
       );
@@ -258,7 +259,7 @@ class _WindRow extends StatelessWidget {
                 Icons.navigation,
                 size: 32,
                 color: theme.colorScheme.primary,
-                semanticLabel: 'Wind direction ${wind.direction.displayName}',
+                semanticLabel: AppLocalizations.of(context).weatherWindDirection(wind.direction.displayName),
               ),
             ),
             const SizedBox(width: 12),
@@ -297,7 +298,7 @@ class _WindRow extends StatelessWidget {
                       Icons.air,
                       size: 14,
                       color: theme.colorScheme.onSecondaryContainer,
-                      semanticLabel: 'Wind gusts',
+                      semanticLabel: AppLocalizations.of(context).weatherWindGusts,
                     ),
                     Text(
                       '${wind.gustsKmh!.toStringAsFixed(0)} km/h',
@@ -384,7 +385,7 @@ class _ConditionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: 'Condition: ${condition.displayLabel}',
+      label: AppLocalizations.of(context).weatherConditionLabel(condition.displayLabel),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -500,7 +501,7 @@ class _SourceBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: 'Weather source: ${source.displayLabel}',
+      label: AppLocalizations.of(context).weatherSourceLabel(source.displayLabel),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

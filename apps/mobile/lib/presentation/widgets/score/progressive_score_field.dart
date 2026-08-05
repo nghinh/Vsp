@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Minimum touch target size in logical pixels (44pt iOS / 48dp Android).
 const double kMinTouchTarget = 44.0;
@@ -72,7 +73,7 @@ class ProgressiveScoreField extends StatelessWidget {
           _StepperButton(
             icon: Icons.remove,
             onPressed: onDecrement,
-            semanticLabel: 'Decrease $label',
+            semanticLabel: AppLocalizations.of(context).scoreDecreaseLabel(label),
           ),
 
           const SizedBox(width: 4),
@@ -101,7 +102,7 @@ class ProgressiveScoreField extends StatelessWidget {
           _StepperButton(
             icon: Icons.add,
             onPressed: onIncrement,
-            semanticLabel: 'Increase $label',
+            semanticLabel: AppLocalizations.of(context).scoreIncreaseLabel(label),
           ),
         ],
       ),

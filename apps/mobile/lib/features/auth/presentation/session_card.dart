@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../data/auth_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card widget for a single session row in the session management screen.
 class SessionCard extends StatelessWidget {
@@ -38,8 +39,8 @@ class SessionCard extends StatelessWidget {
 
     return VspCard(
       semanticLabel: isCurrentSession
-          ? 'Current session on ${session.deviceLabel}, active ${session.createdAtLabel}'
-          : 'Session on ${session.deviceLabel}, active ${session.createdAtLabel}',
+          ? AppLocalizations.of(context).sessionSemanticCurrent(session.deviceLabel, session.createdAtLabel)
+          : AppLocalizations.of(context).sessionSemantic(session.deviceLabel, session.createdAtLabel),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -94,7 +95,7 @@ class SessionCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          'This device',
+                          AppLocalizations.of(context).sessionThisDevice,
                           style: theme.textTheme.labelSmall?.copyWith(
                             color: colorScheme.onPrimary,
                             fontSize: 10,
@@ -117,7 +118,7 @@ class SessionCard extends StatelessWidget {
                     ),
                     const SizedBox(width: VspSpacing.half),
                     Text(
-                      'Active ${session.createdAtLabel}',
+                      AppLocalizations.of(context).sessionActiveSince(session.createdAtLabel),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -153,12 +154,12 @@ class SessionCard extends StatelessWidget {
           // ─── Revoke Button ─────────────────────────────────────────────────
           if (!isCurrentSession && onRevoke != null)
             Semantics(
-              label: 'Revoke session on ${session.deviceLabel}',
+              label: AppLocalizations.of(context).sessionRevokeLabel(session.deviceLabel),
               button: true,
               child: IconButton(
                 onPressed: onRevoke,
                 icon: Icon(Icons.logout, color: colorScheme.error, size: 20),
-                tooltip: 'Revoke session',
+                tooltip: AppLocalizations.of(context).sessionRevokeTooltip,
                 style: IconButton.styleFrom(
                   minimumSize: const Size(
                     VspSpacingSemantic.touchTargetMin,

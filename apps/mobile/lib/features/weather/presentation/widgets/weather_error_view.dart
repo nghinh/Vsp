@@ -4,6 +4,7 @@
 // Per slice plan §3.4 — error state with retry button and reason text.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Error state view for weather panel.
 ///
@@ -37,7 +38,7 @@ class WeatherErrorView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: 'Weather error: $message',
+      label: AppLocalizations.of(context).weatherErrorLabel(message),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -74,7 +75,7 @@ class WeatherErrorView extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(AppLocalizations.of(context).commonRetry),
                 style: FilledButton.styleFrom(
                   minimumSize: const Size(44, 44),
                   backgroundColor: theme.colorScheme.error,

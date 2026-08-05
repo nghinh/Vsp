@@ -14,6 +14,7 @@ import 'auth_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'phone_register_screen.dart';
 import 'email_register_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class RegisterScreen extends StatelessWidget {
   const RegisterScreen({super.key});
@@ -25,7 +26,7 @@ class RegisterScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Account'),
+        title: Text(AppLocalizations.of(context).authCreateAccount),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -52,7 +53,7 @@ class RegisterScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 Text(
-                  'Join Vietnam Smart Golf',
+                  AppLocalizations.of(context).authJoinTitle,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: VspFontWeight.semibold,
                   ),
@@ -60,7 +61,7 @@ class RegisterScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: VspSpacing.sm),
                 Text(
-                  'Create an account to get started',
+                  AppLocalizations.of(context).authJoinSubtitle,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -72,8 +73,8 @@ class RegisterScreen extends StatelessWidget {
                 // ─── Phone Registration ─────────────────────────────────────────
                 _RegisterOptionCard(
                   icon: Icons.phone_android,
-                  title: 'Phone Number',
-                  description: 'Register with your mobile number',
+                  title: AppLocalizations.of(context).authPhoneNumber,
+                  description: AppLocalizations.of(context).authRegisterPhoneDesc,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -88,8 +89,8 @@ class RegisterScreen extends StatelessWidget {
                 // ─── Email Registration ──────────────────────────────────────────
                 _RegisterOptionCard(
                   icon: Icons.email_outlined,
-                  title: 'Email Address',
-                  description: 'Register with your email',
+                  title: AppLocalizations.of(context).authEmailAddress,
+                  description: AppLocalizations.of(context).authRegisterEmailDesc,
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -123,7 +124,7 @@ class RegisterScreen extends StatelessWidget {
                 // ─── Social Auth Buttons ───────────────────────────────────────
                 _SocialButton(
                   icon: Icons.golf_course,
-                  label: 'Continue with Google',
+                  label: AppLocalizations.of(context).authContinueWithGoogle,
                   backgroundColor: colorScheme.surface,
                   foregroundColor: colorScheme.onSurface,
                   borderColor: colorScheme.outline,
@@ -134,7 +135,7 @@ class RegisterScreen extends StatelessWidget {
 
                 _SocialButton(
                   icon: Icons.apple,
-                  label: 'Sign in with Apple',
+                  label: AppLocalizations.of(context).authSignInWithApple,
                   backgroundColor: colorScheme.onSurface,
                   foregroundColor: colorScheme.surface,
                   borderColor: colorScheme.onSurface,
@@ -148,7 +149,7 @@ class RegisterScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      'Already have an account? ',
+                      AppLocalizations.of(context).authAlreadyHaveAccount,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -156,7 +157,7 @@ class RegisterScreen extends StatelessWidget {
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       child: Text(
-                        'Sign In',
+                        AppLocalizations.of(context).authSignIn,
                         style: theme.textTheme.labelLarge?.copyWith(
                           color: colorScheme.primary,
                         ),
@@ -195,7 +196,7 @@ class RegisterScreen extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Google sign-in failed. Please try again.'),
+          content: Text(AppLocalizations.of(context).authGoogleFailed),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );
@@ -230,7 +231,7 @@ class RegisterScreen extends StatelessWidget {
       if (!context.mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Apple sign-in failed. Please try again.'),
+          content: Text(AppLocalizations.of(context).authAppleFailed),
           backgroundColor: Theme.of(context).colorScheme.error,
         ),
       );

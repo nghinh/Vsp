@@ -27,6 +27,7 @@ import 'target_marker.dart';
 import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'layer_toggle_panel.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Main MapLibre-based hole map view widget.
 ///
@@ -343,7 +344,7 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   Widget _buildMap() {
     return Semantics(
-      label: 'Strategic hole map for hole ${widget.state.holeMap.holeNumber}',
+      label: AppLocalizations.of(context).mapHoleLabel('${widget.state.holeMap.holeNumber}'),
       child: MapLibreMap(
         styleString: 'packages/map-style/style.json',
         onMapCreated: _onMapCreated,

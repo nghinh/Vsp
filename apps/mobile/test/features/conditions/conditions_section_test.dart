@@ -15,6 +15,8 @@ import 'package:mobile_theme/mobile_theme.dart';
 import 'package:vsp_mobile/features/course_detail/presentation/widgets/conditions_section.dart';
 import 'package:vsp_mobile/domain/models/course_detail.dart';
 import 'package:vsp_mobile/domain/models/condition_entry.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   Widget buildSection({
@@ -22,6 +24,9 @@ void main() {
     ConditionsSectionConfig? config,
   }) {
     return MaterialApp(
+      locale: const Locale('en'),
+      supportedLocales: kSupportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       theme: VspTheme.light(),
       home: Scaffold(
         body: SingleChildScrollView(

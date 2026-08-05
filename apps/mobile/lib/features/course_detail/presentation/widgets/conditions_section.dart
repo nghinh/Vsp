@@ -14,6 +14,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/condition_entry.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Configuration for offline/cached state.
 class ConditionsSectionConfig {
@@ -63,7 +64,7 @@ class ConditionsSection extends StatelessWidget {
               const SizedBox(width: VspSpacing.sm),
               Expanded(
                 child: Text(
-                  'Conditions',
+                  AppLocalizations.of(context).sectionConditions,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
@@ -98,8 +99,8 @@ class _OfflineBadge extends StatelessWidget {
 
     return Semantics(
       label: cachedAt != null
-          ? 'Offline, cached ${_formatDateTime(cachedAt!)}'
-          : 'Offline',
+          ? AppLocalizations.of(context).conditionsOfflineCached(_formatDateTime(cachedAt!))
+          : AppLocalizations.of(context).commonOffline,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -117,7 +118,7 @@ class _OfflineBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              cachedAt != null ? 'Cached' : 'Offline',
+              cachedAt != null ? 'Cached' : AppLocalizations.of(context).commonOffline,
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -276,7 +277,7 @@ class _ConditionTile extends StatelessWidget {
                   _MetadataChip(
                     icon: Icons.schedule,
                     label:
-                        'Effective: ${_formatDate(condition.effectiveDate!)}',
+                        AppLocalizations.of(context).conditionsEffective(_formatDate(condition.effectiveDate!)),
                   ),
                 if (condition.expiryDate != null)
                   _MetadataChip(
@@ -284,8 +285,8 @@ class _ConditionTile extends StatelessWidget {
                         ? Icons.error_outline
                         : Icons.event,
                     label: condition.isExpired
-                        ? 'Expired ${_formatDate(condition.expiryDate!)}'
-                        : 'Expires: ${_formatDate(condition.expiryDate!)}',
+                        ? AppLocalizations.of(context).conditionsExpired(_formatDate(condition.expiryDate!))
+                        : AppLocalizations.of(context).conditionsExpires(_formatDate(condition.expiryDate!)),
                     isWarning: condition.isExpired,
                   ),
 
@@ -300,14 +301,14 @@ class _ConditionTile extends StatelessWidget {
                 // Accuracy class
                 _MetadataChip(
                   icon: Icons.grade,
-                  label: 'Class ${condition.accuracyClass}',
+                  label: AppLocalizations.of(context).conditionsAccuracyClass('${condition.accuracyClass}'),
                 ),
 
                 // Stale warning
                 if (isStale)
                   _MetadataChip(
                     icon: Icons.warning,
-                    label: 'Stale data',
+                    label: AppLocalizations.of(context).conditionsStaleData,
                     isWarning: true,
                   ),
               ],

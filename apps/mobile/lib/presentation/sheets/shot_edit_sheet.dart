@@ -20,6 +20,7 @@ import '../../../features/bag/data/bag_dto.dart';
 import '../../../domain/models/sync_status.dart';
 import '../widgets/shot/club_selector.dart';
 import '../widgets/shot/penalty_toggle.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Result of editing a shot.
 class ShotEditResult {
@@ -305,7 +306,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Save button
-        FilledButton(onPressed: _save, child: const Text('Save Changes')),
+        FilledButton(onPressed: _save, child: Text(AppLocalizations.of(context).shotSaveChanges)),
         const SizedBox(height: VspSpacing.sm),
 
         // Merge and Delete row
@@ -317,7 +318,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
                 child: OutlinedButton.icon(
                   onPressed: _showMergeSelector,
                   icon: const Icon(Icons.merge_type),
-                  label: const Text('Merge'),
+                  label: Text(AppLocalizations.of(context).shotMerge),
                 ),
               ),
             if (widget.onMerge != null &&
@@ -348,7 +349,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
         // Cancel button
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
+          child: Text(AppLocalizations.of(context).commonCancel),
         ),
       ],
     );
@@ -398,21 +399,21 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Shot?'),
+        title: Text(AppLocalizations.of(context).shotDeleteTitle),
         content: Text(
           'Are you sure you want to delete shot ${widget.shot.shotNumber}? This action cannot be undone.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),
@@ -532,7 +533,7 @@ class _LieChip extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Lie: ${_lieLabel(lie)}',
+      label: AppLocalizations.of(context).shotLieLabel(_lieLabel(lie)),
       button: true,
       child: Material(
         color: isSelected
@@ -619,7 +620,7 @@ class _ResultChip extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Result: ${_resultLabel(result)}',
+      label: AppLocalizations.of(context).shotResultLabel(_resultLabel(result)),
       button: true,
       child: Material(
         color: isSelected
@@ -760,7 +761,7 @@ class _MergeShotSelector extends StatelessWidget {
                         style: TextStyle(color: colorScheme.onPrimaryContainer),
                       ),
                     ),
-                    title: Text('Shot ${shot.shotNumber}'),
+                    title: Text(AppLocalizations.of(context).shotNumberLabel('${shot.shotNumber}')),
                     subtitle: shot.lie != null
                         ? Text(_lieLabel(shot.lie!))
                         : null,
@@ -775,7 +776,7 @@ class _MergeShotSelector extends StatelessWidget {
             // Cancel button
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context).commonCancel),
             ),
           ],
         ),

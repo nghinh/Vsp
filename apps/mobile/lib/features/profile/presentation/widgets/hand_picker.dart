@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/profile_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Dominant hand toggle — LEFT / RIGHT.
 class HandPicker extends StatelessWidget {
@@ -24,7 +25,7 @@ class HandPicker extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'Dominant hand, currently ${selectedHand.value}',
+      label: AppLocalizations.of(context).profileHandCurrent(selectedHand.value),
       button: true,
       child: Container(
         decoration: BoxDecoration(
@@ -35,13 +36,13 @@ class HandPicker extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _HandOption(
-              label: 'Left',
+              label: AppLocalizations.of(context).handLeft,
               isSelected: selectedHand == DominantHand.left,
               onTap: () => onChanged(DominantHand.left),
               isLeft: true,
             ),
             _HandOption(
-              label: 'Right',
+              label: AppLocalizations.of(context).handRight,
               isSelected: selectedHand == DominantHand.right,
               onTap: () => onChanged(DominantHand.right),
               isLeft: false,

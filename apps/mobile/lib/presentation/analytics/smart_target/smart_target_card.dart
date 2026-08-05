@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/analytics/smart_target/models/strategy_option.dart';
 import '../../../domain/analytics/smart_target/models/strategy_type.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Smart Target strategy detail card.
 ///
@@ -135,7 +136,7 @@ class SmartTargetCard extends StatelessWidget {
         Expanded(
           child: _MetricTile(
             icon: Icons.straighten,
-            label: 'Carry',
+            label: AppLocalizations.of(context).smartTargetCarry,
             value: '${option.carryMeters.round()}m',
             semanticLabel:
                 'Carry distance: ${option.carryMeters.round()} meters',
@@ -145,7 +146,7 @@ class SmartTargetCard extends StatelessWidget {
         Expanded(
           child: _MetricTile(
             icon: Icons.flag,
-            label: 'To Pin',
+            label: AppLocalizations.of(context).smartTargetToPin,
             value: '${option.remainingMeters.round()}m',
             semanticLabel:
                 'Distance to pin: ${option.remainingMeters.round()} meters',
@@ -225,7 +226,7 @@ class SmartTargetCard extends StatelessWidget {
             Icons.lightbulb_outline,
             size: 16,
             color: colorScheme.onSurfaceVariant,
-            semanticLabel: 'Explanation',
+            semanticLabel: AppLocalizations.of(context).smartTargetExplanation,
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -305,7 +306,7 @@ class _StrategyTypeBadge extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Strategy: ${strategyType.displayName}',
+      label: AppLocalizations.of(context).smartTargetStrategyLabel(strategyType.displayName),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -418,7 +419,7 @@ class _RiskScoreDisplay extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Risk: $label, $riskScore out of 100',
+      label: AppLocalizations.of(context).smartTargetRiskDetail(label, '$riskScore'),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -514,7 +515,7 @@ class _ConfidenceScoreDisplay extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Confidence: $percentage percent, $label confidence',
+      label: AppLocalizations.of(context).smartTargetConfidence('$percentage', label),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(

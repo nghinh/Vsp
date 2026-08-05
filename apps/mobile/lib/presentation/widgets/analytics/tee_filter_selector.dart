@@ -4,6 +4,7 @@
 // Per AC1: tee filter wired to cubit.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Tee filter dropdown selector.
 class TeeFilterSelector extends StatelessWidget {
@@ -35,7 +36,7 @@ class TeeFilterSelector extends StatelessWidget {
           children: [
             const Icon(Icons.grass, size: 18),
             const SizedBox(width: 8),
-            const Text('Tee:', style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(AppLocalizations.of(context).analyticsTeeLabel, style: TextStyle(fontWeight: FontWeight.w500)),
           ],
         ),
         const SizedBox(height: 8),
@@ -49,12 +50,12 @@ class TeeFilterSelector extends StatelessWidget {
               vertical: 10,
             ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            hintText: 'All Tee Sets',
+            hintText: AppLocalizations.of(context).analyticsAllTeeSets,
           ),
           items: [
-            const DropdownMenuItem<String?>(
+            DropdownMenuItem<String?>(
               value: null,
-              child: Text('All Tee Sets'),
+              child: Text(AppLocalizations.of(context).analyticsAllTeeSets),
             ),
             ...displayTeeSets.entries.map((entry) {
               return DropdownMenuItem<String?>(

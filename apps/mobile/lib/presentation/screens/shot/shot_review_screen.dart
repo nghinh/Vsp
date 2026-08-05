@@ -23,6 +23,7 @@ import '../../widgets/offline_save_indicator.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../../sheets/shot_edit_sheet.dart';
 import '../../widgets/shot/shot_card.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Screen for reviewing all shots for a round.
 ///
@@ -96,7 +97,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Shot Review'),
+        title: Text(AppLocalizations.of(context).shotReviewTitle),
         centerTitle: true,
         actions: [
           // Sync status
@@ -154,17 +155,17 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           _StatItem(
-            label: 'Total Shots',
+            label: AppLocalizations.of(context).shotTotalShots,
             value: '$totalShots',
             icon: Icons.golf_course,
           ),
           _StatItem(
-            label: 'Avg Distance',
+            label: AppLocalizations.of(context).shotAvgDistance,
             value: '${avgDistance.round()} yd',
             icon: Icons.straighten,
           ),
           _StatItem(
-            label: 'Penalties',
+            label: AppLocalizations.of(context).shotPenalties,
             value: '$penaltyCount',
             icon: Icons.warning_amber_rounded,
             isHighlighted: penaltyCount > 0,
@@ -359,21 +360,21 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Shot?'),
+        title: Text(AppLocalizations.of(context).shotDeleteTitle),
         content: Text(
           'Are you sure you want to delete shot ${shot.shotNumber} on hole ${shot.holeNumber}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),
@@ -554,7 +555,7 @@ class _MergeShotSelector extends StatelessWidget {
                               ),
                             ),
                           ),
-                          title: Text('Shot ${shot.shotNumber}'),
+                          title: Text(AppLocalizations.of(context).shotNumberLabel('${shot.shotNumber}')),
                           subtitle: shot.lie != null
                               ? Text(_lieLabel(shot.lie!))
                               : null,
@@ -572,7 +573,7 @@ class _MergeShotSelector extends StatelessWidget {
             // Cancel button
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context).commonCancel),
             ),
           ],
         ),

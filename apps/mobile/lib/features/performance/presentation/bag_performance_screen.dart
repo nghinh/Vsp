@@ -18,6 +18,7 @@ import 'performance_event.dart';
 import 'performance_state.dart';
 import 'widgets/widgets.dart';
 import 'club_performance_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ class _BagPerformanceBody extends StatelessWidget {
         actions: [
           if (isFromCache)
             Tooltip(
-              message: 'Showing cached data',
+              message: AppLocalizations.of(context).performanceCachedData,
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -275,19 +276,19 @@ class _SummaryHeader extends StatelessWidget {
           Row(
             children: [
               _SummaryItem(
-                label: 'Clubs',
+                label: AppLocalizations.of(context).analyticsClubs,
                 value: totalClubs.toString(),
                 icon: Icons.golf_course,
               ),
               const SizedBox(width: 24),
               _SummaryItem(
-                label: 'Robust',
+                label: AppLocalizations.of(context).performanceRobust,
                 value: robustCount.toString(),
                 icon: Icons.verified,
               ),
               const SizedBox(width: 24),
               _SummaryItem(
-                label: 'Total Shots',
+                label: AppLocalizations.of(context).analyticsTotalShots,
                 value: totalShots.toString(),
                 icon: Icons.scatter_plot,
               ),
@@ -366,7 +367,7 @@ class _EmptyState extends StatelessWidget {
               color: colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: VspSpacing.md),
-            Text('No Performance Data', style: theme.textTheme.titleMedium),
+            Text(AppLocalizations.of(context).performanceNoData, style: theme.textTheme.titleMedium),
             const SizedBox(height: VspSpacing.sm),
             Text(
               'Start recording shots with your clubs to see performance statistics.',
@@ -390,7 +391,7 @@ class _LoadingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Bag Performance')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).performanceBagTitle)),
       body: const Center(child: CircularProgressIndicator()),
     );
   }
@@ -410,7 +411,7 @@ class _ErrorScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Bag Performance')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).performanceBagTitle)),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
@@ -435,7 +436,7 @@ class _ErrorScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
+                label: Text(AppLocalizations.of(context).commonTryAgain),
               ),
             ],
           ),

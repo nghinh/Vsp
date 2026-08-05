@@ -19,6 +19,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import 'auth_bloc.dart';
 import 'session_card.dart';
 import '../data/auth_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class SessionManagementScreen extends StatefulWidget {
   const SessionManagementScreen({super.key});
@@ -46,7 +47,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Revoke Session'),
+        title: Text(AppLocalizations.of(context).sessionsRevokeTitle),
         content: Text(
           'Are you sure you want to sign out of "$deviceLabel"? '
           'This session will be immediately terminated.',
@@ -54,7 +55,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () {
@@ -66,7 +67,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Revoke'),
+            child: Text(AppLocalizations.of(context).sessionsRevoke),
           ),
         ],
       ),
@@ -80,7 +81,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Active Sessions'),
+        title: Text(AppLocalizations.of(context).sessionsActiveTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -95,14 +96,14 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
               Navigator.of(context).popUntil((route) => route.isFirst);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('You signed out of this device.'),
+                  content: Text(AppLocalizations.of(context).sessionsSignedOutThisDevice),
                   backgroundColor: colorScheme.primary,
                 ),
               );
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: const Text('Session revoked successfully.'),
+                  content: Text(AppLocalizations.of(context).sessionsRevokedSuccess),
                   backgroundColor: colorScheme.primary,
                 ),
               );
@@ -193,7 +194,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load sessions',
+              AppLocalizations.of(context).sessionsLoadFailed,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -207,7 +208,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Try Again',
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
               variant: VspButtonVariant.secondary,
               icon: Icons.refresh,
@@ -248,13 +249,13 @@ class _EmptyView extends StatelessWidget {
                   ),
                   const SizedBox(height: VspSpacing.md),
                   Text(
-                    'No Active Sessions',
+                    AppLocalizations.of(context).sessionsEmptyTitle,
                     style: theme.textTheme.titleMedium,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: VspSpacing.sm),
                   Text(
-                    'Pull down to refresh.',
+                    AppLocalizations.of(context).sessionsEmptySubtitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),

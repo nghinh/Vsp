@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Badge displaying the confidence level with icon and explanation text.
 /// Per NFR-4: non-color-only indicators with icon + text.
@@ -35,7 +36,7 @@ class ConfidenceBadge extends StatelessWidget {
 
     if (compact) {
       return Semantics(
-        label: 'Confidence: $labelText',
+        label: AppLocalizations.of(context).performanceConfidence(labelText),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
@@ -62,7 +63,7 @@ class ConfidenceBadge extends StatelessWidget {
     }
 
     return Semantics(
-      label: 'Confidence: $labelText. $description',
+      label: AppLocalizations.of(context).performanceConfidenceDetail(labelText, description),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(

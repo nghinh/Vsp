@@ -6,6 +6,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/round_review_metrics.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Summary card showing scoring metrics for a round.
 ///
@@ -39,32 +40,32 @@ class RoundSummaryCard extends StatelessWidget {
               childAspectRatio: 1.5,
               children: [
                 _MetricCell(
-                  label: 'Gross',
+                  label: AppLocalizations.of(context).analyticsGross,
                   value: '${scoring.totalGrossScore}',
                   icon: Icons.sports_golf,
                 ),
                 _MetricCell(
-                  label: 'Putts',
+                  label: AppLocalizations.of(context).analyticsPutts,
                   value: scoring.totalPutts?.toString() ?? '-',
                   icon: Icons.grass,
                 ),
                 _MetricCell(
-                  label: 'Penalties',
+                  label: AppLocalizations.of(context).analyticsPenalties,
                   value: scoring.totalPenalties?.toString() ?? '-',
                   icon: Icons.warning_outlined,
                 ),
                 _PercentageCell(
-                  label: 'GIR',
+                  label: AppLocalizations.of(context).analyticsGir,
                   count: scoring.girCount,
                   total: scoring.girTotal,
                 ),
                 _PercentageCell(
-                  label: 'FIR',
+                  label: AppLocalizations.of(context).analyticsFir,
                   count: scoring.firCount,
                   total: scoring.firTotal,
                 ),
                 _PercentageCell(
-                  label: 'Up & Down',
+                  label: AppLocalizations.of(context).analyticsUpAndDown,
                   count: scoring.upAndDownCount,
                   total: scoring.upAndDownTotal,
                 ),
@@ -76,17 +77,17 @@ class RoundSummaryCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _CountCell(
-                  label: 'Birdie+',
+                  label: AppLocalizations.of(context).analyticsBirdiePlus,
                   count: scoring.birdieOrBetterCount,
                   color: Colors.green,
                 ),
                 _CountCell(
-                  label: 'Par',
+                  label: AppLocalizations.of(context).analyticsPar,
                   count: scoring.parOrBetterCount,
                   color: Colors.blue,
                 ),
                 _CountCell(
-                  label: 'Bogey+',
+                  label: AppLocalizations.of(context).analyticsBogeyPlus,
                   count: scoring.bogeyOrWorseCount,
                   color: Colors.orange,
                 ),
@@ -119,7 +120,7 @@ class _ScoreToParRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text('Score to Par: ', style: Theme.of(context).textTheme.titleSmall),
+        Text(AppLocalizations.of(context).analyticsScoreToPar, style: Theme.of(context).textTheme.titleSmall),
         Text(
           '$sign$scoreToPar',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(

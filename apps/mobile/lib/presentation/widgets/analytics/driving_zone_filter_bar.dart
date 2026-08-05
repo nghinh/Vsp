@@ -9,6 +9,7 @@ import '../../../domain/models/driving_zone_filter.dart';
 import 'club_filter_chips.dart';
 import 'tee_filter_selector.dart';
 import 'wind_filter_selector.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Time range preset options for the filter bar.
 enum TimeRangePreset {
@@ -108,7 +109,7 @@ class DrivingZoneFilterBar extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: onClearFilters,
                 icon: const Icon(Icons.clear_all, size: 18),
-                label: const Text('Clear All'),
+                label: Text(AppLocalizations.of(context).analyticsClearAll),
               ),
             ),
           ],
@@ -133,7 +134,7 @@ class _TimeRangeSelectorRow extends StatelessWidget {
       children: [
         const Icon(Icons.calendar_today, size: 18),
         const SizedBox(width: 8),
-        const Text('Time:', style: TextStyle(fontWeight: FontWeight.w500)),
+        Text(AppLocalizations.of(context).analyticsTimeLabel, style: TextStyle(fontWeight: FontWeight.w500)),
         const SizedBox(width: 8),
         Expanded(
           child: SingleChildScrollView(

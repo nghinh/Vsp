@@ -14,6 +14,8 @@ import 'package:vsp_mobile/presentation/widgets/score/hole_navigation_bar.dart';
 import 'package:vsp_mobile/presentation/widgets/score/progressive_score_field.dart';
 import 'package:vsp_mobile/presentation/widgets/score/fairway_gir_toggle.dart';
 import 'package:vsp_mobile/presentation/widgets/common/offline_indicator.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   /// Minimum touch target size in logical pixels (44pt iOS / 48dp Android).
@@ -22,6 +24,9 @@ void main() {
   Widget buildMaterialApp(Widget child) {
     return MaterialApp(
       theme: VspTheme.light(),
+      locale: const Locale('en'),
+      supportedLocales: kSupportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: Scaffold(body: child),
     );
   }
@@ -195,6 +200,9 @@ void main() {
           ),
           child: MaterialApp(
             theme: VspTheme.light(),
+            locale: const Locale('en'),
+            supportedLocales: kSupportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             home: Scaffold(
               body: Column(
                 children: [
@@ -561,6 +569,9 @@ void main() {
           ),
           child: MaterialApp(
             theme: VspTheme.light(),
+            locale: const Locale('en'),
+            supportedLocales: kSupportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             home: Scaffold(
               body: Column(
                 children: [

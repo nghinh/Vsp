@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/data_freshness.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Freshness badge — shows days since data was published or stale indicator.
 class FreshnessBadge extends StatelessWidget {
@@ -44,7 +45,7 @@ class FreshnessBadge extends StatelessWidget {
     ThemeData theme,
   ) {
     return Semantics(
-      label: 'Data freshness unknown',
+      label: AppLocalizations.of(context).freshnessUnknownLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -61,7 +62,7 @@ class FreshnessBadge extends StatelessWidget {
           ),
         ),
         child: Text(
-          'Unknown',
+          AppLocalizations.of(context).freshnessUnknown,
           style: TextStyle(
             fontSize: compact ? 10 : 11,
             fontWeight: FontWeight.w500,
@@ -81,13 +82,13 @@ class FreshnessBadge extends StatelessWidget {
   ) {
     final days = dataFreshness!.daysSincePublished;
     final label = days == 0
-        ? 'Today'
+        ? AppLocalizations.of(context).freshnessToday
         : days == 1
         ? '1 day ago'
         : '$days days ago';
 
     return Semantics(
-      label: 'Data updated $label',
+      label: AppLocalizations.of(context).freshnessUpdatedLabel(label),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -136,7 +137,7 @@ class FreshnessBadge extends StatelessWidget {
     ThemeData theme,
   ) {
     return Semantics(
-      label: 'Data is stale',
+      label: AppLocalizations.of(context).freshnessStaleLabel,
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: compact ? 6 : VspSpacing.sm,
@@ -161,7 +162,7 @@ class FreshnessBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Stale',
+              AppLocalizations.of(context).freshnessStale,
               style: TextStyle(
                 fontSize: compact ? 10 : 11,
                 fontWeight: FontWeight.w600,

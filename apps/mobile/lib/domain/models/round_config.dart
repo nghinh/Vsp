@@ -239,7 +239,7 @@ class RoundConfig extends Equatable {
           ? int.parse(json['teeId'].toString().split('/').last)
           : null,
       format: RoundFormat.fromString(json['format'] as String),
-      playerIds: (json['playerIds'] as List<dynamic>).cast<String>(),
+      playerIds: (json['playerIds'] as List<dynamic>? ?? const []).cast<String>(),
       players:
           (json['players'] as List<dynamic>?)
               ?.map((e) => Player.fromJson(e as Map<String, dynamic>))

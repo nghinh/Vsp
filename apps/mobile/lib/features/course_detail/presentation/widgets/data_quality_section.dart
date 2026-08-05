@@ -7,6 +7,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import 'data_quality_badge.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class DataQualitySection extends StatelessWidget {
   final CourseDetail course;
@@ -39,7 +40,7 @@ class DataQualitySection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Data Quality',
+                AppLocalizations.of(context).sectionDataQuality,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -59,17 +60,17 @@ class DataQualitySection extends StatelessWidget {
 
             // Details
             _DetailRow(
-              label: 'Version',
+              label: AppLocalizations.of(context).fieldVersion,
               value: 'v${dataQuality.versionNumber}',
             ),
             const SizedBox(height: VspSpacing.sm),
             _DetailRow(
-              label: 'Last Updated',
+              label: AppLocalizations.of(context).fieldLastUpdated,
               value: _formatDate(dataQuality.publishedAt),
             ),
             if (dataQuality.publisher != null) ...[
               const SizedBox(height: VspSpacing.sm),
-              _DetailRow(label: 'Publisher', value: dataQuality.publisher!),
+              _DetailRow(label: AppLocalizations.of(context).fieldPublisher, value: dataQuality.publisher!),
             ],
             if (dataQuality.isStale) ...[
               const SizedBox(height: VspSpacing.sm),
@@ -85,7 +86,7 @@ class DataQualitySection extends StatelessWidget {
                   ),
                   const SizedBox(width: VspSpacing.xs),
                   Text(
-                    'Data is older than 30 days',
+                    AppLocalizations.of(context).dataOlderThan30Days,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: VspColorSemantic.of(
                         colorScheme.brightness,

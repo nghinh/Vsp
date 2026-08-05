@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Minimum touch target size in logical pixels (44pt iOS / 48dp Android).
 const double kMinTouchTarget = 44.0;
@@ -81,7 +82,7 @@ class StatToggle extends StatelessWidget {
               // Yes/True button
               _ToggleButton(
                 icon: Icons.check,
-                label: 'Yes',
+                label: AppLocalizations.of(context).scoreYes,
                 isSelected: state == StatToggleState.yes,
                 selectedColor: theme.colorScheme.primaryContainer,
                 onTap: () {
@@ -116,7 +117,7 @@ class StatToggle extends StatelessWidget {
                 onClear();
               },
               child: Text(
-                'Clear',
+                AppLocalizations.of(context).scorecardClear,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.primary.withOpacity(0.7),
                 ),
@@ -242,12 +243,12 @@ class FairwayGirToggles extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           StatToggle(
-            label: 'Fairway',
+            label: AppLocalizations.of(context).scoreFairway,
             state: fairwayState,
             onToggleYes: onFairwayYes,
             onToggleNo: onFairwayNo,
             onClear: onFairwayClear,
-            semanticLabel: 'Fairway hit',
+            semanticLabel: AppLocalizations.of(context).scoreFairwayHit,
           ),
           Container(
             width: 1,
@@ -260,7 +261,7 @@ class FairwayGirToggles extends StatelessWidget {
             onToggleYes: onGirYes,
             onToggleNo: onGirNo,
             onClear: onGirClear,
-            semanticLabel: 'Green in regulation',
+            semanticLabel: AppLocalizations.of(context).scoreGir,
           ),
         ],
       ),

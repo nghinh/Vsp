@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 
 import '../common/offline_indicator.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Header widget for the scorecard screen.
 class HoleScoreHeader extends StatelessWidget {
@@ -50,9 +51,9 @@ class HoleScoreHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Semantics(
-                  label: 'Hole $holeNumber of $totalHoles',
+                  label: AppLocalizations.of(context).holeOfTotal('$holeNumber', '$totalHoles'),
                   child: Text(
-                    'Hole $holeNumber',
+                    AppLocalizations.of(context).holeNumberLabel('$holeNumber'),
                     style: theme.textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -60,7 +61,7 @@ class HoleScoreHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Par ${par ?? '—'}',
+                  AppLocalizations.of(context).holeParLabel('${par ?? '—'}'),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurface.withOpacity(0.7),
                   ),
@@ -71,7 +72,7 @@ class HoleScoreHeader extends StatelessWidget {
 
           // Hole progress indicator
           Semantics(
-            label: 'Hole $holeNumber of $totalHoles',
+            label: AppLocalizations.of(context).holeOfTotal('$holeNumber', '$totalHoles'),
             child: Text(
               '$holeNumber / $totalHoles',
               style: theme.textTheme.bodySmall?.copyWith(

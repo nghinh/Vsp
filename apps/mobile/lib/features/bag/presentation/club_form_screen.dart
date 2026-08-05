@@ -14,6 +14,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import '../data/bag_dto.dart';
 import 'bag_bloc.dart';
 import 'widgets/club_type_picker.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -100,7 +101,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
         padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
         children: [
           // ─── Club Type ──────────────────────────────────────────────────────
-          _SectionLabel(label: 'CLUB TYPE'),
+          _SectionLabel(label: AppLocalizations.of(context).clubType),
           const SizedBox(height: VspSpacing.sm),
           _ClubTypeSelector(
             selectedType: _selectedClubType,
@@ -117,7 +118,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Loft ───────────────────────────────────────────────────────────
-          _SectionLabel(label: 'LOFT (DEGREES)'),
+          _SectionLabel(label: AppLocalizations.of(context).clubLoft),
           const SizedBox(height: VspSpacing.sm),
           _NumberField(
             controller: _loftController,
@@ -128,31 +129,31 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Carry Distance ─────────────────────────────────────────────────
-          _SectionLabel(label: 'CARRY DISTANCE (METERS)'),
+          _SectionLabel(label: AppLocalizations.of(context).clubCarryDistance),
           const SizedBox(height: VspSpacing.sm),
           _NumberField(
             controller: _carryController,
             hint: 'e.g. 220',
             suffix: 'm',
-            helperText: 'Distance the ball travels in the air',
+            helperText: AppLocalizations.of(context).clubCarryHelper,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Total Distance ────────────────────────────────────────────────
-          _SectionLabel(label: 'TOTAL DISTANCE (METERS)'),
+          _SectionLabel(label: AppLocalizations.of(context).clubTotalDistance),
           const SizedBox(height: VspSpacing.sm),
           _NumberField(
             controller: _totalController,
             hint: 'e.g. 235',
             suffix: 'm',
-            helperText: 'Full distance including roll',
+            helperText: AppLocalizations.of(context).clubTotalHelper,
             onChanged: (_) => setState(() {}),
           ),
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Dispersion (Phase 2) ───────────────────────────────────────────
-          _SectionLabel(label: 'DISPERSION (DEGREES)'),
+          _SectionLabel(label: AppLocalizations.of(context).clubDispersion),
           const SizedBox(height: VspSpacing.sm),
           _Phase2Field(
             controller: _dispersionController,
@@ -163,7 +164,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Shaft ─────────────────────────────────────────────────────────
-          _SectionLabel(label: 'SHAFT'),
+          _SectionLabel(label: AppLocalizations.of(context).clubShaft),
           const SizedBox(height: VspSpacing.sm),
           _TextField(
             controller: _shaftController,
@@ -173,7 +174,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Use Date ───────────────────────────────────────────────────────
-          _SectionLabel(label: 'DATE PUT INTO USE'),
+          _SectionLabel(label: AppLocalizations.of(context).clubInUseDate),
           const SizedBox(height: VspSpacing.sm),
           _DateSelector(
             selectedDate: _useDate,
@@ -206,7 +207,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
               child: TextButton(
                 onPressed: _confirmDelete,
                 style: TextButton.styleFrom(foregroundColor: colorScheme.error),
-                child: const Text('Delete Club'),
+                child: Text(AppLocalizations.of(context).clubDelete),
               ),
             ),
 
@@ -271,14 +272,14 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Club?'),
+        title: Text(AppLocalizations.of(context).clubDeleteTitle),
         content: Text(
           'Are you sure you want to delete this ${_selectedClubType?.displayName ?? "club"}?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () {
@@ -291,7 +292,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(context).colorScheme.error,
             ),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),

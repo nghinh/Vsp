@@ -30,6 +30,7 @@ import 'course_search_event.dart';
 import 'course_search_state.dart';
 import 'widgets/course_card.dart';
 import 'widgets/empty_search_state.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class CourseSearchScreen extends StatelessWidget {
   /// When true the screen acts as a picker: tapping a course pops the route
@@ -111,7 +112,7 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectionMode ? 'Select Course' : 'Find Courses'),
+        title: Text(widget.selectionMode ? AppLocalizations.of(context).courseSearchSelectTitle : AppLocalizations.of(context).courseSearchTitle),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(108),
           child: Column(
@@ -146,11 +147,11 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
               // Tab bar
               TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: 'All'),
-                  Tab(text: 'Nearby'),
-                  Tab(text: 'Favorites'),
-                  Tab(text: 'Recent'),
+                tabs: [
+                  Tab(text: AppLocalizations.of(context).courseTabAll),
+                  Tab(text: AppLocalizations.of(context).courseTabNearby),
+                  Tab(text: AppLocalizations.of(context).courseTabFavorites),
+                  Tab(text: AppLocalizations.of(context).courseTabRecent),
                 ],
                 labelColor: colorScheme.primary,
                 unselectedLabelColor: colorScheme.onSurfaceVariant,
@@ -215,7 +216,7 @@ class _SearchBar extends StatelessWidget {
             onChanged: onChanged,
             onSubmitted: onSubmitted,
             decoration: InputDecoration(
-              hintText: 'Search by name, city, or province',
+              hintText: AppLocalizations.of(context).courseSearchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: controller.text.isNotEmpty
                   ? IconButton(
@@ -256,7 +257,7 @@ class _SearchBar extends StatelessWidget {
           child: IconButton.filled(
             onPressed: onNearbyPressed,
             icon: const Icon(Icons.near_me),
-            tooltip: 'Find nearby courses',
+            tooltip: AppLocalizations.of(context).courseSearchNearbyTooltip,
             style: IconButton.styleFrom(
               backgroundColor: colorScheme.primaryContainer,
               foregroundColor: colorScheme.onPrimaryContainer,
@@ -289,9 +290,9 @@ class _SearchResultsTab extends StatelessWidget {
 
         if (state is CourseSearchError) {
           return EmptySearchState(
-            message: 'Something went wrong',
+            message: AppLocalizations.of(context).commonError,
             subtitle: state.message,
-            actionLabel: 'Try Again',
+            actionLabel: AppLocalizations.of(context).commonTryAgain,
             onAction: () {
               context.read<CourseSearchBloc>().add(const RefreshResults());
             },
@@ -301,15 +302,15 @@ class _SearchResultsTab extends StatelessWidget {
         if (state is CourseSearchLoaded && state.results.isEmpty) {
           if (state.lastQuery != null && state.lastQuery!.isNotEmpty) {
             return EmptySearchState.noResults(
-              actionLabel: 'Clear Search',
+              actionLabel: AppLocalizations.of(context).courseSearchClear,
               onAction: () {
                 context.read<CourseSearchBloc>().add(const SearchSubmitted(''));
               },
             );
           }
-          return const EmptySearchState(
-            message: 'Search for courses',
-            subtitle: 'Enter a course name or use the nearby button',
+          return EmptySearchState(
+            message: AppLocalizations.of(context).courseSearchPrompt,
+            subtitle: AppLocalizations.of(context).courseSearchPromptSubtitle,
             icon: Icons.golf_course,
           );
         }
@@ -325,9 +326,9 @@ class _SearchResultsTab extends StatelessWidget {
         }
 
         // Initial state
-        return const EmptySearchState(
-          message: 'Search for courses',
-          subtitle: 'Enter a course name or use the nearby button',
+        return EmptySearchState(
+          message: AppLocalizations.of(context).courseSearchPrompt,
+          subtitle: AppLocalizations.of(context).courseSearchPromptSubtitle,
           icon: Icons.golf_course,
         );
       },
@@ -359,7 +360,7 @@ class _NearbyTab extends StatelessWidget {
                 const CircularProgressIndicator(),
                 const SizedBox(height: VspSpacing.md),
                 Text(
-                  'Finding nearby courses...',
+                  AppLocalizations.of(context).courseFindingNearby,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
@@ -371,7 +372,7 @@ class _NearbyTab extends StatelessWidget {
 
         if (state is CourseSearchError && state.activeTab == SearchTab.nearby) {
           return EmptySearchState.locationDenied(
-            actionLabel: 'Try Again',
+            actionLabel: AppLocalizations.of(context).commonTryAgain,
             onAction: () {
               context.read<CourseSearchBloc>().add(const SearchNearby());
             },
@@ -384,10 +385,10 @@ class _NearbyTab extends StatelessWidget {
           final lat = state.lastLatitude;
           final lng = state.lastLongitude;
           return EmptySearchState(
-            message: 'No courses nearby',
+            message: AppLocalizations.of(context).courseNoCoursesNearby,
             icon: Icons.golf_course,
-            subtitle: 'Try increasing the search radius',
-            actionLabel: 'Expand Search',
+            subtitle: AppLocalizations.of(context).courseExpandSearchSubtitle,
+            actionLabel: AppLocalizations.of(context).courseExpandSearch,
             onAction: () {
               // Widen around the last fix; re-acquire GPS if we never had one.
               context.read<CourseSearchBloc>().add(
@@ -417,7 +418,7 @@ class _NearbyTab extends StatelessWidget {
         // Default: prompt to enable location. The bloc resolves the real GPS
         // fix and surfaces an error state if permission/location is missing.
         return EmptySearchState.locationDenied(
-          actionLabel: 'Find Nearby',
+          actionLabel: AppLocalizations.of(context).courseFindNearby,
           onAction: () {
             context.read<CourseSearchBloc>().add(const SearchNearby());
           },

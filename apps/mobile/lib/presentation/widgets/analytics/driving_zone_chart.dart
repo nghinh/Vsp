@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/models/driving_zone_statistics.dart';
 import 'chart_legend.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Driving zone chart showing landing zone distribution per club per hole.
 ///
@@ -31,7 +32,7 @@ class DrivingZoneChart extends StatelessWidget {
         : statistics.holeStats;
 
     if (holeStats.isEmpty) {
-      return const Center(child: Text('No zone data available'));
+      return Center(child: Text(AppLocalizations.of(context).analyticsNoZoneData));
     }
 
     return Column(
@@ -74,7 +75,7 @@ class _HoleSelectorTabs extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text('Hole ${h.holeNumber}'),
+              label: Text(AppLocalizations.of(context).analyticsHoleLabel('${h.holeNumber}')),
               selected: isSelected,
               onSelected: (_) {},
               avatar: CircleAvatar(
@@ -161,7 +162,7 @@ class _HoleZoneCard extends StatelessWidget {
             if (hole.averageDistanceYards != null)
               Text(
                 'Avg distance: ${hole.averageDistanceYards!.toStringAsFixed(1)} yds',
-                style: const TextStyle(fontSize: 12),
+                style: TextStyle(fontSize: 12),
               ),
           ],
         ),
@@ -174,7 +175,7 @@ class _ZoneGrid extends StatelessWidget {
   final List<ZoneCell> zoneCells;
   final int totalShots;
 
-  const _ZoneGrid({required this.zoneCells, required this.totalShots});
+  _ZoneGrid({required this.zoneCells, required this.totalShots});
 
   @override
   Widget build(BuildContext context) {
@@ -183,19 +184,19 @@ class _ZoneGrid extends StatelessWidget {
       children: [
         // Column headers
         Row(
-          children: const [
+          children: [
             SizedBox(width: 40),
             Expanded(
               child: Center(
-                child: Text('Short', style: TextStyle(fontSize: 10)),
+                child: Text(AppLocalizations.of(context).analyticsShort, style: TextStyle(fontSize: 10)),
               ),
             ),
             Expanded(
-              child: Center(child: Text('Mid', style: TextStyle(fontSize: 10))),
+              child: Center(child: Text(AppLocalizations.of(context).analyticsMid, style: TextStyle(fontSize: 10))),
             ),
             Expanded(
               child: Center(
-                child: Text('Long', style: TextStyle(fontSize: 10)),
+                child: Text(AppLocalizations.of(context).analyticsLong, style: TextStyle(fontSize: 10)),
               ),
             ),
           ],
@@ -329,19 +330,19 @@ class _DispersionSummary extends StatelessWidget {
       children: [
         _SummaryChip(
           icon: Icons.golf_course,
-          label: 'Total Shots',
+          label: AppLocalizations.of(context).analyticsTotalShots,
           value: '${statistics.totalShots}',
         ),
         const SizedBox(width: 12),
         _SummaryChip(
           icon: Icons.scatter_plot,
-          label: 'Avg Dispersion',
+          label: AppLocalizations.of(context).analyticsAvgDispersion,
           value: statistics.averageDispersion.toStringAsFixed(2),
         ),
         const SizedBox(width: 12),
         _SummaryChip(
           icon: Icons.category,
-          label: 'Clubs',
+          label: AppLocalizations.of(context).analyticsClubs,
           value: '${statistics.clubIds.length}',
         ),
       ],

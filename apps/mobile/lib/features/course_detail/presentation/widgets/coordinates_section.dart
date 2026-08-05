@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class CoordinatesSection extends StatelessWidget {
   final CourseDetail course;
@@ -35,7 +36,7 @@ class CoordinatesSection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Coordinates',
+                AppLocalizations.of(context).sectionCoordinates,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -72,14 +73,14 @@ class CoordinatesSection extends StatelessWidget {
                       ),
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Coordinates copied'),
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context).coordinatesCopied),
                         duration: Duration(seconds: 1),
                       ),
                     );
                   },
                   icon: const Icon(Icons.copy),
-                  tooltip: 'Copy coordinates',
+                  tooltip: AppLocalizations.of(context).coordinatesCopyTooltip,
                   style: IconButton.styleFrom(minimumSize: const Size(44, 44)),
                 ),
               ],

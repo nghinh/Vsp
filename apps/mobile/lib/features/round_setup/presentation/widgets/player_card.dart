@@ -11,6 +11,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../domain/models/player.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card displaying a player in the round setup.
 class PlayerCard extends StatelessWidget {
@@ -89,7 +90,7 @@ class PlayerCard extends StatelessWidget {
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
-                            'You',
+                            AppLocalizations.of(context).roundSetupYou,
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: colorScheme.primary,
                               fontWeight: FontWeight.w600,
@@ -101,7 +102,7 @@ class PlayerCard extends StatelessWidget {
                   ),
                   if (player.handicap != null)
                     Text(
-                      'Handicap ${player.handicap!.toStringAsFixed(1)}',
+                      AppLocalizations.of(context).roundSetupPlayerHandicap(player.handicap!.toStringAsFixed(1)),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -120,7 +121,7 @@ class PlayerCard extends StatelessWidget {
                   minimumSize: const Size(44, 44), // 44pt touch target
                   foregroundColor: colorScheme.error,
                 ),
-                tooltip: 'Remove ${player.name}',
+                tooltip: AppLocalizations.of(context).roundSetupRemovePlayer(player.name),
               ),
           ],
         ),
@@ -149,7 +150,7 @@ class AddPlayerCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: canAdd ? 'Add a player' : 'Maximum 4 players reached',
+      label: canAdd ? AppLocalizations.of(context).roundSetupAddPlayerHint : AppLocalizations.of(context).roundSetupMaxPlayers,
       button: true,
       child: InkWell(
         onTap: canAdd ? onAdd : null,
@@ -179,7 +180,7 @@ class AddPlayerCard extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               Text(
-                canAdd ? 'Add Player' : 'Maximum 4 Players',
+                canAdd ? AppLocalizations.of(context).roundSetupAddPlayer : AppLocalizations.of(context).roundSetupMaxPlayersShort,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: canAdd
                       ? colorScheme.primary

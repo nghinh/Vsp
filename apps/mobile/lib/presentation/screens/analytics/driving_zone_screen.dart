@@ -20,6 +20,7 @@ import '../../widgets/analytics/analytics_loading_shimmer.dart';
 import '../../widgets/analytics/driving_zone_chart.dart';
 import '../../widgets/analytics/driving_zone_filter_bar.dart';
 import '../../widgets/analytics/incomplete_data_banner.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Driving Zone analytics screen.
 ///
@@ -62,11 +63,11 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
       value: _cubit,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Driving Zone'),
+          title: Text(AppLocalizations.of(context).drivingZoneTitle),
           actions: [
             IconButton(
               icon: const Icon(Icons.refresh),
-              tooltip: 'Refresh',
+              tooltip: AppLocalizations.of(context).commonRefresh,
               onPressed: () => _cubit.retry(),
             ),
           ],
@@ -106,7 +107,7 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
           _buildFilterBar(filter),
           if (warning != null) IncompleteDataBanner(warning: warning),
           AnalyticsEmptyState(
-            title: 'No Shot Data',
+            title: AppLocalizations.of(context).drivingZoneNoShotData,
             subtitle:
                 'Record shots on the course to see your driving zone analytics.',
             actionLabel: 'Record Shots',

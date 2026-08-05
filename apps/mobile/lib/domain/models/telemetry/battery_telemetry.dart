@@ -175,9 +175,9 @@ class BatteryTelemetry extends Equatable {
       holesCompleted: (map['holes_completed'] as num?)?.toInt() ?? 0,
       holesRemaining: (map['holes_remaining'] as num?)?.toInt() ?? 18,
       gpsPollingFrequencyHz: (map['gps_polling_frequency_hz'] as num?)?.toDouble(),
-      batterySaverActive: ((map['battery_saver_active'] as num).toInt()) == 1,
+      batterySaverActive: (map['battery_saver_active'] as num).toInt() == 1,
       screenState: map['screen_state'] as String?,
-      appInForeground: ((map['app_in_foreground'] as num).toInt()) == 1,
+      appInForeground: (map['app_in_foreground'] as num).toInt() == 1,
     );
   }
 

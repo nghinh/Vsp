@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/locale/locale_cubit.dart';
 import 'core/network/api_client.dart';
 import 'core/storage/secure_storage.dart';
+import 'l10n/app_localizations.dart';
 import 'features/auth/data/auth_repository.dart';
 import 'features/auth/data/auth_service.dart';
 import 'features/auth/presentation/auth_bloc.dart';
@@ -21,6 +23,7 @@ class VspApp extends StatefulWidget {
 class _VspAppState extends State<VspApp> {
   late final AuthBloc _authBloc;
   late final bool _ownsAuthBloc;
+  late final LocaleCubit _localeCubit;
 
   @override
   void initState() {
@@ -28,6 +31,7 @@ class _VspAppState extends State<VspApp> {
     _ownsAuthBloc = widget.authBloc == null;
     _authBloc = widget.authBloc ?? _createAuthBloc();
     _authBloc.add(const SessionRestoreRequested());
+    _localeCubit = LocaleCubit()..load();
   }
 
   AuthBloc _createAuthBloc() {
@@ -46,18 +50,31 @@ class _VspAppState extends State<VspApp> {
     if (_ownsAuthBloc) {
       _authBloc.close();
     }
+    _localeCubit.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _authBloc,
-      child: MaterialApp(
-        title: 'Vietnam Smart Golf',
-        debugShowCheckedModeBanner: false,
-        theme: _buildVspTheme(),
-        home: const AuthStartupGate(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _authBloc),
+        BlocProvider.value(value: _localeCubit),
+      ],
+      // The locale is app-wide state: rebuilding MaterialApp on change swaps
+      // every localized string, including Material's own widgets.
+      child: BlocBuilder<LocaleCubit, Locale?>(
+        builder: (context, locale) {
+          return MaterialApp(
+            onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+            debugShowCheckedModeBanner: false,
+            theme: _buildVspTheme(),
+            locale: locale,
+            supportedLocales: kSupportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: const AuthStartupGate(),
+          );
+        },
       ),
     );
   }

@@ -13,6 +13,7 @@ import '../../../domain/models/score.dart';
 import 'bunker_toggle.dart';
 import 'fairway_gir_toggle.dart';
 import 'progressive_score_field.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Panel displaying progressive score fields for a single player.
 /// Shows putts, penalties, fairway/GIR toggles, bunker toggle, and notes.
@@ -108,7 +109,7 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    'Stats — $playerName',
+                    AppLocalizations.of(context).scoreStatsFor(playerName),
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: theme.colorScheme.primary,
@@ -127,20 +128,20 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ProgressiveScoreField(
-                    label: 'Putts',
+                    label: AppLocalizations.of(context).scorePutts,
                     value: score?.putts,
                     onIncrement: onIncrementPutts,
                     onDecrement: onDecrementPutts,
                     onClear: onClearPutts,
-                    semanticLabel: 'Putts for $playerName',
+                    semanticLabel: AppLocalizations.of(context).scorePuttsFor(playerName),
                   ),
                   ProgressiveScoreField(
-                    label: 'Penalties',
+                    label: AppLocalizations.of(context).scorePenalties,
                     value: score?.penalties,
                     onIncrement: onIncrementPenalties,
                     onDecrement: onDecrementPenalties,
                     onClear: onClearPenalties,
-                    semanticLabel: 'Penalties for $playerName',
+                    semanticLabel: AppLocalizations.of(context).scorePenaltiesFor(playerName),
                   ),
                 ],
               ),
@@ -172,7 +173,7 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                     onToggleYes: onBunkerYes,
                     onToggleNo: onBunkerNo,
                     onClear: onBunkerClear,
-                    semanticLabel: 'Bunker shot for $playerName',
+                    semanticLabel: AppLocalizations.of(context).scoreBunkerFor(playerName),
                   ),
                   const Spacer(),
                   // Notes button
@@ -204,7 +205,7 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                             Text(
                               score?.notes?.isNotEmpty == true
                                   ? '${score!.notes}'
-                                  : 'Notes',
+                                  : AppLocalizations.of(context).scoreNotes,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: score?.notes?.isNotEmpty == true
                                     ? theme.colorScheme.onSurface

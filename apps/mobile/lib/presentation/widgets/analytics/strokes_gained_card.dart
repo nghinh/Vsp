@@ -18,6 +18,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../domain/models/strokes_gained.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A card widget displaying Strokes Gained result for a single category.
 class StrokesGainedCard extends StatelessWidget {
@@ -177,7 +178,7 @@ class _BaselineActualRow extends StatelessWidget {
         // Baseline
         Expanded(
           child: _StatTile(
-            label: 'Benchmark',
+            label: AppLocalizations.of(context).analyticsBenchmark,
             value: isInsufficient
                 ? '—'
                 : result.baselineStrokes.toStringAsFixed(1),
@@ -196,7 +197,7 @@ class _BaselineActualRow extends StatelessWidget {
         // Actual
         Expanded(
           child: _StatTile(
-            label: 'Actual',
+            label: AppLocalizations.of(context).analyticsActual,
             value: isInsufficient
                 ? '—'
                 : result.actualStrokes.toStringAsFixed(1),
@@ -384,7 +385,7 @@ class _LimitationBadge extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: 'Limitation: ${limitation.displayName}',
+      label: AppLocalizations.of(context).analyticsLimitation(limitation.displayName),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(

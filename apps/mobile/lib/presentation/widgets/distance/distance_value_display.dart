@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../../../domain/value_objects/distance_measurement.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A single distance value display with large typography.
 ///
@@ -187,7 +188,7 @@ class _ConfidenceBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Confidence: $label',
+      label: AppLocalizations.of(context).distanceConfidenceLabel(label),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         decoration: BoxDecoration(
@@ -222,7 +223,7 @@ class _SourceBadge extends StatelessWidget {
         : const Color(0xFFF97316);
 
     return Semantics(
-      label: 'Source: ${source.displayName}',
+      label: AppLocalizations.of(context).distanceSourceLabel(source.displayName),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
         decoration: BoxDecoration(

@@ -18,6 +18,8 @@ import '../../privacy/presentation/privacy_screen.dart';
 import '../../profile/presentation/profile_screen.dart';
 import '../../round/presentation/rounds_history_tab.dart';
 import '../../round_setup/presentation/round_setup_screen.dart';
+import '../../settings/presentation/settings_screen.dart';
+import '../../../l10n/app_localizations.dart';
 import 'auth_bloc.dart';
 import 'login_screen.dart';
 import 'session_management_screen.dart';
@@ -32,18 +34,19 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  static const List<_NavItem> _navItems = [
-    _NavItem(icon: Icons.golf_course, label: 'Play'),
-    _NavItem(icon: Icons.search, label: 'Courses'),
-    _NavItem(icon: Icons.scoreboard_outlined, label: 'Rounds'),
-    _NavItem(icon: Icons.person, label: 'Profile'),
-    _NavItem(icon: Icons.more_horiz, label: 'More'),
+  List<_NavItem> _navItems(AppLocalizations l10n) => [
+    _NavItem(icon: Icons.golf_course, label: l10n.navPlay),
+    _NavItem(icon: Icons.search, label: l10n.navCourses),
+    _NavItem(icon: Icons.scoreboard_outlined, label: l10n.navRounds),
+    _NavItem(icon: Icons.person, label: l10n.navProfile),
+    _NavItem(icon: Icons.more_horiz, label: l10n.navMore),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: IndexedStack(
@@ -61,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
         onDestinationSelected: (index) {
           setState(() => _selectedIndex = index);
         },
-        destinations: _navItems
+        destinations: _navItems(l10n)
             .map(
               (item) => NavigationDestination(
                 icon: Icon(item.icon),
@@ -92,6 +95,7 @@ class _PlayTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: Center(
@@ -105,21 +109,21 @@ class _PlayTab extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Ready to Play',
+              l10n.homeReadyToPlay,
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: VspFontWeight.semibold,
               ),
             ),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Find a course to start your round',
+              l10n.homeFindCourse,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: VspSpacing.xl),
             VspButton(
-              label: 'Bắt đầu vòng đấu',
+              label: l10n.homeStartRound,
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(builder: (_) => const RoundSetupScreen()),
@@ -208,6 +212,7 @@ class _MoreTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: ListView(
@@ -215,14 +220,14 @@ class _MoreTab extends StatelessWidget {
         children: [
           const SizedBox(height: VspSpacing.md),
           Text(
-            'Tiện ích golfer',
+            l10n.moreTitle,
             style: theme.textTheme.headlineMedium?.copyWith(
               fontWeight: VspFontWeight.semibold,
             ),
           ),
           const SizedBox(height: VspSpacing.sm),
           Text(
-            'Quản lý thiết bị, túi gậy và tùy chọn tài khoản.',
+            l10n.moreSubtitle,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -230,8 +235,8 @@ class _MoreTab extends StatelessWidget {
           const SizedBox(height: VspSpacing.lg),
           _SettingsTile(
             icon: Icons.insights,
-            title: 'Phân tích & Hiệu suất',
-            subtitle: 'Hiệu suất gậy, vùng phát bóng, Strokes Gained, Smart Target',
+            title: l10n.homeAnalytics,
+            subtitle: l10n.homeAnalyticsSubtitle,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const AnalyticsHubScreen()),
             ),
@@ -239,8 +244,8 @@ class _MoreTab extends StatelessWidget {
           const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.golf_course,
-            title: 'Túi gậy của tôi',
-            subtitle: 'Quản lý gậy và khoảng cách tham chiếu',
+            title: l10n.homeMyBag,
+            subtitle: l10n.homeMyBagSubtitle,
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const BagScreen())),
@@ -248,8 +253,8 @@ class _MoreTab extends StatelessWidget {
           const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.shield_outlined,
-            title: 'Bảo mật & Quyền riêng tư',
-            subtitle: 'Quản lý dữ liệu, quyền và tài khoản',
+            title: l10n.homePrivacy,
+            subtitle: l10n.homePrivacySubtitle,
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const PrivacyScreen())),
@@ -257,13 +262,22 @@ class _MoreTab extends StatelessWidget {
           const SizedBox(height: 12),
           _SettingsTile(
             icon: Icons.devices,
-            title: 'Phiên đăng nhập',
-            subtitle: 'Kiểm tra và đăng xuất thiết bị',
+            title: l10n.authSessions,
+            subtitle: l10n.authSessionsSubtitle,
             onTap: () => Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => const SessionManagementScreen(),
               ),
             ),
+          ),
+          const SizedBox(height: 12),
+          _SettingsTile(
+            icon: Icons.settings_outlined,
+            title: l10n.settingsTitle,
+            subtitle: l10n.settingsLanguageSubtitle,
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
           ),
           const SizedBox(height: 32),
           OutlinedButton.icon(
@@ -275,7 +289,7 @@ class _MoreTab extends StatelessWidget {
               );
             },
             icon: const Icon(Icons.logout),
-            label: const Text('Đăng xuất'),
+            label: Text(l10n.authSignOut),
             style: OutlinedButton.styleFrom(
               foregroundColor: colorScheme.error,
               side: BorderSide(color: colorScheme.error),

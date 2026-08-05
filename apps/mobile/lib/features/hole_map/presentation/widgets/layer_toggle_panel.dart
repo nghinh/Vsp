@@ -4,13 +4,14 @@
 // Follows high-contrast dark theme tokens.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Panel widget for toggling visibility of individual map layers.
 class LayerTogglePanel extends StatefulWidget {
   final Map<String, bool> visibility;
   final void Function(String layerId, bool visible) onToggle;
 
-  const LayerTogglePanel({
+  LayerTogglePanel({
     super.key,
     required this.visibility,
     required this.onToggle,
@@ -23,16 +24,16 @@ class LayerTogglePanel extends StatefulWidget {
 class _LayerTogglePanelState extends State<LayerTogglePanel> {
   bool _isExpanded = false;
 
-  static const _allLayers = [
-    (id: 'fairway', label: 'Fairway'),
-    (id: 'green', label: 'Green'),
-    (id: 'rough', label: 'Rough'),
-    (id: 'bunker', label: 'Bunker'),
-    (id: 'water', label: 'Water'),
-    (id: 'penaltyArea', label: 'Penalty'),
-    (id: 'ob', label: 'O.B.'),
-    (id: 'cartPath', label: 'Cart Path'),
-    (id: 'landmark', label: 'Landmarks'),
+  List<({String id, String label})> _allLayers(BuildContext context) => [
+    (id: 'fairway', label: AppLocalizations.of(context).layerFairway),
+    (id: 'green', label: AppLocalizations.of(context).layerGreen),
+    (id: 'rough', label: AppLocalizations.of(context).layerRough),
+    (id: 'bunker', label: AppLocalizations.of(context).layerBunker),
+    (id: 'water', label: AppLocalizations.of(context).layerWater),
+    (id: 'penaltyArea', label: AppLocalizations.of(context).layerPenalty),
+    (id: 'ob', label: AppLocalizations.of(context).layerOb),
+    (id: 'cartPath', label: AppLocalizations.of(context).layerCartPath),
+    (id: 'landmark', label: AppLocalizations.of(context).layerLandmarks),
     (id: 'distanceRing100', label: '100m Ring'),
     (id: 'distanceRing150', label: '150m Ring'),
     (id: 'distanceRing200', label: '200m Ring'),

@@ -172,7 +172,7 @@ class CourseHoleDetectionResult extends Equatable {
         (l) => l.name == json['level'],
         orElse: () => ConfidenceLevel.low,
       ),
-      canAutoSwitch: json['canAutoSwitch'] as bool,
+      canAutoSwitch: json['canAutoSwitch'] as bool? ?? false,
       reason: CourseHoleDetectionReason.values.firstWhere(
         (r) => r.name == json['reason'],
         orElse: () => CourseHoleDetectionReason.initialDetection,

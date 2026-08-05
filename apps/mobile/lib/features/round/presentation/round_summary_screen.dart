@@ -15,6 +15,7 @@ import 'widgets/round_stats_card.dart';
 import 'widgets/score_row_widget.dart';
 import 'widgets/sync_state_badge.dart';
 import 'widgets/correction_dialog.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Main round summary screen.
 class RoundSummaryScreen extends StatelessWidget {
@@ -46,14 +47,14 @@ class _RoundSummaryView extends StatelessWidget {
       builder: (context, state) {
         if (state is RoundSummaryLoading) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Round Summary')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is RoundCompletionError) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Round Summary')),
+            appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -80,8 +81,8 @@ class _RoundSummaryView extends StatelessWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Round Summary')),
-          body: const Center(child: Text('Loading...')),
+          appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
+          body: Center(child: Text(AppLocalizations.of(context).commonLoading)),
         );
       },
     );
@@ -99,7 +100,7 @@ class _SummaryScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Round Complete'),
+        title: Text(AppLocalizations.of(context).summaryComplete),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),
@@ -195,12 +196,12 @@ class _SummaryScaffold extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No score data yet',
+                        AppLocalizations.of(context).summaryNoScores,
                         style: theme.textTheme.titleMedium,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Complete your round to see the summary',
+                        AppLocalizations.of(context).summaryNoScoresSubtitle,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
@@ -299,18 +300,18 @@ class _SyncStateBanner extends StatelessWidget {
       SyncState.synced => (
         Colors.green,
         Icons.check_circle,
-        'All scores synced',
+        AppLocalizations.of(context).summarySynced,
       ),
       SyncState.pending => (
         Colors.amber,
         Icons.cloud_upload,
-        'Scores saved offline. Will sync when online.',
+        AppLocalizations.of(context).summaryOffline,
       ),
-      SyncState.syncing => (Colors.blue, Icons.sync, 'Syncing scores...'),
+      SyncState.syncing => (Colors.blue, Icons.sync, AppLocalizations.of(context).summarySyncing),
       SyncState.failed => (
         Colors.red,
         Icons.error,
-        'Sync failed. Tap to retry.',
+        AppLocalizations.of(context).summarySyncFailed,
       ),
     };
 
@@ -363,7 +364,7 @@ class _BottomActions extends StatelessWidget {
                   // Edit scores action
                 },
                 icon: const Icon(Icons.edit),
-                label: const Text('Edit Scores'),
+                label: Text(AppLocalizations.of(context).summaryEditScores),
               ),
             ),
             const SizedBox(width: 12),
@@ -373,7 +374,7 @@ class _BottomActions extends StatelessWidget {
                   // Share action
                 },
                 icon: const Icon(Icons.share),
-                label: const Text('Share'),
+                label: Text(AppLocalizations.of(context).summaryShare),
               ),
             ),
             const SizedBox(width: 12),
@@ -383,7 +384,7 @@ class _BottomActions extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.check),
-                label: const Text('Done'),
+                label: Text(AppLocalizations.of(context).commonDone),
               ),
             ),
           ],

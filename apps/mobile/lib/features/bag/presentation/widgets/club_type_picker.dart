@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/bag_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom sheet picker for club type selection.
 class ClubTypePicker extends StatelessWidget {
@@ -153,7 +154,7 @@ class ClubTypePicker extends StatelessWidget {
             // Cancel button
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context).commonCancel),
             ),
           ],
         ),

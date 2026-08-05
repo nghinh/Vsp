@@ -4,6 +4,7 @@
 // Per slice plan §3.4 — shimmer skeleton on conditions panel while loading.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Loading skeleton placeholder for the weather conditions panel.
 ///
@@ -47,7 +48,7 @@ class _WeatherLoadingPlaceholderState extends State<WeatherLoadingPlaceholder>
     final highlightColor = theme.colorScheme.surface;
 
     return Semantics(
-      label: 'Loading weather data',
+      label: AppLocalizations.of(context).weatherLoading,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

@@ -22,6 +22,7 @@ import 'bag_bloc.dart';
 import 'bag_detail_screen.dart';
 import 'widgets/bag_card.dart';
 import 'widgets/recommendations_disabled_banner.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -57,7 +58,7 @@ class _BagScreenBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Golf Bags'),
+        title: Text(AppLocalizations.of(context).bagTitle),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -126,7 +127,7 @@ class _BagScreenBody extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateBagDialog(context),
-        tooltip: 'Add new bag',
+        tooltip: AppLocalizations.of(context).bagAddNew,
         child: const Icon(Icons.add),
       ),
     );
@@ -137,24 +138,24 @@ class _BagScreenBody extends StatelessWidget {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('New Golf Bag'),
+        title: Text(AppLocalizations.of(context).bagNewTitle),
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(
-            labelText: 'Bag Name',
+          decoration: InputDecoration(
+            labelText: AppLocalizations.of(context).bagName,
             hintText: 'e.g. Competition Bag',
-            border: OutlineInputBorder(),
+            border: const OutlineInputBorder(),
           ),
           textCapitalization: TextCapitalization.words,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           VspButton(
-            label: 'Create',
+            label: AppLocalizations.of(context).bagCreate,
             onPressed: () {
               final name = controller.text.trim();
               if (name.isNotEmpty) {
@@ -277,7 +278,7 @@ class _SyncBanner extends StatelessWidget {
           ),
           const SizedBox(width: VspSpacing.sm),
           Text(
-            isSyncing ? 'Syncing...' : 'Changes saved offline',
+            isSyncing ? AppLocalizations.of(context).bagSyncing : AppLocalizations.of(context).bagSavedOffline,
             style: theme.textTheme.bodySmall?.copyWith(color: color),
           ),
         ],
@@ -311,13 +312,13 @@ class _EmptyView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'No Golf Bags Yet',
+              AppLocalizations.of(context).bagEmptyTitle,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Create your first bag to start tracking your clubs.',
+              AppLocalizations.of(context).bagEmptySubtitle,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -325,7 +326,7 @@ class _EmptyView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Create First Bag',
+              label: AppLocalizations.of(context).bagCreateFirst,
               icon: Icons.add,
               onPressed: onCreateBag,
             ),
@@ -358,7 +359,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load bags',
+              AppLocalizations.of(context).bagLoadFailed,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
@@ -372,7 +373,7 @@ class _ErrorView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.lg),
             VspButton(
-              label: 'Try Again',
+              label: AppLocalizations.of(context).commonTryAgain,
               onPressed: onRetry,
               variant: VspButtonVariant.secondary,
               icon: Icons.refresh,

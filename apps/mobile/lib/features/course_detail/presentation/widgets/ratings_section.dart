@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class RatingsSection extends StatelessWidget {
   final CourseDetail course;
@@ -38,7 +39,7 @@ class RatingsSection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Ratings',
+                AppLocalizations.of(context).sectionRatings,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,
@@ -52,7 +53,7 @@ class RatingsSection extends StatelessWidget {
               if (course.rating != null)
                 Expanded(
                   child: _RatingCard(
-                    label: 'Course Rating',
+                    label: AppLocalizations.of(context).fieldCourseRating,
                     value: course.rating!.toStringAsFixed(1),
                     icon: Icons.star,
                     color: VspColorSemantic.of(
@@ -66,7 +67,7 @@ class RatingsSection extends StatelessWidget {
               if (course.slope != null)
                 Expanded(
                   child: _RatingCard(
-                    label: 'Slope',
+                    label: AppLocalizations.of(context).fieldSlope,
                     value: '${course.slope}',
                     icon: Icons.trending_up,
                     color: VspColorSemantic.of(

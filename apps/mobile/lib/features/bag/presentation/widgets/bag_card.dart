@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/bag_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// A card displaying bag name, active badge, and club count.
 class BagCard extends StatelessWidget {
@@ -129,7 +130,7 @@ class BagCard extends StatelessWidget {
                         VspSpacingSemantic.touchTargetMin,
                       ),
                     ),
-                    child: const Text('Set Active'),
+                    child: Text(AppLocalizations.of(context).bagSetActive),
                   ),
                 ],
 
@@ -151,21 +152,21 @@ class BagCard extends StatelessWidget {
     return await showDialog<bool>(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Bag?'),
+            title: Text(AppLocalizations.of(context).bagDeleteTitle),
             content: Text(
               'Are you sure you want to delete "${bag.name}"? This cannot be undone.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
+                child: Text(AppLocalizations.of(context).commonCancel),
               ),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(
                   foregroundColor: Theme.of(context).colorScheme.error,
                 ),
-                child: const Text('Delete'),
+                child: Text(AppLocalizations.of(context).commonDelete),
               ),
             ],
           ),

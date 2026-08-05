@@ -5,12 +5,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/presentation/widgets/analytics/accessible_bar_chart.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('AccessibleBarChart', () {
     testWidgets('renders empty when groups is empty', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessibleBarChart(
               groups: [],
@@ -28,6 +33,9 @@ void main() {
     testWidgets('renders with valid groups', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessibleBarChart(
               groups: [
@@ -59,6 +67,9 @@ void main() {
     testWidgets('has semantic label for accessibility', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessibleBarChart(
               groups: [

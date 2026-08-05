@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class LocalRulesSection extends StatelessWidget {
   final CourseDetail course;
@@ -38,7 +39,7 @@ class LocalRulesSection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Local Rules',
+                AppLocalizations.of(context).sectionLocalRules,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,

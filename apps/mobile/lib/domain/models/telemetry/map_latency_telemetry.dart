@@ -177,7 +177,7 @@ class MapLatencyTelemetry extends Equatable {
       durationMilliseconds: (map['duration_milliseconds'] as num).toInt(),
       tilesRendered: (map['tiles_rendered'] as num?)?.toInt(),
       symbolsRendered: (map['symbols_rendered'] as num?)?.toInt(),
-      servedFromCache: ((map['served_from_cache'] as num).toInt()) == 1,
+      servedFromCache: (map['served_from_cache'] as num).toInt() == 1,
       zoomLevel: (map['zoom_level'] as num).toDouble(),
       deviceModel: map['device_model'] as String?,
       batteryLevel: (map['battery_level'] as num).toDouble(),

@@ -7,6 +7,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../domain/models/course_detail.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class ContactSection extends StatelessWidget {
   final CourseDetail course;
@@ -23,27 +24,27 @@ class ContactSection extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return _SectionContainer(
-      title: 'Contact',
+      title: AppLocalizations.of(context).sectionContact,
       icon: Icons.phone,
       children: [
         if (course.phone != null)
           _ContactTile(
             icon: Icons.phone,
-            label: 'Phone',
+            label: AppLocalizations.of(context).fieldPhone,
             value: course.phone!,
             onTap: () => _launchUrl('tel:${course.phone}'),
           ),
         if (course.website != null)
           _ContactTile(
             icon: Icons.language,
-            label: 'Website',
+            label: AppLocalizations.of(context).fieldWebsite,
             value: course.website!,
             onTap: () => _launchUrl(course.website!),
           ),
         if (course.address != null)
           _ContactTile(
             icon: Icons.location_on,
-            label: 'Address',
+            label: AppLocalizations.of(context).fieldAddress,
             value: course.address!,
             onTap: null,
           ),

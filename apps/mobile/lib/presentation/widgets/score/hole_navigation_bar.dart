@@ -6,6 +6,7 @@
 // Story 5.3 — Slice 3: Score Entry UI
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom navigation bar for hole-to-hole navigation.
 class HoleNavigationBar extends StatelessWidget {
@@ -63,7 +64,7 @@ class HoleNavigationBar extends StatelessWidget {
           _buildNavButton(
             context: context,
             icon: Icons.chevron_left,
-            label: 'Prev Hole',
+            label: AppLocalizations.of(context).holeNavPrev,
             onPressed: canGoBack ? onPrevious : null,
           ),
 
@@ -72,12 +73,12 @@ class HoleNavigationBar extends StatelessWidget {
           // Hole progress
           Expanded(
             child: Semantics(
-              label: 'Hole ${currentHoleIndex + 1} of $totalHoles',
+              label: AppLocalizations.of(context).holeOfTotal('${currentHoleIndex + 1}', '$totalHoles'),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Hole ${currentHoleIndex + 1} of $totalHoles',
+                    AppLocalizations.of(context).holeOfTotal('${currentHoleIndex + 1}', '$totalHoles'),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w500,
                     ),
@@ -111,7 +112,7 @@ class HoleNavigationBar extends StatelessWidget {
             _buildNavButton(
               context: context,
               icon: Icons.chevron_right,
-              label: 'Next Hole',
+              label: AppLocalizations.of(context).holeNavNext,
               onPressed: canGoForward ? onNext : null,
             ),
         ],
@@ -159,7 +160,7 @@ class HoleNavigationBar extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: 'Complete Round',
+      label: AppLocalizations.of(context).holeNavComplete,
       button: true,
       child: Material(
         color: theme.colorScheme.primary,
@@ -172,7 +173,7 @@ class HoleNavigationBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             alignment: Alignment.center,
             child: Text(
-              'Complete Round',
+              AppLocalizations.of(context).holeNavComplete,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: theme.colorScheme.onPrimary,
                 fontWeight: FontWeight.w600,

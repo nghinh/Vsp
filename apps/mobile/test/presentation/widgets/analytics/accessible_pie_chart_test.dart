@@ -6,12 +6,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/presentation/widgets/analytics/accessible_pie_chart.dart';
+import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   group('AccessiblePieChart', () {
     testWidgets('renders empty when sections is empty', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessiblePieChart(sections: [], title: 'Test Pie'),
           ),
@@ -24,6 +29,9 @@ void main() {
     testWidgets('renders with valid sections', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessiblePieChart(
               sections: const [
@@ -60,6 +68,9 @@ void main() {
     testWidgets('has semantic label for accessibility', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessiblePieChart(
               sections: const [
@@ -97,6 +108,9 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('en'),
+          supportedLocales: kSupportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
           home: Scaffold(
             body: AccessiblePieChart(
               sections: const [

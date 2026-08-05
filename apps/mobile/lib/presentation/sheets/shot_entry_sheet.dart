@@ -29,6 +29,7 @@ import '../../../domain/value_objects/lat_lng.dart';
 import '../widgets/gps_quality_indicator.dart';
 import '../widgets/offline_save_indicator.dart';
 import '../widgets/shot/club_selector.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom sheet for shot entry with 2-tap flow.
 ///
@@ -202,7 +203,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
             if (_state == ShotTrackingState.shotActive)
               TextButton(
                 onPressed: _cancelShot,
-                child: const Text('Cancel Shot'),
+                child: Text(AppLocalizations.of(context).shotCancelShot),
               ),
           ],
         ),
@@ -217,7 +218,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
         IconButton(
           onPressed: () => Navigator.of(context).pop(),
           icon: const Icon(Icons.close),
-          tooltip: 'Close',
+          tooltip: AppLocalizations.of(context).commonClose,
         ),
 
         const Spacer(),
@@ -545,7 +546,7 @@ class _EndShotButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: 'End shot',
+      label: AppLocalizations.of(context).shotEndShot,
       button: true,
       child: SizedBox(
         height: 64,
@@ -604,7 +605,7 @@ class _PersistingIndicator extends StatelessWidget {
               ),
             ),
             const SizedBox(width: VspSpacing.sm),
-            Text('Saving shot...', style: theme.textTheme.titleMedium),
+            Text(AppLocalizations.of(context).shotSaving, style: theme.textTheme.titleMedium),
           ],
         ),
       ),
@@ -683,7 +684,7 @@ class _ErrorIndicator extends StatelessWidget {
           ),
         ),
         const SizedBox(height: VspSpacing.sm),
-        TextButton(onPressed: onRetry, child: const Text('Retry')),
+        TextButton(onPressed: onRetry, child: Text(AppLocalizations.of(context).commonRetry)),
       ],
     );
   }

@@ -22,6 +22,7 @@ import 'performance_event.dart';
 import 'performance_state.dart';
 import 'widgets/widgets.dart';
 import 'dispersion_map_screen.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -131,7 +132,7 @@ class _ClubPerformanceBody extends StatelessWidget {
         actions: [
           if (isFromCache)
             Tooltip(
-              message: 'Showing cached data',
+              message: AppLocalizations.of(context).performanceCachedData,
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -286,7 +287,7 @@ class _ErrorScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: onRetry,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Try Again'),
+                label: Text(AppLocalizations.of(context).commonTryAgain),
               ),
             ],
           ),
