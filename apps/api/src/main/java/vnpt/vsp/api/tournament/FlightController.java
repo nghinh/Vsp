@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -24,6 +25,13 @@ import java.util.UUID;
  * - POST   /tournaments/{id}/flights           — create flight
  * - PATCH  /tournaments/{id}/flights/{flightId} — assign players to flight
  * - GET    /tournaments/{id}/flights            — list flights
+ *
+ * <p>Creating and re-drawing flights, and confirming a flight's scorecard, are
+ * a tournament official's work. This class had no authorization annotation, so
+ * any signed-in golfer could redraw the draw or confirm somebody else's card —
+ * and a confirmed card is what {@code POST /tournaments/{id}/complete} requires
+ * before it settles the tournament. Listing flights stays open, as the mobile
+ * app reads it.
  */
 @RestController
 @RequestMapping("/tournaments/{tournamentId}/flights")
@@ -44,6 +52,7 @@ public class FlightController {
      * Create a flight for a tournament.
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<FlightResponse> createFlight(
             @PathVariable UUID tournamentId,
             @Valid @RequestBody FlightCreateRequest request) {
@@ -58,6 +67,7 @@ public class FlightController {
      * Update a flight (assign players, assign tee time).
      */
     @PatchMapping("/{flightId}")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<FlightResponse> updateFlight(
             @PathVariable UUID tournamentId,
             @PathVariable UUID flightId,
@@ -84,6 +94,7 @@ public class FlightController {
      * authenticated official). Story 12.1 — score confirmation gate.
      */
     @PostMapping("/{flightId}/confirm")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> confirmFlight(
             @PathVariable UUID tournamentId,
             @PathVariable UUID flightId,

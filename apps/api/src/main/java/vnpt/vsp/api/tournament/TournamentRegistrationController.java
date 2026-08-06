@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -22,6 +23,13 @@ import java.util.UUID;
  * - POST   /tournaments/{id}/players/import       — bulk import from CSV/list
  * - DELETE /tournaments/{id}/players/{playerId}   — withdraw player
  * - GET    /tournaments/{id}/players              — list registered players
+ *
+ * <p>Ungated until now, in both directions: any signed-in golfer could enter
+ * arbitrary player ids into a tournament with a handicap of their choosing,
+ * bulk-import a field, or withdraw somebody else. Note that these endpoints
+ * take the player id from the request rather than from the authenticated
+ * principal — they are the director's roster tools, not self-registration, so
+ * they take the director's role.
  */
 @RestController
 @RequestMapping("/tournaments/{tournamentId}/players")
@@ -39,6 +47,7 @@ public class TournamentRegistrationController {
      * Register a player to a tournament.
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<TournamentPlayerResponse> registerPlayer(
             Authentication authentication,
             @PathVariable UUID tournamentId,
@@ -57,6 +66,7 @@ public class TournamentRegistrationController {
      * Bulk import players from a list.
      */
     @PostMapping("/import")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<List<TournamentPlayerResponse>> bulkImportPlayers(
             Authentication authentication,
             @PathVariable UUID tournamentId,
@@ -86,6 +96,7 @@ public class TournamentRegistrationController {
      * Withdraw a player from a tournament.
      */
     @DeleteMapping("/{playerId}")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> withdrawPlayer(
             Authentication authentication,
             @PathVariable UUID tournamentId,

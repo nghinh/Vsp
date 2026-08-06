@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -24,6 +25,22 @@ import java.util.UUID;
  * - POST   /tournaments/{id}/publish       — open registration
  * - POST   /tournaments/{id}/start         — start tournament
  * - POST   /tournaments/{id}/complete      — complete tournament
+ *
+ * <p>Nothing here is under {@code /admin/**}, so the {@code hasAnyRole} floor
+ * that chain applies does not reach it, and this class carried no
+ * {@code @PreAuthorize} at all: every signed-in golfer could create a
+ * tournament, rewrite another club's, open its registration, start it and
+ * declare it complete. The lifecycle transitions are the sharp end — completing
+ * a tournament settles its results.
+ *
+ * <p>TOURNAMENT_DIRECTOR is the role the platform already names for this work
+ * ({@code TournamentPolicyController} checks it in-method, and the portal's own
+ * API notes say "create tournament (TD role)"), with SUPER_ADMIN alongside it as
+ * every other controller here does.
+ *
+ * <p>The two reads stay open to any authenticated user on purpose: the mobile
+ * app lists tournaments and opens one from the list, with no role at all. They
+ * are listed as deliberately ungated in {@code AdminEndpointAuthorizationTest}.
  */
 @RestController
 @RequestMapping("/tournaments")
@@ -41,6 +58,7 @@ public class TournamentController {
      * Create a new tournament.
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<TournamentResponse> createTournament(
             Authentication authentication,
             @Valid @RequestBody TournamentCreateRequest request) {
@@ -66,6 +84,7 @@ public class TournamentController {
      * Update a tournament (only allowed before inProgress status).
      */
     @PatchMapping("/{tournamentId}")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<TournamentResponse> updateTournament(
             Authentication authentication,
             @PathVariable UUID tournamentId,
@@ -97,6 +116,7 @@ public class TournamentController {
      * Open registration for a tournament (DRAFT -> REGISTRATION_OPEN).
      */
     @PostMapping("/{tournamentId}/publish")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> openRegistration(@PathVariable UUID tournamentId) {
         log.info("POST /tournaments/{}/publish", tournamentId);
         tournamentService.openRegistration(tournamentId);
@@ -107,6 +127,7 @@ public class TournamentController {
      * Start a tournament (REGISTRATION_OPEN -> IN_PROGRESS).
      */
     @PostMapping("/{tournamentId}/start")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> startTournament(@PathVariable UUID tournamentId) {
         log.info("POST /tournaments/{}/start", tournamentId);
         tournamentService.startTournament(tournamentId);
@@ -118,6 +139,7 @@ public class TournamentController {
      * All flights must have confirmed scores.
      */
     @PostMapping("/{tournamentId}/complete")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> completeTournament(@PathVariable UUID tournamentId) {
         log.info("POST /tournaments/{}/complete", tournamentId);
         tournamentService.completeTournament(tournamentId);

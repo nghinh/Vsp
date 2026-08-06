@@ -3,6 +3,7 @@ package vnpt.vsp.api.tournament;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.tournament.TournamentService;
 import vnpt.vsp.module.tournament.dto.TournamentResultResponse;
@@ -17,6 +18,10 @@ import java.util.UUID;
  * Endpoints:
  * - POST /tournaments/{id}/results/publish — publish final results
  * - GET  /tournaments/{id}/results         — get published results
+ *
+ * <p>{@code POST /results/publish} had no authorization check of any kind. It
+ * is the endpoint that declares who won; publishing is exactly the act that
+ * needs an official behind it. Reading published results stays open.
  */
 @RestController
 @RequestMapping("/tournaments/{tournamentId}/results")
@@ -34,6 +39,7 @@ public class TournamentResultController {
      * Publish final results for a tournament.
      */
     @PostMapping("/publish")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<Void> publishResults(@PathVariable UUID tournamentId) {
         log.info("POST /tournaments/{}/results/publish", tournamentId);
         tournamentService.publishResults(tournamentId);

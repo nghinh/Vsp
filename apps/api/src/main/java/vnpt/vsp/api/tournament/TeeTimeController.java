@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.tournament.TournamentService;
 import vnpt.vsp.module.tournament.dto.TeeTimeCreateRequest;
@@ -22,6 +23,10 @@ import java.util.UUID;
  * - POST   /tournaments/{id}/tee-times        — create tee time slot
  * - PATCH  /tournaments/{id}/tee-times/{id}   — assign flight to tee time
  * - GET    /tournaments/{id}/tee-times         — list tee times
+ *
+ * <p>Ungated until now: any signed-in golfer could invent tee-time slots for a
+ * tournament or reassign which flight plays when. Reading the schedule stays
+ * open to any authenticated user.
  */
 @RestController
 @RequestMapping("/tournaments/{tournamentId}/tee-times")
@@ -39,6 +44,7 @@ public class TeeTimeController {
      * Create a tee time slot for a tournament.
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<TeeTimeResponse> createTeeTime(
             @PathVariable UUID tournamentId,
             @Valid @RequestBody TeeTimeCreateRequest request) {
@@ -53,6 +59,7 @@ public class TeeTimeController {
      * Update a tee time (assign flight).
      */
     @PatchMapping("/{teeTimeId}")
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'SUPER_ADMIN')")
     public ResponseEntity<TeeTimeResponse> updateTeeTime(
             @PathVariable UUID tournamentId,
             @PathVariable UUID teeTimeId,
