@@ -56,6 +56,14 @@ class DataFreshness extends Equatable {
   final DateTime? lastVerifiedAt;
   final DateTime? expiryDate;
 
+  /// Raw accuracy class as the API names it, e.g. `D_UNVERIFIED_COMMUNITY`.
+  ///
+  /// Verification status on its own says a human looked at the row; it says
+  /// nothing about how the coordinates were obtained. Both are needed before
+  /// the app is entitled to call a course verified, so the class travels with
+  /// the freshness block.
+  final String? accuracyClass;
+
   const DataFreshness({
     required this.publishedAt,
     required this.versionNumber,
@@ -63,6 +71,7 @@ class DataFreshness extends Equatable {
     required this.verificationStatus,
     this.lastVerifiedAt,
     this.expiryDate,
+    this.accuracyClass,
   });
 
   /// Parse from API response JSON (DataFreshnessDto).
@@ -80,6 +89,7 @@ class DataFreshness extends Equatable {
       expiryDate: json['expiryDate'] != null
           ? DateTime.tryParse(json['expiryDate'] as String)
           : null,
+      accuracyClass: json['accuracyClass'] as String?,
     );
   }
 
@@ -92,6 +102,7 @@ class DataFreshness extends Equatable {
     if (lastVerifiedAt != null)
       'lastVerifiedAt': lastVerifiedAt!.toIso8601String(),
     if (expiryDate != null) 'expiryDate': expiryDate!.toIso8601String(),
+    if (accuracyClass != null) 'accuracyClass': accuracyClass,
   };
 
   /// Days since this data was published.
@@ -113,6 +124,26 @@ class DataFreshness extends Equatable {
   /// True if the data has been verified by an authoritative source.
   bool get isVerified => verificationStatus.isOfficial;
 
+  /// The verification status the golfer should actually be shown.
+  ///
+  /// A VERIFIED stamp on class-D community data is not a verified course — the
+  /// stamp says a row was reviewed, the class says nobody surveyed anything.
+  /// The badge shows the weaker of the two claims rather than the flattering
+  /// one, and an absent class is treated as class D.
+  VerificationStatus get effectiveVerificationStatus {
+    if (verificationStatus != VerificationStatus.verified) {
+      return verificationStatus;
+    }
+    // Parsed here rather than via AccuracyClass to keep this file free of a
+    // cycle back to data_quality.dart. Anything absent or unrecognised is not
+    // survey grade.
+    final letter = accuracyClass?.toUpperCase().split('_').first;
+    final isSurveyGrade = letter == 'A' || letter == 'B' || letter == 'C';
+    return isSurveyGrade
+        ? VerificationStatus.verified
+        : VerificationStatus.unverified;
+  }
+
   DataFreshness copyWith({
     DateTime? publishedAt,
     int? versionNumber,
@@ -120,6 +151,7 @@ class DataFreshness extends Equatable {
     VerificationStatus? verificationStatus,
     DateTime? lastVerifiedAt,
     DateTime? expiryDate,
+    String? accuracyClass,
   }) {
     return DataFreshness(
       publishedAt: publishedAt ?? this.publishedAt,
@@ -128,6 +160,7 @@ class DataFreshness extends Equatable {
       verificationStatus: verificationStatus ?? this.verificationStatus,
       lastVerifiedAt: lastVerifiedAt ?? this.lastVerifiedAt,
       expiryDate: expiryDate ?? this.expiryDate,
+      accuracyClass: accuracyClass ?? this.accuracyClass,
     );
   }
 
@@ -139,5 +172,6 @@ class DataFreshness extends Equatable {
     verificationStatus,
     lastVerifiedAt,
     expiryDate,
+    accuracyClass,
   ];
 }

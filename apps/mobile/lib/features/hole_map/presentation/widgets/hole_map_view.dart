@@ -182,10 +182,10 @@ class _HoleMapViewState extends State<HoleMapView> {
   void initState() {
     super.initState();
 
-    _hasStrategicGeometry = HoleGeometryCoverage.hasStrategicGeometry(
+    _drawVectorHole = !HoleGeometryCoverage.shouldDefaultToSatellite(
       widget.state.holeMap,
     );
-    if (!_hasStrategicGeometry && _imagery.isAvailable) {
+    if (!_drawVectorHole && _imagery.isAvailable) {
       _basemapMode = BasemapMode.satellite;
     }
     // Sources are filled from _onStyleLoaded — before the style is up there is
@@ -195,15 +195,17 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// The vector style, built once: it does not depend on the hole.
   late final String _courseStyle = CourseMapStyleBuilder.build();
 
-  /// Whether this hole has geometry worth drawing as a vector map.
-  late final bool _hasStrategicGeometry;
+  /// Whether this hole has geometry worth drawing as a vector map — present
+  /// *and* verified. Unverified coordinates get satellite imagery and the
+  /// measuring tool, which state their own uncertainty.
+  late final bool _drawVectorHole;
 
   @override
   Widget build(BuildContext context) {
     // Nothing surveyed and no imagery provider in this build: the vector map
     // would be an empty green rectangle, which reads as an empty hole. Say
     // what is actually going on instead.
-    if (!_hasStrategicGeometry && !_imagery.isAvailable) {
+    if (!_drawVectorHole && !_imagery.isAvailable) {
       return const RepaintBoundary(child: UnsurveyedNoImageryView());
     }
 
@@ -240,7 +242,7 @@ class _HoleMapViewState extends State<HoleMapView> {
             measureContext.read<MeasureCubit>().setUnit(unit),
         child: Column(
           children: [
-            if (!_hasStrategicGeometry)
+            if (!_drawVectorHole)
               NoGeometryBanner(trailing: toggle)
             else
               Container(

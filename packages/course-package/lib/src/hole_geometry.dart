@@ -104,6 +104,19 @@ class HoleGeometry extends Equatable {
   final int? yardage;
   final Map<GeometryLayerType, LayerGeometry> layers;
 
+  /// Accuracy class of this hole's coordinates, as the backend names it —
+  /// `A_RTK_SURVEYED`, `B_LICENSED_PROVIDER`, `C_VERIFIED_SATELLITE`,
+  /// `D_UNVERIFIED_COMMUNITY`. Null when the package predates the field.
+  ///
+  /// [yardage] and every distance drawn on this hole are computed from those
+  /// coordinates, so a package that does not say where they came from cannot
+  /// be treated as a survey. Consumers read null as class D.
+  final String? accuracyClass;
+
+  /// `VERIFIED`, `PENDING_REVIEW`, `UNVERIFIED` or `REJECTED`. Null reads as
+  /// unverified.
+  final String? verificationStatus;
+
   const HoleGeometry({
     required this.holeId,
     required this.holeNumber,
@@ -111,6 +124,8 @@ class HoleGeometry extends Equatable {
     required this.par,
     this.yardage,
     required this.layers,
+    this.accuracyClass,
+    this.verificationStatus,
   });
 
   /// Get the GeoJSON FeatureCollection for a specific layer type.
@@ -125,8 +140,16 @@ class HoleGeometry extends Equatable {
   bool hasLayer(GeometryLayerType type) => layers.containsKey(type);
 
   @override
-  List<Object?> get props =>
-      [holeId, holeNumber, courseId, par, yardage, layers];
+  List<Object?> get props => [
+    holeId,
+    holeNumber,
+    courseId,
+    par,
+    yardage,
+    layers,
+    accuracyClass,
+    verificationStatus,
+  ];
 }
 
 /// Parsed course package geometry bundle — all holes.

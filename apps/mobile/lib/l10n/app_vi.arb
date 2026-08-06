@@ -900,5 +900,7 @@
   "holeNoGeometryBody": "Chúng tôi chưa số hoá hố này. Ảnh vệ tinh là ảnh thật — hãy tự đo khoảng cách bạn cần.",
   "holeNoGeometryBadge": "Chưa khảo sát",
   "holeNoGeometryNoImageryTitle": "Không có dữ liệu thật cho hố này",
-  "holeNoGeometryNoImageryBody": "Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân."
+  "holeNoGeometryNoImageryBody": "Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân.",
+  "distanceNotSurveyedTooltip": "Chiều dài này được tính từ toạ độ chưa ai xác minh. Hãy coi đây là số gần đúng và kiểm tra lại các cột mốc trên sân.",
+  "holeListUnverifiedNotice": "{count, plural, =1{1 hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.} other{{count} hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.}}"
 }

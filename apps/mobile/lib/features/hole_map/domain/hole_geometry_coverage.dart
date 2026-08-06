@@ -3,9 +3,19 @@
 // Answers one question: does this hole have enough real geometry to be worth
 // drawing as a vector map?
 //
-// Only 69 of ~900 holes have surveyed coordinates. On the rest the strategic
-// hole map draws an empty green rectangle and calls it a course. This helper
-// lets the map default to satellite + measuring on those holes instead.
+// Only 69 of ~900 holes have coordinates from a real source, and none of those
+// have been verified. On the rest the strategic hole map draws an empty green
+// rectangle and calls it a course. This helper lets the map default to
+// satellite + measuring on those holes instead.
+//
+// The question has two halves and the second one used to be missing. Asking
+// only "is there geometry here" answered yes for every synthetic hole, because
+// the import pipeline derives a fairway corridor and a green extent from the
+// hole's tee and green points whatever those points are worth — so the gate
+// fired on 69 holes out of 900 rather than the 831 it was written for, and the
+// "not surveyed" banner never appeared on the holes that most needed it. A
+// shape drawn around invented coordinates is still invented, so provenance is
+// now part of the question.
 
 import 'package:vsp_mobile/domain/value_objects/lat_lng.dart';
 import 'package:vsp_mobile/features/measure/domain/measure_point.dart';
@@ -38,12 +48,21 @@ abstract final class HoleGeometryCoverage {
     return false;
   }
 
+  /// True when the hole's geometry is both present and verified — the only
+  /// case in which drawing a vector hole map tells the golfer the truth.
+  static bool hasTrustworthyGeometry(HoleMapEntity holeMap) =>
+      hasStrategicGeometry(holeMap) && holeMap.isSurveyed;
+
   /// True when the hole should open in satellite + measuring mode.
   ///
   /// A pin on its own is not a map — it gives one dot and no shape — so a hole
-  /// with a pin but no polygons still gets satellite.
+  /// with a pin but no polygons still gets satellite. Nor is a polygon drawn
+  /// around unverified points: the satellite imagery underneath is real even
+  /// when our vector data is not, and the measuring tool states its own error
+  /// bar, so this is the better answer for an unsurveyed hole as well as the
+  /// honest one.
   static bool shouldDefaultToSatellite(HoleMapEntity holeMap) =>
-      !hasStrategicGeometry(holeMap);
+      !hasTrustworthyGeometry(holeMap);
 
   /// Counts GeoJSON features in a layer, tolerating the three shapes the
   /// course package emits: FeatureCollection, bare Feature, bare geometry.
@@ -88,7 +107,14 @@ abstract final class HoleGeometryCoverage {
     if (pin != null) {
       return MeasureAnchor(
         position: LatLng(latitude: pin.latitude, longitude: pin.longitude),
-        isSurveyed: pin.source == PinSource.official && !pin.isExpired,
+        // An official pin placed against unverified hole coordinates is an
+        // exact position on a hole we cannot locate. The measuring tool's 2 m
+        // error bar would be a claim the data does not support, so the hole's
+        // own provenance has a veto here.
+        isSurveyed:
+            pin.source == PinSource.official &&
+            !pin.isExpired &&
+            holeMap.isSurveyed,
       );
     }
 

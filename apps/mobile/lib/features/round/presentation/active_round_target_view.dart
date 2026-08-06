@@ -42,6 +42,7 @@ import 'package:vsp_mobile/features/target/domain/target_distance_reading.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/presentation/widgets/distance/gps_accuracy_chip.dart';
+import 'package:vsp_mobile/presentation/widgets/distance/not_surveyed_chip.dart';
 
 /// Key of the live readout, so tests can find it without matching prose.
 const Key activeRoundTargetReadoutKey = ValueKey('active-round-target-readout');
@@ -119,14 +120,25 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _HoleContextRow(
-                holeNumber: widget.holeNumber,
-                par: widget.par,
-                yardage: widget.yardage,
-              ),
-              const SizedBox(height: VspSpacing.md),
+              // Inside the builder so the length chip can see the hole's
+              // provenance. A hole that is loading, errored or unsurveyed has
+              // no provenance to show, and that is exactly when the number
+              // must not look authoritative.
               BlocBuilder<HoleMapBloc, HoleMapState>(
-                builder: (context, state) => _buildBody(context, state, unit),
+                builder: (context, state) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _HoleContextRow(
+                      holeNumber: widget.holeNumber,
+                      par: widget.par,
+                      yardage: widget.yardage,
+                      yardageIsSurveyed:
+                          state is HoleMapReady && state.holeMap.isSurveyed,
+                    ),
+                    const SizedBox(height: VspSpacing.md),
+                    _buildBody(context, state, unit),
+                  ],
+                ),
               ),
             ],
           ),
@@ -527,21 +539,35 @@ class _HoleContextRow extends StatelessWidget {
   final int? par;
   final int? yardage;
 
-  const _HoleContextRow({required this.holeNumber, this.par, this.yardage});
+  /// Whether the coordinates this length was measured between were verified.
+  final bool yardageIsSurveyed;
+
+  const _HoleContextRow({
+    required this.holeNumber,
+    this.par,
+    this.yardage,
+    this.yardageIsSurveyed = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    // Wrap, not Row: the unverified marker adds a chip's width to a line that
+    // already fills a narrow phone, and a hole number pushed off the right
+    // edge is worse than one on a second line.
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         _Chip(label: l10n.activeRoundHole, value: '$holeNumber'),
         if (par != null) _Chip(label: l10n.fieldPar, value: '$par'),
-        if (yardage != null)
+        if (yardage != null) ...[
+          if (!yardageIsSurveyed) const NotSurveyedChip(iconOnly: true),
           _Chip(
             label: l10n.activeRoundLength,
             value: l10n.activeRoundLengthMeters(yardage!),
           ),
+        ],
       ],
     );
   }

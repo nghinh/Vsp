@@ -186,10 +186,13 @@ class CourseCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: VspSpacing.xs,
                 children: [
-                  // Verification badge
+                  // Verification badge. Reads the effective status, not the
+                  // raw one: a VERIFIED stamp on class-D community data is not
+                  // a verified course, and this badge is the first thing a
+                  // golfer sees about a course they may go and play.
                   VerificationBadge(
                     status:
-                        course.dataFreshness?.verificationStatus ??
+                        course.dataFreshness?.effectiveVerificationStatus ??
                         VerificationStatus.unverified,
                     compact: compact,
                   ),

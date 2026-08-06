@@ -5209,6 +5209,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.'**
   String get holeNoGeometryNoImageryBody;
+
+  /// Explains the amber 'Not surveyed' marker shown next to a hole length derived from unverified tee/green coordinates.
+  ///
+  /// In en, this message translates to:
+  /// **'This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.'**
+  String get distanceNotSurveyedTooltip;
+
+  /// Notice above the course detail hole list when some holes are not surveyed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 of these holes has coordinates nobody has verified, so its length is approximate.} other{{count} of these holes have coordinates nobody has verified, so their lengths are approximate.}}'**
+  String holeListUnverifiedNotice(int count);
 }
 
 class _AppLocalizationsDelegate

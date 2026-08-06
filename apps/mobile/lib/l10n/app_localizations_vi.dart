@@ -2858,4 +2858,21 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get holeNoGeometryNoImageryBody =>
       'Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân.';
+
+  @override
+  String get distanceNotSurveyedTooltip =>
+      'Chiều dài này được tính từ toạ độ chưa ai xác minh. Hãy coi đây là số gần đúng và kiểm tra lại các cột mốc trên sân.';
+
+  @override
+  String holeListUnverifiedNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.',
+      one:
+          '1 hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.',
+    );
+    return '$_temp0';
+  }
 }

@@ -187,6 +187,11 @@ class LocalCoursePackageRepository implements CoursePackageRepository {
         par: par,
         yardage: yardage,
         layers: layers,
+        // Absent in packages built before provenance was carried per hole.
+        // Left null here and read as "not surveyed" downstream rather than
+        // defaulted to something friendlier.
+        accuracyClass: json['accuracyClass'] as String?,
+        verificationStatus: json['verificationStatus'] as String?,
       );
     } catch (_) {
       return null;

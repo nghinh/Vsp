@@ -1,11 +1,15 @@
 // HoleGeometryCoverage Unit Tests — VSP Mobile App
 //
-// The rule this encodes: a hole with no real polygons must open in satellite
-// mode. Getting it wrong either hides real course data or shows a golfer an
-// empty rectangle and calls it a hole.
+// The rule this encodes: a hole with no real polygons — or with polygons drawn
+// around coordinates nobody verified — must open in satellite mode. Getting it
+// wrong either hides real course data or shows a golfer an empty rectangle and
+// calls it a hole.
 
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:vsp_mobile/domain/models/data_freshness.dart';
+import 'package:vsp_mobile/domain/models/data_quality.dart';
+import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
@@ -35,9 +39,23 @@ void main() {
     ],
   };
 
+  /// Digitised and checked — the only provenance that earns a vector map.
+  const surveyed = HoleDataProvenance(
+    accuracyClass: AccuracyClass.classC,
+    verificationStatus: VerificationStatus.verified,
+  );
+
+  /// What the seed wrote for 831 of 900 holes once it stopped lying about it.
+  const synthetic = HoleDataProvenance(
+    accuracyClass: AccuracyClass.classD,
+    verificationStatus: VerificationStatus.unverified,
+    source: 'synthetic:seed-arithmetic',
+  );
+
   HoleMapEntity hole({
     Map<MapLayerType, MapLayerEntity> layers = const {},
     PinEntity? pin,
+    HoleDataProvenance provenance = surveyed,
   }) {
     return HoleMapEntity(
       courseId: 'course-1',
@@ -46,6 +64,7 @@ void main() {
       par: 4,
       layers: layers,
       pin: pin,
+      provenance: provenance,
     );
   }
 
@@ -128,6 +147,48 @@ void main() {
 
       expect(HoleGeometryCoverage.shouldDefaultToSatellite(subject), isTrue);
     });
+
+    test('polygons drawn around synthetic coordinates are not a map', () {
+      // The import pipeline derives a green extent and a fairway corridor from
+      // whatever tee and green points a hole carries — including the ones the
+      // seed generated. Presence alone therefore said "real map" for 831
+      // fabricated holes, and the unsurveyed banner never appeared on them.
+      final layers = {
+        MapLayerType.green: layer(
+          MapLayerType.green,
+          polygonCollection([
+            [106.700, 10.800],
+            [106.701, 10.800],
+            [106.701, 10.801],
+            [106.700, 10.800],
+          ]),
+        ),
+      };
+      final subject = hole(layers: layers, provenance: synthetic);
+
+      expect(HoleGeometryCoverage.hasStrategicGeometry(subject), isTrue);
+      expect(HoleGeometryCoverage.hasTrustworthyGeometry(subject), isFalse);
+      expect(HoleGeometryCoverage.shouldDefaultToSatellite(subject), isTrue);
+    });
+
+    test('a hole that says nothing about its origin is not surveyed', () {
+      final subject = hole(
+        layers: {
+          MapLayerType.fairway: layer(
+            MapLayerType.fairway,
+            polygonCollection([
+              [106.700, 10.800],
+              [106.701, 10.800],
+              [106.701, 10.801],
+              [106.700, 10.800],
+            ]),
+          ),
+        },
+        provenance: HoleDataProvenance.unknown,
+      );
+
+      expect(HoleGeometryCoverage.shouldDefaultToSatellite(subject), isTrue);
+    });
   });
 
   group('featureCount', () {
@@ -186,6 +247,17 @@ void main() {
   });
 
   group('greenAnchor', () {
+    test('an official pin on a synthetic hole is not surveyed', () {
+      // An exact pin position on a hole we cannot locate is still a guess, and
+      // the measuring tool would otherwise quote it at ±2 m.
+      final subject = hole(
+        pin: pinAt(10.803, 106.7, PinSource.official),
+        provenance: synthetic,
+      );
+
+      expect(HoleGeometryCoverage.greenAnchor(subject)!.isSurveyed, isFalse);
+    });
+
     test('an active official pin is surveyed', () {
       final anchor = HoleGeometryCoverage.greenAnchor(
         hole(pin: pinAt(10.803, 106.702, PinSource.official)),

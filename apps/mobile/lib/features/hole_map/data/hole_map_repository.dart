@@ -66,6 +66,7 @@ class LocalHoleMapRepository implements HoleMapRepository {
       par: dto.par,
       yardage: dto.yardage,
       layers: domainLayers,
+      provenance: dto.provenance,
     );
   }
 

@@ -16,10 +16,14 @@
 
 import 'dart:async';
 
-import 'package:course_package/course_package.dart';
+import 'package:course_package/course_package.dart' hide AccuracyClass;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vsp_mobile/domain/models/data_freshness.dart';
+// course_package exports its own AccuracyClass; this file needs the domain one.
+import 'package:vsp_mobile/domain/models/data_quality.dart' show AccuracyClass;
+import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
@@ -152,11 +156,20 @@ QualifiedLocation _fix(
 
 /// A surveyed hole. The pin is official and current, so the green position is
 /// the one thing here we are allowed to call surveyed.
+/// A hole somebody digitised and somebody else checked. Without this the
+/// coordinates are unverified, and an unverified hole is deliberately not
+/// allowed to claim a surveyed green — see hole_geometry_coverage.dart.
+const HoleDataProvenance _surveyed = HoleDataProvenance(
+  accuracyClass: AccuracyClass.classC,
+  verificationStatus: VerificationStatus.verified,
+);
+
 HoleMapEntity _hole({bool withPin = true}) => HoleMapEntity(
   courseId: 'course-1',
   courseName: 'Test course',
   holeNumber: _holeNumber,
   par: 4,
+  provenance: _surveyed,
   pin: withPin
       ? PinEntity(
           holeId: '$_holeNumber',
@@ -191,6 +204,7 @@ HoleMapEntity _holeWithGreenPolygon() => const HoleMapEntity(
   courseName: 'Test course',
   holeNumber: _holeNumber,
   par: 4,
+  provenance: _surveyed,
   layers: {
     MapLayerType.green: MapLayerEntity(
       type: MapLayerType.green,

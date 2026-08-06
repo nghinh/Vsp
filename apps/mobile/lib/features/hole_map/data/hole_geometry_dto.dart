@@ -5,6 +5,7 @@
 
 import 'package:course_package/course_package.dart';
 
+import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/domain/pin_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/distance_ring_entity.dart';
@@ -18,6 +19,10 @@ class HoleGeometryDto {
   final int? yardage;
   final Map<MapLayerType, MapLayerEntity> layers;
 
+  /// Where the package says this hole's coordinates came from. A package with
+  /// nothing to say yields [HoleDataProvenance.unknown] — not surveyed.
+  final HoleDataProvenance provenance;
+
   const HoleGeometryDto({
     required this.holeId,
     required this.holeNumber,
@@ -25,6 +30,7 @@ class HoleGeometryDto {
     required this.par,
     this.yardage,
     this.layers = const {},
+    this.provenance = HoleDataProvenance.unknown,
   });
 
   /// Converts a course-package HoleGeometry into a DTO.
@@ -53,6 +59,11 @@ class HoleGeometryDto {
       par: geom.par,
       yardage: geom.yardage,
       layers: layers,
+      provenance: HoleDataProvenance.fromJson({
+        if (geom.accuracyClass != null) 'accuracyClass': geom.accuracyClass,
+        if (geom.verificationStatus != null)
+          'verificationStatus': geom.verificationStatus,
+      }),
     );
   }
 

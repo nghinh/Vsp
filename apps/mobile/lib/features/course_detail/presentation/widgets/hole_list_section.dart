@@ -7,6 +7,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/hole_summary.dart';
+import 'package:vsp_mobile/presentation/widgets/distance/not_surveyed_chip.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class HoleListSection extends StatelessWidget {
@@ -93,6 +94,33 @@ class HoleListSection extends StatelessWidget {
           const Divider(height: 1),
           const SizedBox(height: VspSpacing.xs),
 
+          // Says once, in a sentence, what the amber markers on the rows below
+          // mean. Every length in this table is measured between the hole's
+          // tee and green coordinates, and most of those coordinates in this
+          // database were generated rather than surveyed.
+          if (sortedHoles.any((h) => !h.isSurveyed)) ...[
+            Padding(
+              padding: const EdgeInsets.only(bottom: VspSpacing.xs),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const NotSurveyedChip(),
+                  const SizedBox(width: VspSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context).holeListUnverifiedNotice(
+                        sortedHoles.where((h) => !h.isSurveyed).length,
+                      ),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           // Front 9
           if (sortedHoles.any((h) => h.holeNumber <= 9)) ...[
             _HoleGroup(
@@ -162,6 +190,13 @@ class _HoleGroup extends StatelessWidget {
                     ),
                   ),
                 ),
+                // The marker rides with the number, not just with the table:
+                // a golfer reading one row must not have to have read the
+                // notice above to know what they are looking at.
+                if (!hole.isSurveyed && hole.formattedLength != null) ...[
+                  const NotSurveyedChip(iconOnly: true),
+                  const SizedBox(width: 4),
+                ],
                 Text(
                   hole.formattedLength ?? '—',
                   style: const TextStyle(fontFamily: 'Fira Code', fontSize: 14),

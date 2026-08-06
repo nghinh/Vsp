@@ -107,10 +107,20 @@ class CourseDetail extends Equatable {
               json['dataFreshness'] as Map<String, dynamic>,
             )
           : null,
-      accuracyClass: json['accuracyClass'] != null
-          ? AccuracyClass.fromString(json['accuracyClass'] as String)
-          : null,
+      // The class travels inside dataFreshness; the top-level field is
+      // accepted too so an older payload still parses. Neither present means
+      // the app knows nothing, which is not the same as class D data — see
+      // dataQuality below.
+      accuracyClass: _readAccuracyClass(json),
     );
+  }
+
+  static AccuracyClass? _readAccuracyClass(Map<String, dynamic> json) {
+    final top = json['accuracyClass'] as String?;
+    if (top != null) return AccuracyClass.fromString(top);
+    final freshness = json['dataFreshness'] as Map<String, dynamic>?;
+    final nested = freshness?['accuracyClass'] as String?;
+    return nested != null ? AccuracyClass.fromString(nested) : null;
   }
 
   Map<String, dynamic> toJson() => {

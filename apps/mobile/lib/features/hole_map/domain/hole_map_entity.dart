@@ -5,6 +5,8 @@
 
 import 'package:equatable/equatable.dart';
 
+import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
+
 import 'map_layer.dart';
 import 'pin_entity.dart';
 import 'target_entity.dart';
@@ -26,6 +28,14 @@ class HoleMapEntity extends Equatable {
   final WindEntity? wind;
   final List<DistanceRingEntity> distanceRings;
 
+  /// Where this hole's coordinates came from.
+  ///
+  /// Defaults to [HoleDataProvenance.unknown], which is not surveyed. Every
+  /// number on this map — the header yardage, the rings, the distance to the
+  /// green — is computed from those coordinates, so a hole that arrives
+  /// without provenance must be drawn as unverified rather than trusted.
+  final HoleDataProvenance provenance;
+
   const HoleMapEntity({
     required this.courseId,
     required this.courseName,
@@ -38,7 +48,12 @@ class HoleMapEntity extends Equatable {
     this.target,
     this.wind,
     this.distanceRings = const [],
+    this.provenance = HoleDataProvenance.unknown,
   });
+
+  /// True when a human verified coordinates obtained by survey, licence or
+  /// satellite digitisation.
+  bool get isSurveyed => provenance.isSurveyed;
 
   /// Center point for the map camera (midpoint of fairway or pin location).
   double? get mapCenterLat {
@@ -68,6 +83,7 @@ class HoleMapEntity extends Equatable {
     TargetEntity? target,
     WindEntity? wind,
     List<DistanceRingEntity>? distanceRings,
+    HoleDataProvenance? provenance,
   }) {
     return HoleMapEntity(
       courseId: courseId ?? this.courseId,
@@ -81,6 +97,7 @@ class HoleMapEntity extends Equatable {
       target: target ?? this.target,
       wind: wind ?? this.wind,
       distanceRings: distanceRings ?? this.distanceRings,
+      provenance: provenance ?? this.provenance,
     );
   }
 
@@ -97,5 +114,6 @@ class HoleMapEntity extends Equatable {
     target,
     wind,
     distanceRings,
+    provenance,
   ];
 }

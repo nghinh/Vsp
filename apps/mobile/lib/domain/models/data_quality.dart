@@ -17,8 +17,14 @@ enum AccuracyClass {
   final String value;
   const AccuracyClass(this.value);
 
+  /// Parses either the bare letter or the backend enum name.
+  ///
+  /// The API sends `AccuracyClass.name()` — `C_VERIFIED_SATELLITE`, not `C` —
+  /// so matching only single letters silently downgraded every course to class
+  /// D. Anything unrecognised still lands on class D: the app must never
+  /// promote data it cannot identify.
   static AccuracyClass fromString(String value) {
-    switch (value.toUpperCase()) {
+    switch (value.toUpperCase().split('_').first) {
       case 'A':
         return AccuracyClass.classA;
       case 'B':
@@ -123,18 +129,31 @@ class DataQuality extends Equatable {
   /// True if the data has been verified by an authoritative source.
   bool get isVerified => verificationStatus.isOfficial;
 
+  /// True when the coordinates behind this data were obtained by survey,
+  /// licence or satellite digitisation *and* a human confirmed it.
+  ///
+  /// Class alone is a claim about method; verification is the claim that
+  /// somebody checked. Both are required, in that order, because the seeded
+  /// demo data asserted class C on coordinates that were pure arithmetic.
+  bool get isSurveyed => isVerified && accuracyClass != AccuracyClass.classD;
+
   /// Resolved badge variant for UI rendering.
   ///
   /// Order of precedence:
   /// 1. stale (>30d) → stale variant
   /// 2. official (Class A/B + VERIFIED) → official variant
-  /// 3. Class C → estimated variant
-  /// 4. Class D → community variant
+  /// 3. Class C *and* VERIFIED → estimated variant
+  /// 4. anything else → community variant
+  ///
+  /// "Estimated" used to be reached on class alone. A row could claim
+  /// satellite accuracy, never have been verified by anyone, and still read as
+  /// an estimate somebody had made — which is a stronger claim than the data
+  /// supports. Unverified now falls through to community whatever the class.
   DataQualityVariant get variant {
     if (isStale) return DataQualityVariant.stale;
     if (accuracyClass.isOfficial && isVerified)
       return DataQualityVariant.official;
-    if (accuracyClass == AccuracyClass.classC)
+    if (accuracyClass == AccuracyClass.classC && isVerified)
       return DataQualityVariant.estimated;
     return DataQualityVariant.community;
   }

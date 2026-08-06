@@ -20,6 +20,7 @@ import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
 import 'package:vsp_mobile/features/profile/presentation/profile_scope.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/presentation/widgets/distance/not_surveyed_chip.dart';
 
 /// Main scaffold for the strategic hole map display.
 class HoleMapScreen extends StatelessWidget {
@@ -276,6 +277,7 @@ class _ReadyContent extends StatelessWidget {
           holeNumber: holeMap.holeNumber,
           par: holeMap.par,
           yardage: holeMap.yardage,
+          yardageIsSurveyed: holeMap.isSurveyed,
         ),
         Expanded(
           child: HoleMapView(
@@ -297,7 +299,17 @@ class _HoleHeader extends StatelessWidget {
   final int? par;
   final int? yardage;
 
-  const _HoleHeader({this.courseName, this.holeNumber, this.par, this.yardage});
+  /// Whether the hole's coordinates — which this yardage is measured between
+  /// — have been verified. False marks the number as approximate.
+  final bool yardageIsSurveyed;
+
+  const _HoleHeader({
+    this.courseName,
+    this.holeNumber,
+    this.par,
+    this.yardage,
+    this.yardageIsSurveyed = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -339,6 +351,10 @@ class _HoleHeader extends StatelessWidget {
             ],
             if (yardage != null) ...[
               const SizedBox(width: 8),
+              if (!yardageIsSurveyed) ...[
+                const NotSurveyedChip(iconOnly: true),
+                const SizedBox(width: 4),
+              ],
               Text(
                 '${yardage}yd',
                 style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),

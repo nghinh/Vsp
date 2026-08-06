@@ -1621,5 +1621,18 @@
   "holeNoGeometryBody": "We haven't digitised this hole yet. The satellite view is real imagery — measure the distances you need.",
   "holeNoGeometryBadge": "Not surveyed",
   "holeNoGeometryNoImageryTitle": "Nothing real to show for this hole",
-  "holeNoGeometryNoImageryBody": "This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers."
+  "holeNoGeometryNoImageryBody": "This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.",
+  "distanceNotSurveyedTooltip": "This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.",
+  "@distanceNotSurveyedTooltip": {
+    "description": "Explains the amber 'Not surveyed' marker shown next to a hole length derived from unverified tee/green coordinates."
+  },
+  "holeListUnverifiedNotice": "{count, plural, =1{1 of these holes has coordinates nobody has verified, so its length is approximate.} other{{count} of these holes have coordinates nobody has verified, so their lengths are approximate.}}",
+  "@holeListUnverifiedNotice": {
+    "description": "Notice above the course detail hole list when some holes are not surveyed.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

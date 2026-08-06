@@ -2858,4 +2858,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get holeNoGeometryNoImageryBody =>
       'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.';
+
+  @override
+  String get distanceNotSurveyedTooltip =>
+      'This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.';
+
+  @override
+  String holeListUnverifiedNotice(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count of these holes have coordinates nobody has verified, so their lengths are approximate.',
+      one:
+          '1 of these holes has coordinates nobody has verified, so its length is approximate.',
+    );
+    return '$_temp0';
+  }
 }

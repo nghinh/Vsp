@@ -16,10 +16,13 @@
 // Where a hole does have geometry, nothing changes: it still opens as the
 // vector strategic map.
 
-import 'package:course_package/course_package.dart';
+import 'package:course_package/course_package.dart' hide AccuracyClass;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vsp_mobile/domain/models/data_freshness.dart';
+import 'package:vsp_mobile/domain/models/data_quality.dart' show AccuracyClass;
+import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
@@ -111,12 +114,18 @@ HoleMapEntity _holeWithoutShapes() => const HoleMapEntity(
   },
 );
 
-/// A hole that really was surveyed.
+/// A hole that really was surveyed — shapes *and* a provenance that says
+/// somebody digitised them and somebody checked. Both halves are required: a
+/// derived polygon around invented coordinates is not a survey.
 HoleMapEntity _surveyedHole() => const HoleMapEntity(
   courseId: 'course-1',
   courseName: 'Test course',
   holeNumber: 7,
   par: 4,
+  provenance: HoleDataProvenance(
+    accuracyClass: AccuracyClass.classC,
+    verificationStatus: VerificationStatus.verified,
+  ),
   layers: {
     MapLayerType.green: MapLayerEntity(
       type: MapLayerType.green,
