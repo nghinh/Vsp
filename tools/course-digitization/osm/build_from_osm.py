@@ -348,7 +348,7 @@ WITH upd AS (
         license             = {q(OSM_LICENSE)},
         accuracy_class      = 'D_UNVERIFIED_COMMUNITY',
         verification_status = 'PENDING_REVIEW',
-        confidence          = 0.60,
+        confidence          = 60.00,
         updated_at          = now(),
         version             = f.version + 1
     FROM fac_match m
@@ -463,6 +463,9 @@ INSERT INTO run_report SELECT '3 hole match', 'lines flipped (green end came fir
 
 
 def sql_hole_points(respect_seed: bool) -> str:
+    # Seeded rows are UNVERIFIED, so the status test alone already lets this
+    # pipeline overwrite them; the source test is kept for databases seeded
+    # before the labels were corrected, which still carry source='SEED'.
     protect = "(h.verification_status = 'VERIFIED' AND h.source <> 'SEED')"
     if respect_seed:
         protect = "(h.verification_status = 'VERIFIED')"
@@ -475,12 +478,19 @@ WITH upd AS (
     UPDATE holes h SET
         teeing_ground_location = CASE WHEN m.flipped THEN ST_EndPoint(m.geom) ELSE ST_StartPoint(m.geom) END,
         green_location         = CASE WHEN m.flipped THEN ST_StartPoint(m.geom) ELSE ST_EndPoint(m.geom) END,
+        -- The card comes from the same line as the points. It used to be left
+        -- at whatever the seed invented, so a hole could state 488 m while its
+        -- real coordinates sat 377 m apart (Long Thanh 2) — two numbers for
+        -- one hole, and the one a golfer read was the fabricated one. Measured
+        -- along the way, not across it: a dogleg genuinely plays longer than
+        -- tee-to-green.
+        playing_length_meters  = round(m.osm_len_m::numeric, 2),
         source                 = 'osm:' || m.osm_ref,
         publisher              = {q(OSM_PUBLISHER)},
         license                = {q(OSM_LICENSE)},
         accuracy_class         = 'D_UNVERIFIED_COMMUNITY',
         verification_status    = 'PENDING_REVIEW',
-        confidence             = 0.60,
+        confidence             = 60.00,
         updated_at             = now(),
         version                = h.version + 1
     FROM osm_hole_match m
@@ -491,7 +501,8 @@ WITH upd AS (
            OR h.green_location IS DISTINCT FROM
              (CASE WHEN m.flipped THEN ST_StartPoint(m.geom) ELSE ST_EndPoint(m.geom) END)
            -- provenance counts too: right point, wrong source is still wrong
-           OR h.source IS DISTINCT FROM 'osm:' || m.osm_ref)
+           OR h.source IS DISTINCT FROM 'osm:' || m.osm_ref
+           OR h.playing_length_meters IS DISTINCT FROM round(m.osm_len_m::numeric, 2))
     RETURNING 1
 ) INSERT INTO run_report SELECT '4 hole points', 'tee/green points written from OSM', count(*) FROM upd;
 
@@ -516,7 +527,7 @@ WITH upd AS (
         license             = 'internal-derived',
         accuracy_class      = 'D_UNVERIFIED_COMMUNITY',
         verification_status = 'UNVERIFIED',
-        confidence          = 0.20,
+        confidence          = 20.00,
         updated_at          = now(),
         version             = h.version + 1
     FROM courses c
@@ -557,7 +568,7 @@ WITH assign AS (
     ORDER BY s.osm_id, ST_Distance(s.geom::geography, m.geom::geography)
 ), ins AS (
     INSERT INTO {table} ({cols}{extra_cols})
-    SELECT a.db_hole_id, a.geom, 'D_UNVERIFIED_COMMUNITY', 'PENDING_REVIEW', 0.55,
+    SELECT a.db_hole_id, a.geom, 'D_UNVERIFIED_COMMUNITY', 'PENDING_REVIEW', 55.00,
            'osm:' || a.osm_ref, {q(OSM_PUBLISHER)}, {q(OSM_LICENSE)},
            CURRENT_DATE, 1, now(), now(){extra_vals}
     FROM assign a
@@ -582,7 +593,7 @@ WITH ins AS (
            ST_Buffer(h.green_location::geography, {DERIVED_GREEN_RADIUS_M})::geometry,
            'D_UNVERIFIED_COMMUNITY',
            CASE WHEN m.db_hole_id IS NOT NULL THEN 'PENDING_REVIEW' ELSE 'UNVERIFIED' END,
-           CASE WHEN m.db_hole_id IS NOT NULL THEN 0.40 ELSE 0.30 END,
+           CASE WHEN m.db_hole_id IS NOT NULL THEN 40.00 ELSE 30.00 END,
            'derived:green-point-extent', 'VSP',
            CASE WHEN m.db_hole_id IS NOT NULL THEN {q(OSM_LICENSE)} ELSE 'internal-derived' END,
            CURRENT_DATE, 1, now(), now()
@@ -605,7 +616,7 @@ WITH ins AS (
            )::geometry,
            'D_UNVERIFIED_COMMUNITY',
            CASE WHEN m.db_hole_id IS NOT NULL THEN 'PENDING_REVIEW' ELSE 'UNVERIFIED' END,
-           CASE WHEN m.db_hole_id IS NOT NULL THEN 0.45 ELSE 0.35 END,
+           CASE WHEN m.db_hole_id IS NOT NULL THEN 45.00 ELSE 35.00 END,
            CASE WHEN m.db_hole_id IS NOT NULL THEN 'derived:osm-tee-green-corridor'
                 ELSE 'derived:tee-green-corridor' END,
            'VSP',

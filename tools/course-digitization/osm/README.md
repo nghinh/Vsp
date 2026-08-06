@@ -132,20 +132,36 @@ A row is protected when `verification_status = 'VERIFIED'` **and**
 never updated, never deleted, and never duplicated by a re-import; the run
 report counts them under *skipped* and *kept*.
 
-`source = 'SEED'` rows are deliberately not protected, even though the seed
-stamps them `VERIFIED` at 95% confidence. Those coordinates come out of a loop in
-`scripts/dev/seed_courses_vn.sql` — `tee = facility + hole_number × 0.0008°` —
+Seeded rows are deliberately not protected. Those coordinates come out of a loop
+in `scripts/dev/seed_courses_vn.sql` — `tee = facility + hole_number × 0.0008°` —
 and are wrong by kilometres. Replacing them is the whole point. It is not
 silent: the report line *"synthetic SEED coordinate replaced"* counts every one,
 and `--respect-seed-verified` turns the behaviour off (after which the pipeline
 has almost nothing left to do).
+
+The seed used to stamp those rows `C_VERIFIED_SATELLITE` / `VERIFIED` at 95%
+confidence, which is why the `source <> 'SEED'` half of the protection test
+exists at all — without it the pipeline would have treated fabricated
+coordinates as a human sign-off and refused to replace them. They are now
+written as `D_UNVERIFIED_COMMUNITY` / `UNVERIFIED` /
+`synthetic:seed-arithmetic`, so the status test alone is enough; the source test
+is kept for databases seeded before that correction.
+
+## Confidence is a percentage
+
+`confidence` is `numeric(5,2)` on a 0–100 scale — that is what the
+`DataQualityMetadata` entity documents and what the portal renders with a `%`
+sign. This pipeline used to write `0.60` meaning "60%", which the portal showed
+as `1%`. It now writes `60.00`, `55.00`, `45.00`, `40.00`, `35.00`, `30.00` and
+`20.00`; `scripts/dev/relabel_synthetic_geometry.sql` rescales rows written
+before the fix.
 
 ## Convergence
 
 If a hole carries an `osm:` source that the current snapshot no longer produces
 — the way was deleted upstream, its `ref` changed, or an earlier hand-run
 assigned one way to two holes — the pipeline resets it to the seed's clubhouse
-offset and relabels it `derived:facility-offset`, `UNVERIFIED`, confidence 0.20.
+offset and relabels it `derived:facility-offset`, `UNVERIFIED`, confidence 20.
 Otherwise the database keeps geometry that no input explains, which is the exact
 condition this pipeline exists to end. Eight holes were in that state when it
 first ran.
