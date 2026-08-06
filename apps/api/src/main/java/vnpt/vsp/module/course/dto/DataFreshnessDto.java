@@ -20,6 +20,16 @@ public class DataFreshnessDto {
     /** Verification status (VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED). */
     private String verificationStatus;
 
+    /**
+     * Accuracy class of this data version — A_RTK_SURVEYED, B_LICENSED_PROVIDER,
+     * C_VERIFIED_SATELLITE or D_UNVERIFIED_COMMUNITY.
+     *
+     * <p>Sent because verification status alone does not tell a golfer how the
+     * coordinates were obtained. A row can be marked VERIFIED and still be
+     * class D, and the client has to be able to refuse to call that surveyed.</p>
+     */
+    private String accuracyClass;
+
     /** When the data was last verified by an authoritative source. */
     private String lastVerifiedAt;
 
@@ -66,6 +76,14 @@ public class DataFreshnessDto {
 
     public void setVerificationStatus(String verificationStatus) {
         this.verificationStatus = verificationStatus;
+    }
+
+    public String getAccuracyClass() {
+        return accuracyClass;
+    }
+
+    public void setAccuracyClass(String accuracyClass) {
+        this.accuracyClass = accuracyClass;
     }
 
     public String getLastVerifiedAt() {

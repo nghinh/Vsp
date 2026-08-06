@@ -217,6 +217,9 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     freshness.setVerificationStatus(
                             dv.getMetadata().getVerificationStatus() != null
                                     ? dv.getMetadata().getVerificationStatus().name() : null);
+                    freshness.setAccuracyClass(
+                            dv.getMetadata().getAccuracyClass() != null
+                                    ? dv.getMetadata().getAccuracyClass().name() : null);
                     freshness.setLastVerifiedAt(dv.getMetadata().getLastVerifiedAt() != null
                             ? dv.getMetadata().getLastVerifiedAt().toString() : null);
                     dto.setDataFreshness(freshness);

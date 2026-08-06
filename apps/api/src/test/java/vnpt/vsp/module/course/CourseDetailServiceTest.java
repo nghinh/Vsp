@@ -297,6 +297,92 @@ class CourseDetailServiceTest {
         assertEquals("VERIFIED", result.getDataFreshness().getVerificationStatus());
     }
 
+    /**
+     * A hole's length is measured between its tee and green coordinates, so a
+     * client shown the length must be able to see where those coordinates came
+     * from. The seeded database generated 831 of its 900 holes arithmetically
+     * and stamped them C_VERIFIED_SATELLITE / VERIFIED; the client can only
+     * refuse to present that as surveyed if the provenance travels with the
+     * number.
+     */
+    @Test
+    void getCourseDetail_holeSummary_carriesTheProvenanceOfItsCoordinates() {
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(testCourse));
+        when(golfFacilityRepository.findLongitudeByFacilityId(1L)).thenReturn(106.6299);
+        when(golfFacilityRepository.findLatitudeByFacilityId(1L)).thenReturn(10.8231);
+
+        Hole synthetic = new Hole();
+        synthetic.setId(41L);
+        synthetic.setCourse(testCourse);
+        synthetic.setHoleNumber(1);
+        synthetic.setPar(4);
+        synthetic.setPlayingLengthMeters(new java.math.BigDecimal("362.00"));
+        DataQualityMetadata syntheticDqm = new DataQualityMetadata();
+        syntheticDqm.setAccuracyClass(AccuracyClass.D_UNVERIFIED_COMMUNITY);
+        syntheticDqm.setVerificationStatus(VerificationStatus.UNVERIFIED);
+        syntheticDqm.setSource("synthetic:seed-arithmetic");
+        synthetic.setDataQuality(syntheticDqm);
+
+        Hole digitised = new Hole();
+        digitised.setId(42L);
+        digitised.setCourse(testCourse);
+        digitised.setHoleNumber(2);
+        digitised.setPar(5);
+        digitised.setPlayingLengthMeters(new java.math.BigDecimal("488.00"));
+        DataQualityMetadata digitisedDqm = new DataQualityMetadata();
+        digitisedDqm.setAccuracyClass(AccuracyClass.C_VERIFIED_SATELLITE);
+        digitisedDqm.setVerificationStatus(VerificationStatus.VERIFIED);
+        digitised.setDataQuality(digitisedDqm);
+
+        when(holeRepository.findByCourseIdOrderByHoleNumber(10L))
+                .thenReturn(Arrays.asList(synthetic, digitised));
+        when(teeSetRepository.findByCourseId(10L)).thenReturn(Collections.emptyList());
+        when(courseConditionRepository.findActiveByCourseId(eq(10L), any(LocalDate.class)))
+                .thenReturn(Collections.emptyList());
+        when(dataVersionRepository.findLatestPublishedByCourseId(10L))
+                .thenReturn(Optional.of(testDataVersion));
+
+        CourseDetailDto result = service.getCourseDetail(10L);
+
+        assertNotNull(result.getHoles().get(0).getDataQuality());
+        assertEquals("D_UNVERIFIED_COMMUNITY",
+                result.getHoles().get(0).getDataQuality().getAccuracyClass());
+        assertEquals("UNVERIFIED",
+                result.getHoles().get(0).getDataQuality().getVerificationStatus());
+
+        assertEquals("C_VERIFIED_SATELLITE",
+                result.getHoles().get(1).getDataQuality().getAccuracyClass());
+        assertEquals("VERIFIED",
+                result.getHoles().get(1).getDataQuality().getVerificationStatus());
+    }
+
+    /**
+     * Verification status alone lets a class-D row claim to be verified. The
+     * class travels with it so the client can show the weaker of the two.
+     */
+    @Test
+    void getCourseDetail_dataFreshness_carriesAccuracyClassNotJustVerification() {
+        DataQualityMetadata dvDqm = new DataQualityMetadata();
+        dvDqm.setVerificationStatus(VerificationStatus.UNVERIFIED);
+        dvDqm.setAccuracyClass(AccuracyClass.D_UNVERIFIED_COMMUNITY);
+        testDataVersion.setMetadata(dvDqm);
+
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(testCourse));
+        when(golfFacilityRepository.findLongitudeByFacilityId(1L)).thenReturn(106.6299);
+        when(golfFacilityRepository.findLatitudeByFacilityId(1L)).thenReturn(10.8231);
+        when(holeRepository.findByCourseIdOrderByHoleNumber(10L)).thenReturn(Collections.emptyList());
+        when(teeSetRepository.findByCourseId(10L)).thenReturn(Collections.emptyList());
+        when(courseConditionRepository.findActiveByCourseId(eq(10L), any(LocalDate.class)))
+                .thenReturn(Collections.emptyList());
+        when(dataVersionRepository.findLatestPublishedByCourseId(10L))
+                .thenReturn(Optional.of(testDataVersion));
+
+        CourseDetailDto result = service.getCourseDetail(10L);
+
+        assertEquals("D_UNVERIFIED_COMMUNITY", result.getDataFreshness().getAccuracyClass());
+        assertEquals("UNVERIFIED", result.getDataFreshness().getVerificationStatus());
+    }
+
     // ─── Error handling ─────────────────────────────────────────────────────────
 
     @Test

@@ -113,6 +113,7 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         dto.setHoleNumber(hole.getHoleNumber());
         dto.setPar(hole.getPar());
         dto.setPlayingLengthMeters(hole.getPlayingLengthMeters());
+        dto.setDataQuality(toDataQualityDto(hole.getDataQuality()));
         return dto;
     }
 
@@ -166,6 +167,9 @@ public class CourseDetailServiceImpl implements CourseDetailService {
             dto.setVerificationStatus(
                     dv.getMetadata().getVerificationStatus() != null
                             ? dv.getMetadata().getVerificationStatus().name() : null);
+            dto.setAccuracyClass(
+                    dv.getMetadata().getAccuracyClass() != null
+                            ? dv.getMetadata().getAccuracyClass().name() : null);
             dto.setLastVerifiedAt(
                     dv.getMetadata().getLastVerifiedAt() != null
                             ? dv.getMetadata().getLastVerifiedAt().toString() : null);
