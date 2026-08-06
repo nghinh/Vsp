@@ -15,8 +15,20 @@ spring:
       minimum-idle: 2
   flyway:
     enabled: true
-    baseline-on-migrate: true
+    # Deliberately false. baseline-on-migrate stamps a non-empty schema as being
+    # at baseline-version — which defaults to 1 — and then applies only what
+    # comes after it. Pointed at any database built the way dev builds its own
+    # (Hibernate ddl-auto), it would skip V0 and V1 and report success, leaving
+    # PostGIS uninstalled and the first spatial migration to fail. With it off,
+    # a schema that Flyway has never seen is either migrated from empty or
+    # refused out loud, which is the only honest pair of outcomes.
+    baseline-on-migrate: false
     locations: classpath:db/migration
+    # A migration file that does not match V<version>__<description>.sql is
+    # skipped with a single INFO line. That is exactly how 001_baseline.sql —
+    # the file that installs PostGIS — never ran, and how 18 later migrations
+    # became unreachable without anyone seeing an error.
+    validate-migration-naming: true
 
 management:
   endpoints:

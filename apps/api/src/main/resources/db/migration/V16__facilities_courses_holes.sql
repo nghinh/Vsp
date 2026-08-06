@@ -5,7 +5,7 @@
 
 -- GolfFacility: top-level anchor for a golf property
 CREATE TABLE golf_facilities (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id BIGSERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     address VARCHAR(500),
     phone VARCHAR(50),
@@ -28,8 +28,8 @@ CREATE INDEX idx_golf_facilities_name ON golf_facilities(name);
 
 -- Course: a playable golf course within a GolfFacility
 CREATE TABLE courses (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    facility_id UUID NOT NULL REFERENCES golf_facilities(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    facility_id BIGINT NOT NULL REFERENCES golf_facilities(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
     holes_count INTEGER,
     par_total INTEGER,
@@ -48,8 +48,8 @@ CREATE INDEX idx_courses_location ON courses USING GIST (ST_GeomFromWKB(location
 
 -- Hole: a single hole on a course
 CREATE TABLE holes (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    id BIGSERIAL PRIMARY KEY,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     hole_number INTEGER NOT NULL,
     par INTEGER NOT NULL CHECK (par BETWEEN 1 AND 9),
     -- Teeing ground location as WKT POINT in SRID 4326

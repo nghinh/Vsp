@@ -4,7 +4,7 @@
 -- Course conditions
 CREATE TABLE course_conditions (
     id BIGSERIAL PRIMARY KEY,
-    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     condition_type VARCHAR(100),
     severity VARCHAR(50),
     description TEXT,
@@ -21,7 +21,7 @@ CREATE INDEX idx_course_conditions_expiry ON course_conditions(expiry_date);
 -- Data versions (append-only: DRAFT -> PUBLISHED -> ARCHIVED)
 CREATE TABLE data_versions (
     id BIGSERIAL PRIMARY KEY,
-    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     version_number INTEGER NOT NULL,
     status VARCHAR(20) NOT NULL DEFAULT 'DRAFT' CHECK (status IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')),
     published_at TIMESTAMPTZ,

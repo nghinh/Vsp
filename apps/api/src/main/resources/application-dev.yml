@@ -13,11 +13,17 @@ spring:
       connection-timeout: 30000
       maximum-pool-size: 10
       minimum-idle: 2
-  # NOTE (runtime reconciliation): the Flyway migrations use UUID primary keys for the
-  # course/round/tournament domain, while all entities/repos/controllers use Long. The two
-  # schemas diverge, so the Flyway-based schema cannot run the app as-is. Until the migrations
-  # are reconciled to bigint (see docs/implementation-artifacts/schema-reconciliation.md),
-  # DEV runs on the Hibernate-generated (entity) schema — the same schema the 636 tests use.
+  # The divergence this note used to describe is fixed: V16-V19 now use BIGINT
+  # identities for golf_facilities/courses/holes, V0 installs PostGIS so the
+  # spatial migrations can run at all, and V34 closes the remaining 10 tables /
+  # 175 columns / 69 column types. FlywaySchemaMatchesEntityModelTest proves it
+  # on every run by migrating an empty database and validating it against the
+  # entity model.
+  #
+  # Dev still builds its schema with ddl-auto because the dev database already
+  # exists with data and no flyway_schema_history, and baseline-on-migrate is
+  # now off (see application.yml) — Flyway would rightly refuse it. A dev
+  # database created from empty can and should run the migrations instead.
   flyway:
     enabled: false
   jpa:

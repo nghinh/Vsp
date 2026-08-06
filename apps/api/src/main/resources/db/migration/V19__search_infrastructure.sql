@@ -6,7 +6,7 @@
 CREATE TABLE favorite_courses (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_favorite_user_course UNIQUE (user_id, course_id)
 );
@@ -17,7 +17,7 @@ CREATE INDEX idx_favorite_course ON favorite_courses(course_id);
 CREATE TABLE recent_courses (
     id BIGSERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL,
-    course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    course_id BIGINT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     viewed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_recent_user_course UNIQUE (user_id, course_id)
 );
