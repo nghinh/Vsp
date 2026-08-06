@@ -64,7 +64,7 @@ public class GeospatialServiceImpl implements GeospatialService {
             if (geometry.getSRID() != SRID_4326) {
                 geometry.setSRID(SRID_4326);
             }
-            String sql = "SELECT ST_IsValid(ST_GeomFromText(CAST(:wkt AS text), :srid))";
+            String sql = "SELECT ST_IsValid(" + geomParam("wkt") + ")";
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter("wkt", geometry.toText());
             query.setParameter("srid", SRID_4326);
@@ -79,12 +79,21 @@ public class GeospatialServiceImpl implements GeospatialService {
     /**
      * Validates geometry and throws if invalid.
      * Used by CourseServiceImpl before persisting geometry columns.
+     *
+     * <p>Thrown through the four-argument constructor deliberately. The
+     * two-argument {@code VspApiException(VspErrorCode, String)} takes that
+     * string as the <em>field</em> name, not as the message — it calls
+     * {@code super(errorCode.getDefaultMessage())} and drops what it was given
+     * into {@code field}. So this reason, the one sentence that tells the admin
+     * what is wrong with the shape they uploaded, was being filed as a field
+     * name and the caller was shown the generic "Request validation failed".
      */
     @Override
     public void assertGeometryValid(Geometry geometry) {
         if (!validateGeometry(geometry)) {
             throw new VspApiException(VspErrorCode.VALIDATION_001,
-                    "Geometry is not valid SRID 4326: " + getValidityReason(geometry));
+                    "Geometry is not valid SRID 4326: " + getValidityReason(geometry),
+                    null, null);
         }
     }
 
@@ -109,14 +118,15 @@ public class GeospatialServiceImpl implements GeospatialService {
 
             String sql;
             if ("degrees".equalsIgnoreCase(unit)) {
-                sql = "SELECT ST_Distance(ST_SetSRID(:g1, :srid), ST_SetSRID(:g2, :srid))";
+                sql = "SELECT ST_Distance(" + geomParam("g1") + ", " + geomParam("g2") + ")";
             } else {
                 // Use geography cast for meter-based distance on WGS84
-                sql = "SELECT ST_Distance(CAST(ST_SetSRID(:g1, :srid) AS geography), CAST(ST_SetSRID(:g2, :srid) AS geography))";
+                sql = "SELECT ST_Distance(CAST(" + geomParam("g1") + " AS geography), CAST("
+                        + geomParam("g2") + " AS geography))";
             }
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("g1", g1);
-            query.setParameter("g2", g2);
+            query.setParameter("g1", g1.toText());
+            query.setParameter("g2", g2.toText());
             query.setParameter("srid", SRID_4326);
             Object result = query.getSingleResult();
             if (result instanceof BigDecimal) {
@@ -128,7 +138,7 @@ public class GeospatialServiceImpl implements GeospatialService {
             }
             return null;
         } catch (Exception e) {
-            log.warn("Distance calculation error between {} and {}: {}", g1.getGeometryType(), g2.getGeometryType(), e.getMessage());
+            log.warn("Distance calculation error between {} and {}: {}", g1.getGeometryType(), g2.getGeometryType(), e.getMessage(), e);
             return null;
         }
     }
@@ -152,15 +162,16 @@ public class GeospatialServiceImpl implements GeospatialService {
         }
         ensureSRID(point);
         try {
+            String probe = "CAST(" + geomParam("point") + " AS geography)";
             String sql = String.format("""
-                SELECT id, ST_Distance(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography)) AS distance
+                SELECT id, ST_Distance(CAST(%s AS geography), %s) AS distance
                 FROM %s
-                WHERE ST_DWithin(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography), :radius)
+                WHERE ST_DWithin(CAST(%s AS geography), %s, :radius)
                 ORDER BY distance ASC
-                """, geometryColumn, featureType, geometryColumn);
+                """, geometryColumn, probe, featureType, geometryColumn, probe);
 
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("point", point);
+            query.setParameter("point", point.toText());
             query.setParameter("srid", SRID_4326);
             query.setParameter("radius", radiusMeters);
 
@@ -171,7 +182,7 @@ public class GeospatialServiceImpl implements GeospatialService {
                             row[1] != null ? new BigDecimal(row[1].toString()) : null))
                     .collect(Collectors.toList());
         } catch (Exception e) {
-            log.warn("ST_DWithin query error on {}: {}", featureType, e.getMessage());
+            log.warn("ST_DWithin query error on {}: {}", featureType, e.getMessage(), e);
             return List.of();
         }
     }
@@ -192,14 +203,14 @@ public class GeospatialServiceImpl implements GeospatialService {
         try {
             ensureSRID(inner);
             ensureSRID(outer);
-            String sql = "SELECT ST_Within(ST_SetSRID(:inner, :srid), ST_SetSRID(:outer, :srid))";
+            String sql = "SELECT ST_Within(" + geomParam("inner") + ", " + geomParam("outer") + ")";
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("inner", inner);
-            query.setParameter("outer", outer);
+            query.setParameter("inner", inner.toText());
+            query.setParameter("outer", outer.toText());
             query.setParameter("srid", SRID_4326);
             return ((Boolean) query.getSingleResult());
         } catch (Exception e) {
-            log.warn("ST_Within check error: {}", e.getMessage());
+            log.warn("ST_Within check error: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -220,14 +231,14 @@ public class GeospatialServiceImpl implements GeospatialService {
         try {
             ensureSRID(outer);
             ensureSRID(inner);
-            String sql = "SELECT ST_Contains(ST_SetSRID(:outer, :srid), ST_SetSRID(:inner, :srid))";
+            String sql = "SELECT ST_Contains(" + geomParam("outer") + ", " + geomParam("inner") + ")";
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("outer", outer);
-            query.setParameter("inner", inner);
+            query.setParameter("outer", outer.toText());
+            query.setParameter("inner", inner.toText());
             query.setParameter("srid", SRID_4326);
             return ((Boolean) query.getSingleResult());
         } catch (Exception e) {
-            log.warn("ST_Contains check error: {}", e.getMessage());
+            log.warn("ST_Contains check error: {}", e.getMessage(), e);
             return false;
         }
     }
@@ -255,14 +266,14 @@ public class GeospatialServiceImpl implements GeospatialService {
                 SELECT id, dist.distance
                 FROM %s
                 CROSS JOIN LATERAL (
-                    SELECT ST_Distance(CAST(%s AS geography), CAST(ST_SetSRID(:point, :srid) AS geography)) AS distance
+                    SELECT ST_Distance(CAST(%s AS geography), CAST(%s AS geography)) AS distance
                 ) AS dist
                 ORDER BY dist.distance ASC
                 LIMIT 1
-                """, featureType, geometryColumn);
+                """, featureType, geometryColumn, geomParam("point"));
 
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("point", point);
+            query.setParameter("point", point.toText());
             query.setParameter("srid", SRID_4326);
             List<Object[]> results = query.getResultList();
             if (results.isEmpty()) {
@@ -273,12 +284,33 @@ public class GeospatialServiceImpl implements GeospatialService {
                     ((Number) row[0]).longValue(),
                     row[1] != null ? new BigDecimal(row[1].toString()) : null);
         } catch (Exception e) {
-            log.warn("Nearest feature query error on {}: {}", featureType, e.getMessage());
+            log.warn("Nearest feature query error on {}: {}", featureType, e.getMessage(), e);
             return null;
         }
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────
+
+    /**
+     * The SQL fragment that turns a bound parameter into a PostGIS geometry.
+     *
+     * <p>Every geometry in this class reaches SQL through here, as WKT text, and
+     * the matching {@code setParameter} binds {@code geometry.toText()}. Binding
+     * the JTS object instead is the defect this class was built around: with no
+     * hibernate-spatial on the classpath Hibernate has no idea the parameter is a
+     * geometry and sends {@code bytea}, and {@code ST_SetSRID(bytea, integer)}
+     * matches both the geometry and the geography overload through implicit
+     * casts, so PostgreSQL refuses the statement outright — "function
+     * st_setsrid(bytea, integer) is not unique". {@code ST_GeomFromText(text,
+     * integer)} has no such ambiguity.
+     *
+     * <p>The {@code CAST(... AS text)} is not decoration: without it the driver
+     * can send the parameter as {@code bytea} again and reintroduce exactly the
+     * ambiguity this exists to avoid.
+     */
+    private static String geomParam(String name) {
+        return "ST_GeomFromText(CAST(:" + name + " AS text), :srid)";
+    }
 
     private void ensureSRID(Geometry geometry) {
         if (geometry != null && geometry.getSRID() != SRID_4326) {
@@ -286,15 +318,26 @@ public class GeospatialServiceImpl implements GeospatialService {
         }
     }
 
+    /**
+     * The human-readable reason a geometry is invalid, e.g. "Self-intersection".
+     *
+     * <p>Only ever reached from {@link #assertGeometryValid}, i.e. only when a
+     * geometry has already been rejected — so while this bound the geometry the
+     * broken way, the admin whose import failed was shown "unknown: " followed by
+     * the driver's complaint about parameter types, in a message whose whole
+     * purpose is to tell them what is wrong with the shape they supplied.
+     */
     private String getValidityReason(Geometry geometry) {
         if (geometry == null) return "null geometry";
         try {
-            String sql = "SELECT ST_IsValidReason(ST_SetSRID(:geom, :srid))";
+            ensureSRID(geometry);
+            String sql = "SELECT ST_IsValidReason(" + geomParam("geom") + ")";
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("geom", geometry);
+            query.setParameter("geom", geometry.toText());
             query.setParameter("srid", SRID_4326);
             return (String) query.getSingleResult();
         } catch (Exception e) {
+            log.warn("ST_IsValidReason lookup failed: {}", e.getMessage(), e);
             return "unknown: " + e.getMessage();
         }
     }

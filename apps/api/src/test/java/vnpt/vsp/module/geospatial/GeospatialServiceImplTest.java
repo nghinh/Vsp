@@ -330,4 +330,158 @@ class GeospatialServiceImplTest {
 
         assertNull(geospatialService.findNearestFeature(p, "greens", "location"));
     }
+
+    // ─── Every geometry crosses into SQL as WKT ──────────────────────────────
+
+    /**
+     * The same assertion as {@code validateGeometry_bindsTheGeometryAsText}, for
+     * the five remaining sites that bound the JTS object directly.
+     *
+     * <p>{@link GeospatialServicePostgisTest} is what actually proved these
+     * broken — against a real PostGIS, every one of them failed with "function
+     * st_setsrid(bytea, integer) is not unique". These mocked tests exist because
+     * that one is skipped wherever no database is reachable, and because the
+     * failure is invisible from the return value: each of these methods catches
+     * broadly and answers {@code null}, {@code false}, or an empty list, so a
+     * test asserting on the answer passes just as happily when the statement
+     * never ran. Assert on what is bound instead.
+     */
+    private void assertNoJtsGeometryBound(String site, Object... expectedWkt) {
+        org.mockito.ArgumentCaptor<Object> bound = org.mockito.ArgumentCaptor.forClass(Object.class);
+        verify(query, org.mockito.Mockito.atLeastOnce()).setParameter(anyString(), bound.capture());
+
+        assertTrue(bound.getAllValues().stream()
+                        .noneMatch(v -> v instanceof org.locationtech.jts.geom.Geometry),
+                site + ": a bound JTS geometry becomes bytea and makes the PostGIS call ambiguous");
+        for (Object wkt : expectedWkt) {
+            assertTrue(bound.getAllValues().contains(wkt),
+                    site + ": expected WKT " + wkt + " among " + bound.getAllValues());
+        }
+    }
+
+    /** ST_SetSRID must not appear anywhere: it is the overload-ambiguous call. */
+    private void assertSqlUsesGeomFromText(String site) {
+        org.mockito.ArgumentCaptor<String> sql = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(entityManager, org.mockito.Mockito.atLeastOnce()).createNativeQuery(sql.capture());
+
+        String statement = sql.getValue();
+        assertTrue(statement.contains("ST_GeomFromText"), site + ": " + statement);
+        assertFalse(statement.contains("ST_SetSRID"),
+                site + ": ST_SetSRID on a bound parameter is the ambiguity itself: " + statement);
+    }
+
+    @Test
+    void calculateDistance_bindsBothGeometriesAsText_inMeters() {
+        Point a = GF.createPoint(new Coordinate(105, 21));
+        Point b = GF.createPoint(new Coordinate(105, 22));
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(110723.60868296);
+
+        geospatialService.calculateDistance(a, b, "meters");
+
+        assertNoJtsGeometryBound("calculateDistance/meters", a.toText(), b.toText());
+        assertSqlUsesGeomFromText("calculateDistance/meters");
+    }
+
+    @Test
+    void calculateDistance_bindsBothGeometriesAsText_inDegrees() {
+        Point a = GF.createPoint(new Coordinate(105, 21));
+        Point b = GF.createPoint(new Coordinate(105, 22));
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(1.0);
+
+        geospatialService.calculateDistance(a, b, "degrees");
+
+        assertNoJtsGeometryBound("calculateDistance/degrees", a.toText(), b.toText());
+        assertSqlUsesGeomFromText("calculateDistance/degrees");
+    }
+
+    @Test
+    void findFeaturesWithinRadius_bindsThePointAsText() {
+        Point p = GF.createPoint(new Coordinate(106.660172, 10.762915));
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getResultList()).thenReturn(List.of());
+
+        geospatialService.findFeaturesWithinRadius(p, 500, "greens", "location");
+
+        assertNoJtsGeometryBound("findFeaturesWithinRadius", p.toText());
+        assertSqlUsesGeomFromText("findFeaturesWithinRadius");
+    }
+
+    @Test
+    void findNearestFeature_bindsThePointAsText() {
+        Point p = GF.createPoint(new Coordinate(106.660172, 10.762915));
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getResultList()).thenReturn(List.of());
+
+        geospatialService.findNearestFeature(p, "greens", "location");
+
+        assertNoJtsGeometryBound("findNearestFeature", p.toText());
+        assertSqlUsesGeomFromText("findNearestFeature");
+    }
+
+    @Test
+    void isWithin_bindsBothGeometriesAsText() {
+        Point inner = GF.createPoint(new Coordinate(105.5, 21.5));
+        Polygon outer = squarePolygon();
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(true);
+
+        geospatialService.isWithin(inner, outer);
+
+        assertNoJtsGeometryBound("isWithin", inner.toText(), outer.toText());
+        assertSqlUsesGeomFromText("isWithin");
+    }
+
+    @Test
+    void contains_bindsBothGeometriesAsText() {
+        Point inner = GF.createPoint(new Coordinate(105.5, 21.5));
+        Polygon outer = squarePolygon();
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(true);
+
+        geospatialService.contains(outer, inner);
+
+        assertNoJtsGeometryBound("contains", inner.toText(), outer.toText());
+        assertSqlUsesGeomFromText("contains");
+    }
+
+    /**
+     * The reason lookup is reached only from the throw, and it bound a geometry
+     * the same way — so the admin was shown "unknown: " and the driver's
+     * complaint about parameter types in place of what was wrong with their data.
+     */
+    @Test
+    void assertGeometryValid_bindsTheReasonLookupGeometryAsText_andCarriesTheReasonAsTheMessage() {
+        Polygon invalid = squarePolygon();
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        // validateGeometry answers false, then getValidityReason answers the reason.
+        when(query.getSingleResult()).thenReturn(false, "Self-intersection[105 21]");
+
+        VspApiException ex = assertThrows(VspApiException.class,
+                () -> geospatialService.assertGeometryValid(invalid));
+
+        assertNoJtsGeometryBound("getValidityReason", invalid.toText());
+
+        // The two-argument VspApiException constructor takes its String as the
+        // *field*, not the message, so this reason used to be filed as a field
+        // name and the caller saw only the generic default text.
+        assertTrue(ex.getMessage().contains("Self-intersection"),
+                "the reason must reach the caller as the message: " + ex.getMessage());
+        assertNull(ex.getField(), "this is not a field-level error");
+    }
+
+    private static Polygon squarePolygon() {
+        return GF.createPolygon(GF.createLinearRing(new Coordinate[]{
+                new Coordinate(105, 21), new Coordinate(106, 21),
+                new Coordinate(106, 22), new Coordinate(105, 22),
+                new Coordinate(105, 21)}));
+    }
 }
