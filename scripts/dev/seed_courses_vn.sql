@@ -1,10 +1,23 @@
 -- Comprehensive Vietnam golf-course seed (nationwide coverage).
--- Real facility names + approximate facility coordinates (WGS84). Each course
--- gets 18 holes, 3 tee sets, and a PUBLISHED/VERIFIED DataVersion so it renders
--- as verified and is searchable/nearby across the whole country.
+--
+-- Real facility names, approximate facility coordinates (WGS84), and eighteen
+-- holes per course that this file INVENTS: the tee is the clubhouse point
+-- pushed along a fixed diagonal, the green is that tee pushed due north by the
+-- hole's length, and the par/length card below is the same on every course.
+-- Nothing here was surveyed, digitised or observed.
+--
+-- Every row is therefore stamped D_UNVERIFIED_COMMUNITY / UNVERIFIED with a
+-- source that names it as synthetic. It used to claim C_VERIFIED_SATELLITE /
+-- VERIFIED / confidence 95 / CC-BY-4.0, which is the label a real satellite
+-- digitisation carries — and the app computes every distance it shows a golfer
+-- from these coordinates. Do not restore those labels here: the client gates
+-- its "not surveyed" markers on them, and a demo that lies is worse than a
+-- demo that is empty.
+--
+-- Real hole geometry arrives later via tools/course-digitization, which
+-- overwrites these rows with its own (honest) provenance.
+--
 -- Idempotent: facilities already present (by name) are skipped.
--- NOTE: hole tee/green points are synthesised near the facility for GPS demo;
--- precise surveyed hole geometry is supplied later via the import/geometry pipeline.
 DO $$
 DECLARE
     fid  BIGINT;
@@ -79,7 +92,8 @@ BEGIN
         VALUES
             (facilities[i][1], facilities[i][2], facilities[i][5], NULL,
              ST_SetSRID(ST_MakePoint(facilities[i][3]::float8, facilities[i][4]::float8), 4326),
-             'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',
+             'D_UNVERIFIED_COMMUNITY','UNVERIFIED',30.0,'seed:approximate-facility-point',
+             'VSP Seed (approximate)','internal-synthetic',
              CURRENT_DATE, 1, now(), now())
         RETURNING id INTO fid;
 
@@ -90,7 +104,8 @@ BEGIN
         VALUES
             (facilities[i][1] || ' — Championship', fid, 18, 72,
              ST_SetSRID(ST_MakePoint(facilities[i][3]::float8, facilities[i][4]::float8), 4326),
-             'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',
+             'D_UNVERIFIED_COMMUNITY','UNVERIFIED',30.0,'seed:approximate-facility-point',
+             'VSP Seed (approximate)','internal-synthetic',
              CURRENT_DATE, 1, now(), now())
         RETURNING id INTO cid;
 
@@ -99,7 +114,16 @@ BEGIN
             plen := CASE p WHEN 3 THEN 155 + (h*3) WHEN 5 THEN 480 + (h*4) ELSE 360 + (h*2) END;
             tlon := facilities[i][3]::float8 + (h * 0.0008);
             tlat := facilities[i][4]::float8 + (h * 0.0006);
-            glat := tlat + (plen / 111000.0);
+            glat := tlat + (plen / 111000.0);  -- push green north by ~length in metres
+            -- One length per hole, and it is the one the coordinates give.
+            -- 1 degree of latitude is not exactly 111 km, so the card and the
+            -- points used to disagree by up to 2 m — the same fiction told
+            -- twice, slightly differently. The app measures from the points,
+            -- so the points decide what the card says.
+            plen := round(ST_Distance(
+                        ST_SetSRID(ST_MakePoint(tlon, tlat), 4326)::geography,
+                        ST_SetSRID(ST_MakePoint(tlon, glat), 4326)::geography
+                    )::numeric, 2);
             INSERT INTO holes
                 (course_id, hole_number, par, playing_length_meters,
                  teeing_ground_location, green_location,
@@ -109,7 +133,8 @@ BEGIN
                 (cid, h, p, plen,
                  ST_SetSRID(ST_MakePoint(tlon, tlat), 4326),
                  ST_SetSRID(ST_MakePoint(tlon, glat), 4326),
-                 'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',
+                 'D_UNVERIFIED_COMMUNITY','UNVERIFIED',5.0,'synthetic:seed-arithmetic',
+                 'VSP Seed (synthetic)','internal-synthetic',
                  CURRENT_DATE, 1, now(), now());
         END LOOP;
 
@@ -118,19 +143,24 @@ BEGIN
              accuracy_class, verification_status, confidence, source, publisher, license,
              effective_date, version, created_at, updated_at)
         VALUES
-            (cid,'Blue (Championship)',72,'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',CURRENT_DATE,1,now(),now()),
-            (cid,'White (Men)',72,'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',CURRENT_DATE,1,now(),now()),
-            (cid,'Red (Ladies)',72,'C_VERIFIED_SATELLITE','VERIFIED',95.0,'SEED','VSP Seed','CC-BY-4.0',CURRENT_DATE,1,now(),now());
+            (cid,'Blue (Championship)',72,'D_UNVERIFIED_COMMUNITY','UNVERIFIED',5.0,'synthetic:seed-arithmetic','VSP Seed (synthetic)','internal-synthetic',CURRENT_DATE,1,now(),now()),
+            (cid,'White (Men)',72,'D_UNVERIFIED_COMMUNITY','UNVERIFIED',5.0,'synthetic:seed-arithmetic','VSP Seed (synthetic)','internal-synthetic',CURRENT_DATE,1,now(),now()),
+            (cid,'Red (Ladies)',72,'D_UNVERIFIED_COMMUNITY','UNVERIFIED',5.0,'synthetic:seed-arithmetic','VSP Seed (synthetic)','internal-synthetic',CURRENT_DATE,1,now(),now());
 
-        -- Published/verified DataVersion so freshness + verification render.
+        -- A published DataVersion so freshness renders. Published, not
+        -- verified: PUBLISHED says this is the current version, and nothing
+        -- more. This row is what the mobile quality badge reads, and it used
+        -- to assert VERIFIED with a last_verified_at of the instant the seed
+        -- ran — nobody had verified anything.
         INSERT INTO data_versions
             (course_id, version, version_number, status, verification_status, accuracy_class,
              confidence, publisher, source, license, effective_date,
              published_at, last_verified_at, published_by, created_at, updated_at)
         VALUES
-            (cid, 1, 1, 'PUBLISHED', 'VERIFIED', 'C_VERIFIED_SATELLITE',
-             95.0, 'VSP Seed', 'SEED', 'CC-BY-4.0', CURRENT_DATE,
-             now(), now(), 'VSP Seed', now(), now());
+            (cid, 1, 1, 'PUBLISHED', 'UNVERIFIED', 'D_UNVERIFIED_COMMUNITY',
+             5.0, 'VSP Seed (synthetic)', 'synthetic:seed-arithmetic',
+             'internal-synthetic', CURRENT_DATE,
+             now(), NULL, 'VSP Seed (synthetic)', now(), now());
     END LOOP;
 END $$;
 
