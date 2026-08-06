@@ -10,17 +10,28 @@
 // Score tab hosts that same scorecard, so nothing about scoring changes and
 // everything else becomes reachable.
 //
-// Where a value is not known it is not invented. No downloaded package means
-// the Map tab says so instead of asking the map for geometry that cannot
-// exist; an unknown par is omitted rather than defaulted to 4; no GPS fix
-// means the Conditions tab says it needs one rather than showing yesterday's
-// weather for the wrong place.
+// Where a value is not known it is not invented: an unknown par is omitted
+// rather than defaulted to 4, and no GPS fix means the Conditions tab says it
+// needs one rather than showing yesterday's weather for the wrong place.
+//
+// Not knowing a hole's shape is different from not knowing a value, though.
+// Most courses have no downloaded package, and the Map tab used to answer that
+// with an empty state — precisely when a golfer most needs help. It now opens
+// satellite imagery with the measuring tool, labelled as unsurveyed and
+// golfer-measured, because the photograph is real even where our vector data
+// is not.
+//
+// The round owns one HoleMapBloc, above the tab stack. It used to be created
+// inside HoleMapScreen, below it, so the target a golfer dropped on the map
+// was invisible to the Target tab standing next to it.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../hole_map/hole_map.dart';
+import '../../basemap/domain/satellite_imagery_config.dart';
+import 'active_round_target_view.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
 import '../../../core/network/api_client.dart';
 import '../../../data/api/weather_api.dart';
@@ -111,6 +122,10 @@ class ActiveRoundScreen extends StatefulWidget {
   /// Injectable for tests. Falls back to the live weather API + cache.
   final WeatherRepository? weatherRepository;
 
+  /// Injectable for tests. Falls back to the imagery this build was compiled
+  /// with — which is "none" unless a token was supplied at build time.
+  final SatelliteImageryConfig? imageryConfig;
+
   const ActiveRoundScreen({
     super.key,
     required this.roundId,
@@ -129,6 +144,7 @@ class ActiveRoundScreen extends StatefulWidget {
     this.initialTab = ActiveRoundTab.score,
     this.holeMapRepository,
     this.weatherRepository,
+    this.imageryConfig,
   });
 
   @override
@@ -179,7 +195,31 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
     // it even as tabs are swapped in the IndexedStack.
     return _holeMapRepositoryScope(
       context,
-      ProfileScope(child: _buildScaffold(context)),
+      ProfileScope(child: _holeMapBlocScope(_buildScaffold(context))),
+    );
+  }
+
+  /// One hole map for the whole round, owned above the tabs.
+  ///
+  /// The Map tab draws it and the Target tab reads the target placed on it;
+  /// two blocs would mean two answers to "where is the target". Deliberately
+  /// lazy — flutter_bloc only builds it on first read, which is the first time
+  /// the golfer opens Map or Target, so a round does not start by turning on
+  /// GPS for a tab nobody looked at.
+  Widget _holeMapBlocScope(Widget child) {
+    return BlocProvider<HoleMapBloc>(
+      create: (context) => HoleMapBloc(
+        repository: context.read<HoleMapRepository>(),
+        locationService: widget.locationService,
+      )..add(
+        LoadHoleMap(
+          packageId: widget.packageId,
+          courseId: widget.courseId,
+          courseName: widget.courseName,
+          holeNumber: widget.holeNumber,
+        ),
+      ),
+      child: child,
     );
   }
 
@@ -220,14 +260,18 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
       body: IndexedStack(
         index: _currentTab.index,
         children: [
-          // Map tab — the strategic hole map, satellite basemap and the
-          // measuring tool, all of which read from the downloaded package.
-          _MapTab(
-            packageId: widget.packageId,
-            courseId: widget.courseId,
-            courseName: widget.courseName,
-            holeNumber: widget.holeNumber,
-            locationService: widget.locationService,
+          // Map tab — the strategic hole map where the hole is surveyed,
+          // satellite imagery plus the measuring tool where it is not.
+          _lazyTab(
+            ActiveRoundTab.map,
+            (_) => _MapTab(
+              packageId: widget.packageId,
+              courseId: widget.courseId,
+              courseName: widget.courseName,
+              holeNumber: widget.holeNumber,
+              locationService: widget.locationService,
+              imageryConfig: widget.imageryConfig,
+            ),
           ),
 
           // Score tab — the scorecard the golfer already uses. Built eagerly:
@@ -241,11 +285,14 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             isTournamentMode: widget.isTournamentMode,
           ),
 
-          // Target tab — context for targets placed on the map.
-          _TargetTab(
-            holeNumber: widget.holeNumber,
-            par: widget.par,
-            yardage: widget.yardage,
+          // Target tab — live distances for the target placed on the map.
+          _lazyTab(
+            ActiveRoundTab.target,
+            (_) => ActiveRoundTargetView(
+              holeNumber: widget.holeNumber,
+              par: widget.par,
+              yardage: widget.yardage,
+            ),
           ),
 
           // Conditions tab — live wind and weather for where the golfer is.
@@ -277,6 +324,12 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
 
 // ─── Tab: Map ────────────────────────────────────────────────────────────────
 
+/// Map tab.
+///
+/// A null [packageId] is no longer a dead end. The hole map bloc answers "no
+/// geometry" for it and [HoleMapScreen] opens satellite imagery plus the
+/// measuring tool — the case where a golfer has the least data and needs the
+/// most help. The bloc itself is owned by the round, above the tab stack.
 class _MapTab extends StatelessWidget {
   final String? packageId;
   final String courseId;
@@ -286,36 +339,27 @@ class _MapTab extends StatelessWidget {
   /// GPS source, forwarded to the satellite measuring tool.
   final LocationService locationService;
 
+  /// Imagery configuration, injectable for tests.
+  final SatelliteImageryConfig? imageryConfig;
+
   const _MapTab({
     required this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
     required this.locationService,
+    this.imageryConfig,
   });
 
   @override
   Widget build(BuildContext context) {
-    final id = packageId;
-    if (id == null) {
-      // No package on the device. The map has nothing to draw and the
-      // satellite basemap has no hole to centre on, so say that plainly
-      // instead of loading a map that can only fail.
-      final l10n = AppLocalizations.of(context);
-      return _RoundInfoScaffold(
-        title: l10n.activeRoundMap,
-        icon: Icons.map_outlined,
-        heading: l10n.activeRoundMapUnavailableHeading,
-        message: l10n.activeRoundMapUnavailableMessage(courseName),
-      );
-    }
-
     return HoleMapScreen(
-      packageId: id,
+      packageId: packageId,
       courseId: courseId,
       courseName: courseName,
       holeNumber: holeNumber,
       locationService: locationService,
+      imageryConfig: imageryConfig,
     );
   }
 }
@@ -354,46 +398,6 @@ class _ScoreTab extends StatelessWidget {
       playerNames: playerNames,
       holePars: holePars,
       isTournamentMode: isTournamentMode,
-    );
-  }
-}
-
-// ─── Tab: Target ───────────────────────────────────────────────────────────
-
-/// Target tab — context for the target placed on the strategic hole map.
-///
-/// Targets are placed by tapping the map (Map tab), which owns the live
-/// distance readout. This tab summarises the hole; par and length are shown
-/// only when the course data actually carries them.
-class _TargetTab extends StatelessWidget {
-  final int holeNumber;
-  final int? par;
-  final int? yardage;
-
-  const _TargetTab({
-    required this.holeNumber,
-    this.par,
-    this.yardage,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return _RoundInfoScaffold(
-      title: l10n.activeRoundTarget,
-      icon: Icons.gps_fixed,
-      heading: l10n.activeRoundTargetHeading,
-      message: l10n.activeRoundTargetMessage,
-      details: [
-        _RoundInfoDetail(label: l10n.activeRoundHole, value: '$holeNumber'),
-        if (par != null)
-          _RoundInfoDetail(label: l10n.fieldPar, value: '$par'),
-        if (yardage != null)
-          _RoundInfoDetail(
-            label: l10n.activeRoundLength,
-            value: l10n.activeRoundLengthMeters(yardage!),
-          ),
-      ],
     );
   }
 }
@@ -607,135 +611,6 @@ class _ConditionsMessage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ─── Shared in-round info scaffold ───────────────────────────────────────────
-
-class _RoundInfoDetail {
-  final String label;
-  final String value;
-
-  const _RoundInfoDetail({required this.label, required this.value});
-}
-
-/// Consistent dark-themed scaffold used by the non-map in-round tabs.
-class _RoundInfoScaffold extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final String heading;
-  final String message;
-  final List<_RoundInfoDetail> details;
-
-  const _RoundInfoScaffold({
-    required this.title,
-    required this.icon,
-    required this.heading,
-    required this.message,
-    this.details = const [],
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: VspColorDark.background,
-      appBar: AppBar(
-        backgroundColor: VspColorDark.surface,
-        title: Text(
-          title,
-          style: const TextStyle(color: VspColorDark.textPrimary),
-        ),
-        iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
-      ),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(VspSpacing.xl),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 64, color: VspColorDark.primary),
-              const SizedBox(height: VspSpacing.md),
-              Text(
-                heading,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: VspColorDark.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: VspSpacing.sm),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: VspColorDark.textSecondary,
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-              if (details.isNotEmpty) ...[
-                const SizedBox(height: VspSpacing.lg),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    for (final detail in details)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: VspSpacing.sm,
-                        ),
-                        child: _RoundInfoChip(detail: detail),
-                      ),
-                  ],
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RoundInfoChip extends StatelessWidget {
-  final _RoundInfoDetail detail;
-
-  const _RoundInfoChip({required this.detail});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: VspSpacing.md,
-        vertical: VspSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: VspColorDark.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: VspColorDark.borderStrong),
-      ),
-      child: Column(
-        children: [
-          Text(
-            detail.value,
-            style: const TextStyle(
-              color: VspColorDark.textPrimary,
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: VspSpacing.half),
-          Text(
-            detail.label,
-            style: const TextStyle(
-              color: VspColorDark.textTertiary,
-              fontSize: 11,
-            ),
-          ),
-        ],
       ),
     );
   }

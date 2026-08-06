@@ -86,20 +86,37 @@ class MeasurePanel extends StatelessWidget {
       children: [
         const Icon(Icons.straighten, size: 18, color: _textPrimary),
         const SizedBox(width: 6),
-        Text(
-          l10n.measureTitle,
-          style: const TextStyle(
-            color: _textPrimary,
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
+        // The title and the point count give way before the controls do.
+        // "Đo khoảng cách" plus "Chưa có điểm" is wider than the 360 dp phones
+        // most of our golfers carry, and an overflowing row loses the undo and
+        // clear buttons entirely — the two things a mis-tapped point needs.
+        Expanded(
+          child: Row(
+            children: [
+              Flexible(
+                child: Text(
+                  l10n.measureTitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: _textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Text(
+                  l10n.measurePoints(state.points.length),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: _textMuted, fontSize: 12),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(width: 8),
-        Text(
-          l10n.measurePoints(state.points.length),
-          style: const TextStyle(color: _textMuted, fontSize: 12),
-        ),
-        const Spacer(),
         _UnitToggle(unit: state.unit, onToggle: onToggleUnit),
         const SizedBox(width: 4),
         IconButton(

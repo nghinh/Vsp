@@ -3938,17 +3938,29 @@ abstract class AppLocalizations {
   /// **'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.'**
   String get activeRoundTargetMessage;
 
-  /// No description provided for @activeRoundMapUnavailableHeading.
+  /// No description provided for @activeRoundTargetLoading.
   ///
   /// In en, this message translates to:
-  /// **'No course package downloaded'**
-  String get activeRoundMapUnavailableHeading;
+  /// **'Opening the hole…'**
+  String get activeRoundTargetLoading;
 
-  /// No description provided for @activeRoundMapUnavailableMessage.
+  /// No description provided for @activeRoundTargetUnsurveyedHeading.
   ///
   /// In en, this message translates to:
-  /// **'The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download {courseName} to use them during a round.'**
-  String activeRoundMapUnavailableMessage(String courseName);
+  /// **'This hole is not surveyed'**
+  String get activeRoundTargetUnsurveyedHeading;
+
+  /// No description provided for @activeRoundTargetUnsurveyedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no hole geometry to drop a target on. Open the Map tab to measure the distances you need on satellite imagery instead.'**
+  String get activeRoundTargetUnsurveyedMessage;
+
+  /// No description provided for @activeRoundTargetMeasuredNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured from your GPS position to the target you placed. Every figure carries its margin of error.'**
+  String get activeRoundTargetMeasuredNote;
 
   /// No description provided for @activeRoundConditionsLocating.
   ///
@@ -5167,6 +5179,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not surveyed'**
   String get holeNoGeometryBadge;
+
+  /// No description provided for @holeNoGeometryNoImageryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing real to show for this hole'**
+  String get holeNoGeometryNoImageryTitle;
+
+  /// No description provided for @holeNoGeometryNoImageryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.'**
+  String get holeNoGeometryNoImageryBody;
 }
 
 class _AppLocalizationsDelegate

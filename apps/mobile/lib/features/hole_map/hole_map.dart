@@ -28,4 +28,5 @@ export 'presentation/widgets/distance_ring_overlay.dart';
 export 'presentation/widgets/layer_toggle_panel.dart';
 export 'presentation/widgets/map_loading_skeleton.dart';
 export 'presentation/widgets/map_error_view.dart';
+export 'presentation/widgets/unsurveyed_hole_view.dart';
 export 'presentation/widgets/accessibility_hints.dart';

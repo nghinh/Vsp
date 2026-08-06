@@ -5,6 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.role.dto.*;
 import vnpt.vsp.module.role.entity.RoleName;
 
@@ -64,6 +66,13 @@ public class RoleController {
     /**
      * Assign a role to a golfer account.
      * Requires SUPER_ADMIN.
+     * <p>
+     * The path names the account; the body names only the role. The body may
+     * still echo {@code golferAccountId}, but an echo that disagrees with the
+     * path is a 400 rather than a silent win for one of the two — the caller
+     * has said two different things about which admin they are creating, and
+     * picking one of them is how a role lands on an account nobody meant to
+     * name.
      */
     @PostMapping("/users/{golferAccountId}/roles")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
@@ -72,7 +81,7 @@ public class RoleController {
             @PathVariable Long golferAccountId,
             @Valid @RequestBody AssignRoleRequest request) {
         Long callerId = (Long) authentication.getPrincipal();
-        request.setGolferAccountId(golferAccountId);
+        requireBodyAgreesWithPath(golferAccountId, request.getGolferAccountId());
         AdminAccountResponse account = roleService.assignRole(callerId, golferAccountId, request.getRoleName());
         return ResponseEntity
                 .created(URI.create("/admin/users/" + account.getGolferAccountId() + "/roles"))
@@ -139,6 +148,25 @@ public class RoleController {
             @Valid @RequestBody VerifyMfaRequest request) {
         boolean valid = roleService.verifyMfa(golferAccountId, request.getTotpCode());
         return ResponseEntity.ok(new VerifyMfaResponse(valid));
+    }
+
+    // ─── Helpers ────────────────────────────────────────────────────────────
+
+    /**
+     * Refuses a body that names a different account than the path.
+     * <p>
+     * {@code null} in the body is the normal case and means "the account in
+     * the path", which is the only account this endpoint can act on.
+     */
+    private void requireBodyAgreesWithPath(Long pathAccountId, Long bodyAccountId) {
+        if (bodyAccountId != null && !bodyAccountId.equals(pathAccountId)) {
+            throw new VspApiException(
+                    VspErrorCode.VALIDATION_001,
+                    "golferAccountId in the body (" + bodyAccountId + ") does not match the path ("
+                            + pathAccountId + "). Omit it from the body, or send the same id.",
+                    "golferAccountId",
+                    null);
+        }
     }
 
     // ─── Internal DTOs for responses ────────────────────────────────────────

@@ -3,12 +3,15 @@
 // BLoC managing hole map state: loading geometry from local package,
 // golfer position updates, target placement, and layer visibility.
 
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/hole_map_repository.dart';
+import 'package:vsp_mobile/domain/models/qualified_location.dart';
+import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/wind_relative_entity.dart';
@@ -21,17 +24,33 @@ import 'package:vsp_mobile/l10n/app_messages.dart';
 /// BLoC for the strategic hole map feature.
 class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   final HoleMapRepository _repository;
+  final LocationService? _locationService;
   final Uuid _uuid = const Uuid();
   final WindRelativeCalculator _windCalculator = WindRelativeCalculator();
+
+  StreamSubscription<QualifiedLocation>? _locationSubscription;
 
   String? _currentPackageId;
   String? _currentCourseId;
   String? _currentCourseName;
   int? _currentHoleNumber;
 
-  HoleMapBloc({required HoleMapRepository repository})
-    : _repository = repository,
-      super(const HoleMapInitial()) {
+  /// Latest usable GPS fix, kept verbatim.
+  ///
+  /// [GolferPositionEntity] drops the fix's own uncertainty vocabulary, and
+  /// anything quoting a distance from the golfer needs it to state an error
+  /// bar. Null until a fix that is actually a position arrives.
+  QualifiedLocation? _lastFix;
+
+  /// The golfer's last usable GPS fix, or null when there is none.
+  QualifiedLocation? get lastFix => _lastFix;
+
+  HoleMapBloc({
+    required HoleMapRepository repository,
+    LocationService? locationService,
+  }) : _repository = repository,
+       _locationService = locationService,
+       super(const HoleMapInitial()) {
     on<LoadHoleMap>(_onLoadHoleMap);
     on<UpdateGolferPosition>(_onUpdateGolferPosition);
     on<UpdateTarget>(_onUpdateTarget);
@@ -39,6 +58,43 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     on<ToggleLayerVisibility>(_onToggleLayerVisibility);
     on<NavigateToHole>(_onNavigateToHole);
     on<RetryLoadHoleMap>(_onRetryLoadHoleMap);
+    _subscribeToLocation();
+  }
+
+  /// Follows the golfer for as long as this bloc lives.
+  ///
+  /// Nothing used to feed [UpdateGolferPosition], so the map's golfer position
+  /// was permanently null and every distance derived from it was unavailable.
+  /// The subscription starts with the bloc, which is created lazily when the
+  /// golfer first opens a tab that needs a position — not at round start.
+  void _subscribeToLocation() {
+    final service = _locationService;
+    if (service == null) return;
+    service.start();
+    _locationSubscription = service.locationStream.listen(
+      _onFix,
+      onError: (_) {
+        // A failed fix is not a crash. Whatever is on screen already knows how
+        // to say "no GPS"; keep the last known position rather than throwing.
+      },
+    );
+    final existing = service.lastLocation;
+    if (existing != null) _onFix(existing);
+  }
+
+  void _onFix(QualifiedLocation location) {
+    if (isClosed) return;
+    // An "unavailable" fix carries 0,0 — the Gulf of Guinea. Recording it would
+    // put the golfer 10,000 km from the hole and quote a distance for it.
+    if (location.source == LocationSource.unavailable) return;
+    _lastFix = location;
+    add(
+      UpdateGolferPosition(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        accuracy: location.accuracyMeters,
+      ),
+    );
   }
 
   Future<void> _onLoadHoleMap(
@@ -57,20 +113,36 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     _currentCourseName = event.courseName;
     _currentHoleNumber = event.holeNumber;
 
+    final packageId = event.packageId;
+    if (packageId == null) {
+      // No package on the device. There is nothing to ask the repository for,
+      // and no geometry is not a failure — it is most of our 900 holes.
+      emit(
+        HoleMapUnsurveyed(
+          courseName: event.courseName,
+          holeNumber: event.holeNumber,
+          hasPackage: false,
+        ),
+      );
+      return;
+    }
+
     try {
       final holeMap = await _repository.getHoleMap(
-        packageId: event.packageId,
+        packageId: packageId,
         courseId: event.courseId,
         courseName: event.courseName,
         holeNumber: event.holeNumber,
       );
 
       if (holeMap == null) {
+        // A package that carries nothing for this hole is the same answer as
+        // no package: unsurveyed, so satellite + measuring is what helps.
         emit(
-          HoleMapError(
-            message: AppMessages.mapGeometryNotFound,
+          HoleMapUnsurveyed(
             courseName: event.courseName,
             holeNumber: event.holeNumber,
+            hasPackage: true,
           ),
         );
         return;
@@ -108,7 +180,8 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       accuracy: event.accuracy,
       source: PositionSource.gps,
       confidence: _classifyAccuracy(event.accuracy),
-      timestamp: DateTime.now(),
+      timestamp: _lastFix?.timestamp ?? DateTime.now(),
+      isStale: _lastFix?.isStale ?? false,
     );
 
     // Recompute distance rings from golfer position
@@ -183,15 +256,15 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     NavigateToHole event,
     Emitter<HoleMapState> emit,
   ) async {
-    if (_currentPackageId == null ||
-        _currentCourseId == null ||
-        _currentCourseName == null) {
+    // A null package is a valid answer ("unsurveyed"), so only the identity of
+    // the course gates navigation.
+    if (_currentCourseId == null || _currentCourseName == null) {
       return;
     }
 
     add(
       LoadHoleMap(
-        packageId: _currentPackageId!,
+        packageId: _currentPackageId,
         courseId: _currentCourseId!,
         courseName: _currentCourseName!,
         holeNumber: event.holeNumber,
@@ -203,19 +276,25 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     RetryLoadHoleMap event,
     Emitter<HoleMapState> emit,
   ) async {
-    if (_currentPackageId != null &&
-        _currentCourseId != null &&
+    if (_currentCourseId != null &&
         _currentCourseName != null &&
         _currentHoleNumber != null) {
       add(
         LoadHoleMap(
-          packageId: _currentPackageId!,
+          packageId: _currentPackageId,
           courseId: _currentCourseId!,
           courseName: _currentCourseName!,
           holeNumber: _currentHoleNumber!,
         ),
       );
     }
+  }
+
+  @override
+  Future<void> close() {
+    _locationSubscription?.cancel();
+    _locationSubscription = null;
+    return super.close();
   }
 
   PositionConfidence _classifyAccuracy(double? accuracyMetres) {

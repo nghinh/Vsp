@@ -32,6 +32,7 @@ import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_ban
 import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
+import 'unsurveyed_hole_view.dart' show UnsurveyedNoImageryView;
 
 /// Main MapLibre-based hole map view widget.
 ///
@@ -48,11 +49,15 @@ class HoleMapView extends StatefulWidget {
   /// Display unit to start from when no ProfileBloc is in scope.
   final DistanceUnit? distanceUnit;
 
+  /// Imagery configuration. Defaults to this build's; injectable for tests.
+  final SatelliteImageryConfig? imageryConfig;
+
   const HoleMapView({
     super.key,
     required this.state,
     this.locationService,
     this.distanceUnit,
+    this.imageryConfig,
   });
 
   @override
@@ -63,9 +68,9 @@ class _HoleMapViewState extends State<HoleMapView> {
   MapLibreMapController? _mapController;
   bool _isInitialized = false;
 
-  /// Imagery configuration baked into this build.
-  final SatelliteImageryConfig _imagery =
-      SatelliteImageryConfig.fromEnvironment();
+  /// Imagery configuration in force for this view.
+  late final SatelliteImageryConfig _imagery =
+      widget.imageryConfig ?? SatelliteImageryConfig.fromEnvironment();
 
   /// Which basemap is showing. Holes with no surveyed geometry open straight
   /// into satellite + measuring — an empty vector map helps nobody.
@@ -195,6 +200,13 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   @override
   Widget build(BuildContext context) {
+    // Nothing surveyed and no imagery provider in this build: the vector map
+    // would be an empty green rectangle, which reads as an empty hole. Say
+    // what is actually going on instead.
+    if (!_hasStrategicGeometry && !_imagery.isAvailable) {
+      return const RepaintBoundary(child: UnsurveyedNoImageryView());
+    }
+
     return RepaintBoundary(
       child: _basemapMode == BasemapMode.satellite
           ? _buildSatelliteMode(context)

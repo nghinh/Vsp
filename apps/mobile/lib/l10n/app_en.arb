@@ -1220,15 +1220,10 @@
   "activeRoundOptions": "Round Options",
   "activeRoundTargetHeading": "Target distance",
   "activeRoundTargetMessage": "Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.",
-  "activeRoundMapUnavailableHeading": "No course package downloaded",
-  "activeRoundMapUnavailableMessage": "The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download {courseName} to use them during a round.",
-  "@activeRoundMapUnavailableMessage": {
-    "placeholders": {
-      "courseName": {
-        "type": "String"
-      }
-    }
-  },
+  "activeRoundTargetLoading": "Opening the hole…",
+  "activeRoundTargetUnsurveyedHeading": "This hole is not surveyed",
+  "activeRoundTargetUnsurveyedMessage": "There is no hole geometry to drop a target on. Open the Map tab to measure the distances you need on satellite imagery instead.",
+  "activeRoundTargetMeasuredNote": "Measured from your GPS position to the target you placed. Every figure carries its margin of error.",
   "activeRoundConditionsLocating": "Finding your position…",
   "activeRoundConditionsNoLocationHeading": "Conditions need your position",
   "activeRoundConditionsNoLocationMessage": "Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.",
@@ -1628,5 +1623,7 @@
   },
   "holeNoGeometryTitle": "No surveyed map for this hole",
   "holeNoGeometryBody": "We haven't digitised this hole yet. The satellite view is real imagery — measure the distances you need.",
-  "holeNoGeometryBadge": "Not surveyed"
+  "holeNoGeometryBadge": "Not surveyed",
+  "holeNoGeometryNoImageryTitle": "Nothing real to show for this hole",
+  "holeNoGeometryNoImageryBody": "This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers."
 }

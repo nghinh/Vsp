@@ -640,15 +640,10 @@
   "activeRoundOptions": "Tùy chọn vòng đấu",
   "activeRoundTargetHeading": "Khoảng cách mục tiêu",
   "activeRoundTargetMessage": "Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.",
-  "activeRoundMapUnavailableHeading": "Chưa tải gói dữ liệu sân",
-  "activeRoundMapUnavailableMessage": "Bản đồ chiến thuật, ảnh vệ tinh và công cụ đo khoảng cách đọc dữ liệu hình học hố đã khảo sát từ gói dữ liệu sân đã tải. Hãy tải {courseName} để dùng các tính năng này trong vòng đấu.",
-  "@activeRoundMapUnavailableMessage": {
-    "placeholders": {
-      "courseName": {
-        "type": "String"
-      }
-    }
-  },
+  "activeRoundTargetLoading": "Đang mở hố…",
+  "activeRoundTargetUnsurveyedHeading": "Hố này chưa được khảo sát",
+  "activeRoundTargetUnsurveyedMessage": "Không có dữ liệu hình học của hố để đặt mục tiêu. Hãy mở tab Bản đồ để tự đo khoảng cách bạn cần trên ảnh vệ tinh.",
+  "activeRoundTargetMeasuredNote": "Đo từ vị trí GPS của bạn tới mục tiêu bạn đã đặt. Mỗi con số đều kèm sai số của nó.",
   "activeRoundConditionsLocating": "Đang xác định vị trí của bạn…",
   "activeRoundConditionsNoLocationHeading": "Cần vị trí để xem điều kiện",
   "activeRoundConditionsNoLocationMessage": "Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.",
@@ -900,5 +895,7 @@
   "basemapAttributionSemantics": "Nguồn ảnh: {attribution}",
   "holeNoGeometryTitle": "Hố này chưa có bản đồ khảo sát",
   "holeNoGeometryBody": "Chúng tôi chưa số hoá hố này. Ảnh vệ tinh là ảnh thật — hãy tự đo khoảng cách bạn cần.",
-  "holeNoGeometryBadge": "Chưa khảo sát"
+  "holeNoGeometryBadge": "Chưa khảo sát",
+  "holeNoGeometryNoImageryTitle": "Không có dữ liệu thật cho hố này",
+  "holeNoGeometryNoImageryBody": "Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân."
 }

@@ -16,7 +16,9 @@ import '../../hole_map/domain/hole_map_entity.dart';
 import 'widgets/hole_map_view.dart';
 import 'widgets/map_loading_skeleton.dart';
 import 'widgets/map_error_view.dart';
+import 'widgets/unsurveyed_hole_view.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
+import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
 import 'package:vsp_mobile/features/profile/presentation/profile_scope.dart';
@@ -24,7 +26,11 @@ import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main scaffold for the strategic hole map display.
 class HoleMapScreen extends StatelessWidget {
-  final String packageId;
+  /// Downloaded course package for this hole, or null when the course has none.
+  ///
+  /// Null is a normal answer, not a failure: most Vietnamese courses have no
+  /// package on the device. The hole then opens in satellite + measuring mode.
+  final String? packageId;
   final String courseId;
   final String courseName;
   final int holeNumber;
@@ -35,14 +41,20 @@ class HoleMapScreen extends StatelessWidget {
   /// Starting display unit when no ProfileBloc is in scope.
   final DistanceUnit? distanceUnit;
 
+  /// Imagery configuration. Defaults to whatever this build was compiled with;
+  /// injectable so tests can exercise both the configured and unconfigured
+  /// paths without a build-time token.
+  final SatelliteImageryConfig? imageryConfig;
+
   const HoleMapScreen({
     super.key,
-    required this.packageId,
+    this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
     this.locationService,
     this.distanceUnit,
+    this.imageryConfig,
   });
 
   @override
@@ -54,23 +66,46 @@ class HoleMapScreen extends StatelessWidget {
       // provided one higher up.
       body: ProfileScope(
         child: SafeArea(
-          child: BlocProvider(
-            create: (context) => HoleMapBloc(repository: context.read())
-              ..add(
-                LoadHoleMap(
-                  packageId: packageId,
-                  courseId: courseId,
-                  courseName: courseName,
-                  holeNumber: holeNumber,
-                ),
-              ),
-            child: _HoleMapBody(
+          child: _blocScope(
+            context,
+            _HoleMapBody(
               locationService: locationService,
               distanceUnit: distanceUnit,
+              imageryConfig: imageryConfig,
             ),
           ),
         ),
       ),
+    );
+  }
+
+  /// Uses the round's [HoleMapBloc] when there is one, and only creates its own
+  /// otherwise.
+  ///
+  /// During a round the bloc is owned above the tab stack so the Target tab can
+  /// read the same target the golfer placed here. Creating a second one would
+  /// give the two tabs different answers to the same question. Standalone
+  /// callers (and tests) that open this screen on its own still get a bloc.
+  Widget _blocScope(BuildContext context, Widget child) {
+    try {
+      context.read<HoleMapBloc>();
+      return child;
+    } on ProviderNotFoundException {
+      // Nothing above owns one — this screen does.
+    }
+    return BlocProvider(
+      create: (context) => HoleMapBloc(
+        repository: context.read(),
+        locationService: locationService,
+      )..add(
+        LoadHoleMap(
+          packageId: packageId,
+          courseId: courseId,
+          courseName: courseName,
+          holeNumber: holeNumber,
+        ),
+      ),
+      child: child,
     );
   }
 }
@@ -78,8 +113,13 @@ class HoleMapScreen extends StatelessWidget {
 class _HoleMapBody extends StatelessWidget {
   final LocationService? locationService;
   final DistanceUnit? distanceUnit;
+  final SatelliteImageryConfig? imageryConfig;
 
-  const _HoleMapBody({this.locationService, this.distanceUnit});
+  const _HoleMapBody({
+    this.locationService,
+    this.distanceUnit,
+    this.imageryConfig,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +136,17 @@ class _HoleMapBody extends StatelessWidget {
           );
         }
 
+        // No geometry for this hole. Not an error state and not an empty one:
+        // satellite imagery is real, and the measuring tool works on it.
+        if (state is HoleMapUnsurveyed) {
+          return _UnsurveyedContent(
+            state: state,
+            locationService: locationService,
+            distanceUnit: distanceUnit,
+            imageryConfig: imageryConfig,
+          );
+        }
+
         if (state is HoleMapError) {
           return _ErrorContent(
             message: context.tr(state.message),
@@ -109,6 +160,7 @@ class _HoleMapBody extends StatelessWidget {
             state: state,
             locationService: locationService,
             distanceUnit: distanceUnit,
+            imageryConfig: imageryConfig,
           );
         }
 
@@ -169,15 +221,51 @@ class _ErrorContent extends StatelessWidget {
   }
 }
 
+/// Satellite + measuring for a hole with no geometry, under the hole header.
+class _UnsurveyedContent extends StatelessWidget {
+  final HoleMapUnsurveyed state;
+  final LocationService? locationService;
+  final DistanceUnit? distanceUnit;
+  final SatelliteImageryConfig? imageryConfig;
+
+  const _UnsurveyedContent({
+    required this.state,
+    this.locationService,
+    this.distanceUnit,
+    this.imageryConfig,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        _HoleHeader(
+          courseName: state.courseName,
+          holeNumber: state.holeNumber,
+        ),
+        Expanded(
+          child: UnsurveyedHoleView(
+            config: imageryConfig ?? SatelliteImageryConfig.fromEnvironment(),
+            locationService: locationService,
+            distanceUnit: distanceUnit,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _ReadyContent extends StatelessWidget {
   final HoleMapReady state;
   final LocationService? locationService;
   final DistanceUnit? distanceUnit;
+  final SatelliteImageryConfig? imageryConfig;
 
   const _ReadyContent({
     required this.state,
     this.locationService,
     this.distanceUnit,
+    this.imageryConfig,
   });
 
   @override
@@ -197,6 +285,7 @@ class _ReadyContent extends StatelessWidget {
             state: state,
             locationService: locationService,
             distanceUnit: distanceUnit,
+            imageryConfig: imageryConfig,
           ),
         ),
       ],

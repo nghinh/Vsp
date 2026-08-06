@@ -2125,12 +2125,18 @@ class AppLocalizationsVi extends AppLocalizations {
       'Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.';
 
   @override
-  String get activeRoundMapUnavailableHeading => 'Chưa tải gói dữ liệu sân';
+  String get activeRoundTargetLoading => 'Đang mở hố…';
 
   @override
-  String activeRoundMapUnavailableMessage(String courseName) {
-    return 'Bản đồ chiến thuật, ảnh vệ tinh và công cụ đo khoảng cách đọc dữ liệu hình học hố đã khảo sát từ gói dữ liệu sân đã tải. Hãy tải $courseName để dùng các tính năng này trong vòng đấu.';
-  }
+  String get activeRoundTargetUnsurveyedHeading => 'Hố này chưa được khảo sát';
+
+  @override
+  String get activeRoundTargetUnsurveyedMessage =>
+      'Không có dữ liệu hình học của hố để đặt mục tiêu. Hãy mở tab Bản đồ để tự đo khoảng cách bạn cần trên ảnh vệ tinh.';
+
+  @override
+  String get activeRoundTargetMeasuredNote =>
+      'Đo từ vị trí GPS của bạn tới mục tiêu bạn đã đặt. Mỗi con số đều kèm sai số của nó.';
 
   @override
   String get activeRoundConditionsLocating => 'Đang xác định vị trí của bạn…';
@@ -2837,4 +2843,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holeNoGeometryBadge => 'Chưa khảo sát';
+
+  @override
+  String get holeNoGeometryNoImageryTitle => 'Không có dữ liệu thật cho hố này';
+
+  @override
+  String get holeNoGeometryNoImageryBody =>
+      'Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân.';
 }

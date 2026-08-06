@@ -2125,12 +2125,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.';
 
   @override
-  String get activeRoundMapUnavailableHeading => 'No course package downloaded';
+  String get activeRoundTargetLoading => 'Opening the hole…';
 
   @override
-  String activeRoundMapUnavailableMessage(String courseName) {
-    return 'The strategic map, the satellite view and the measuring tool read surveyed hole geometry from a downloaded course package. Download $courseName to use them during a round.';
-  }
+  String get activeRoundTargetUnsurveyedHeading => 'This hole is not surveyed';
+
+  @override
+  String get activeRoundTargetUnsurveyedMessage =>
+      'There is no hole geometry to drop a target on. Open the Map tab to measure the distances you need on satellite imagery instead.';
+
+  @override
+  String get activeRoundTargetMeasuredNote =>
+      'Measured from your GPS position to the target you placed. Every figure carries its margin of error.';
 
   @override
   String get activeRoundConditionsLocating => 'Finding your position…';
@@ -2836,4 +2842,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holeNoGeometryBadge => 'Not surveyed';
+
+  @override
+  String get holeNoGeometryNoImageryTitle =>
+      'Nothing real to show for this hole';
+
+  @override
+  String get holeNoGeometryNoImageryBody =>
+      'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.';
 }

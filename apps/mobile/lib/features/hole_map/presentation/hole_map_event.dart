@@ -14,13 +14,18 @@ abstract class HoleMapEvent extends Equatable {
 
 /// Load the hole map for a specific course and hole.
 class LoadHoleMap extends HoleMapEvent {
-  final String packageId;
+  /// Downloaded course package holding this hole's geometry.
+  ///
+  /// Null when the course has no package on this device — the common case, and
+  /// not an error. The bloc answers with [HoleMapUnsurveyed] rather than asking
+  /// a repository for geometry that provably is not there.
+  final String? packageId;
   final String courseId;
   final String courseName;
   final int holeNumber;
 
   const LoadHoleMap({
-    required this.packageId,
+    this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
