@@ -3962,6 +3962,36 @@ abstract class AppLocalizations {
   /// **'Measured from your GPS position to the target you placed. Every figure carries its margin of error.'**
   String get activeRoundTargetMeasuredNote;
 
+  /// No description provided for @activeRoundGreenHeading.
+  ///
+  /// In en, this message translates to:
+  /// **'To the green'**
+  String get activeRoundGreenHeading;
+
+  /// No description provided for @activeRoundGreenFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get activeRoundGreenFront;
+
+  /// No description provided for @activeRoundGreenCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Centre'**
+  String get activeRoundGreenCentre;
+
+  /// No description provided for @activeRoundGreenBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get activeRoundGreenBack;
+
+  /// No description provided for @activeRoundGreenMeasuredNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured from your GPS position to the near edge, the middle and the far edge of the green as this course package draws it.'**
+  String get activeRoundGreenMeasuredNote;
+
   /// No description provided for @activeRoundConditionsLocating.
   ///
   /// In en, this message translates to:
@@ -3997,12 +4027,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{label} tab, selected'**
   String activeRoundTabSemanticsSelected(String label);
-
-  /// No description provided for @distancesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Distances'**
-  String get distancesTitle;
 
   /// No description provided for @gpsQuality.
   ///
@@ -4249,12 +4273,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sync status: {status}'**
   String syncStatusLabel(String status);
-
-  /// No description provided for @distancesToggleUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'Toggle unit ({unit})'**
-  String distancesToggleUnit(String unit);
 
   /// No description provided for @msgAuthPleaseWait.
   ///

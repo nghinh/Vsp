@@ -15,6 +15,13 @@
 // means no "from you" distance, and an unknown green means no "on to green"
 // distance. A figure derived from a guessed position would be read as a club
 // selection.
+//
+// Above the target readout sit the three numbers a golfer looks at before every
+// approach — front, centre and back of the green — from [GreenDistanceReading].
+// They need no target, so they are there the moment the hole opens on a course
+// whose package draws the green as a shape. They replace an orphaned screen
+// that promised the same three distances from a parallel geometry model the app
+// never populated, and so would have shown "No hole data" on every hole.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -22,6 +29,7 @@ import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
 
 import 'package:vsp_mobile/domain/value_objects/distance_measurement.dart'
     show GpsAccuracyLevel;
+import 'package:vsp_mobile/features/hole_map/domain/green_distance_reading.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/hole_map_bloc.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/hole_map_state.dart';
@@ -37,6 +45,9 @@ import 'package:vsp_mobile/presentation/widgets/distance/gps_accuracy_chip.dart'
 
 /// Key of the live readout, so tests can find it without matching prose.
 const Key activeRoundTargetReadoutKey = ValueKey('active-round-target-readout');
+
+/// Key of the front/centre/back green readout.
+const Key activeRoundGreenReadoutKey = ValueKey('active-round-green-readout');
 
 /// Target tab body — live distances for the target placed on the hole map.
 class ActiveRoundTargetView extends StatefulWidget {
@@ -155,24 +166,124 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
       );
     }
 
+    final fix = context.read<HoleMapBloc>().lastFix;
+
     final reading = TargetDistanceReading.of(
       target: state.target,
-      golfer: context.read<HoleMapBloc>().lastFix,
+      golfer: fix,
       green: HoleGeometryCoverage.greenAnchor(state.holeMap),
     );
 
-    if (!reading.hasTarget) {
-      return _TargetMessageCard(
-        icon: Icons.gps_fixed,
-        heading: l10n.activeRoundTargetHeading,
-        message: l10n.activeRoundTargetMessage,
-      );
-    }
+    // Front / centre / back stand on their own: they need the green and a fix,
+    // not a target, so they are useful the moment the hole opens.
+    final green = GreenDistanceReading.of(holeMap: state.holeMap, golfer: fix);
 
-    return _TargetReadout(
-      reading: reading,
-      unit: unit,
-      onToggleUnit: _toggleUnit,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (green.hasDistances) ...[
+          _GreenReadout(
+            reading: green,
+            unit: unit,
+            onToggleUnit: _toggleUnit,
+          ),
+          const SizedBox(height: VspSpacing.md),
+        ],
+        if (!reading.hasTarget)
+          _TargetMessageCard(
+            icon: Icons.gps_fixed,
+            heading: l10n.activeRoundTargetHeading,
+            message: l10n.activeRoundTargetMessage,
+          )
+        else
+          _TargetReadout(
+            reading: reading,
+            unit: unit,
+            onToggleUnit: _toggleUnit,
+          ),
+      ],
+    );
+  }
+}
+
+// ─── Green readout ──────────────────────────────────────────────────────────
+
+/// Front, centre and back of the green from where the golfer is standing.
+class _GreenReadout extends StatelessWidget {
+  final GreenDistanceReading reading;
+  final DistanceUnit unit;
+  final VoidCallback onToggleUnit;
+
+  const _GreenReadout({
+    required this.reading,
+    required this.unit,
+    required this.onToggleUnit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Container(
+      key: activeRoundGreenReadoutKey,
+      padding: const EdgeInsets.all(VspSpacing.md),
+      decoration: BoxDecoration(
+        color: VspColorDark.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: VspColorDark.borderStrong),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.golf_course,
+                size: VspIconSize.sm,
+                color: VspColorDark.primary,
+              ),
+              const SizedBox(width: VspSpacing.xs),
+              Expanded(
+                child: Text(
+                  l10n.activeRoundGreenHeading,
+                  style: const TextStyle(
+                    color: VspColorDark.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              _UnitToggle(unit: unit, onToggle: onToggleUnit),
+            ],
+          ),
+          const SizedBox(height: VspSpacing.sm),
+          _LegRow(
+            label: l10n.activeRoundGreenFront,
+            leg: reading.front!,
+            unit: unit,
+          ),
+          _LegRow(
+            label: l10n.activeRoundGreenCentre,
+            leg: reading.centre!,
+            unit: unit,
+            emphasised: true,
+          ),
+          _LegRow(
+            label: l10n.activeRoundGreenBack,
+            leg: reading.back!,
+            unit: unit,
+          ),
+          const SizedBox(height: VspSpacing.sm),
+          Text(
+            l10n.activeRoundGreenMeasuredNote,
+            style: const TextStyle(
+              color: VspColorDark.textTertiary,
+              fontSize: 11,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

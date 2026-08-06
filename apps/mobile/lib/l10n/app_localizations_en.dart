@@ -2139,6 +2139,22 @@ class AppLocalizationsEn extends AppLocalizations {
       'Measured from your GPS position to the target you placed. Every figure carries its margin of error.';
 
   @override
+  String get activeRoundGreenHeading => 'To the green';
+
+  @override
+  String get activeRoundGreenFront => 'Front';
+
+  @override
+  String get activeRoundGreenCentre => 'Centre';
+
+  @override
+  String get activeRoundGreenBack => 'Back';
+
+  @override
+  String get activeRoundGreenMeasuredNote =>
+      'Measured from your GPS position to the near edge, the middle and the far edge of the green as this course package draws it.';
+
+  @override
   String get activeRoundConditionsLocating => 'Finding your position…';
 
   @override
@@ -2163,9 +2179,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String activeRoundTabSemanticsSelected(String label) {
     return '$label tab, selected';
   }
-
-  @override
-  String get distancesTitle => 'Distances';
 
   @override
   String get gpsQuality => 'GPS Quality';
@@ -2295,11 +2308,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String syncStatusLabel(String status) {
     return 'Sync status: $status';
-  }
-
-  @override
-  String distancesToggleUnit(String unit) {
-    return 'Toggle unit ($unit)';
   }
 
   @override

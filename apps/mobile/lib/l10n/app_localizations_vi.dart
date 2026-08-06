@@ -2139,6 +2139,22 @@ class AppLocalizationsVi extends AppLocalizations {
       'Đo từ vị trí GPS của bạn tới mục tiêu bạn đã đặt. Mỗi con số đều kèm sai số của nó.';
 
   @override
+  String get activeRoundGreenHeading => 'Tới green';
+
+  @override
+  String get activeRoundGreenFront => 'Đầu green';
+
+  @override
+  String get activeRoundGreenCentre => 'Giữa green';
+
+  @override
+  String get activeRoundGreenBack => 'Cuối green';
+
+  @override
+  String get activeRoundGreenMeasuredNote =>
+      'Đo từ vị trí GPS của bạn tới mép gần, điểm giữa và mép xa của green theo hình vẽ trong gói dữ liệu sân này.';
+
+  @override
   String get activeRoundConditionsLocating => 'Đang xác định vị trí của bạn…';
 
   @override
@@ -2163,9 +2179,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String activeRoundTabSemanticsSelected(String label) {
     return 'Thẻ $label, đang chọn';
   }
-
-  @override
-  String get distancesTitle => 'Khoảng cách';
 
   @override
   String get gpsQuality => 'Chất lượng GPS';
@@ -2295,11 +2308,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String syncStatusLabel(String status) {
     return 'Trạng thái đồng bộ: $status';
-  }
-
-  @override
-  String distancesToggleUnit(String unit) {
-    return 'Đổi đơn vị ($unit)';
   }
 
   @override

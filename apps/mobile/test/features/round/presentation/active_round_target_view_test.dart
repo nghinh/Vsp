@@ -56,6 +56,14 @@ const _golferLatAfterWalking = 10.6995;
 
 const _lng = 106.7000;
 
+/// A green drawn as a polygon: near edge 0.0040° north of the golfer
+/// (444.78 m → "445 m"), far edge 0.0050° (555.97 m → "556 m"), mean of the
+/// outline 0.0045° (500.38 m → "500 m"). Deliberately clear of every other
+/// figure in this file so a green number can never be mistaken for a target
+/// one.
+const _greenNearLat = 10.7040;
+const _greenFarLat = 10.7050;
+
 const _holeNumber = 7;
 
 // ─── Fakes ──────────────────────────────────────────────────────────────────
@@ -169,6 +177,37 @@ HoleMapEntity _hole({bool withPin = true}) => HoleMapEntity(
         'geometry': {
           'type': 'Point',
           'coordinates': [_lng, _golferLat],
+        },
+      },
+    ),
+  },
+);
+
+/// A hole whose package draws the green as a shape rather than a point. No
+/// pin: the green polygon is the only geometry, which is the case the front /
+/// centre / back readout exists for.
+HoleMapEntity _holeWithGreenPolygon() => const HoleMapEntity(
+  courseId: 'course-1',
+  courseName: 'Test course',
+  holeNumber: _holeNumber,
+  par: 4,
+  layers: {
+    MapLayerType.green: MapLayerEntity(
+      type: MapLayerType.green,
+      format: LayerGeometryFormat.geoJson,
+      style: LayerStyle(),
+      geoJson: {
+        'type': 'Feature',
+        'geometry': {
+          'type': 'Polygon',
+          'coordinates': [
+            [
+              [_lng, _greenNearLat],
+              [_lng, _greenNearLat],
+              [_lng, _greenFarLat],
+              [_lng, _greenFarLat],
+            ],
+          ],
         },
       },
     ),
@@ -405,6 +444,125 @@ void main() {
       expect(
         find.byKey(activeRoundTargetReadoutKey, skipOffstage: false),
         findsNothing,
+      );
+    });
+  });
+
+  // The three numbers a golfer looks at before every approach. They used to
+  // live on an orphaned screen wired to a geometry model nothing populated, so
+  // in production it would have said "No hole data" on every hole. They are
+  // computed here from the green polygon the round already loads, and they
+  // need no target — which is the point: they are useful from the tee.
+  group('front, centre and back of the green', () {
+    testWidgets('are shown from the green the package draws, with no target', (
+      tester,
+    ) async {
+      final l10n = await _pump(
+        tester,
+        locationService: _FakeLocationService(initial: _fix(_golferLat)),
+        holeMap: _holeWithGreenPolygon(),
+      );
+
+      expect(
+        find.byKey(activeRoundGreenReadoutKey, skipOffstage: false),
+        findsOneWidget,
+      );
+      _expectRendered(l10n.activeRoundGreenFront);
+      _expectRendered('445 m');
+      _expectRendered(l10n.activeRoundGreenCentre);
+      _expectRendered('500 m');
+      _expectRendered(l10n.activeRoundGreenBack);
+      _expectRendered('556 m');
+      // √(4² + 5²) = 6.4, rounded up — the same error bar the measuring tool
+      // would quote for the same two positions.
+      _expectRendered('±7 m');
+      // No target has been placed, and the tab still asks for one.
+      _expectRendered(l10n.activeRoundTargetMessage);
+    });
+
+    testWidgets('follow the golfer as they walk', (tester) async {
+      final gps = _FakeLocationService(initial: _fix(_golferLat));
+      await _pump(
+        tester,
+        locationService: gps,
+        holeMap: _holeWithGreenPolygon(),
+      );
+      _expectRendered('445 m');
+
+      // 0.0005° closer: 55.60 m off every leg. Front 389 m, centre 445 m,
+      // back 500 m — the whole set walks in with the golfer.
+      gps.emitFix(_fix(10.7005));
+      await tester.pump();
+      await tester.pump();
+
+      _expectRendered('389 m');
+      _expectRendered('445 m');
+      _expectRendered('500 m');
+      // The figure the far edge used to read is gone rather than lingering.
+      _expectAbsent('556 m');
+    });
+
+    testWidgets('are absent without a fix — all three rest on one', (
+      tester,
+    ) async {
+      final l10n = await _pump(
+        tester,
+        locationService: _FakeLocationService(),
+        holeMap: _holeWithGreenPolygon(),
+      );
+
+      expect(
+        find.byKey(activeRoundGreenReadoutKey, skipOffstage: false),
+        findsNothing,
+      );
+      _expectAbsent(l10n.activeRoundGreenFront);
+      _expectAbsent('445 m');
+    });
+
+    testWidgets('are absent on a hole whose green is only a point', (
+      tester,
+    ) async {
+      final l10n = await _pump(
+        tester,
+        locationService: _FakeLocationService(initial: _fix(_golferLat)),
+        // The default fixture's green is a pin, not an outline.
+        holeMap: _hole(),
+      );
+
+      expect(
+        find.byKey(activeRoundGreenReadoutKey, skipOffstage: false),
+        findsNothing,
+      );
+      _expectAbsent(l10n.activeRoundGreenFront);
+    });
+
+    testWidgets('take their labels from l10n in both languages', (
+      tester,
+    ) async {
+      for (final locale in const [Locale('en'), Locale('vi')]) {
+        final l10n = await _pump(
+          tester,
+          locationService: _FakeLocationService(initial: _fix(_golferLat)),
+          holeMap: _holeWithGreenPolygon(),
+          locale: locale,
+        );
+
+        _expectRendered(l10n.activeRoundGreenHeading);
+        _expectRendered(l10n.activeRoundGreenFront);
+        _expectRendered(l10n.activeRoundGreenCentre);
+        _expectRendered(l10n.activeRoundGreenBack);
+        _expectRendered(l10n.activeRoundGreenMeasuredNote);
+      }
+
+      final en = await AppLocalizations.delegate.load(const Locale('en'));
+      final vi = await AppLocalizations.delegate.load(const Locale('vi'));
+      expect(en.activeRoundGreenHeading, isNot(vi.activeRoundGreenHeading));
+      expect(en.activeRoundGreenFront, isNot(vi.activeRoundGreenFront));
+      expect(en.activeRoundGreenCentre, isNot(vi.activeRoundGreenCentre));
+      expect(en.activeRoundGreenBack, isNot(vi.activeRoundGreenBack));
+      expect(
+        en.activeRoundGreenMeasuredNote,
+        isNot(vi.activeRoundGreenMeasuredNote),
       );
     });
   });

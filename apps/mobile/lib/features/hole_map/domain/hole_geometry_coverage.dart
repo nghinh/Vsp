@@ -65,6 +65,18 @@ abstract final class HoleGeometryCoverage {
     return geoJson['coordinates'] != null ? 1 : 0;
   }
 
+  /// Every coordinate of the green as the course package draws it.
+  ///
+  /// The near edge, the far edge and the middle of a green are three different
+  /// numbers to a golfer choosing a club, and this is the only place the app
+  /// knows the green's shape rather than just a point on it. Empty when the
+  /// hole carries no green layer.
+  static List<LatLng> greenOutline(HoleMapEntity holeMap) {
+    final greenLayer = holeMap.layers[MapLayerType.green];
+    if (greenLayer == null) return const [];
+    return _coordinates(greenLayer.geoJson);
+  }
+
   /// Green (or pin) position for the measuring tool, when one is known.
   ///
   /// Prefers an active official pin. Falls back to the centroid of the green
@@ -96,17 +108,37 @@ abstract final class HoleGeometryCoverage {
 
   /// Mean of every coordinate in the geometry — accurate enough for a green.
   static LatLng? _centroid(Map<String, dynamic>? geoJson) {
-    if (geoJson == null) return null;
+    final points = _coordinates(geoJson);
+    if (points.isEmpty) return null;
     var latSum = 0.0;
     var lngSum = 0.0;
-    var count = 0;
+    for (final point in points) {
+      latSum += point.latitude;
+      lngSum += point.longitude;
+    }
+    return LatLng(
+      latitude: latSum / points.length,
+      longitude: lngSum / points.length,
+    );
+  }
+
+  /// Every [lng, lat] pair in the geometry, in document order.
+  ///
+  /// Tolerates the same three shapes [featureCount] does, and any nesting
+  /// depth of rings and multi-geometries.
+  static List<LatLng> _coordinates(Map<String, dynamic>? geoJson) {
+    if (geoJson == null) return const [];
+    final points = <LatLng>[];
 
     void walk(Object? node) {
       if (node is List) {
         if (node.length >= 2 && node[0] is num && node[1] is num) {
-          lngSum += (node[0] as num).toDouble();
-          latSum += (node[1] as num).toDouble();
-          count++;
+          points.add(
+            LatLng(
+              latitude: (node[1] as num).toDouble(),
+              longitude: (node[0] as num).toDouble(),
+            ),
+          );
           return;
         }
         for (final child in node) {
@@ -120,7 +152,6 @@ abstract final class HoleGeometryCoverage {
     }
 
     walk(geoJson);
-    if (count == 0) return null;
-    return LatLng(latitude: latSum / count, longitude: lngSum / count);
+    return points;
   }
 }

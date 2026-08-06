@@ -13,12 +13,14 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../data/repositories/shot_repository_impl.dart';
+import '../../../data/services/location_service_impl.dart';
 import '../../../domain/models/round.dart';
+import '../../../domain/services/location_service.dart';
 import '../../../presentation/screens/analytics/round_review_screen.dart';
-import '../../../presentation/screens/score/scorecard_screen.dart';
 import '../data/round_abandon_service.dart';
 import '../data/round_history_repository.dart';
 import '../data/round_resume_service.dart';
+import 'active_round_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -29,9 +31,11 @@ class RoundsHistoryTab extends StatefulWidget {
     RoundHistoryRepository? repository,
     RoundResumeService? resumeService,
     RoundAbandonService? abandonService,
+    LocationService? locationService,
   }) : _repository = repository,
        _resumeService = resumeService,
-       _abandonService = abandonService;
+       _abandonService = abandonService,
+       _locationService = locationService;
 
   final RoundHistoryRepository? _repository;
 
@@ -39,6 +43,10 @@ class RoundsHistoryTab extends StatefulWidget {
   /// SQLite database. Built on first use otherwise.
   final RoundResumeService? _resumeService;
   final RoundAbandonService? _abandonService;
+
+  /// GPS source handed to a resumed round. Injectable so widget tests can
+  /// resume without the location plugin; built on first use otherwise.
+  final LocationService? _locationService;
 
   @override
   State<RoundsHistoryTab> createState() => _RoundsHistoryTabState();
@@ -138,6 +146,7 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
         onChanged: _load,
         resumeService: widget._resumeService ?? RoundResumeService(),
         abandonService: widget._abandonService ?? RoundAbandonService(),
+        locationService: widget._locationService ?? LocationServiceImpl(),
       ),
     );
   }
@@ -275,11 +284,15 @@ class _RoundDetailsSheet extends StatelessWidget {
   final RoundResumeService resumeService;
   final RoundAbandonService abandonService;
 
+  /// GPS source for the resumed round's map, measuring tool and conditions.
+  final LocationService locationService;
+
   const _RoundDetailsSheet({
     required this.round,
     required this.onChanged,
     required this.resumeService,
     required this.abandonService,
+    required this.locationService,
   });
 
   @override
@@ -330,8 +343,9 @@ class _RoundDetailsSheet extends StatelessWidget {
               ),
             const SizedBox(height: VspSpacing.lg),
             if (round.isActive) ...[
-              // An in-progress round can be resumed (back to the scorecard) or
-              // abandoned (discarded so it stops cluttering history).
+              // An in-progress round can be resumed (back into the round, on
+              // every tab of it) or abandoned (discarded so it stops
+              // cluttering history).
               SizedBox(
                 width: double.infinity,
                 child: FilledButton.icon(
@@ -375,9 +389,20 @@ class _RoundDetailsSheet extends StatelessWidget {
     );
   }
 
-  /// Resumes an in-progress round: rebuilds the scorecard from the round's
-  /// locally-stored players and the course's per-hole pars, then reopens it.
-  /// Already-entered scores reload from the local store keyed by the round id.
+  /// Resumes an in-progress round.
+  ///
+  /// This is the second way into a round that is already under way, and it
+  /// used to push the scorecard on its own — so a golfer who put the phone
+  /// away on the 7th and came back through history got score entry and
+  /// nothing else: no hole map, no measuring tool, no way to report a course
+  /// correction, which are exactly the things you want in the middle of a
+  /// round. It now opens the same [ActiveRoundScreen] round start does, with
+  /// the same real data rebuilt by [RoundResumeService], so both entrances
+  /// lead to the same round.
+  ///
+  /// Already-entered scores reload from the local store keyed by the round id,
+  /// and the round reopens on the first hole that has none — where the golfer
+  /// actually is, rather than back on the 1st tee.
   Future<void> _resumeRound(BuildContext context) async {
     final l10n = AppLocalizations.of(context);
     final navigator = Navigator.of(context);
@@ -391,8 +416,21 @@ class _RoundDetailsSheet extends StatelessWidget {
     navigator.pop(); // close the sheet
     navigator.push(
       MaterialPageRoute(
-        builder: (_) => ScorecardScreen(
-          flightId: round.id,
+        builder: (_) => ActiveRoundScreen(
+          roundId: round.id,
+          // Null where the round was started without a downloaded package, or
+          // where the local round row that held its id is gone. The map tab
+          // says so rather than being handed an id that resolves to nothing.
+          packageId: plan.packageId,
+          courseId: '${round.courseId}',
+          courseName: round.courseName,
+          holeNumber: plan.currentHole,
+          // Omitted rather than defaulted when the course detail could not be
+          // loaded: the scorecard keeps its own par-4 fallback for scoring,
+          // the hole header shows nothing instead of a guess.
+          par: plan.currentPar,
+          yardage: plan.currentYardage,
+          locationService: locationService,
           holeIds: plan.holeIds,
           playerIds: plan.playerIds,
           playerNames: plan.playerNames,

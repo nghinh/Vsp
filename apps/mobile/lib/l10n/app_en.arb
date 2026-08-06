@@ -1224,6 +1224,11 @@
   "activeRoundTargetUnsurveyedHeading": "This hole is not surveyed",
   "activeRoundTargetUnsurveyedMessage": "There is no hole geometry to drop a target on. Open the Map tab to measure the distances you need on satellite imagery instead.",
   "activeRoundTargetMeasuredNote": "Measured from your GPS position to the target you placed. Every figure carries its margin of error.",
+  "activeRoundGreenHeading": "To the green",
+  "activeRoundGreenFront": "Front",
+  "activeRoundGreenCentre": "Centre",
+  "activeRoundGreenBack": "Back",
+  "activeRoundGreenMeasuredNote": "Measured from your GPS position to the near edge, the middle and the far edge of the green as this course package draws it.",
   "activeRoundConditionsLocating": "Finding your position…",
   "activeRoundConditionsNoLocationHeading": "Conditions need your position",
   "activeRoundConditionsNoLocationMessage": "Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.",
@@ -1251,7 +1256,6 @@
       }
     }
   },
-  "distancesTitle": "Distances",
   "gpsQuality": "GPS Quality",
   "courseFavoritesLoadFailed": "Failed to load favorites",
   "courseRecentLoadFailed": "Failed to load recent",
@@ -1310,14 +1314,6 @@
   "@syncStatusLabel": {
     "placeholders": {
       "status": {
-        "type": "String"
-      }
-    }
-  },
-  "distancesToggleUnit": "Toggle unit ({unit})",
-  "@distancesToggleUnit": {
-    "placeholders": {
-      "unit": {
         "type": "String"
       }
     }

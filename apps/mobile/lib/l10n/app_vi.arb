@@ -644,6 +644,11 @@
   "activeRoundTargetUnsurveyedHeading": "Hố này chưa được khảo sát",
   "activeRoundTargetUnsurveyedMessage": "Không có dữ liệu hình học của hố để đặt mục tiêu. Hãy mở tab Bản đồ để tự đo khoảng cách bạn cần trên ảnh vệ tinh.",
   "activeRoundTargetMeasuredNote": "Đo từ vị trí GPS của bạn tới mục tiêu bạn đã đặt. Mỗi con số đều kèm sai số của nó.",
+  "activeRoundGreenHeading": "Tới green",
+  "activeRoundGreenFront": "Đầu green",
+  "activeRoundGreenCentre": "Giữa green",
+  "activeRoundGreenBack": "Cuối green",
+  "activeRoundGreenMeasuredNote": "Đo từ vị trí GPS của bạn tới mép gần, điểm giữa và mép xa của green theo hình vẽ trong gói dữ liệu sân này.",
   "activeRoundConditionsLocating": "Đang xác định vị trí của bạn…",
   "activeRoundConditionsNoLocationHeading": "Cần vị trí để xem điều kiện",
   "activeRoundConditionsNoLocationMessage": "Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.",
@@ -671,7 +676,6 @@
       }
     }
   },
-  "distancesTitle": "Khoảng cách",
   "gpsQuality": "Chất lượng GPS",
   "courseFavoritesLoadFailed": "Không tải được danh sách yêu thích",
   "courseRecentLoadFailed": "Không tải được danh sách đã xem",
@@ -713,7 +717,6 @@
   "detectionConfidenceLabel": "Độ tin cậy: {level}",
   "packageStatusLabel": "Gói dữ liệu sân {status}",
   "syncStatusLabel": "Trạng thái đồng bộ: {status}",
-  "distancesToggleUnit": "Đổi đơn vị ({unit})",
   "msgAuthPleaseWait": "Vui lòng đợi…",
   "msgAuthCreatingAccount": "Đang tạo tài khoản…",
   "msgAuthSendingCode": "Đang gửi mã xác thực…",
