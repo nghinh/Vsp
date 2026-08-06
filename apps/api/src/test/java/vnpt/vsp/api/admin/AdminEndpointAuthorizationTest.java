@@ -282,4 +282,40 @@ class AdminEndpointAuthorizationTest {
         org.junit.jupiter.api.Assertions.assertTrue(missing.isEmpty(),
                 "These controllers serve /admin/** but no row above proves a golfer is denied them: " + missing);
     }
+
+    /**
+     * No handler asks for a principal this application never creates.
+     * <p>
+     * {@code JwtAuthenticationFilter} builds every authentication with a
+     * {@link Long} account id as the principal, so
+     * {@code @AuthenticationPrincipal UserDetails} resolves to null on every
+     * request — with no error, no log line and no failing test. Two controllers
+     * asked for exactly that and quietly attributed their writes to a
+     * placeholder: course imports were filed under {@code "system"} and payments
+     * under {@code "ANONYMOUS"}, whoever had actually run them. The mistake is
+     * invisible at the call site, which is why it is asserted here rather than
+     * left to review.
+     */
+    @org.junit.jupiter.api.Test
+    @DisplayName("No handler injects @AuthenticationPrincipal as anything but the account id")
+    void noHandlerInjectsAPrincipalThisApplicationNeverCreates(
+            @Autowired org.springframework.context.ApplicationContext context) {
+
+        List<String> offenders = context.getBeansWithAnnotation(
+                        org.springframework.web.bind.annotation.RestController.class)
+                .values().stream()
+                .map(org.springframework.aop.support.AopUtils::getTargetClass)
+                .flatMap(type -> Stream.of(type.getDeclaredMethods())
+                        .flatMap(method -> Stream.of(method.getParameters())
+                                .filter(parameter -> parameter.isAnnotationPresent(
+                                        org.springframework.security.core.annotation.AuthenticationPrincipal.class))
+                                .filter(parameter -> parameter.getType() != Long.class)
+                                .map(parameter -> type.getSimpleName() + "." + method.getName()
+                                        + "(" + parameter.getType().getSimpleName() + ")")))
+                .sorted()
+                .toList();
+
+        org.junit.jupiter.api.Assertions.assertTrue(offenders.isEmpty(),
+                "These parameters are injected null on every request — the principal is a Long: " + offenders);
+    }
 }

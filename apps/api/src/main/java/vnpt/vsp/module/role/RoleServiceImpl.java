@@ -49,6 +49,7 @@ public class RoleServiceImpl implements RoleService {
     private final AdminAccountRepository adminAccountRepository;
     private final AdminRoleAssignmentRepository roleAssignmentRepository;
     private final AuditService auditService;
+    private final MfaAttemptLimiter mfaAttemptLimiter;
 
     @Value("${vsp.mfa.encryption-key:DEFAULT_ENC_KEY_FOR_DEV_ONLY_32B!}")
     private String mfaEncryptionKey;
@@ -56,11 +57,13 @@ public class RoleServiceImpl implements RoleService {
     public RoleServiceImpl(RoleRepository roleRepository,
                            AdminAccountRepository adminAccountRepository,
                            AdminRoleAssignmentRepository roleAssignmentRepository,
-                           AuditService auditService) {
+                           AuditService auditService,
+                           MfaAttemptLimiter mfaAttemptLimiter) {
         this.roleRepository = roleRepository;
         this.adminAccountRepository = adminAccountRepository;
         this.roleAssignmentRepository = roleAssignmentRepository;
         this.auditService = auditService;
+        this.mfaAttemptLimiter = mfaAttemptLimiter;
     }
 
     // ─── Role queries ────────────────────────────────────────────────────────

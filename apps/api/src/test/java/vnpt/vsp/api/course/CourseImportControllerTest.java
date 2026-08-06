@@ -6,7 +6,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.userdetails.User;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.course.CourseImportService;
@@ -24,9 +28,20 @@ import static org.mockito.Mockito.*;
  * Unit tests for {@link CourseImportController}.
  * Per Story 3.4 IMP-BACK-1: AC-1, AC-2, AC-3.
  * Uses pure Mockito — no Spring context loading required.
+ *
+ * <p>The authentication handed to the controller here is the one
+ * {@code JwtAuthenticationFilter} actually builds: a {@link Long} account id as
+ * the principal. These tests used to pass a {@code UserDetails} named
+ * {@code "admin"}, which matched the controller's parameter type and nothing
+ * this application ever puts in the security context — so they agreed with the
+ * controller and both were wrong about who was importing.</p>
  */
 @ExtendWith(MockitoExtension.class)
 class CourseImportControllerTest {
+
+    /** The principal a real request carries, and the string it is recorded as. */
+    private static final Long ADMIN_ACCOUNT_ID = 4711L;
+    private static final String ADMIN_ACTOR = "4711";
 
     @Mock
     private CourseImportService courseImportService;
@@ -36,6 +51,11 @@ class CourseImportControllerTest {
     @BeforeEach
     void setUp() {
         controller = new CourseImportController(courseImportService);
+    }
+
+    private static Authentication admin(Long accountId) {
+        return new UsernamePasswordAuthenticationToken(
+                accountId, null, AuthorityUtils.createAuthorityList("ROLE_COURSE_ADMIN"));
     }
 
     // ─── AC-1: Import preview ────────────────────────────────────────────────
@@ -52,7 +72,7 @@ class CourseImportControllerTest {
         );
 
         when(courseImportService.previewImport(
-            eq(courseId), anyString(), eq("TestSource"), eq("CC BY 4.0"), eq("admin")
+            eq(courseId), anyString(), eq("TestSource"), eq("CC BY 4.0"), eq(ADMIN_ACTOR)
         )).thenReturn(previewDto);
 
         CourseImportController.GeoJsonImportRequest request =
@@ -61,7 +81,7 @@ class CourseImportControllerTest {
         request.setSource("TestSource");
         request.setLicense("CC BY 4.0");
 
-        User user = new User("admin", "", Collections.emptyList());
+        Authentication user = admin(ADMIN_ACCOUNT_ID);
 
         ResponseEntity<ImportPreviewDto> response = controller.previewImport(courseId, request, user);
 
@@ -73,8 +93,14 @@ class CourseImportControllerTest {
         assertEquals("preview-token-123", response.getBody().getPreviewToken());
     }
 
+    /**
+     * The import is attributed to the account that made the request, not to a
+     * placeholder. This is the assertion the class was missing: the old
+     * {@code previewImport_noUser_usesSystem} pinned the placeholder instead,
+     * and passed for the same reason production wrote {@code "system"}.
+     */
     @Test
-    void previewImport_noUser_usesSystem() {
+    void previewImport_recordsTheAuthenticatedAdminAsUploader() {
         Long courseId = 1L;
         ImportPreviewDto previewDto = new ImportPreviewDto(
             1, 1, 0,
@@ -85,7 +111,7 @@ class CourseImportControllerTest {
         );
 
         when(courseImportService.previewImport(
-            eq(courseId), anyString(), isNull(), isNull(), eq("system")
+            eq(courseId), anyString(), isNull(), isNull(), eq(ADMIN_ACTOR)
         )).thenReturn(previewDto);
 
         CourseImportController.GeoJsonImportRequest request =
@@ -94,11 +120,49 @@ class CourseImportControllerTest {
         request.setSource(null);
         request.setLicense(null);
 
-        ResponseEntity<ImportPreviewDto> response = controller.previewImport(courseId, request, null);
+        ResponseEntity<ImportPreviewDto> response =
+            controller.previewImport(courseId, request, admin(ADMIN_ACCOUNT_ID));
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        verify(courseImportService).previewImport(eq(courseId), anyString(), isNull(), isNull(), eq("system"));
+        verify(courseImportService).previewImport(
+            eq(courseId), anyString(), isNull(), isNull(), eq(ADMIN_ACTOR));
+        verify(courseImportService, never()).previewImport(
+            any(), any(), any(), any(), eq("system"));
+    }
+
+    /**
+     * A request the server cannot attribute is refused rather than filed under
+     * a made-up name. Anonymous cannot reach this handler through the
+     * {@code /admin/**} chain, so this is a guard on the fallback itself: an
+     * unattributable import must not be allowed to become a provenance record
+     * that names nobody.
+     */
+    @Test
+    void previewImport_withNoAuthentication_isRefusedAndImportsNothing() {
+        CourseImportController.GeoJsonImportRequest request =
+            new CourseImportController.GeoJsonImportRequest();
+        request.setGeoJson("{\"type\":\"FeatureCollection\",\"features\":[]}");
+
+        assertThrows(AuthenticationCredentialsNotFoundException.class,
+            () -> controller.previewImport(1L, request, null));
+
+        verifyNoInteractions(courseImportService);
+    }
+
+    @Test
+    void commitImport_withAnonymousAuthentication_isRefusedAndCommitsNothing() {
+        Authentication anonymous = new AnonymousAuthenticationToken(
+            "key", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
+
+        CourseImportController.ImportCommitRequest request =
+            new CourseImportController.ImportCommitRequest();
+        request.setPreviewToken("some-token");
+
+        assertThrows(AuthenticationCredentialsNotFoundException.class,
+            () -> controller.commitImport(1L, request, anonymous));
+
+        verifyNoInteractions(courseImportService);
     }
 
     // ─── AC-2: Validation errors ────────────────────────────────────────────
@@ -115,7 +179,7 @@ class CourseImportControllerTest {
         );
 
         when(courseImportService.previewImport(
-            eq(courseId), anyString(), eq("Source"), eq("License"), eq("admin")
+            eq(courseId), anyString(), eq("Source"), eq("License"), eq(ADMIN_ACTOR)
         )).thenReturn(previewDto);
 
         CourseImportController.GeoJsonImportRequest request =
@@ -124,7 +188,7 @@ class CourseImportControllerTest {
         request.setSource("Source");
         request.setLicense("License");
 
-        User user = new User("admin", "", Collections.emptyList());
+        Authentication user = admin(ADMIN_ACCOUNT_ID);
 
         ResponseEntity<ImportPreviewDto> response = controller.previewImport(courseId, request, user);
 
@@ -143,14 +207,14 @@ class CourseImportControllerTest {
         );
 
         when(courseImportService.commitImport(
-            eq(courseId), eq("valid-preview-token"), eq("admin")
+            eq(courseId), eq("valid-preview-token"), eq(ADMIN_ACTOR)
         )).thenReturn(resultDto);
 
         CourseImportController.ImportCommitRequest request =
             new CourseImportController.ImportCommitRequest();
         request.setPreviewToken("valid-preview-token");
 
-        User user = new User("admin", "", Collections.emptyList());
+        Authentication user = admin(ADMIN_ACCOUNT_ID);
 
         ResponseEntity<ImportResultDto> response = controller.commitImport(courseId, request, user);
 
@@ -179,7 +243,7 @@ class CourseImportControllerTest {
         request.setSource("Source");
         request.setLicense("License");
 
-        User user = new User("admin", "", Collections.emptyList());
+        Authentication user = admin(ADMIN_ACCOUNT_ID);
 
         VspApiException ex = assertThrows(VspApiException.class,
             () -> controller.previewImport(courseId, request, user));
@@ -192,14 +256,14 @@ class CourseImportControllerTest {
         Long courseId = 1L;
 
         when(courseImportService.commitImport(
-            eq(courseId), eq("invalid-token"), eq("admin")
+            eq(courseId), eq("invalid-token"), eq(ADMIN_ACTOR)
         )).thenThrow(new VspApiException(VspErrorCode.COURSE_IMPORT_004, "Preview token expired or invalid"));
 
         CourseImportController.ImportCommitRequest request =
             new CourseImportController.ImportCommitRequest();
         request.setPreviewToken("invalid-token");
 
-        User user = new User("admin", "", Collections.emptyList());
+        Authentication user = admin(ADMIN_ACCOUNT_ID);
 
         VspApiException ex = assertThrows(VspApiException.class,
             () -> controller.commitImport(courseId, request, user));

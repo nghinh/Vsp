@@ -182,6 +182,7 @@ public enum VspErrorCode {
     MFA_002("VSP-ERR-MFA-002", "Invalid TOTP code", HttpStatus.BAD_REQUEST),
     MFA_003("VSP-ERR-MFA-003", "MFA secret encryption failed", HttpStatus.INTERNAL_SERVER_ERROR),
     MFA_004("VSP-ERR-MFA-004", "MFA must be verified before it can be disabled", HttpStatus.BAD_REQUEST),
+    MFA_005("VSP-ERR-MFA-005", "Too many MFA attempts — try again later", HttpStatus.TOO_MANY_REQUESTS),
 
     // ─── PRIVACY (VSP-ERR-PRIVACY-xxx) ───────────────────────────────────────
 

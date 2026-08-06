@@ -4,9 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import vnpt.vsp.module.identity.security.AuthenticatedAccount;
 import vnpt.vsp.module.course.CourseImportService;
 import vnpt.vsp.module.course.dto.ImportPreviewDto;
 import vnpt.vsp.module.course.dto.ImportResultDto;
@@ -19,6 +19,12 @@ import vnpt.vsp.module.course.dto.ImportResultDto;
  * roles as the rest of course editing. This class carried no authorization
  * check of any kind until the {@code /admin/**} chain was repaired, which had
  * been hiding that.</p>
+ *
+ * <p>The uploader recorded against the imported data is the authenticated
+ * account, read through {@link AuthenticatedAccount}. It used to be read from
+ * {@code @AuthenticationPrincipal UserDetails}, which this application never
+ * puts in the security context, so every import — whoever ran it — was filed
+ * under {@code "system"}.</p>
  */
 @RestController
 @RequestMapping("/admin/courses")
@@ -38,19 +44,17 @@ public class CourseImportController {
      * Validates all features and returns actionable errors per feature.
      *
      * @param courseId the course ID
-     * @param geoJson the GeoJSON string
-     * @param source the data source
-     * @param license the data license
-     * @param userDetails authenticated admin user
+     * @param request the GeoJSON, its source and its licence
+     * @param authentication the admin running the import
      * @return preview with error summary and preview token
      */
     @PostMapping("/{courseId}/import/preview")
     public ResponseEntity<ImportPreviewDto> previewImport(
             @PathVariable Long courseId,
             @RequestBody GeoJsonImportRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            Authentication authentication) {
 
-        String uploaderId = userDetails != null ? userDetails.getUsername() : "system";
+        String uploaderId = AuthenticatedAccount.actorOf(authentication);
 
         log.info("action=PREVIEW_IMPORT courseId={} uploaderId={}", courseId, uploaderId);
 
@@ -71,16 +75,16 @@ public class CourseImportController {
      *
      * @param courseId the course ID
      * @param request the commit request containing previewToken
-     * @param userDetails authenticated admin user
+     * @param authentication the admin running the import
      * @return result with new DataVersion ID and feature count
      */
     @PostMapping("/{courseId}/import/commit")
     public ResponseEntity<ImportResultDto> commitImport(
             @PathVariable Long courseId,
             @RequestBody ImportCommitRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            Authentication authentication) {
 
-        String uploaderId = userDetails != null ? userDetails.getUsername() : "system";
+        String uploaderId = AuthenticatedAccount.actorOf(authentication);
 
         log.info("action=COMMIT_IMPORT courseId={} previewToken={} uploaderId={}",
             courseId, request.getPreviewToken(), uploaderId);

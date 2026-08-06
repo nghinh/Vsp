@@ -3,10 +3,10 @@ package vnpt.vsp.module.payment.presentation.controllers;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import vnpt.vsp.module.identity.security.AuthenticatedAccount;
 import vnpt.vsp.module.payment.domain.models.*;
 import vnpt.vsp.module.payment.domain.services.PaymentAuditService;
 import vnpt.vsp.module.payment.domain.services.PaymentService;
@@ -52,13 +52,13 @@ public class PaymentController {
     public ResponseEntity<Map<String, Object>> createPaymentIntent(
             @Valid @RequestBody CreatePaymentIntentRequest request,
             @RequestHeader("Idempotency-Key") String idempotencyKey,
-            @AuthenticationPrincipal UserDetails user) {
+            Authentication authentication) {
 
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return badRequest("Idempotency-Key header is required");
         }
 
-        String actor = user != null ? user.getUsername() : "ANONYMOUS";
+        String actor = AuthenticatedAccount.actorOf(authentication);
 
         var result = paymentService.createPaymentIntent(
                 request.getAmount(),
@@ -132,13 +132,13 @@ public class PaymentController {
             @PathVariable UUID paymentId,
             @Valid @RequestBody RefundPaymentRequest request,
             @RequestHeader("Idempotency-Key") String idempotencyKey,
-            @AuthenticationPrincipal UserDetails user) {
+            Authentication authentication) {
 
         if (idempotencyKey == null || idempotencyKey.isBlank()) {
             return badRequest("Idempotency-Key header is required");
         }
 
-        String actor = user != null ? user.getUsername() : "ANONYMOUS";
+        String actor = AuthenticatedAccount.actorOf(authentication);
 
         var result = paymentService.refundPayment(
                 paymentId,
