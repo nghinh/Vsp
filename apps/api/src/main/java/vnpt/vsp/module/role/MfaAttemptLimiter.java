@@ -3,6 +3,7 @@ package vnpt.vsp.module.role;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import vnpt.vsp.api.error.VspApiException;
@@ -74,6 +75,7 @@ public class MfaAttemptLimiter {
      */
     private final Map<Long, Deque<Long>> failuresByAccount;
 
+    @Autowired
     public MfaAttemptLimiter(
             @Value("${vsp.mfa.rate-limit.max-attempts:5}") int maxAttempts,
             @Value("${vsp.mfa.rate-limit.window:PT15M}") Duration window,
