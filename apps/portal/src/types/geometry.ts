@@ -286,10 +286,22 @@ export interface ValidateGeometryResponse {
 
 // ─── RBAC ─────────────────────────────────────────────────────────────────
 
-/** Portal roles that can edit geometry. */
-export const GEOMETRY_EDIT_ROLES = ['ROLE_COURSE_ADMIN', 'ROLE_GREENKEEPER'] as const;
+/**
+ * Portal roles that can edit geometry — the roles GeometryController names in
+ * its `@PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")`.
+ *
+ * These were `ROLE_COURSE_ADMIN` and `ROLE_GREENKEEPER`. Nothing ever produced
+ * a role name with that prefix — the API returns bare names, and the portal's
+ * own hard-coded list was bare too — so the intersection was empty, `canEdit`
+ * was permanently false, and the geometry editor's save and validate buttons
+ * were disabled for everyone. The prefix belongs to Spring's authorities
+ * (`ROLE_COURSE_ADMIN`), not to the role names anything sends over the wire.
+ * GREENKEEPER is dropped and SUPER_ADMIN added so this says what the server
+ * enforces rather than something adjacent to it.
+ */
+export const GEOMETRY_EDIT_ROLES = ['COURSE_ADMIN', 'SUPER_ADMIN'] as const;
 export type GeometryEditRole = typeof GEOMETRY_EDIT_ROLES[number];
 
-/** Read-only portal roles. */
-export const GEOMETRY_READ_ONLY_ROLES = ['ROLE_AUDITOR', 'ROLE_READONLY'] as const;
+/** Read-only portal roles, spelled the same way. */
+export const GEOMETRY_READ_ONLY_ROLES = ['AUDITOR'] as const;
 export type GeometryReadOnlyRole = typeof GEOMETRY_READ_ONLY_ROLES[number];
