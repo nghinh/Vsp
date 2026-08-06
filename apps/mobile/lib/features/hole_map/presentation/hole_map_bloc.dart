@@ -121,7 +121,6 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         HoleMapUnsurveyed(
           courseName: event.courseName,
           holeNumber: event.holeNumber,
-          hasPackage: false,
         ),
       );
       return;
@@ -142,7 +141,6 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
           HoleMapUnsurveyed(
             courseName: event.courseName,
             holeNumber: event.holeNumber,
-            hasPackage: true,
           ),
         );
         return;

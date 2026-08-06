@@ -7,12 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// mobile_theme also exports a DistanceUnit; the profile one is canonical here.
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
 import '../../hole_map/presentation/hole_map_bloc.dart';
 import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
-import '../../hole_map/domain/hole_map_entity.dart';
 import 'widgets/hole_map_view.dart';
 import 'widgets/map_loading_skeleton.dart';
 import 'widgets/map_error_view.dart';

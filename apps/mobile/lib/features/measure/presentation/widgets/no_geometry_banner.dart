@@ -38,7 +38,15 @@ class NoGeometryBanner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                // Wrap, not Row: the basemap toggle sits beside this banner
+                // and takes what it needs first, so on a narrow phone the
+                // title has to be able to drop below the badge rather than be
+                // clipped. A truncated "this hole is not…" is the one line
+                // here that must never be truncated.
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 2,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -59,16 +67,12 @@ class NoGeometryBanner extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        l10n.holeNoGeometryTitle,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: _text,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Text(
+                      l10n.holeNoGeometryTitle,
+                      style: const TextStyle(
+                        color: _text,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],

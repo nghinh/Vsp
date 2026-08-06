@@ -90,26 +90,23 @@ class HoleMapReady extends HoleMapState {
 /// The hole has no geometry we could draw — and that is an answer, not a fault.
 ///
 /// Two situations reach here and they are the same situation for the golfer:
-/// the course has no downloaded package at all ([hasPackage] false, ~all of the
-/// courses in the app), or a package exists but carries nothing for this hole.
-/// Either way there is no surveyed shape to render, so the map falls back to
-/// satellite imagery and the measuring tool — the imagery is real even where
-/// our vector data is not.
+/// the course has no downloaded package at all (~all of the courses in the
+/// app), or a package exists but carries nothing for this hole. Either way
+/// there is no surveyed shape to render, so the map falls back to satellite
+/// imagery and the measuring tool — the imagery is real even where our vector
+/// data is not. The two are not distinguished because nothing the golfer can
+/// do about one differs from the other.
 class HoleMapUnsurveyed extends HoleMapState {
   final String courseName;
   final int holeNumber;
 
-  /// True when a package was downloaded but held nothing for this hole.
-  final bool hasPackage;
-
   const HoleMapUnsurveyed({
     required this.courseName,
     required this.holeNumber,
-    required this.hasPackage,
   });
 
   @override
-  List<Object?> get props => [courseName, holeNumber, hasPackage];
+  List<Object?> get props => [courseName, holeNumber];
 }
 
 /// An error occurred while loading or rendering the map.
