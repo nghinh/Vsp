@@ -1,30 +1,69 @@
 package vnpt.vsp.module.identity.service;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Locator;
+import io.jsonwebtoken.ProtectedHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Service for validating social (Google/Apple) identity tokens and extracting claims.
- * <p>
- * Google: Validates using Google's tokeninfo endpoint.
- * Apple: Validates the JWT signature using Apple's JWKS endpoint and extracts claims.
- * <p>
- * Per PRD Section 8.1: Google Sign-In and Apple Sign-In authentication.
+ * Verifies Google and Apple identity tokens and extracts their claims.
+ *
+ * <p>A social identity token is a bearer of someone's account. Until this class
+ * was rewritten it was read, not verified: both methods split the compact JWT on
+ * {@code '.'}, base64-decoded the middle segment and believed whatever JSON came
+ * out. The signature was never checked against anything, the audience was never
+ * looked at, {@code exp} was never compared to the clock, and Apple's issuer
+ * check was {@code issuer.contains("apple")} — which
+ * {@code "https://apple.attacker.example"} satisfies. Anyone who could reach
+ * {@code POST /auth/google} could hand over a token they had typed themselves,
+ * naming any {@code sub} and any {@code email}, and
+ * {@code IdentityServiceImpl.authenticateWithGoogle} would link that subject to
+ * the matching account and mint real VSP tokens for it. That is account takeover
+ * of every account on the platform, by email address, with no secret required.
+ * The Apple method's javadoc claimed it verified the signature against Apple's
+ * JWKS; it did not.
+ *
+ * <p>What is checked now, for both providers:
+ * <ol>
+ *   <li>the JWS signature, against the key the provider publishes under the
+ *       token's {@code kid} at its JWKS endpoint (see {@link JwkSource});</li>
+ *   <li>{@code iss} against the issuers configured for that provider;</li>
+ *   <li>{@code aud} against the client ids configured for this environment — a
+ *       token minted for a different application is a valid token, and without
+ *       this check it would be accepted here;</li>
+ *   <li>{@code exp}/{@code nbf}, with a small configured clock skew;</li>
+ *   <li>{@code sub}, which must be present — it is the account key.</li>
+ * </ol>
+ *
+ * <p>Every failure returns {@link Optional#empty()}, which the caller turns into
+ * {@code VSP-ERR-AUTH-014}/{@code -015}. There is no path that returns claims
+ * from a token whose signature was not checked: an unconfigured provider, an
+ * unreachable key set and an unknown {@code kid} all refuse. Social login that
+ * is switched off is an inconvenience; social login that trusts unverified
+ * tokens is a breach.
+ *
+ * <p>Per PRD Section 8.1: Google Sign-In and Apple Sign-In authentication.
  */
 @Service
 public class SocialTokenValidatorService {
 
     private static final Logger log = LoggerFactory.getLogger(SocialTokenValidatorService.class);
 
-    private static final String GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo";
-    private static final String APPLE_KEYS_URL = "https://appleid.apple.com/auth/keys";
-
-    /**
-     * Represents validated claims from a social identity provider.
-     */
+    /** Represents validated claims from a social identity provider. */
     public record SocialTokenClaims(
             String subject,
             String email,
@@ -33,122 +72,197 @@ public class SocialTokenValidatorService {
     ) {}
 
     /**
-     * Validate a Google ID token and extract claims.
-     * <p>
-     * Calls Google's tokeninfo endpoint to validate the token and retrieve claims.
-     *
-     * @param idToken the Google ID token from the client
-     * @return the validated claims, or empty if validation fails
+     * One provider's trust anchors: where its keys live, who it claims to be,
+     * and which client ids of ours it is allowed to have minted a token for.
      */
-    public Optional<SocialTokenClaims> validateGoogleToken(String idToken) {
-        try {
-            // In production, this would use GoogleIdTokenVerifier from google-api-client.
-            // For this implementation, we parse the unsigned payload for development/testing
-            // and log a warning. In production, set google.client-id configuration and use
-            // GoogleIdTokenVerifier.
-            //
-            // Real Google ID token validation requires:
-            // 1. Parse the JWT
-            // 2. Verify the signature using Google's public keys (JWKS)
-            // 3. Verify the audience matches GOOGLE_CLIENT_ID
-            // 4. Verify the issuer is accounts.google.com
-            // 5. Check expiration
+    private record Provider(String name, String jwksUri, Set<String> issuers, Set<String> audiences) {
 
-            if (idToken == null || idToken.isBlank()) {
-                return Optional.empty();
-            }
-
-            // For MVP: decode JWT payload without signature verification (dev/test mode)
-            // Production: use GoogleIdTokenVerifier with proper GOOGLE_CLIENT_ID
-            String[] parts = idToken.split("\\.");
-            if (parts.length < 2) {
-                log.warn("Invalid Google ID token format");
-                return Optional.empty();
-            }
-
-            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            var payload = mapper.readTree(payloadJson);
-
-            String subject = payload.has("sub") ? payload.get("sub").asText() : null;
-            String email = payload.has("email") ? payload.get("email").asText() : null;
-            String name = payload.has("name") ? payload.get("name").asText() : null;
-            boolean emailVerified = payload.has("email_verified") && payload.get("email_verified").asBoolean();
-
-            if (subject == null || email == null) {
-                log.warn("Google ID token missing required claims (sub/email)");
-                return Optional.empty();
-            }
-
-            log.info("Google token validated for email: {}, subject: {} (email_verified={})",
-                    maskEmail(email), subject, emailVerified);
-
-            return Optional.of(new SocialTokenClaims(subject, email, name, "GOOGLE"));
-
-        } catch (Exception e) {
-            log.warn("Google token validation failed: {}", e.getMessage());
-            return Optional.empty();
+        boolean isConfigured() {
+            return !jwksUri.isBlank() && !issuers.isEmpty() && !audiences.isEmpty();
         }
+    }
+
+    private final JwkSource jwkSource;
+    private final Provider google;
+    private final Provider apple;
+    private final long clockSkewSeconds;
+
+    public SocialTokenValidatorService(
+            JwkSource jwkSource,
+            @Value("${vsp.auth.social.google.jwks-uri:https://www.googleapis.com/oauth2/v3/certs}")
+            String googleJwksUri,
+            @Value("${vsp.auth.social.google.issuers:https://accounts.google.com,accounts.google.com}")
+            String googleIssuers,
+            @Value("${vsp.auth.social.google.client-ids:}")
+            String googleClientIds,
+            @Value("${vsp.auth.social.apple.jwks-uri:https://appleid.apple.com/auth/keys}")
+            String appleJwksUri,
+            @Value("${vsp.auth.social.apple.issuers:https://appleid.apple.com}")
+            String appleIssuers,
+            @Value("${vsp.auth.social.apple.client-ids:}")
+            String appleClientIds,
+            @Value("${vsp.auth.social.clock-skew:PT1M}")
+            Duration clockSkew) {
+
+        this.jwkSource = jwkSource;
+        this.google = new Provider("GOOGLE", googleJwksUri, split(googleIssuers), split(googleClientIds));
+        this.apple = new Provider("APPLE", appleJwksUri, split(appleIssuers), split(appleClientIds));
+        this.clockSkewSeconds = clockSkew.toSeconds();
+
+        warnIfUnconfigured(google, "vsp.auth.social.google.client-ids");
+        warnIfUnconfigured(apple, "vsp.auth.social.apple.client-ids");
     }
 
     /**
-     * Validate an Apple identity token and extract claims.
-     * <p>
-     * Parses the JWT and validates the signature using Apple's JWKS keys.
+     * Verify a Google ID token and extract its claims.
+     *
+     * @param idToken the Google ID token from the client
+     * @return the verified claims, or empty if the token is not genuine, not
+     *         ours, not current, or cannot be checked at all
+     */
+    public Optional<SocialTokenClaims> validateGoogleToken(String idToken) {
+        return verify(google, idToken).flatMap(claims -> {
+            String email = claims.get("email", String.class);
+            if (email == null || email.isBlank()) {
+                log.warn("Google ID token carries no email claim");
+                return Optional.empty();
+            }
+            // The account is matched to an existing one by email, so an
+            // unverified address would let a Google account created for
+            // someone else's address claim their VSP account.
+            if (!isTrue(claims.get("email_verified"))) {
+                log.warn("Google ID token for {} is not email_verified", maskEmail(email));
+                return Optional.empty();
+            }
+            return Optional.of(new SocialTokenClaims(
+                    claims.getSubject(), email, claims.get("name", String.class), "GOOGLE"));
+        });
+    }
+
+    /**
+     * Verify an Apple identity token and extract its claims.
+     *
+     * <p>Apple omits {@code email} on every sign-in after the first, and the
+     * name never appears in the identity token at all, so both are optional
+     * here — {@code sub} is what identifies the account.
      *
      * @param idToken the Apple identity token from the client
-     * @return the validated claims, or empty if validation fails
+     * @return the verified claims, or empty if the token is not genuine, not
+     *         ours, not current, or cannot be checked at all
      */
     public Optional<SocialTokenClaims> validateAppleToken(String idToken) {
+        return verify(apple, idToken).flatMap(claims -> {
+            String email = claims.get("email", String.class);
+            if (email != null && !email.isBlank() && !isTrue(claims.get("email_verified"))) {
+                log.warn("Apple identity token for {} is not email_verified", maskEmail(email));
+                return Optional.empty();
+            }
+            return Optional.of(new SocialTokenClaims(
+                    claims.getSubject(), email, claims.get("name", String.class), "APPLE"));
+        });
+    }
+
+    /**
+     * The whole check: signature, issuer, audience, expiry, subject.
+     *
+     * <p>The key locator is what makes the signature check real. It answers only
+     * with keys the provider publishes, so a token signed with a key of the
+     * caller's own choosing has nothing to verify against and jjwt refuses it —
+     * as it refuses an {@code alg: none} token, which carries no signature to
+     * check and is the shape this method has to be proof against above all
+     * others.
+     */
+    private Optional<Claims> verify(Provider provider, String idToken) {
+        if (idToken == null || idToken.isBlank()) {
+            return Optional.empty();
+        }
+        if (!provider.isConfigured()) {
+            log.error("{} sign-in is not configured (no client id / issuer / JWKS uri) — refusing the token. "
+                    + "Set vsp.auth.social.{}.client-ids for this environment.",
+                    provider.name(), provider.name().toLowerCase());
+            return Optional.empty();
+        }
         try {
-            if (idToken == null || idToken.isBlank()) {
+            Jws<Claims> jws = Jwts.parser()
+                    .keyLocator(keyLocator(provider))
+                    .clockSkewSeconds(clockSkewSeconds)
+                    .build()
+                    .parseSignedClaims(idToken);
+
+            Claims claims = jws.getPayload();
+
+            String issuer = claims.getIssuer();
+            if (issuer == null || !provider.issuers().contains(issuer)) {
+                log.warn("{} token issuer {} is not one of {}", provider.name(), issuer, provider.issuers());
                 return Optional.empty();
             }
 
-            String[] parts = idToken.split("\\.");
-            if (parts.length < 2) {
-                log.warn("Invalid Apple identity token format");
+            Set<String> audience = claims.getAudience();
+            if (audience == null || audience.stream().noneMatch(provider.audiences()::contains)) {
+                log.warn("{} token audience {} is not a client id of this deployment",
+                        provider.name(), audience);
                 return Optional.empty();
             }
 
-            String payloadJson = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-            var payload = mapper.readTree(payloadJson);
-
-            String subject = payload.has("sub") ? payload.get("sub").asText() : null;
-            String email = payload.has("email") ? payload.get("email").asText() : null;
-            // Apple may include name in the authorization code response, not the ID token
-            String name = payload.has("name") ? payload.get("name").asText() : null;
-            String issuer = payload.has("iss") ? payload.get("iss").asText() : null;
-
-            // Verify issuer is Apple: https://appleid.apple.com
-            if (issuer == null || !issuer.contains("apple")) {
-                log.warn("Apple identity token has invalid issuer: {}", issuer);
+            String subject = claims.getSubject();
+            if (subject == null || subject.isBlank()) {
+                log.warn("{} token carries no subject", provider.name());
                 return Optional.empty();
             }
 
-            if (subject == null) {
-                log.warn("Apple identity token missing required claim (sub)");
-                return Optional.empty();
-            }
+            log.info("{} token verified for subject {} (kid={})",
+                    provider.name(), subject, jws.getHeader().getKeyId());
+            return Optional.of(claims);
 
-            // In production, the signature should be verified using Apple's JWKS:
-            // 1. Fetch keys from APPLE_KEYS_URL
-            // 2. Find the key with matching kid (key ID)
-            // 3. Verify RSA signature on the ID token
-            // For MVP/development, we trust the JWT payload structure
-
-            log.info("Apple token validated for email: {}, subject: {}", maskEmail(email), subject);
-
-            return Optional.of(new SocialTokenClaims(subject, email, name, "APPLE"));
-
+        } catch (JwtException e) {
+            // Bad signature, alg: none, expired, malformed, or no key for the
+            // kid — all of them mean the same thing to the caller.
+            log.warn("{} token rejected: {}", provider.name(), e.getMessage());
+            return Optional.empty();
         } catch (Exception e) {
-            log.warn("Apple token validation failed: {}", e.getMessage());
+            log.warn("{} token verification failed: {}", provider.name(), e.toString());
             return Optional.empty();
         }
     }
 
-    private String maskEmail(String email) {
+    private Locator<Key> keyLocator(Provider provider) {
+        return new Locator<>() {
+            @Override
+            public Key locate(Header header) {
+                String keyId = header instanceof ProtectedHeader protectedHeader
+                        ? protectedHeader.getKeyId()
+                        : null;
+                return jwkSource.findKey(provider.jwksUri(), keyId)
+                        .map(Key.class::cast)
+                        .orElseThrow(() -> new io.jsonwebtoken.security.SignatureException(
+                                "No published " + provider.name() + " signing key for kid=" + keyId));
+            }
+        };
+    }
+
+    /** {@code email_verified} arrives as a boolean from Google and, historically, as a string from Apple. */
+    private static boolean isTrue(Object claim) {
+        return Boolean.TRUE.equals(claim) || "true".equals(String.valueOf(claim));
+    }
+
+    private static Set<String> split(String commaSeparated) {
+        if (commaSeparated == null || commaSeparated.isBlank()) {
+            return Set.of();
+        }
+        return Arrays.stream(commaSeparated.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isEmpty())
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    private void warnIfUnconfigured(Provider provider, String property) {
+        if (!provider.isConfigured()) {
+            log.warn("{} sign-in is disabled: {} is not set, so every {} token will be refused.",
+                    provider.name(), property, provider.name());
+        }
+    }
+
+    private static String maskEmail(String email) {
         if (email == null || !email.contains("@")) return "****";
         int atIndex = email.indexOf("@");
         if (atIndex < 2) return "****";

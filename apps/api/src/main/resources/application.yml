@@ -113,3 +113,33 @@ vsp:
       # arbitrary account ids cannot grow the map without limit. Evicting an
       # entry can only forgive failures, never invent them.
       tracked-accounts: 10000
+
+  # Google and Apple sign-in.
+  #
+  # client-ids is the audience an identity token must name to be accepted here:
+  # the OAuth client id issued to this deployment by Google, and the bundle id
+  # or services id registered with Apple. Both default to empty, and empty
+  # means every token from that provider is refused — a deployment that has not
+  # been told which application it is cannot tell a token minted for it from a
+  # token minted for anyone else, and guessing is how an attacker signs in with
+  # a genuine token issued to their own app. Set them per environment.
+  #
+  # Comma-separated, because a real deployment has one client id per platform
+  # (iOS, Android, web) and all of them are ours.
+  auth:
+    social:
+      clock-skew: ${VSP_SOCIAL_CLOCK_SKEW:PT1M}
+      google:
+        jwks-uri: "${VSP_GOOGLE_JWKS_URI:https://www.googleapis.com/oauth2/v3/certs}"
+        issuers: "${VSP_GOOGLE_ISSUERS:https://accounts.google.com,accounts.google.com}"
+        client-ids: "${VSP_GOOGLE_CLIENT_IDS:}"
+      apple:
+        jwks-uri: "${VSP_APPLE_JWKS_URI:https://appleid.apple.com/auth/keys}"
+        issuers: "${VSP_APPLE_ISSUERS:https://appleid.apple.com}"
+        client-ids: "${VSP_APPLE_CLIENT_IDS:}"
+      jwks:
+        # Providers rotate on the order of days; an hour of cache keeps a
+        # sign-in from depending on their endpoint being up at that instant.
+        cache-ttl: ${VSP_JWKS_CACHE_TTL:PT1H}
+        min-refresh-interval: ${VSP_JWKS_MIN_REFRESH:PT1M}
+        request-timeout: ${VSP_JWKS_TIMEOUT:PT5S}

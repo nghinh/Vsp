@@ -68,7 +68,20 @@ public class SecurityConfig {
                                 "/auth/otp/verify",
                                 "/auth/password/recover",
                                 "/auth/password/reset",
-                                "/auth/refresh"
+                                "/auth/refresh",
+
+                                // Social sign-in. These are a way *in*, so
+                                // requiring a token to reach them made them
+                                // unreachable by the only caller there is: the
+                                // mobile login screen has no token yet. They
+                                // are safe to open only because
+                                // SocialTokenValidatorService now verifies the
+                                // provider's signature, audience and expiry —
+                                // opening them while it read tokens without
+                                // checking them would have handed anonymous
+                                // callers an account-takeover endpoint.
+                                "/auth/google",
+                                "/auth/apple"
                         ).permitAll()
 
                         // Actuator endpoints
