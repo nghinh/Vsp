@@ -41,6 +41,16 @@ public class GeospatialServiceImpl implements GeospatialService {
      * Validates a geometry using PostGIS ST_IsValid.
      * Per Story 3.1 AC-1/AC-2: all geometries must be valid SRID 4326.
      *
+     * <p>The geometry crosses into SQL as WKT rather than as the JTS object.
+     * There is no hibernate-spatial on this classpath, so a bound
+     * {@code Geometry} arrives as {@code bytea} and
+     * {@code ST_SetSRID(bytea, integer)} matches both the geometry and the
+     * geography overload — the statement fails with "function is not unique",
+     * the {@code catch} below reports it as an invalid geometry, and every
+     * geometry in the system is invalid. That is what a course import kept
+     * hitting: every feature failed validation, so no import could ever be
+     * committed.</p>
+     *
      * @param geometry the geometry to validate
      * @return true if valid, false if invalid
      */
@@ -54,14 +64,14 @@ public class GeospatialServiceImpl implements GeospatialService {
             if (geometry.getSRID() != SRID_4326) {
                 geometry.setSRID(SRID_4326);
             }
-            String sql = "SELECT ST_IsValid(ST_SetSRID(:geom, :srid))";
+            String sql = "SELECT ST_IsValid(ST_GeomFromText(CAST(:wkt AS text), :srid))";
             Query query = entityManager.createNativeQuery(sql);
-            query.setParameter("geom", geometry);
+            query.setParameter("wkt", geometry.toText());
             query.setParameter("srid", SRID_4326);
             Object result = query.getSingleResult();
             return ((Boolean) result);
         } catch (Exception e) {
-            log.warn("Geometry validation error: {}", e.getMessage());
+            log.warn("Geometry validation error: {}", e.getMessage(), e);
             return false;
         }
     }

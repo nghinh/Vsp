@@ -67,6 +67,39 @@ class GeospatialServiceImplTest {
         assertFalse(geospatialService.validateGeometry(null));
     }
 
+    /**
+     * The geometry reaches PostGIS as WKT, never as the JTS object.
+     *
+     * <p>There is no hibernate-spatial on this classpath, so a bound
+     * {@code Geometry} arrives at Postgres as {@code bytea} and
+     * {@code ST_SetSRID(bytea, integer)} matches two overloads: the statement
+     * fails with "function is not unique", {@code validateGeometry} catches it
+     * and answers "invalid", and every geometry in the system is invalid. A
+     * course import then reports every feature as a topology error and can
+     * never be committed. Nothing failed here because the query is mocked —
+     * which is why this asserts on what is bound rather than on the answer.</p>
+     */
+    @Test
+    void validateGeometry_bindsTheGeometryAsText_notAsAJtsObject() {
+        Point point = GF.createPoint(new Coordinate(106.660172, 10.762915));
+        point.setSRID(SRID);
+
+        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(true);
+
+        geospatialService.validateGeometry(point);
+
+        org.mockito.ArgumentCaptor<Object> bound = org.mockito.ArgumentCaptor.forClass(Object.class);
+        verify(query, org.mockito.Mockito.atLeastOnce())
+                .setParameter(anyString(), bound.capture());
+
+        assertTrue(bound.getAllValues().stream()
+                        .noneMatch(value -> value instanceof org.locationtech.jts.geom.Geometry),
+                "a bound JTS geometry becomes bytea and makes the PostGIS call ambiguous");
+        assertTrue(bound.getAllValues().contains(point.toText()),
+                "the geometry should be bound as WKT: " + bound.getAllValues());
+    }
+
     @Test
     void validateGeometry_setsSRID_whenMissing() {
         Point point = GF.createPoint(new Coordinate(106.660172, 10.762915));
