@@ -29,6 +29,42 @@ public class RoleController {
         this.roleService = roleService;
     }
 
+    // ─── The caller's own admin identity ─────────────────────────────────────
+
+    /**
+     * The calling account's admin identity: which roles it holds, and whether
+     * its MFA is enrolled.
+     *
+     * <p>Added for the operations portal, which had no way to find out who it
+     * was talking as. It knew its roles by declaring them in TypeScript —
+     * {@code const DEFAULT_ROLES = ["COURSE_ADMIN", "SUPER_ADMIN"]} — which is
+     * the client answering a question only the server can answer. This is the
+     * answer.
+     *
+     * <p>Two properties matter and both come from the URL rule rather than from
+     * anything the caller sends. The account is the authenticated principal, not
+     * a path variable, so this cannot be pointed at somebody else. And
+     * {@code /admin/**} already requires some admin role, so an ordinary golfer
+     * — including one who has an admin account row but no role assignment on it
+     * — is refused rather than told "you hold no roles". The portal reads that
+     * 403 as "you are not staff", which is the same fact the server would
+     * enforce on every subsequent request anyway.
+     *
+     * <p>The annotation names every defined role, read from the enum, so a role
+     * added later reaches this endpoint without anyone remembering to edit a
+     * list here.
+     */
+    @GetMapping("/me")
+    @PreAuthorize("hasAnyRole(T(vnpt.vsp.api.admin.AdminSecurityConfig).adminRoles())")
+    public ResponseEntity<AdminAccountResponse> getCurrentAdminAccount(Authentication authentication) {
+        Long golferAccountId = (Long) authentication.getPrincipal();
+        AdminAccountResponse account = roleService.getAdminAccountByGolferId(golferAccountId);
+        if (account == null) {
+            throw new VspApiException(VspErrorCode.AUTH_005);
+        }
+        return ResponseEntity.ok(account);
+    }
+
     // ─── Role management ────────────────────────────────────────────────────
 
     /**

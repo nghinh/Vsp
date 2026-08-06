@@ -50,7 +50,7 @@ public class AdminSecurityConfig {
      * admitted to the admin surface without anyone remembering to edit a list
      * here — the per-endpoint annotations still decide what it may do.
      */
-    static String[] adminRoles() {
+    public static String[] adminRoles() {
         return Arrays.stream(RoleName.values()).map(Enum::name).toArray(String[]::new);
     }
 

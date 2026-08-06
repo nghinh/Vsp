@@ -64,6 +64,7 @@ class AdminEndpointAuthorizationTest {
     @Autowired private JwtService jwtService;
     @Autowired private AdminAccountRepository adminAccountRepository;
     @Autowired private AdminRoleAssignmentRepository roleAssignmentRepository;
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
     /** Account ids well outside anything another test seeds. */
     private static final long GOLFER_ID = 990_000L;
@@ -96,6 +97,15 @@ class AdminEndpointAuthorizationTest {
             tokenByRole.put(role, jwtService.generateAccessToken(accountId));
             accountId++;
         }
+
+        // The assignment was written through its own repository, so the account
+        // still held in this session has the empty roleAssignments collection it
+        // was constructed with. Anything reading an account through the mapping
+        // — GET /admin/me does — would see no roles. Dropping the session makes
+        // the next read load what the database actually holds, which is what a
+        // request arriving on its own transaction gets.
+        entityManager.flush();
+        entityManager.clear();
     }
 
     /**
@@ -221,6 +231,46 @@ class AdminEndpointAuthorizationTest {
 
     static Stream<String> listingEndpoints() {
         return Stream.of("/admin/roles", "/admin/users");
+    }
+
+    // ─── GET /admin/me ───────────────────────────────────────────────────────
+
+    /**
+     * {@code /admin/me} is the one admin endpoint every admin role may reach, so
+     * it cannot be a row in the table above — those rows prove that a role the
+     * endpoint does not name is refused. It gets its own three tests, asserting
+     * the same three boundaries.
+     * <p>
+     * It exists because the operations portal had no way to learn who it was
+     * talking as, and answered the question itself in TypeScript. What the
+     * portal is allowed to do has to be a fact the server states.
+     */
+    @ParameterizedTest(name = "{0}")
+    @org.junit.jupiter.params.provider.EnumSource(RoleName.class)
+    @DisplayName("Every admin role may read its own identity, and gets its own roles back")
+    void everyAdminRoleCanReadItsOwnIdentity(RoleName role) throws Exception {
+        mockMvc.perform(request(HttpMethod.GET, "/admin/me")
+                        .header("Authorization", "Bearer " + tokenByRole.get(role)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.roles").isArray())
+                .andExpect(jsonPath("$.roles[0]").value(role.name()));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("An ordinary golfer asking who they are is refused, not told they hold no roles")
+    void golferCannotReadAnAdminIdentity() throws Exception {
+        mockMvc.perform(request(HttpMethod.GET, "/admin/me")
+                        .header("Authorization", "Bearer " + golferToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("VSP-ERR-AUTH-005"));
+    }
+
+    @org.junit.jupiter.api.Test
+    @DisplayName("No token, no identity")
+    void anonymousCannotReadAnAdminIdentity() throws Exception {
+        mockMvc.perform(request(HttpMethod.GET, "/admin/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("VSP-ERR-AUTH-001"));
     }
 
     /**
