@@ -147,16 +147,25 @@ public class GeospatialServiceImpl implements GeospatialService {
      * Finds features of a given type within a radius of a point using PostGIS ST_DWithin.
      * Per Story 3.1 AC-2: GIST-indexed ST_DWithin query.
      *
+     * <p>The table and column are resolved through {@link SpatialFeature} before
+     * any SQL is built. They cannot be bound as parameters — no database binds
+     * identifiers — so they are concatenated, and concatenating a caller's
+     * string into a statement is an injection whatever the caller currently
+     * happens to pass. A pair that is not whitelisted is refused here rather
+     * than reaching PostgreSQL.
+     *
      * @param point center point (must be SRID 4326)
      * @param radiusMeters search radius in meters
      * @param featureType SQL table name to search (e.g., 'greens', 'bunkers', 'water_hazards')
      * @param geometryColumn column name holding the geometry
      * @return list of feature IDs and distances within radius
+     * @throws VspApiException if the table and column are not a whitelisted pair
      */
     @Override
     @SuppressWarnings("unchecked")
     public List<FeatureDistanceResult> findFeaturesWithinRadius(
             Point point, double radiusMeters, String featureType, String geometryColumn) {
+        SpatialFeature feature = requireWhitelisted(featureType, geometryColumn);
         if (point == null || radiusMeters <= 0) {
             return List.of();
         }
@@ -168,7 +177,8 @@ public class GeospatialServiceImpl implements GeospatialService {
                 FROM %s
                 WHERE ST_DWithin(CAST(%s AS geography), %s, :radius)
                 ORDER BY distance ASC
-                """, geometryColumn, probe, featureType, geometryColumn, probe);
+                """, feature.geometryColumn(), probe, feature.table(),
+                    feature.geometryColumn(), probe);
 
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter("point", point.toText());
@@ -248,14 +258,21 @@ public class GeospatialServiceImpl implements GeospatialService {
      * Uses ST_DWithin ordering approach for efficient nearest-neighbor via GIST index.
      * Per Story 3.1 AC-2: GIST-indexed nearest neighbor.
      *
+     * <p>Whitelisted the same way as {@link #findFeaturesWithinRadius}: the
+     * table and column are resolved through {@link SpatialFeature} before any
+     * SQL exists, because they are concatenated and no database will bind an
+     * identifier as a parameter.
+     *
      * @param point center point (SRID 4326)
      * @param featureType SQL table name
      * @param geometryColumn geometry column name
      * @return nearest feature ID and distance, or null if none found
+     * @throws VspApiException if the table and column are not a whitelisted pair
      */
     @Override
     @SuppressWarnings("unchecked")
     public FeatureDistanceResult findNearestFeature(Point point, String featureType, String geometryColumn) {
+        SpatialFeature feature = requireWhitelisted(featureType, geometryColumn);
         if (point == null) {
             return null;
         }
@@ -270,7 +287,7 @@ public class GeospatialServiceImpl implements GeospatialService {
                 ) AS dist
                 ORDER BY dist.distance ASC
                 LIMIT 1
-                """, featureType, geometryColumn, geomParam("point"));
+                """, feature.table(), feature.geometryColumn(), geomParam("point"));
 
             Query query = entityManager.createNativeQuery(sql);
             query.setParameter("point", point.toText());
@@ -290,6 +307,30 @@ public class GeospatialServiceImpl implements GeospatialService {
     }
 
     // ─── Private helpers ───────────────────────────────────────────────────
+
+    /**
+     * Resolves a caller's table and column to a whitelisted {@link SpatialFeature},
+     * or refuses.
+     *
+     * <p>Deliberately outside the {@code try} in both callers. Those blocks turn
+     * a failed query into an empty result and a warning, which is the right
+     * answer for a database that is briefly unhappy and the wrong one for a
+     * caller naming a table this service will not query: silently returning
+     * "no features" would let a wired-up request parameter look like it worked.
+     * A refusal is loud, and it is a 400 rather than a 500 because the caller
+     * asked for something that does not exist.
+     */
+    private static SpatialFeature requireWhitelisted(String featureType, String geometryColumn) {
+        return SpatialFeature.of(featureType, geometryColumn)
+                .orElseThrow(() -> {
+                    log.warn("Refused spatial query for non-whitelisted identifiers: {}.{}",
+                            featureType, geometryColumn);
+                    return new VspApiException(VspErrorCode.VALIDATION_001,
+                            "Not a spatial feature this service queries: "
+                                    + featureType + "." + geometryColumn,
+                            "featureType", null);
+                });
+    }
 
     /**
      * The SQL fragment that turns a bound parameter into a PostGIS geometry.
