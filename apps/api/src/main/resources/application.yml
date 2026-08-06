@@ -96,3 +96,20 @@ resilience4j:
         wait-duration-in-open-state: 30s
         failure-rate-threshold: 50
         event-consumer-buffer-size: 10
+
+# Admin MFA
+vsp:
+  mfa:
+    # How often one account may fail a TOTP check. A six-digit code with RFC 6238's
+    # ±1 step tolerance leaves ~3 live codes in a million, so five attempts per
+    # quarter hour puts an exhaustive search past any useful horizon while leaving
+    # an admin typing their own code far below the ceiling. Only failures count —
+    # a correct code clears the account — and a refused attempt is 429
+    # VSP-ERR-MFA-005 and a vsp_api.mfa.attempts.throttled increment.
+    rate-limit:
+      max-attempts: ${VSP_MFA_MAX_ATTEMPTS:5}
+      window: ${VSP_MFA_ATTEMPT_WINDOW:PT15M}
+      # Upper bound on accounts tracked at once, so a caller that can name
+      # arbitrary account ids cannot grow the map without limit. Evicting an
+      # entry can only forgive failures, never invent them.
+      tracked-accounts: 10000

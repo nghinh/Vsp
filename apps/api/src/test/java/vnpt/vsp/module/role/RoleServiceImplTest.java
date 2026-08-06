@@ -57,15 +57,26 @@ class RoleServiceImplTest {
     @Mock
     private AuditService auditService;
 
+    /**
+     * A real limiter with a real budget, not a mock: these tests make a handful
+     * of attempts each and must stay under the ceiling, which is also a check
+     * that the limiter does not get in an honest caller's way.
+     */
+    private MfaAttemptLimiter mfaAttemptLimiter;
+
     private RoleServiceImpl roleService;
 
     @BeforeEach
     void setUp() {
+        mfaAttemptLimiter = new MfaAttemptLimiter(
+                5, java.time.Duration.ofMinutes(15), 1000,
+                new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
         roleService = new RoleServiceImpl(
                 roleRepository,
                 adminAccountRepository,
                 roleAssignmentRepository,
-                auditService
+                auditService,
+                mfaAttemptLimiter
         );
         ReflectionTestUtils.setField(roleService, "mfaEncryptionKey", "TEST_ENC_KEY_FOR_UNIT_TESTS_32B!");
     }

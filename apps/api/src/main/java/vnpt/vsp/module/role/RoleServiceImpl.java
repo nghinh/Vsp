@@ -45,6 +45,10 @@ public class RoleServiceImpl implements RoleService {
     private static final int AES_GCM_IV_SIZE = 12;
     private static final int AES_GCM_TAG_SIZE = 128;
 
+    /** Metric/log tags for the two operations that take a TOTP code. */
+    private static final String MFA_VERIFY = "verify";
+    private static final String MFA_ENABLE = "enable";
+
     private final RoleRepository roleRepository;
     private final AdminAccountRepository adminAccountRepository;
     private final AdminRoleAssignmentRepository roleAssignmentRepository;
@@ -195,6 +199,10 @@ public class RoleServiceImpl implements RoleService {
     public String enableMfa(Long golferAccountId, String totpCode) {
         log.debug("enableMfa golferAccountId={}", golferAccountId);
 
+        // Before the lookup: an attempt refused here must cost nothing, and the
+        // budget must not depend on whether the named account happens to exist.
+        mfaAttemptLimiter.checkAllowed(golferAccountId, MFA_ENABLE);
+
         AdminAccount adminAccount = adminAccountRepository.findByGolferAccountId(golferAccountId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.ROLE_002));
 
@@ -210,8 +218,10 @@ public class RoleServiceImpl implements RoleService {
             // Clear the secret if verification fails
             adminAccount.setMfaSecret(null);
             adminAccountRepository.save(adminAccount);
+            mfaAttemptLimiter.recordFailure(golferAccountId);
             throw new VspApiException(VspErrorCode.MFA_002);
         }
+        mfaAttemptLimiter.recordSuccess(golferAccountId);
 
         // Verification successful — mark as verified and re-save
         adminAccount.setMfaEnabled(true);
@@ -283,15 +293,30 @@ public class RoleServiceImpl implements RoleService {
     public boolean verifyMfa(Long golferAccountId, String totpCode) {
         log.debug("verifyMfa golferAccountId={}", golferAccountId);
 
+        // First statement in the method on purpose. Anything above it — the
+        // lookup, the "is MFA even on" answer — is work an attacker gets for
+        // free, and is itself information about the account.
+        mfaAttemptLimiter.checkAllowed(golferAccountId, MFA_VERIFY);
+
         AdminAccount adminAccount = adminAccountRepository.findByGolferAccountId(golferAccountId)
                 .orElse(null);
 
         if (adminAccount == null || !Boolean.TRUE.equals(adminAccount.getMfaEnabled())) {
+            mfaAttemptLimiter.recordFailure(golferAccountId);
             throw new VspApiException(VspErrorCode.MFA_001);
         }
 
         String rawSecret = decryptSecret(adminAccount.getMfaSecret());
-        return TotpUtils.verifyCode(rawSecret, totpCode);
+        boolean valid = TotpUtils.verifyCode(rawSecret, totpCode);
+
+        // A wrong code answers 200 {"valid":false}, so the counter and not the
+        // status code is what distinguishes a typo from a search.
+        if (valid) {
+            mfaAttemptLimiter.recordSuccess(golferAccountId);
+        } else {
+            mfaAttemptLimiter.recordFailure(golferAccountId);
+        }
+        return valid;
     }
 
     // ─── RBAC checks ─────────────────────────────────────────────────────────
