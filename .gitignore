@@ -21,7 +21,11 @@ npm-debug.log*
 yarn-error.log*
 
 # ─── Java / Maven (api) ───────────────────────────────────────────────────────
-target/
+# Scoped to the Maven module. A bare `target/` also matched
+# apps/mobile/lib/features/target/ — a Flutter feature — and silently kept its
+# source out of git. Keep build-output rules anchored to the app that produces
+# them; "target", "build" and "dist" are all ordinary domain words elsewhere.
+apps/api/**/target/
 *.class
 
 # ─── Flutter / Dart (mobile, watch_apple) ─────────────────────────────────────
