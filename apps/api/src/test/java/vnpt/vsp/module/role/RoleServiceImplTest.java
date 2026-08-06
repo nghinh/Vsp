@@ -309,50 +309,192 @@ class RoleServiceImplTest {
 
     // ─── MFA ─────────────────────────────────────────────────────────────────
 
+    /**
+     * The enrolment these tests replace could not be written honestly. Both of
+     * its "success" cases ended up asserting MFA_002, with a comment saying "we
+     * can't easily get the right code because the implementation generates its
+     * own secret internally" — which is not a difficulty in the test, it is the
+     * defect: the caller could not get the right code either.
+     *
+     * <p>Now step one returns the secret, so a test — like a real client — can
+     * compute a genuine code and finish enrolling.
+     */
     @Test
-    void enableMfa_setsMfaEnabledAndVerifiedAt_onValidTotp() {
-        // Given
+    void enrolment_endToEnd_issuesASecretThenEnablesMfaWithARealCodeFromIt() {
         Long golferId = 42L;
-        AdminAccount adminAccount = createAdminAccount(10L, golferId, false);
+        AdminAccount account = createAdminAccount(10L, golferId, false);
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+        when(adminAccountRepository.save(any(AdminAccount.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // The implementation generates a secret, saves it (1st save),
-        // then verifies, then saves again (2nd save with mfaEnabled=true).
-        // We capture the account after the first save to get the secret.
-        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(adminAccount));
-        when(adminAccountRepository.save(any(AdminAccount.class))).thenAnswer(inv -> {
-            AdminAccount arg = inv.getArgument(0);
-            // First save: secret is set but mfaEnabled still false
-            if (!Boolean.TRUE.equals(arg.getMfaEnabled())) {
-                // Store the secret so we can generate a valid TOTP for it
-                // The real implementation saves, then verifies, then saves again.
-                // We need the secret that was saved in step 1.
-                // Since we can't easily intercept the encrypted value, we test the
-                // MFA_002 path (invalid code) instead.
-            }
-            return arg;
-        });
+        RoleService.MfaEnrolment enrolment = roleService.beginMfaEnrolment(golferId);
 
-        // When — call with an invalid code (we can't easily get the right code
-        // because the implementation generates its own secret internally)
-        // So we test the invalid-code path instead
-        VspApiException ex = assertThrows(VspApiException.class,
-                () -> roleService.enableMfa(golferId, "000000"));
-        assertEquals(VspErrorCode.MFA_002, ex.getErrorCode());
+        // Step one hands over the secret and switches nothing on.
+        assertNotNull(enrolment.secret());
+        assertFalse(account.getMfaEnabled(), "step one must not enable MFA");
+        assertNotNull(account.getMfaSecret(), "the pending secret must be stored");
+        assertNull(account.getMfaVerifiedAt());
+
+        // The URI an authenticator app would scan carries that same secret.
+        assertTrue(enrolment.provisioningUri().startsWith("otpauth://totp/"));
+        assertTrue(enrolment.provisioningUri().contains("secret=" + enrolment.secret()));
+
+        // Step two, with a code any authenticator holding that secret would show.
+        roleService.confirmMfaEnrolment(golferId, TotpUtils.generateCode(enrolment.secret()));
+
+        assertTrue(account.getMfaEnabled());
+        assertNotNull(account.getMfaSecret());
+        assertNotNull(account.getMfaVerifiedAt());
+
+        // And the enrolled secret actually verifies afterwards.
+        assertTrue(roleService.verifyMfa(golferId, TotpUtils.generateCode(enrolment.secret())));
     }
 
     @Test
-    void enableMfa_throwsMFA_002_onInvalidTotp() {
-        // Given
+    void confirmMfaEnrolment_onWrongCode_throwsMFA_002_andChangesNothing() {
         Long golferId = 42L;
-        AdminAccount adminAccount = createAdminAccount(10L, golferId, false);
-        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(adminAccount));
+        AdminAccount account = createAdminAccount(10L, golferId, false);
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
         when(adminAccountRepository.save(any(AdminAccount.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        // When/Then — any code is invalid because the secret is freshly generated
-        // and the provided code doesn't match it
+        RoleService.MfaEnrolment enrolment = roleService.beginMfaEnrolment(golferId);
+        String pendingSecret = account.getMfaSecret();
+
         VspApiException ex = assertThrows(VspApiException.class,
-                () -> roleService.enableMfa(golferId, "000000"));
+                () -> roleService.confirmMfaEnrolment(golferId, wrongCodeFor(enrolment.secret())));
         assertEquals(VspErrorCode.MFA_002, ex.getErrorCode());
+
+        assertFalse(account.getMfaEnabled());
+        assertNull(account.getMfaVerifiedAt());
+        // The pending secret survives: one mistyped digit must not force the
+        // caller to tear down and rebuild their authenticator entry.
+        assertEquals(pendingSecret, account.getMfaSecret());
+
+        // ...and the next, correct code still completes the same enrolment.
+        roleService.confirmMfaEnrolment(golferId, TotpUtils.generateCode(enrolment.secret()));
+        assertTrue(account.getMfaEnabled());
+    }
+
+    @Test
+    void confirmMfaEnrolment_withNoEnrolmentInProgress_throwsMFA_006() {
+        Long golferId = 42L;
+        AdminAccount account = createAdminAccount(10L, golferId, false);
+        account.setMfaSecret(null);
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+
+        VspApiException ex = assertThrows(VspApiException.class,
+                () -> roleService.confirmMfaEnrolment(golferId, "123456"));
+        assertEquals(VspErrorCode.MFA_006, ex.getErrorCode());
+    }
+
+    /**
+     * The path that used to strand the account. Old {@code enableMfa} generated a
+     * fresh secret over whatever was there, and on the (near-certain) verification
+     * failure did {@code setMfaSecret(null)} — without touching {@code mfaEnabled}.
+     * One wrong code against an already-enabled account therefore left MFA flagged
+     * on with no secret behind it. Enrolment is now refused outright in that state.
+     */
+    @Test
+    void beginMfaEnrolment_onAnAlreadyEnabledAccount_isRefused_andLeavesTheLiveSecretIntact() {
+        Long golferId = 42L;
+        AdminAccount account = createAdminAccount(10L, golferId, true);
+        account.setMfaSecret("an-existing-encrypted-secret");
+        account.setMfaVerifiedAt(Instant.now());
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+
+        VspApiException ex = assertThrows(VspApiException.class,
+                () -> roleService.beginMfaEnrolment(golferId));
+        assertEquals(VspErrorCode.MFA_007, ex.getErrorCode());
+
+        assertTrue(account.getMfaEnabled());
+        assertEquals("an-existing-encrypted-secret", account.getMfaSecret());
+        verify(adminAccountRepository, never()).save(any(AdminAccount.class));
+    }
+
+    @Test
+    void confirmMfaEnrolment_onAnAlreadyEnabledAccount_isRefused() {
+        Long golferId = 42L;
+        AdminAccount account = createAdminAccount(10L, golferId, true);
+        account.setMfaSecret("an-existing-encrypted-secret");
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+
+        VspApiException ex = assertThrows(VspApiException.class,
+                () -> roleService.confirmMfaEnrolment(golferId, "123456"));
+        assertEquals(VspErrorCode.MFA_007, ex.getErrorCode());
+        assertEquals("an-existing-encrypted-secret", account.getMfaSecret());
+    }
+
+    /**
+     * The invariant, stated directly and driven over every failure the enrolment
+     * has: whatever goes wrong, the account never ends up claiming MFA is on
+     * without a secret to check codes against.
+     */
+    @Test
+    void noEnrolmentFailurePath_leavesMfaEnabledWithoutASecret() {
+        Long golferId = 42L;
+        AdminAccount account = createAdminAccount(10L, golferId, false);
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+        when(adminAccountRepository.save(any(AdminAccount.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        // Confirm with nothing pending.
+        account.setMfaSecret(null);
+        assertThrows(VspApiException.class, () -> roleService.confirmMfaEnrolment(golferId, "123456"));
+        assertConsistent(account);
+
+        // Confirm with a wrong code, repeatedly, staying inside the attempt budget.
+        RoleService.MfaEnrolment enrolment = roleService.beginMfaEnrolment(golferId);
+        assertConsistent(account);
+        for (int i = 0; i < 3; i++) {
+            assertThrows(VspApiException.class,
+                    () -> roleService.confirmMfaEnrolment(golferId, wrongCodeFor(enrolment.secret())));
+            assertConsistent(account);
+        }
+
+        // Enrol again over a pending (not yet confirmed) enrolment.
+        RoleService.MfaEnrolment second = roleService.beginMfaEnrolment(golferId);
+        assertConsistent(account);
+
+        // Then succeed, and stay consistent.
+        roleService.confirmMfaEnrolment(golferId, TotpUtils.generateCode(second.secret()));
+        assertConsistent(account);
+        assertTrue(account.getMfaEnabled());
+
+        // A refused re-enrolment on the now-enabled account.
+        assertThrows(VspApiException.class, () -> roleService.beginMfaEnrolment(golferId));
+        assertConsistent(account);
+    }
+
+    private static void assertConsistent(AdminAccount account) {
+        if (Boolean.TRUE.equals(account.getMfaEnabled())) {
+            assertNotNull(account.getMfaSecret(),
+                    "mfaEnabled is true with no mfaSecret: MFA is flagged on with nothing behind it");
+            assertNotNull(account.getMfaVerifiedAt(),
+                    "mfaEnabled is true with no mfaVerifiedAt, which disableMfa then refuses to unwind");
+        }
+    }
+
+    /** A six-digit code that is definitely not the current one for this secret. */
+    private static String wrongCodeFor(String secret) {
+        String actual = TotpUtils.generateCode(secret);
+        return actual.equals("000000") ? "111111" : "000000";
+    }
+
+    /**
+     * A secret an authenticator app can actually consume. The provisioning URI's
+     * {@code secret=} parameter is Base32 by definition; these secrets used to be
+     * Base64, so the URI carried characters ({@code +}, {@code /}, {@code =},
+     * lowercase) that no authenticator could decode to the same key.
+     */
+    @Test
+    void issuedSecret_isBase32_soAnAuthenticatorAppCanDecodeTheProvisioningUri() {
+        Long golferId = 42L;
+        AdminAccount account = createAdminAccount(10L, golferId, false);
+        when(adminAccountRepository.findByGolferAccountId(golferId)).thenReturn(Optional.of(account));
+        when(adminAccountRepository.save(any(AdminAccount.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        String secret = roleService.beginMfaEnrolment(golferId).secret();
+
+        assertTrue(secret.matches("[A-Z2-7]+"), "not Base32: " + secret);
+        assertEquals(32, secret.length(), "160 bits of entropy in Base32 is 32 characters");
     }
 
     /**

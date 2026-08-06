@@ -10,7 +10,11 @@ CREATE TABLE admin_accounts (
 
     -- MFA state
     mfa_enabled                 BOOLEAN NOT NULL DEFAULT FALSE,
-    mfa_secret                 VARCHAR(64),     -- AES-encrypted TOTP secret (Base64-encoded)
+    -- 255, not 64: the stored value is the AES-GCM blob (12-byte IV + ciphertext
+    -- + 16-byte tag) Base64-armoured, which is ~80 characters for a 160-bit
+    -- secret. At VARCHAR(64) no encrypted secret could ever be written — every
+    -- enrolment ended in "value too long for type character varying(64)".
+    mfa_secret                 VARCHAR(255),    -- AES-GCM encrypted TOTP secret, Base64-armoured
     mfa_verified_at            TIMESTAMPTZ,     -- Set on successful first TOTP verification
 
     -- Timestamps

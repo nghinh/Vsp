@@ -107,20 +107,42 @@ public class RoleController {
     // ─── MFA management ──────────────────────────────────────────────────────
 
     /**
-     * Enable MFA for the authenticated admin account.
-     * Generates a TOTP secret and returns the provisioning URI for QR code generation.
-     * <p>
-     * The path variable names the account, so without the check below "for the
+     * Step one of MFA enrolment: issue a TOTP secret and its provisioning URI.
+     *
+     * <p>MFA is <em>not</em> switched on here. The caller sets up an
+     * authenticator app from the returned secret and then calls
+     * {@code /mfa/confirm} with a code from it.
+     *
+     * <p>Replaces the previous {@code POST /mfa/enable}, which took a
+     * {@code totpCode} for a secret it generated in the same call — a code the
+     * caller had no way to know, so the endpoint could not succeed.
+     *
+     * <p>The path variable names the account, so without the check below "for the
      * authenticated admin account" would have meant "for any account the caller
      * cares to name": rotating another admin's TOTP secret.
      */
-    @PostMapping("/users/{golferAccountId}/mfa/enable")
+    @PostMapping("/users/{golferAccountId}/mfa/enroll")
     @PreAuthorize("#golferAccountId == authentication.principal or hasRole('SUPER_ADMIN')")
-    public ResponseEntity<EnableMfaResponse> enableMfa(
+    public ResponseEntity<MfaEnrolmentResponse> beginMfaEnrolment(@PathVariable Long golferAccountId) {
+        RoleService.MfaEnrolment enrolment = roleService.beginMfaEnrolment(golferAccountId);
+        return ResponseEntity.ok(
+                new MfaEnrolmentResponse(enrolment.secret(), enrolment.provisioningUri()));
+    }
+
+    /**
+     * Step two of MFA enrolment: switch MFA on, given a code from the
+     * authenticator set up in step one.
+     *
+     * <p>A wrong code is a 400 {@code VSP-ERR-MFA-002} and changes nothing — the
+     * pending secret stays valid, so the caller can just try the next code.
+     */
+    @PostMapping("/users/{golferAccountId}/mfa/confirm")
+    @PreAuthorize("#golferAccountId == authentication.principal or hasRole('SUPER_ADMIN')")
+    public ResponseEntity<Void> confirmMfaEnrolment(
             @PathVariable Long golferAccountId,
             @Valid @RequestBody EnableMfaRequest request) {
-        String provisioningUri = roleService.enableMfa(golferAccountId, request.getTotpCode());
-        return ResponseEntity.ok(new EnableMfaResponse(provisioningUri));
+        roleService.confirmMfaEnrolment(golferAccountId, request.getTotpCode());
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -171,11 +193,21 @@ public class RoleController {
 
     // ─── Internal DTOs for responses ────────────────────────────────────────
 
-    public static class EnableMfaResponse {
+    /**
+     * The issued secret, both ways a client can consume it: {@code secret} for
+     * manual entry, {@code provisioningUri} for a QR code.
+     */
+    public static class MfaEnrolmentResponse {
+        private final String secret;
         private final String provisioningUri;
 
-        public EnableMfaResponse(String provisioningUri) {
+        public MfaEnrolmentResponse(String secret, String provisioningUri) {
+            this.secret = secret;
             this.provisioningUri = provisioningUri;
+        }
+
+        public String getSecret() {
+            return secret;
         }
 
         public String getProvisioningUri() {

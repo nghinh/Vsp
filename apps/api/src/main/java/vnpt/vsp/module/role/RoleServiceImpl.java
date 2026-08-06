@@ -47,7 +47,8 @@ public class RoleServiceImpl implements RoleService {
 
     /** Metric/log tags for the two operations that take a TOTP code. */
     private static final String MFA_VERIFY = "verify";
-    private static final String MFA_ENABLE = "enable";
+    private static final String MFA_ENROL = "enrol";
+    private static final String MFA_CONFIRM = "confirm";
 
     private final RoleRepository roleRepository;
     private final AdminAccountRepository adminAccountRepository;
@@ -194,42 +195,88 @@ public class RoleServiceImpl implements RoleService {
 
     // ─── MFA ─────────────────────────────────────────────────────────────────
 
+    /**
+     * Issues the secret. Does not switch MFA on — see {@link #confirmMfaEnrolment}.
+     *
+     * <p>The single-call {@code enableMfa} this replaces generated a secret,
+     * saved it, and in the same breath demanded a current TOTP code for it. The
+     * caller had never seen the secret, so the code could only be a guess against
+     * a value invented microseconds earlier: a one-in-a-million success rate on a
+     * flow whose entire purpose is to be completed. Nobody could turn MFA on.
+     *
+     * <p>Worse, the failure path it then took — {@code setMfaSecret(null)} —
+     * ran against whatever the account already was. On an account with MFA
+     * already enabled, one wrong code wiped the secret and left
+     * {@code mfaEnabled} true: MFA flagged on with nothing behind it, so every
+     * subsequent verification hit {@code decryptSecret(null)}. Refusing to
+     * enrol over an enabled account (MFA_007) removes that path rather than
+     * patching it, and the confirm step below never clears a secret at all.
+     */
     @Override
     @Transactional
-    public String enableMfa(Long golferAccountId, String totpCode) {
-        log.debug("enableMfa golferAccountId={}", golferAccountId);
+    public MfaEnrolment beginMfaEnrolment(Long golferAccountId) {
+        log.debug("beginMfaEnrolment golferAccountId={}", golferAccountId);
 
         // Before the lookup: an attempt refused here must cost nothing, and the
         // budget must not depend on whether the named account happens to exist.
-        mfaAttemptLimiter.checkAllowed(golferAccountId, MFA_ENABLE);
+        mfaAttemptLimiter.checkAllowed(golferAccountId, MFA_ENROL);
 
         AdminAccount adminAccount = adminAccountRepository.findByGolferAccountId(golferAccountId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.ROLE_002));
 
-        // Generate a new secret
+        if (Boolean.TRUE.equals(adminAccount.getMfaEnabled())) {
+            throw new VspApiException(VspErrorCode.MFA_007);
+        }
+
         String rawSecret = TotpUtils.generateSecret();
 
-        // Temporarily set the secret so we can verify the provided code
+        // Pending, by construction: the secret is stored while mfaEnabled stays
+        // false. "Secret present, not enabled" is an enrolment in progress;
+        // "enabled" always implies a secret is present.
         adminAccount.setMfaSecret(encryptSecret(rawSecret));
+        adminAccount.setMfaVerifiedAt(null);
         adminAccountRepository.save(adminAccount);
 
-        // Verify the TOTP code against this secret
-        if (!TotpUtils.verifyCode(rawSecret, totpCode)) {
-            // Clear the secret if verification fails
-            adminAccount.setMfaSecret(null);
-            adminAccountRepository.save(adminAccount);
+        log.info(append("action", "MFA_ENROLMENT_STARTED"),
+                "MFA enrolment started: golferAccountId={}", golferAccountId);
+
+        return new MfaEnrolment(
+                rawSecret,
+                TotpUtils.getProvisioningUri(rawSecret, String.valueOf(golferAccountId), "VSP Admin"));
+    }
+
+    @Override
+    @Transactional
+    public void confirmMfaEnrolment(Long golferAccountId, String totpCode) {
+        log.debug("confirmMfaEnrolment golferAccountId={}", golferAccountId);
+
+        mfaAttemptLimiter.checkAllowed(golferAccountId, MFA_CONFIRM);
+
+        AdminAccount adminAccount = adminAccountRepository.findByGolferAccountId(golferAccountId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROLE_002));
+
+        if (Boolean.TRUE.equals(adminAccount.getMfaEnabled())) {
+            throw new VspApiException(VspErrorCode.MFA_007);
+        }
+        if (adminAccount.getMfaSecret() == null) {
+            throw new VspApiException(VspErrorCode.MFA_006);
+        }
+
+        if (!TotpUtils.verifyCode(decryptSecret(adminAccount.getMfaSecret()), totpCode)) {
+            // Deliberately no write. The pending secret is already in the
+            // caller's authenticator app; clearing it here would force them to
+            // start over for one mistyped digit, and clearing it on an account
+            // that was enabled is what used to strand mfaEnabled with no secret.
             mfaAttemptLimiter.recordFailure(golferAccountId);
             throw new VspApiException(VspErrorCode.MFA_002);
         }
         mfaAttemptLimiter.recordSuccess(golferAccountId);
 
-        // Verification successful — mark as verified and re-save
+        // Only now, and only ever alongside a secret that is already stored.
         adminAccount.setMfaEnabled(true);
         adminAccount.setMfaVerifiedAt(Instant.now());
-        // Keep the secret (already set above)
         adminAccountRepository.save(adminAccount);
 
-        // Audit log
         auditService.log(
                 vnpt.vsp.module.audit.AuditAction.MFA_ENABLED,
                 "AdminAccount",
@@ -241,9 +288,6 @@ public class RoleServiceImpl implements RoleService {
 
         log.info(append("action", "MFA_ENABLED"),
                 "MFA enabled: golferAccountId={}", golferAccountId);
-
-        // Return the provisioning URI for QR code generation
-        return TotpUtils.getProvisioningUri(rawSecret, String.valueOf(golferAccountId), "VSP Admin");
     }
 
     @Override
@@ -301,7 +345,18 @@ public class RoleServiceImpl implements RoleService {
         AdminAccount adminAccount = adminAccountRepository.findByGolferAccountId(golferAccountId)
                 .orElse(null);
 
-        if (adminAccount == null || !Boolean.TRUE.equals(adminAccount.getMfaEnabled())) {
+        // The null-secret arm is for accounts the old enableMfa already stranded:
+        // it cleared mfaSecret on a failed verification without clearing
+        // mfaEnabled, so rows exist that claim MFA is on with nothing behind it.
+        // Reaching decryptSecret(null) there would be a 500 on every login;
+        // "MFA is not enabled" is both survivable and, for such a row, true.
+        if (adminAccount == null
+                || !Boolean.TRUE.equals(adminAccount.getMfaEnabled())
+                || adminAccount.getMfaSecret() == null) {
+            if (adminAccount != null && Boolean.TRUE.equals(adminAccount.getMfaEnabled())) {
+                log.warn(append("action", "MFA_INCONSISTENT"),
+                        "Account has mfaEnabled with no secret: golferAccountId={}", golferAccountId);
+            }
             mfaAttemptLimiter.recordFailure(golferAccountId);
             throw new VspApiException(VspErrorCode.MFA_001);
         }

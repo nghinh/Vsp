@@ -26,8 +26,21 @@ public class AdminAccount {
     @Column(name = "mfa_enabled", nullable = false)
     private Boolean mfaEnabled = false;
 
-    @Column(name = "mfa_secret", length = 64)
-    private String mfaSecret;  // AES-encrypted TOTP secret (Base64-encoded)
+    /**
+     * The AES-GCM encrypted TOTP secret, Base64-armoured.
+     *
+     * <p>Non-null exactly when there is a secret to check codes against: while an
+     * enrolment is pending ({@code mfaEnabled} false) and for as long as MFA is
+     * on. {@code mfaEnabled} true with this null is the inconsistent state the
+     * old enable-in-one-call flow could leave behind, and nothing may produce it.
+     *
+     * <p>255, not 64: the stored blob is a 12-byte IV plus ciphertext plus a
+     * 16-byte tag, Base64-armoured — about 80 characters for a 160-bit secret. At
+     * 64 the column could not hold one, so every enrolment that got as far as
+     * saving died on "value too long for type character varying(64)".
+     */
+    @Column(name = "mfa_secret", length = 255)
+    private String mfaSecret;
 
     @Column(name = "mfa_verified_at")
     private Instant mfaVerifiedAt;

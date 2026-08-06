@@ -91,25 +91,48 @@ class MfaEndpointThrottlingTest {
                 .andExpect(status().is(org.hamcrest.Matchers.not(429)));
     }
 
+    /**
+     * Enrolment is now two calls, and the code — the guessable part — is in the
+     * second. So the budget is spent on {@code /mfa/confirm}, and exhausting it
+     * must also shut the door on {@code /mfa/enroll}: an attacker who can still
+     * start a fresh enrolment can rotate the pending secret indefinitely, and a
+     * budget that only covers confirm would be a budget on nothing.
+     */
     @Test
-    @DisplayName("Enabling MFA is throttled too — it also takes a code per call")
-    void enableIsThrottled() throws Exception {
+    @DisplayName("Confirming an enrolment is throttled, and a spent budget also refuses a new enrolment")
+    void enrolmentConfirmationIsThrottled() throws Exception {
         long accountId = 992_300L;
         String token = seedAdmin(accountId, RoleName.COURSE_ADMIN);
 
+        // Step one, so confirm reaches the code check rather than "nothing pending".
+        mockMvc.perform(enroll(accountId, token)).andExpect(status().isOk());
+
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            mockMvc.perform(post("/admin/users/{id}/mfa/enable", accountId)
-                    .header("Authorization", "Bearer " + token)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"totpCode\":\"000000\"}"));
+            mockMvc.perform(confirm(accountId, token, "000000"))
+                    .andExpect(status().isBadRequest());
         }
 
-        mockMvc.perform(post("/admin/users/{id}/mfa/enable", accountId)
-                        .header("Authorization", "Bearer " + token)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"totpCode\":\"000000\"}"))
+        mockMvc.perform(confirm(accountId, token, "000000"))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code").value("VSP-ERR-MFA-005"));
+
+        mockMvc.perform(enroll(accountId, token))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("VSP-ERR-MFA-005"));
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder enroll(
+            long accountId, String token) {
+        return post("/admin/users/{id}/mfa/enroll", accountId)
+                .header("Authorization", "Bearer " + token);
+    }
+
+    private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder confirm(
+            long accountId, String token, String code) {
+        return post("/admin/users/{id}/mfa/confirm", accountId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"totpCode\":\"" + code + "\"}");
     }
 
     private org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder verify(

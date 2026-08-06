@@ -51,15 +51,46 @@ public interface RoleService {
     // ─── MFA ─────────────────────────────────────────────────────────────────
 
     /**
-     * Enable MFA for an admin account.
-     * Generates a TOTP secret, encrypts it, and stores it.
-     * Requires a valid TOTP verification to complete.
+     * Step one of MFA enrolment: issue a TOTP secret for an admin account.
+     *
+     * <p>Generates a secret, encrypts it and stores it as the account's
+     * <em>pending</em> secret — {@code mfaSecret} set, {@code mfaEnabled} still
+     * false — then hands the caller the secret and its provisioning URI so an
+     * authenticator app can be set up. MFA is not switched on here; that is
+     * {@link #confirmMfaEnrolment}, which requires a code proving the app and the
+     * server agree.
+     *
+     * <p>This replaces the previous single-call {@code enableMfa(id, totpCode)},
+     * which generated the secret server-side and then demanded a current code for
+     * a secret the caller had never seen — one attempt in a million.
+     *
+     * <p>Refused with {@code MFA_007} when MFA is already enabled, so a fresh
+     * enrolment can never overwrite the secret behind a working one.
      *
      * @param golferAccountId the golfer account ID
-     * @param totpCode        the current TOTP code to verify the secret
-     * @return the provisioning URI for QR code generation
+     * @return the issued secret and its {@code otpauth://} provisioning URI
      */
-    String enableMfa(Long golferAccountId, String totpCode);
+    MfaEnrolment beginMfaEnrolment(Long golferAccountId);
+
+    /**
+     * Step two of MFA enrolment: switch MFA on, given a code proving the
+     * authenticator holds the secret issued by {@link #beginMfaEnrolment}.
+     *
+     * <p>On a wrong code nothing about the account changes: the pending secret
+     * survives so the caller can simply try the next code, and MFA stays off.
+     *
+     * @param golferAccountId the golfer account ID
+     * @param totpCode        a current TOTP code for the pending secret
+     */
+    void confirmMfaEnrolment(Long golferAccountId, String totpCode);
+
+    /**
+     * A secret issued by {@link #beginMfaEnrolment} and the URI that carries it.
+     *
+     * @param secret          the Base32 TOTP secret, for manual entry
+     * @param provisioningUri the {@code otpauth://} URI, for a QR code
+     */
+    record MfaEnrolment(String secret, String provisioningUri) {}
 
     /**
      * Disable MFA for an admin account.
