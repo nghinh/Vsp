@@ -2,7 +2,7 @@ name: Portal CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master]
     paths:
       - "apps/portal/**"
       - ".github/workflows/ci-portal.yml"
@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@18e4a6dd9b4f3e1c6c77c8ae2e6b6f1b8e3c2c5a  # v4.3.1
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e  # v4.3.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -69,12 +69,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run git-secrets
-        uses: zricethezav/gitleaks-action@92c118b9a6c8eadb70b18c3a8d0f3d1a9b3a9f7c  # v2.3.2
-        with:
-          scan-commit: ${{ github.event.pull_request.base.sha || github.sha }}
-          scan-commits-files: ${{ github.event.pull_request.head.sha || github.sha }}
-          baseline-path: .gitleaks-baseline.json
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@1f2d10fb689bc07a5f56f48d6db61f5bbbe772fa  # v2.3.2
         env:
-          GITLEAKS_ENABLE_COMMENTS: false
-          GITLEAKS_ENABLE_UNSTAGED: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"

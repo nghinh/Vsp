@@ -1,13 +1,18 @@
 name: API CI
 
+# master is the only branch this repository has ever had. The triggers used to
+# name main and develop, neither of which exists, so no push to this repository
+# could start this workflow — the CI that was meant to guard the API had never
+# run once.
 on:
   push:
-    branches: [main, develop]
+    branches: [master]
     paths:
       - "apps/api/**"
       - ".github/workflows/ci-api.yml"
       - "infra/migrations/**"
   pull_request:
+    branches: [master]
     paths:
       - "apps/api/**"
       - ".github/workflows/ci-api.yml"
@@ -24,58 +29,97 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        java-version: ["17", "21"]
+        # 21 only. apps/api/pom.xml sets maven.compiler.release 21, so the
+        # Java 17 leg of this matrix could only ever fail on "invalid target
+        # release: 21" at the Compile step, which has no continue-on-error.
+        java-version: ["21"]
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Setup Java ${{ matrix.java-version }}
-        uses: actions/setup-java@8b0c3ab1c8a1b7a0c6c48c8e5e8f4c1e3d5c6b7a  # v4.8.2
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9  # v4.8.0
         with:
           distribution: temurin
           java-version: ${{ matrix.java-version }}
           cache: maven
           cache-dependency-path: apps/api/pom.xml
 
-      - name: Format & validate
-        run: mvn formatter:format validate -q
+      - name: Validate
+        run: mvn -B validate
         working-directory: apps/api
-        continue-on-error: true
 
       - name: Compile
-        run: mvn compile -q
+        run: mvn -B compile
         working-directory: apps/api
-
-      - name: Static analysis
-        run: mvn static-check:check -q
-        working-directory: apps/api
-        continue-on-error: true
 
       - name: Test
-        run: mvn test -q
+        run: mvn -B test
         working-directory: apps/api
 
       - name: OWASP Dependency Check
         run: |
-          mvn org.owasp:dependency-check-maven:check \
+          mvn -B org.owasp:dependency-check-maven:check \
             -DfailBuildOnCVSS=7 \
-            -DsuppressionFile=dependency-check-suppressions.xml \
-            -q
+            -DsuppressionFile=dependency-check-suppressions.xml
         working-directory: apps/api
         continue-on-error: true
 
       - name: Build package
-        run: mvn package -DskipTests -q
+        run: mvn -B package -DskipTests
         working-directory: apps/api
 
-      - name: Migration dry-run
-        run: |
-          # Flyway/Liquibase dry-run against the baseline migration
-          # Requires docker services; dry-run syntax validated here
-          mvn flyway:dry-run -q 2>/dev/null || \
-            echo "FLYWAY_DRY_RUN: No migration configuration found — skipping dry-run"
+  # The migrations get their own job with a real PostGIS behind it, because the
+  # only way to know they work is to run them into an empty database — which is
+  # exactly what no environment did, and how db/migration came to be 10 tables,
+  # 175 columns and one missing PostGIS extension away from the entity model.
+  #
+  # Separate from api-ci on purpose: the other PostgreSQL-backed tests assert
+  # against seeded dev data and would fail against an empty database, so api-ci
+  # deliberately runs with no database reachable and they skip there.
+  api-schema:
+    name: Migrations match the entity model
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: vsp
+          POSTGRES_PASSWORD: vsp_dev_password
+          POSTGRES_DB: vsp
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+
+      - name: Setup Java 21
+        uses: actions/setup-java@c1e323688fd81a25caa38c78aa6df2d33d3e20d9  # v4.8.0
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: apps/api/pom.xml
+
+      # Runs every migration into a database created from empty, then boots
+      # Hibernate with ddl-auto=validate over all 64 @Entity classes. Fails if a
+      # migration does not apply, if one is silently skipped for not matching
+      # Flyway's naming convention, or if the resulting schema is missing so
+      # much as a column the code expects.
+      - name: Flyway builds the schema the entities expect
+        run: mvn -B test -Dtest=FlywaySchemaMatchesEntityModelTest -DfailIfNoTests=false
         working-directory: apps/api
-        continue-on-error: true
+        env:
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5432"
+          POSTGRES_DB: vsp
+          POSTGRES_USER: vsp
+          POSTGRES_PASSWORD: vsp_dev_password
 
   api-secrets:
     name: API Secret Scan
@@ -86,12 +130,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run git-secrets
-        uses: zricethezav/gitleaks-action@92c118b9a6c8eadb70b18c3a8d0f3d1a9b3a9f7c  # v2.3.2
-        with:
-          scan-commit: ${{ github.event.pull_request.base.sha || github.sha }}
-          scan-commits-files: ${{ github.event.pull_request.head.sha || github.sha }}
-          baseline-path: .gitleaks-baseline.json
+      # zricethezav/gitleaks-action moved to gitleaks/gitleaks-action; the old
+      # coordinates no longer resolve, and the SHA that was pinned here existed
+      # in neither repository.
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@1f2d10fb689bc07a5f56f48d6db61f5bbbe772fa  # v2.3.2
         env:
-          GITLEAKS_ENABLE_COMMENTS: false
-          GITLEAKS_ENABLE_UNSTAGED: true
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # gitleaks-action v2 is configured entirely through the environment —
+          # it declares no `with:` inputs at all, so the scan-commit,
+          # scan-commits-files and baseline-path arguments this step used to
+          # pass were silently ignored (and .gitleaks-baseline.json has never
+          # existed in this repository).
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "true"
