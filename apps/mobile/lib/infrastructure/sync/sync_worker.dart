@@ -223,15 +223,19 @@ class SyncWorker {
         if (result.isSuccess) {
           await _repository.markSynced(event.id);
         } else if (result.isPermanentFailure) {
-          // 4xx — client error, mark permanently failed.
+          // The server rejected this data and will reject it again — a
+          // validation error or a conflict. Retrying cannot help.
           await _repository.markFailed(
             event.id,
             result.errorMessage ?? 'Client error',
           );
         } else {
-          // 5xx or network error — increment retry and schedule backoff.
+          // Retryable: 5xx, transport, or a 4xx about the request rather than
+          // the data. Back to pending, not failed — markFailed takes the event
+          // out of getPending()'s selection, so the backoff timer below would
+          // fire on a queue that no longer contained it.
           await _repository.incrementAttemptCount(event.id);
-          await _repository.markFailed(
+          await _repository.markRetryable(
             event.id,
             result.errorMessage ?? 'Server error',
           );
@@ -242,7 +246,7 @@ class SyncWorker {
       } catch (e) {
         // Network or unexpected error — treat as retryable.
         await _repository.incrementAttemptCount(event.id);
-        await _repository.markFailed(event.id, e.toString());
+        await _repository.markRetryable(event.id, e.toString());
 
         // Schedule retry after backoff.
         _scheduleRetry(delay);

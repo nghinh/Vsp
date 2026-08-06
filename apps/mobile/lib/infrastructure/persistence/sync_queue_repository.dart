@@ -145,6 +145,30 @@ class SyncQueueRepository {
     );
   }
 
+  /// Record a failed attempt that should be tried again.
+  ///
+  /// The state goes back to `pending`, which is the difference between this
+  /// and [markFailed]. [getPending] selects `state IN ('pending', 'syncing')`,
+  /// so an event parked in `failed` is never handed to the worker again — a
+  /// retryable failure written with [markFailed] scheduled a backoff timer for
+  /// an event the next drain could no longer see. Every 5xx and every dropped
+  /// connection ended the event's life on the first attempt, and
+  /// `maxAttempts` was never reached because `attempt_count` was never read
+  /// again.
+  Future<void> markRetryable(String id, String error) async {
+    final db = await _database;
+    await db.update(
+      _tableName,
+      {
+        'state': SyncStatus.pending.name,
+        'error_message': error,
+        'last_attempt_at': DateTime.now().millisecondsSinceEpoch,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
   /// Increment the attempt count for an event (without changing state).
   Future<void> incrementAttemptCount(String id) async {
     final db = await _database;

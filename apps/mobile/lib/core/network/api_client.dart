@@ -287,15 +287,45 @@ class ApiClient {
     required String path,
     required Map<String, dynamic> body,
     required String idempotencyKey,
+  }) => sendForReplay(
+    method: 'POST',
+    path: path,
+    body: body,
+    idempotencyKey: idempotencyKey,
+  );
+
+  /// Send any idempotent write and return the raw response with its headers.
+  ///
+  /// The sync queue needs more than POST: a finished shot is a
+  /// `PATCH /shots/{id}`, a discarded one is a `DELETE /shots/{id}`. Those are
+  /// the endpoints the API actually exposes, and a queue that can only POST
+  /// cannot reach them.
+  ///
+  /// [body] is omitted entirely when null, because DELETE carries none.
+  Future<http.Response> sendForReplay({
+    required String method,
+    required String path,
+    required String idempotencyKey,
+    Map<String, dynamic>? body,
   }) async {
     final uri = Uri.parse('$_baseUrl$path');
-    return _httpClient
-        .post(
-          uri,
-          headers: _headers(idempotencyKey: idempotencyKey),
-          body: jsonEncode(body),
-        )
-        .timeout(const Duration(seconds: 30));
+    final headers = _headers(idempotencyKey: idempotencyKey);
+    final encoded = body == null ? null : jsonEncode(body);
+
+    final Future<http.Response> pending;
+    switch (method) {
+      case 'POST':
+        pending = _httpClient.post(uri, headers: headers, body: encoded);
+      case 'PATCH':
+        pending = _httpClient.patch(uri, headers: headers, body: encoded);
+      case 'PUT':
+        pending = _httpClient.put(uri, headers: headers, body: encoded);
+      case 'DELETE':
+        pending = _httpClient.delete(uri, headers: headers, body: encoded);
+      default:
+        throw ArgumentError.value(method, 'method', 'Unsupported sync method');
+    }
+    return pending.timeout(const Duration(seconds: 30));
   }
 
   void close() => _httpClient.close();
