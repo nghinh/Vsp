@@ -82,10 +82,6 @@ class PackageFileDownloader {
       await dir.create(recursive: true);
     }
 
-    // Accumulate bytes for checksum computation
-    final sink = AccumulatorSink<Digest>();
-    final hashOutput = sha256.startChunkedConversion(sink);
-
     int totalBytes = 0;
 
     try {
@@ -95,20 +91,23 @@ class PackageFileDownloader {
         cancelToken: cancelToken,
         onReceiveProgress: (received, total) {
           totalBytes = total > 0 ? total : 0;
-          hashOutput.addSlice(
-            _receivedBytesToList(received),
-            0,
-            received,
-            false,
-          );
           onProgress?.call(received, total);
         },
         deleteOnError: true,
       );
 
-      hashOutput.close();
-
-      final computed = sink.events.single.toString();
+      // Hash what was actually written, read back off disk.
+      //
+      // This used to be computed inside onReceiveProgress, from
+      // `List.filled(received, 0)` — a zero-filled buffer whose length was the
+      // *cumulative* progress counter. dio's callback reports how many bytes
+      // have arrived, not which bytes; the payload was never available there.
+      // So the digest was of a growing run of zeros, fed in overlapping
+      // slices, and bore no relation to the file. It could not have matched
+      // any real manifest checksum, which means this check had two states —
+      // reject everything, or never run — and only the second was ever
+      // observed, because the packages being served carry no files at all.
+      final computed = await _sha256OfFile(file);
 
       if (computed != expectedChecksum) {
         debugPrint(
@@ -156,12 +155,16 @@ class PackageFileDownloader {
     }
   }
 
-  List<int> _receivedBytesToList(int bytes) {
-    // dio's onReceiveProgress receives cumulative bytes; we need to
-    // convert to a list for the hash input.
-    // For simplicity, store the last chunk in a temporary buffer.
-    // This is a simplified approach; full implementation would track chunks.
-    return List.filled(bytes.clamp(0, 1024 * 1024), 0);
+  /// SHA-256 of a file's contents, hex, streamed so a large tile pack is never
+  /// held in memory.
+  static Future<String> _sha256OfFile(File file) async {
+    final sink = AccumulatorSink<Digest>();
+    final hashOutput = sha256.startChunkedConversion(sink);
+    await for (final chunk in file.openRead()) {
+      hashOutput.add(chunk);
+    }
+    hashOutput.close();
+    return sink.events.single.toString();
   }
 
   /// Cancel an active download.

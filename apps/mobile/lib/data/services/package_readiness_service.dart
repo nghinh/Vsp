@@ -8,10 +8,23 @@
 
 import 'dart:io';
 
+import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../repositories/package_manifest_repository.dart';
 import '../../domain/models/course_package_manifest.dart';
+
+/// Collects the single [Digest] a chunked SHA-256 conversion emits on close.
+class _DigestSink implements Sink<Digest> {
+  late final Digest value;
+
+  @override
+  void add(Digest data) => value = data;
+
+  @override
+  void close() {}
+}
 
 /// Readiness reason codes.
 enum PackageReadinessReason {
@@ -154,6 +167,17 @@ class PackageReadinessService {
         return false;
       }
 
+      // A manifest that declares no files describes nothing that was ever
+      // downloaded, so there is nothing on disk that could make this course
+      // playable offline. The loop below would pass it — zero files, zero
+      // failures — and the golfer would be told the course is ready having
+      // received no map. This is the same judgement the download path makes
+      // when it refuses an empty package; it has to hold here too, or a
+      // package refused at download time is reported ready afterwards.
+      if (manifest.files.isEmpty) {
+        return false;
+      }
+
       // Check that at least the key files exist
       for (final file in manifest.files) {
         final filePath = '${packageDir.path}/${file.path}';
@@ -169,7 +193,23 @@ class PackageReadinessService {
     }
   }
 
-  /// Verify package checksum integrity.
+  /// Verify package integrity: every file the manifest declares must hash to
+  /// the SHA-256 the manifest recorded for it.
+  ///
+  /// What was here before could not fail. It summed the on-disk sizes and
+  /// compared them to `manifest.sizeBytes`; on a mismatch it deferred to
+  /// `_spotCheckChecksum`, which was a comment and `return true`. So the only
+  /// ways this method ever returned false were an exception or a missing
+  /// directory — never a byte that had changed. A truncated download, a half
+  /// written tile pack, a file corrupted on a failing SD card, or bytes
+  /// substituted in transit all read as "Offline Ready", and the golfer found
+  /// out on the tee.
+  ///
+  /// The size comparison is gone rather than kept as a fast path. It could not
+  /// do the job — `sizeBytes` is the sum of the declared files, while the walk
+  /// counted everything in the directory, so any extra file made the totals
+  /// disagree for a reason that says nothing about integrity — and hashing the
+  /// declared files answers the question it was standing in for.
   Future<bool> _verifyChecksum(CoursePackageManifest manifest) async {
     try {
       final appDir = await getApplicationDocumentsDirectory();
@@ -181,19 +221,25 @@ class PackageReadinessService {
         return false;
       }
 
-      // Compute SHA-256 of all files concatenated
-      // For performance, we check file sizes first and do spot checks
-      int totalSize = 0;
-      await for (final entity in packageDir.list(recursive: true)) {
-        if (entity is File) {
-          totalSize += await entity.length();
-        }
+      // Nothing declared means nothing verified. Reporting a package with no
+      // files as intact would be the same falsehood in a different place.
+      if (manifest.files.isEmpty) {
+        return false;
       }
 
-      // Size should match manifest size
-      if (totalSize != manifest.sizeBytes) {
-        // Size mismatch might just mean extra files — check spot checksum
-        return await _spotCheckChecksum(manifest, packageDir);
+      for (final entry in manifest.files) {
+        final file = File('${packageDir.path}/${entry.path}');
+        if (!await file.exists()) {
+          return false;
+        }
+        final computed = await sha256OfFile(file);
+        if (!_checksumsMatch(computed, entry.checksum)) {
+          debugPrint(
+            '[PackageReadinessService] Checksum mismatch for ${entry.path}: '
+            'manifest ${entry.checksum}, on disk $computed',
+          );
+          return false;
+        }
       }
 
       return true;
@@ -202,15 +248,27 @@ class PackageReadinessService {
     }
   }
 
-  /// Spot-check a few key files for checksum.
-  Future<bool> _spotCheckChecksum(
-    CoursePackageManifest manifest,
-    Directory packageDir,
-  ) async {
-    // In a real implementation, we would compute SHA-256 of key files
-    // and compare against manifest checksums. For now, return true
-    // as the size check is the main indicator.
-    return true;
+  /// Compare a computed digest with the manifest's, tolerating case and an
+  /// optional `sha256:` prefix, but never tolerating an absent expectation:
+  /// an empty manifest checksum verifies nothing and must not pass.
+  static bool _checksumsMatch(String computed, String expected) {
+    final wanted = expected.trim().toLowerCase().replaceFirst('sha256:', '');
+    if (wanted.isEmpty) {
+      return false;
+    }
+    return computed.toLowerCase() == wanted;
+  }
+
+  /// SHA-256 of a file's contents, hex, streamed rather than read whole so a
+  /// large tile pack is not loaded into memory to be checked.
+  static Future<String> sha256OfFile(File file) async {
+    final sink = _DigestSink();
+    final hashOutput = sha256.startChunkedConversion(sink);
+    await for (final chunk in file.openRead()) {
+      hashOutput.add(chunk);
+    }
+    hashOutput.close();
+    return sink.value.toString();
   }
 
   /// Record telemetry when user acknowledges warning and proceeds.
