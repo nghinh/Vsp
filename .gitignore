@@ -44,6 +44,15 @@ android/local.properties
 .gradle/
 local.properties
 
+# ─── Signing secrets ──────────────────────────────────────────────────────────
+# Release keystores and the properties file that holds their password. See
+# SECRETS_POLICY.md and apps/mobile/android/key.properties.example.
+key.properties
+*.jks
+*.keystore
+*.p12
+*.mobileprovision
+
 # ─── Logs ─────────────────────────────────────────────────────────────────────
 *.log
 logs/
