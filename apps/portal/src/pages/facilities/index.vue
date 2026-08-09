@@ -3,34 +3,34 @@
 
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">Golf Facilities</h1>
-        <p class="page-subtitle">Manage golf facilities and their courses.</p>
+        <h1 class="page-title">Cơ sở golf</h1>
+        <p class="page-subtitle">Quản lý cơ sở và các sân trực thuộc.</p>
       </div>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-        {{ showCreateForm ? 'Cancel' : '+ New Facility' }}
+        {{ showCreateForm ? 'Huỷ' : '+ Tạo cơ sở' }}
       </button>
     </header>
 
     <!-- ─── Create form ─────────────────────────────────────────────────────── -->
     <div v-if="showCreateForm" class="create-form-panel">
-      <h2 class="form-title">Create Golf Facility</h2>
+      <h2 class="form-title">Tạo cơ sở golf</h2>
 
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label" for="facility-name">Facility Name <span class="required">*</span></label>
+          <label class="form-label" for="facility-name">Tên cơ sở <span class="required">*</span></label>
           <input
             id="facility-name"
             v-model="createForm.name"
             class="form-input"
             type="text"
-            placeholder="e.g. Pine Valley Golf Club"
+            placeholder="ví dụ Sân golf Pine Valley"
             autocomplete="off"
           />
           <span v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</span>
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="facility-phone">Phone</label>
+          <label class="form-label" for="facility-phone">Điện thoại</label>
           <input
             id="facility-phone"
             v-model="createForm.phone"
@@ -42,7 +42,7 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="facility-website">Website</label>
+          <label class="form-label" for="facility-website">Trang web</label>
           <input
             id="facility-website"
             v-model="createForm.website"
@@ -54,13 +54,13 @@
         </div>
 
         <div class="form-field full-width">
-          <label class="form-label" for="facility-address">Address</label>
+          <label class="form-label" for="facility-address">Địa chỉ</label>
           <input
             id="facility-address"
             v-model="createForm.address"
             class="form-input"
             type="text"
-            placeholder="Street address"
+            placeholder="Địa chỉ"
             autocomplete="off"
           />
         </div>
@@ -73,7 +73,7 @@
           :disabled="creating"
           @click="handleCreate"
         >
-          {{ creating ? 'Creating…' : 'Create Facility' }}
+          {{ creating ? 'Đang tạo…' : 'Tạo cơ sở' }}
         </button>
       </div>
     </div>
@@ -87,15 +87,15 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadFacilities">Retry</button>
+      <button class="btn btn-secondary" @click="loadFacilities">Thử lại</button>
     </div>
 
     <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
     <div v-else-if="facilities.length === 0 && !showCreateForm" class="empty-state">
       <span class="empty-icon">🏌️</span>
-      <p class="empty-title">No facilities yet.</p>
-      <p class="empty-subtitle">Add your first golf facility to start managing courses.</p>
-      <button class="btn btn-primary" @click="showCreateForm = true">Add First Facility</button>
+      <p class="empty-title">Chưa có cơ sở nào.</p>
+      <p class="empty-subtitle">Thêm cơ sở đầu tiên để bắt đầu quản lý sân.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Thêm cơ sở đầu tiên</button>
     </div>
 
     <!-- ─── Facility list ─────────────────────────────────────────────────────── -->
@@ -118,7 +118,7 @@
         <p v-if="facility.phone" class="facility-phone">{{ facility.phone }}</p>
 
         <div class="facility-meta">
-          <span class="meta-item">Created {{ formatInstant(facility.createdAt) }}</span>
+          <span class="meta-item">Tạo lúc {{ formatInstant(facility.createdAt) }}</span>
           <span v-if="facility.website" class="meta-item">{{ facility.website }}</span>
         </div>
       </div>
@@ -132,6 +132,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import type { FacilityResponse, FacilityCreateRequest } from '@/types/admin/facility';
 import { facilityAdminApi } from '@/api/admin/facilities';
+import { formatDay as formatInstant } from '@/lib/datetime';
 
 const router = useRouter();
 
@@ -139,31 +140,6 @@ const facilities = ref<FacilityResponse[]>([]);
 const loading = ref(false);
 const fetchError = ref<string | null>(null);
 
-// ─── Mock data (used when API unavailable) ─────────────────────────────────────
-const MOCK_FACILITIES: FacilityResponse[] = [
-  {
-    id: 1,
-    name: 'Pine Valley Golf Club',
-    address: '1 Pine Valley Dr, Pine Valley, NJ 08080',
-    phone: '+1 609-555-0100',
-    website: 'https://pinevalley.com',
-    location: 'POINT(-74.567 39.789)',
-    dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 2,
-    name: 'Augusta National Golf Club',
-    address: '2604 Washington Rd, Augusta, GA 30904',
-    phone: '+1 706-555-0101',
-    website: 'https://augusta.com',
-    location: 'POINT(-82.022 33.503)',
-    dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-    createdAt: '2025-02-15T09:00:00Z',
-    updatedAt: '2025-02-15T09:00:00Z',
-  },
-];
 
 // ─── Create form state ─────────────────────────────────────────────────────────
 const showCreateForm = ref(false);
@@ -186,9 +162,15 @@ async function loadFacilities() {
   try {
     const data = await facilityAdminApi.listFacilities(props.authToken);
     facilities.value = data;
-  } catch {
-    // Fallback to mock data when API unavailable
-    facilities.value = MOCK_FACILITIES;
+  } catch (err: unknown) {
+    // Was `facilities.value = MOCK_FACILITIES`, with fetchError left null — so an
+    // operator whose API was down saw invented golf courses stamped
+    // accuracyClass 'A' / VERIFIED, with no error banner, and every edit
+    // targeted ids that do not exist. A missing danh sách cơ sở is now a
+    // missing danh sách cơ sở.
+    const apiErr = err as { message?: string };
+    fetchError.value = apiErr?.message ?? 'Không tải được dữ liệu từ máy chủ.';
+    facilities.value = [];
   } finally {
     loading.value = false;
   }
@@ -207,7 +189,7 @@ async function handleCreate() {
     router.push(`/facilities/${facility.id}`);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    createError.value = apiErr?.message ?? 'Failed to create facility';
+    createError.value = apiErr?.message ?? 'Không tạo được cơ sở';
   } finally {
     creating.value = false;
   }
@@ -217,9 +199,6 @@ function navigateToFacility(id: number) {
   router.push(`/facilities/${id}`);
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
 
 function qualityClass(dq: { accuracyClass: string | null; verificationStatus: string | null }) {
   if (dq.verificationStatus === 'VERIFIED') return 'badge-verified';

@@ -1,3 +1,5 @@
+import { API_BASE } from '../base';
+
 /**
  * API client for Data Quality Admin endpoints.
  * Per Story 9.4 Wave 2.
@@ -16,7 +18,7 @@ import type {
   ApiError,
 } from '@/types/admin/data-quality';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

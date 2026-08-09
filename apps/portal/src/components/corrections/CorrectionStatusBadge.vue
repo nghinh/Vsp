@@ -42,13 +42,13 @@ function statusIcon(status: CorrectionStatusValue): string {
 
 function statusLabel(status: CorrectionStatusValue): string {
   switch (status) {
-    case 'PENDING':           return 'Pending';
-    case 'IN_REVIEW':        return 'In Review';
-    case 'APPROVED':         return 'Approved';
-    case 'REJECTED':         return 'Rejected';
-    case 'INFO_REQUESTED':   return 'Info Requested';
-    case 'CONVERTED_TO_DRAFT': return 'Converted to Draft';
-    default:                  return 'Unknown';
+    case 'PENDING':           return 'Chờ xử lý';
+    case 'IN_REVIEW':        return 'Đang xem xét';
+    case 'APPROVED':         return 'Đã duyệt';
+    case 'REJECTED':         return 'Đã từ chối';
+    case 'INFO_REQUESTED':   return 'Chờ bổ sung';
+    case 'CONVERTED_TO_DRAFT': return 'Đã chuyển nháp';
+    default:                  return 'Không rõ';
   }
 }
 </script>

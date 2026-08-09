@@ -1,3 +1,5 @@
+import { API_BASE } from './base';
+
 /**
  * API client for course version endpoints.
  * Base URL is injected from environment; this module does not handle auth tokens —
@@ -19,7 +21,7 @@ import type {
   ApiError,
 } from '@/types/course-version';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 /** Parses error response or falls back to a generic error object. */
 async function parseError(res: Response): Promise<ApiError> {

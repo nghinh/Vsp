@@ -1,6 +1,6 @@
 <template>
-  <section class="correction-location-map" aria-label="Location context">
-    <h3 class="section-title">Location Context</h3>
+  <section class="correction-location-map" aria-label="Bối cảnh vị trí">
+    <h3 class="section-title">Bối cảnh vị trí</h3>
 
     <!-- Map container -->
     <div class="map-wrapper" ref="wrapperRef">
@@ -13,7 +13,7 @@
       />
 
       <!-- Loading overlay -->
-      <div v-if="mapLoading" class="map-loading" aria-busy="true" aria-label="Loading map">
+      <div v-if="mapLoading" class="map-loading" aria-busy="true" aria-label="Đang tải bản đồ">
         <span class="map-spinner" aria-hidden="true" />
       </div>
 
@@ -27,22 +27,24 @@
     <!-- GPS coordinates -->
     <div v-if="gpsCoordinates" class="gps-info">
       <div class="gps-row">
-        <span class="gps-label">Reporter GPS</span>
+        <span class="gps-label">GPS người báo</span>
         <span class="gps-value">{{ gpsCoordinates }}</span>
       </div>
       <div v-if="detail.holeNumber != null" class="gps-row">
-        <span class="gps-label">Reported Hole</span>
+        <span class="gps-label">Hố được báo</span>
         <span class="gps-value">#{{ detail.holeNumber }}</span>
       </div>
     </div>
 
-    <p v-else class="no-location">No GPS location recorded for this correction.</p>
+    <p v-else class="no-location">Báo lỗi này không có toạ độ GPS.</p>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { markRaw, ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import type { CorrectionDetailResponse, CorrectionMapContext, GeoCoordinate } from '@/types/correction';
+import { baseStyleFrom, blankDarkStyle, fetchBasemapConfig, rasterStyleFrom } from '@/api/basemap';
+import type { RasterStyle } from '@/api/basemap';
 
 const props = defineProps<{
   detail: CorrectionDetailResponse;
@@ -86,9 +88,9 @@ const reporterLocation = computed<GeoCoordinate | null>(() => {
 
 const mapAriaLabel = computed(() => {
   if (reporterLocation.value) {
-    return `Map showing reporter location near course`;
+    return 'Bản đồ vị trí người báo gần sân';
   }
-  return 'Map context for correction review';
+  return 'Bản đồ bối cảnh để xem xét hiệu chỉnh';
 });
 
 // ─── MapLibre map ─────────────────────────────────────────────────────────
@@ -110,9 +112,27 @@ async function initMap() {
 
     const Map = maplibreModule.Map;
 
+    // The configured imagery, same as the pin picker and the geometry editor.
+    // A reviewer is deciding whether a reported point sits on the green the
+    // golfer says it does; a street basemap cannot answer that, and pulling a
+    // second provider's tiles puts a different licence on the same screen.
+    // Where nothing is configured, the dark basemap still gives the reporter's
+    // pin somewhere to sit.
+    let style: RasterStyle = null;
+    let fallback: Record<string, unknown> = markRaw(blankDarkStyle());
+    try {
+      const config = await fetchBasemapConfig();
+      const satellite = rasterStyleFrom(config);
+      // markRaw: MapLibre owns and mutates this object — see CourseMap.
+      style = satellite ? markRaw(satellite) : null;
+      fallback = markRaw(baseStyleFrom(config));
+    } catch {
+      style = null;
+    }
+
     map = new Map({
       container: mapRef.value,
-      style: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      style: (style ?? fallback) as never,
       center: reporterLocation.value.coordinates,
       zoom: 15,
       attributionControl: false,
@@ -152,7 +172,7 @@ async function initMap() {
         type: 'symbol',
         source: 'reporter',
         layout: {
-          'text-field': 'Reporter',
+          'text-field': 'Người báo',
           'text-size': 12,
           'text-offset': [0, -1.5],
         },

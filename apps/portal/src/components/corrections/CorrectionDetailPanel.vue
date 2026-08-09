@@ -3,15 +3,15 @@
     <!-- Classification summary bar -->
     <div class="detail-summary-bar">
       <div class="summary-item">
-        <span class="summary-label">Type</span>
+        <span class="summary-label">Loại</span>
         <span class="summary-value">{{ formatType(detail.correctionType) }}</span>
       </div>
       <div class="summary-item">
-        <span class="summary-label">Status</span>
+        <span class="summary-label">Trạng thái</span>
         <CorrectionStatusBadge :status="detail.status" />
       </div>
       <div v-if="detail.confidence != null" class="summary-item">
-        <span class="summary-label">Confidence</span>
+        <span class="summary-label">Độ tin cậy</span>
         <span class="confidence-val">{{ detail.confidence.toFixed(0) }}%</span>
       </div>
     </div>
@@ -30,22 +30,22 @@
 
     <!-- Review history -->
     <div v-if="detail.reviewedAt || detail.reviewNote" class="review-history">
-      <h3 class="section-title">Review History</h3>
+      <h3 class="section-title">Lịch sử xử lý</h3>
       <div class="review-body">
         <div v-if="detail.reviewedAt" class="review-row">
-          <span class="review-label">Reviewed</span>
+          <span class="review-label">Đã xử lý</span>
           <span class="review-value">{{ formatDate(detail.reviewedAt) }}</span>
         </div>
         <div v-if="detail.reviewedBy" class="review-row">
-          <span class="review-label">Reviewer ID</span>
+          <span class="review-label">Mã người xử lý</span>
           <span class="review-value">{{ detail.reviewedBy }}</span>
         </div>
         <div v-if="detail.reviewNote" class="review-row review-note-row">
-          <span class="review-label">Note</span>
+          <span class="review-label">Ghi chú</span>
           <p class="review-note">{{ detail.reviewNote }}</p>
         </div>
         <div v-if="detail.resolution" class="review-row review-note-row">
-          <span class="review-label">Resolution</span>
+          <span class="review-label">Kết luận</span>
           <p class="review-note">{{ detail.resolution }}</p>
         </div>
       </div>
@@ -55,7 +55,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { formatInstant } from '@/lib/datetime';
 import type { CorrectionDetailResponse, CorrectionMapContext, CorrectionTypeValue } from '@/types/correction';
+import { correctionTypeLabel } from '@/lib/correction-labels';
 import CorrectionStatusBadge from './CorrectionStatusBadge.vue';
 import CorrectionEvidenceViewer from './CorrectionEvidenceViewer.vue';
 import CorrectionLocationMap from './CorrectionLocationMap.vue';
@@ -71,24 +73,12 @@ const mapContext = ref<CorrectionMapContext>({
 });
 
 function formatType(type: CorrectionTypeValue): string {
-  const labels: Record<CorrectionTypeValue, string> = {
-    GEOMETRY:          'Geometry',
-    PIN_POSITION:      'Pin Position',
-    BUNKER:            'Bunker',
-    WATER:             'Water',
-    OB:                'Out of Bounds',
-    CART_PATH:         'Cart Path',
-    LANDMARK:          'Landmark',
-    COURSE_CONDITION:  'Course Condition',
-    GREEN_SPEED:       'Green Speed',
-    OTHER:             'Other',
-  };
-  return labels[type] ?? type;
+  return correctionTypeLabel(type);
 }
 
 function formatDate(iso: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString();
+  return formatInstant(iso);
 }
 </script>
 

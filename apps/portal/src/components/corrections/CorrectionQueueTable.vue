@@ -1,7 +1,7 @@
 <template>
   <div class="correction-queue-table">
     <!-- Loading state -->
-    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Loading corrections">
+    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Đang tải báo lỗi">
       <div v-for="i in 3" :key="i" class="skeleton-row"></div>
     </div>
 
@@ -9,28 +9,32 @@
     <div v-else-if="error" class="error-state" role="alert">
       <span class="error-icon" aria-hidden="true">⚠</span>
       <span>{{ error }}</span>
-      <button class="retry-btn" @click="$emit('retry')">Retry</button>
+      <button class="retry-btn" @click="$emit('retry')">Thử lại</button>
     </div>
 
     <!-- Empty state -->
     <div v-else-if="corrections.length === 0" class="empty-state">
       <span class="empty-icon" aria-hidden="true">📋</span>
-      <p class="empty-title">No corrections found.</p>
-      <p class="empty-subtitle">Try adjusting your filters or check back later.</p>
+      <p class="empty-title">Không có báo lỗi nào.</p>
+      <p class="empty-subtitle">Thử đổi bộ lọc hoặc quay lại sau.</p>
     </div>
 
     <!-- Table -->
-    <table v-else class="data-table" role="table" aria-label="Correction queue">
+    <!-- The reporter column was falling off the right edge: nine columns in a
+         panel that does not scroll. Its own scroller keeps the page from
+         scrolling sideways while making the last column reachable. -->
+    <div v-else class="table-scroll">
+      <table class="data-table" role="table" aria-label="Hàng đợi hiệu chỉnh">
       <thead>
         <tr>
-          <th scope="col">Status</th>
-          <th scope="col">Course</th>
-          <th scope="col">Hole</th>
-          <th scope="col">Type</th>
-          <th scope="col">Confidence</th>
-          <th scope="col">Submitted</th>
-          <th scope="col">Reporter</th>
-          <th scope="col"><span class="sr-only">Actions</span></th>
+          <th scope="col">Trạng thái</th>
+          <th scope="col">Sân</th>
+          <th scope="col">Hố</th>
+          <th scope="col">Loại</th>
+          <th scope="col">Độ tin cậy</th>
+          <th scope="col">Gửi lúc</th>
+          <th scope="col">Người báo</th>
+          <th scope="col"><span class="sr-only">Thao tác</span></th>
         </tr>
       </thead>
       <tbody>
@@ -70,17 +74,20 @@
               @click.stop="$emit('select', correction.id)"
               :aria-label="`Review correction ${correction.id}`"
             >
-              Review →
+              Xem xét →
             </button>
           </td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { CorrectionSummary, CorrectionTypeValue } from '@/types/correction';
+import { formatDay } from '@/lib/datetime';
+import { correctionTypeLabel } from '@/lib/correction-labels';
 import CorrectionStatusBadge from './CorrectionStatusBadge.vue';
 
 withDefaults(defineProps<{
@@ -100,34 +107,24 @@ defineEmits<{
 }>();
 
 function formatType(type: CorrectionTypeValue): string {
-  const labels: Record<CorrectionTypeValue, string> = {
-    GEOMETRY:          'Geometry',
-    PIN_POSITION:      'Pin Position',
-    BUNKER:            'Bunker',
-    WATER:             'Water',
-    OB:                'Out of Bounds',
-    CART_PATH:         'Cart Path',
-    LANDMARK:          'Landmark',
-    COURSE_CONDITION:  'Course Condition',
-    GREEN_SPEED:       'Green Speed',
-    OTHER:             'Other',
-  };
-  return labels[type] ?? type;
+  return correctionTypeLabel(type);
 }
 
 function formatDate(iso: string): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDay(iso);
 }
 </script>
 
 <style scoped>
 .correction-queue-table {
   width: 100%;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+.table-scroll .data-table {
+  min-width: 46rem;
 }
 
 /* Loading skeleton */

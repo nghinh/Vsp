@@ -3,7 +3,7 @@
     <div class="dialog-panel">
       <div class="dialog-header">
         <h2 :id="titleId" class="dialog-title">{{ title }}</h2>
-        <button class="close-btn" @click="$emit('cancel')" aria-label="Close dialog">×</button>
+        <button class="close-btn" @click="$emit('cancel')" aria-label="Đóng hộp thoại">×</button>
       </div>
 
       <div class="dialog-body">
@@ -11,7 +11,7 @@
 
         <div class="form-field">
           <label :for="noteId" class="field-label">
-            Note <span class="optional">(optional)</span>
+            Ghi chú <span class="optional">(không bắt buộc)</span>
           </label>
           <textarea
             :id="noteId"
@@ -21,20 +21,20 @@
             :placeholder="placeholder"
             maxlength="500"
           ></textarea>
-          <span class="field-hint">{{ note.length }}/500 characters</span>
+          <span class="field-hint">{{ note.length }}/500 ký tự</span>
         </div>
       </div>
 
       <div class="dialog-footer">
         <button class="action-btn cancel-btn" @click="$emit('cancel')" :disabled="loading">
-          Cancel
+          Huỷ
         </button>
         <button
           class="action-btn confirm-btn"
           :disabled="loading"
           @click="confirm"
         >
-          {{ loading ? 'Processing…' : confirmLabel }}
+          {{ loading ? 'Đang xử lý…' : confirmLabel }}
         </button>
       </div>
     </div>
@@ -51,8 +51,8 @@ withDefaults(defineProps<{
   placeholder?: string;
   loading?: boolean;
 }>(), {
-  confirmLabel: 'Confirm',
-  placeholder: 'Add an optional note…',
+  confirmLabel: 'Xác nhận',
+  placeholder: 'Ghi chú thêm (không bắt buộc)…',
   loading: false,
 });
 
@@ -142,6 +142,11 @@ function confirm() {
 }
 .optional { font-weight: 400; color: #97a2c0; }
 .field-input {
+  /* The dialog is dark; without these three the control falls back to the
+     browser default — a white box with black text, in a dark panel. */
+  background: #0f1626;
+  color: #dae2fd;
+  color-scheme: dark;
   padding: 0.5rem 0.75rem;
   border: 1px solid #2d3449;
   border-radius: 6px;

@@ -1,12 +1,12 @@
 <template>
-  <section class="correction-evidence-viewer" aria-label="Reporter evidence">
-    <h3 class="section-title">Reporter Evidence</h3>
+  <section class="correction-evidence-viewer" aria-label="Bằng chứng người báo">
+    <h3 class="section-title">Bằng chứng người báo</h3>
 
     <!-- Photo evidence -->
     <div class="evidence-photo">
       <div v-if="!detail.reporterEvidenceUrl" class="no-photo">
         <span aria-hidden="true">📷</span>
-        <span>No photo evidence submitted</span>
+        <span>Không có ảnh kèm theo</span>
       </div>
       <figure v-else class="photo-figure">
         <img
@@ -15,29 +15,29 @@
           class="evidence-img"
           loading="lazy"
         />
-        <figcaption class="photo-caption">Photo evidence submitted by reporter</figcaption>
+        <figcaption class="photo-caption">Ảnh do người báo gửi kèm</figcaption>
       </figure>
     </div>
 
     <!-- Reporter note -->
     <div class="evidence-note">
-      <h4 class="subsection-title">Reporter Note</h4>
+      <h4 class="subsection-title">Ghi chú người báo</h4>
       <p v-if="detail.reporterNote" class="note-text">{{ detail.reporterNote }}</p>
-      <p v-else class="no-note">No note provided.</p>
+      <p v-else class="no-note">Không có ghi chú.</p>
     </div>
 
     <!-- Reporter metadata -->
     <div class="reporter-meta">
       <div class="meta-row">
-        <span class="meta-label">Reporter ID</span>
+        <span class="meta-label">Mã người báo</span>
         <span class="meta-value">{{ detail.reporterId }}</span>
       </div>
       <div class="meta-row">
-        <span class="meta-label">Submitted</span>
+        <span class="meta-label">Gửi lúc</span>
         <span class="meta-value">{{ formatDate(detail.submittedAt) }}</span>
       </div>
       <div v-if="detail.confidence != null" class="meta-row">
-        <span class="meta-label">Reporter Confidence</span>
+        <span class="meta-label">Độ tin cậy người báo</span>
         <span class="meta-value confidence-badge">
           {{ detail.confidence.toFixed(0) }}%
         </span>
@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
 import type { CorrectionDetailResponse } from '@/types/correction';
+import { formatInstant } from '@/lib/datetime';
 
 defineProps<{
   detail: CorrectionDetailResponse;
@@ -55,7 +56,7 @@ defineProps<{
 
 function formatDate(iso: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString();
+  return formatInstant(iso);
 }
 </script>
 

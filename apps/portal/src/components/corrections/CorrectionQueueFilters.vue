@@ -1,29 +1,29 @@
 <template>
-  <aside class="correction-queue-filters" aria-label="Correction queue filters">
+  <aside class="correction-queue-filters" aria-label="Bộ lọc hàng đợi">
     <div class="filters-header">
-      <h2 class="filters-title">Filters</h2>
+      <h2 class="filters-title">Bộ lọc</h2>
       <button class="clear-btn" @click="clearFilters" :disabled="!hasActiveFilters">
-        Clear all
+        Xoá hết
       </button>
     </div>
 
     <form @submit.prevent="applyFilters" class="filters-form">
       <!-- Course ID -->
       <div class="form-field">
-        <label for="filter-course-id" class="field-label">Course ID</label>
+        <label for="filter-course-id" class="field-label">Mã sân</label>
         <input
           id="filter-course-id"
           v-model.number="localFilters.courseId"
           type="number"
           class="field-input"
-          placeholder="e.g. 42"
+          placeholder="ví dụ 42"
           min="1"
         />
       </div>
 
       <!-- Hole Number -->
       <div class="form-field">
-        <label for="filter-hole" class="field-label">Hole Number</label>
+        <label for="filter-hole" class="field-label">Số hố</label>
         <input
           id="filter-hole"
           v-model.number="localFilters.holeNumber"
@@ -37,9 +37,9 @@
 
       <!-- Correction Type -->
       <div class="form-field">
-        <label for="filter-type" class="field-label">Correction Type</label>
+        <label for="filter-type" class="field-label">Loại hiệu chỉnh</label>
         <select id="filter-type" v-model="localFilters.type" class="field-input">
-          <option value="">All types</option>
+          <option value="">Tất cả loại</option>
           <option v-for="t in correctionTypes" :key="t.value" :value="t.value">
             {{ t.label }}
           </option>
@@ -48,9 +48,9 @@
 
       <!-- Status -->
       <div class="form-field">
-        <label for="filter-status" class="field-label">Status</label>
+        <label for="filter-status" class="field-label">Trạng thái</label>
         <select id="filter-status" v-model="localFilters.status" class="field-input">
-          <option value="">All statuses</option>
+          <option value="">Tất cả trạng thái</option>
           <option v-for="s in statuses" :key="s.value" :value="s.value">
             {{ s.label }}
           </option>
@@ -59,10 +59,10 @@
 
       <!-- Confidence Range -->
       <fieldset class="form-field fieldset">
-        <legend class="field-label">Confidence Range</legend>
+        <legend class="field-label">Khoảng độ tin cậy</legend>
         <div class="confidence-range">
           <div class="range-input">
-            <label for="filter-conf-min" class="range-label">Min %</label>
+            <label for="filter-conf-min" class="range-label">Tối thiểu %</label>
             <input
               id="filter-conf-min"
               v-model.number="localFilters.confidenceMin"
@@ -75,7 +75,7 @@
           </div>
           <span class="range-sep" aria-hidden="true">–</span>
           <div class="range-input">
-            <label for="filter-conf-max" class="range-label">Max %</label>
+            <label for="filter-conf-max" class="range-label">Tối đa %</label>
             <input
               id="filter-conf-max"
               v-model.number="localFilters.confidenceMax"
@@ -91,10 +91,10 @@
 
       <!-- Date Range -->
       <fieldset class="form-field fieldset">
-        <legend class="field-label">Submitted Date Range</legend>
+        <legend class="field-label">Khoảng ngày gửi</legend>
         <div class="date-range">
           <div class="date-input">
-            <label for="filter-from" class="range-label">From</label>
+            <label for="filter-from" class="range-label">Từ</label>
             <input
               id="filter-from"
               v-model="localFilters.from"
@@ -116,7 +116,7 @@
 
       <!-- Apply -->
       <button type="submit" class="apply-btn">
-        Apply Filters
+        Áp dụng lọc
       </button>
     </form>
   </aside>
@@ -140,25 +140,25 @@ const PAGE_SIZE = 20;
 const localFilters = ref<CorrectionQueueFilters>({ ...props.modelValue, pageSize: PAGE_SIZE });
 
 const correctionTypes: { value: CorrectionTypeValue; label: string }[] = [
-  { value: 'GEOMETRY',          label: 'Geometry' },
-  { value: 'PIN_POSITION',      label: 'Pin Position' },
+  { value: 'GEOMETRY',          label: 'Hình học' },
+  { value: 'PIN_POSITION',      label: 'Vị trí cờ' },
   { value: 'BUNKER',            label: 'Bunker' },
-  { value: 'WATER',             label: 'Water' },
-  { value: 'OB',                label: 'Out of Bounds' },
-  { value: 'CART_PATH',         label: 'Cart Path' },
-  { value: 'LANDMARK',          label: 'Landmark' },
-  { value: 'COURSE_CONDITION',  label: 'Course Condition' },
-  { value: 'GREEN_SPEED',       label: 'Green Speed' },
-  { value: 'OTHER',             label: 'Other' },
+  { value: 'WATER',             label: 'Chướng ngại nước' },
+  { value: 'OB',                label: 'Ngoài biên' },
+  { value: 'CART_PATH',         label: 'Đường xe điện' },
+  { value: 'LANDMARK',          label: 'Mốc định vị' },
+  { value: 'COURSE_CONDITION',  label: 'Tình trạng sân' },
+  { value: 'GREEN_SPEED',       label: 'Tốc độ green' },
+  { value: 'OTHER',             label: 'Khác' },
 ];
 
 const statuses: { value: CorrectionStatusValue; label: string }[] = [
-  { value: 'PENDING',            label: 'Pending' },
-  { value: 'IN_REVIEW',          label: 'In Review' },
-  { value: 'APPROVED',           label: 'Approved' },
-  { value: 'REJECTED',           label: 'Rejected' },
-  { value: 'INFO_REQUESTED',      label: 'Info Requested' },
-  { value: 'CONVERTED_TO_DRAFT', label: 'Converted to Draft' },
+  { value: 'PENDING',            label: 'Chờ xử lý' },
+  { value: 'IN_REVIEW',          label: 'Đang xem xét' },
+  { value: 'APPROVED',           label: 'Đã duyệt' },
+  { value: 'REJECTED',           label: 'Đã từ chối' },
+  { value: 'INFO_REQUESTED',      label: 'Chờ bổ sung' },
+  { value: 'CONVERTED_TO_DRAFT', label: 'Đã chuyển nháp' },
 ];
 
 const hasActiveFilters = computed(() => {

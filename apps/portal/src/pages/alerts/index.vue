@@ -1,307 +1,417 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+/**
+ * Course alerts — safety and operational notices pushed to golfers on course.
+ *
+ * The server has had a complete alert controller — send, list with filters,
+ * edit, cancel, acknowledge — since before this page existed, and nothing
+ * called it. The placeholder that stood here named `/courses/{id}/alerts`,
+ * which is not a path the API serves.
+ *
+ * The one thing this page is careful about is the target. An alert goes to a
+ * facility, a course, a hole, a flight or a group, and the server takes each
+ * as a separate optional id. Sending a lightning warning to the wrong scope is
+ * either a panic nobody needed or a warning that never reached the four people
+ * standing under the tree, so the form makes the scope an explicit choice
+ * rather than five fields the sender has to remember to leave blank.
+ */
+import { computed, onMounted, ref, watch } from 'vue';
 
-type Severity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
-type AlertType = "Safety" | "Operations" | "Promotion";
-interface AlertRow {
-  id: number;
-  status: "Active" | "Scheduled" | "Expired" | "Draft";
-  severity: Severity;
-  type: AlertType;
-  title: string;
-  target: string;
-  endsAt: string;
-  delivered: number;
-  audience: number;
-}
+import {
+  ALERT_PRIORITIES,
+  ALERT_TARGET_TYPES,
+  ALERT_TYPES,
+  DELIVERY_STATUSES,
+  alertApi,
+} from '@/api/admin/alerts';
+import { courseAdminApi } from '@/api/admin/courses';
+import { facilityAdminApi } from '@/api/admin/facilities';
+import { holeAdminApi } from '@/api/admin/holes';
+import { nowLocalInput } from '@/lib/datetime';
+import type { CourseResponse } from '@/types/admin/course';
+import type { FacilityResponse } from '@/types/admin/facility';
+import type { HoleResponse } from '@/types/admin/hole';
+import type {
+  AlertListFilters,
+  AlertTargetType,
+  AlertType,
+  CourseAlert,
+  DeliveryStatus,
+} from '@/api/admin/alerts';
 
-const alerts = ref<AlertRow[]>([
-  { id: 1, status: "Active", severity: "CRITICAL", type: "Safety", title: "Dự báo Sấm sét - Di tản ngay", target: "All Holes, All Flights", endsAt: "15:30 (Hôm nay)", delivered: 182, audience: 185 },
-  { id: 2, status: "Active", severity: "MEDIUM", type: "Operations", title: "Bảo trì Green hố số 7", target: "Hole 7, Flights Near", endsAt: "18:00 (Hôm nay)", delivered: 42, audience: 45 },
-]);
+const props = defineProps<{ authToken: string }>();
 
-const tabs = [
-  { key: "Active", label: "Active" },
-  { key: "Scheduled", label: "Scheduled" },
-  { key: "Expired", label: "Expired" },
-  { key: "Draft", label: "Draft" },
-] as const;
-const activeTab = ref<(typeof tabs)[number]["key"]>("Active");
-const search = ref("");
+const alerts = ref<CourseAlert[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const notice = ref<string | null>(null);
 
-const filtered = computed(() =>
-  alerts.value.filter(
-    (a) =>
-      a.status === activeTab.value &&
-      (!search.value || a.title.toLowerCase().includes(search.value.toLowerCase())),
-  ),
-);
-const countFor = (key: string) => alerts.value.filter((a) => a.status === key).length;
+const filters = ref<AlertListFilters>({});
 
-const typeIcon: Record<AlertType, string> = { Safety: "warning", Operations: "construction", Promotion: "celebration" };
-const typeTone: Record<AlertType, string> = { Safety: "c-error", Operations: "c-secondary", Promotion: "c-tertiary" };
-const sevClass: Record<Severity, string> = { LOW: "sev-low", MEDIUM: "sev-med", HIGH: "sev-high", CRITICAL: "sev-crit" };
+// ─── Compose ────────────────────────────────────────────────────────────────
 
-// ─── Create slide-over ─────────────────────────────────────────────────────
-const showCreate = ref(false);
-const showConfirm = ref(false);
-const draft = ref<{ type: AlertType; severity: Severity; title: string; body: string; target: string }>({
-  type: "Safety",
-  severity: "CRITICAL",
-  title: "",
-  body: "",
-  target: "Tất cả golfer (Toàn bộ sân)",
+const form = ref({
+  alertType: 'SAFETY' as AlertType,
+  targetType: 'COURSE' as AlertTargetType,
+  targetId: '',
+  title: '',
+  body: '',
+  priority: 'NORMAL',
+  effectiveAt: nowLocalInput(),
+  expiresAt: '',
+  acknowledgmentRequired: false,
 });
-const severities: Severity[] = ["LOW", "MEDIUM", "HIGH", "CRITICAL"];
-const typeOptions: { key: AlertType; icon: string; title: string; desc: string; tone: string }[] = [
-  { key: "Safety", icon: "warning", title: "An toàn (Safety)", desc: "Khẩn cấp, thời tiết, di tản", tone: "opt-error" },
-  { key: "Operations", icon: "construction", title: "Vận hành", desc: "Bảo trì, hố đóng, chậm flight", tone: "opt-primary" },
-  { key: "Promotion", icon: "celebration", title: "Khuyến mãi", desc: "Dịch vụ, giải đấu, ưu đãi", tone: "opt-tertiary" },
-];
 
-function openCreate() {
-  showCreate.value = true;
+/**
+ * The scope, chosen rather than typed.
+ *
+ * This field used to be a text box labelled "UUID". Three of the five scopes
+ * are not UUIDs at all — facility, course and hole are numeric row ids (the
+ * server stored them as UUID until V35, so no value an operator could type was
+ * ever going to match) — and the other two are ids nobody carries in their
+ * head. For a form whose failure mode is a lightning warning reaching the
+ * wrong people, or nobody, the target has to be picked from what exists.
+ */
+const facilities = ref<FacilityResponse[]>([]);
+const scopeCourses = ref<CourseResponse[]>([]);
+const scopeHoles = ref<HoleResponse[]>([]);
+const scopeFacilityId = ref<number | null>(null);
+const scopeCourseId = ref<number | null>(null);
+
+/** True for the scopes that are still an id the operator has to supply. */
+const scopeIsFreeText = computed(
+  () => form.value.targetType === 'FLIGHT' || form.value.targetType === 'GROUP',
+);
+
+async function loadScopeCourses(facilityId: number | null) {
+  scopeCourses.value = [];
+  scopeHoles.value = [];
+  scopeCourseId.value = null;
+  if (facilityId == null) return;
+  scopeCourses.value = await courseAdminApi.listCourses(facilityId, props.authToken);
+  if (scopeCourses.value.length === 1) scopeCourseId.value = scopeCourses.value[0].id;
 }
-function submit() {
-  if (draft.value.severity === "CRITICAL") {
-    showConfirm.value = true;
-    return;
+
+async function loadScopeHoles(courseId: number | null) {
+  scopeHoles.value = [];
+  if (courseId == null) return;
+  scopeHoles.value = await holeAdminApi.listHoles(courseId, props.authToken);
+}
+
+watch(scopeFacilityId, (id) => {
+  void loadScopeCourses(id);
+  if (form.value.targetType === 'FACILITY') form.value.targetId = id == null ? '' : String(id);
+});
+
+watch(scopeCourseId, (id) => {
+  void loadScopeHoles(id);
+  if (form.value.targetType === 'COURSE') form.value.targetId = id == null ? '' : String(id);
+});
+
+// Changing the scope invalidates whatever id was chosen for the previous one —
+// a course id left behind in a HOLE-scoped alert would address a real but
+// entirely different row.
+watch(
+  () => form.value.targetType,
+  (type) => {
+    form.value.targetId =
+      type === 'FACILITY' && scopeFacilityId.value != null
+        ? String(scopeFacilityId.value)
+        : type === 'COURSE' && scopeCourseId.value != null
+          ? String(scopeCourseId.value)
+          : '';
+  },
+);
+
+const sending = ref(false);
+const formError = ref<string | null>(null);
+
+/** The server takes one id per scope; the form takes a scope and one id. */
+function targetField(): Record<string, string> {
+  const key = {
+    FACILITY: 'facilityId',
+    COURSE: 'courseId',
+    HOLE: 'holeId',
+    FLIGHT: 'flightId',
+    GROUP: 'groupId',
+  }[form.value.targetType];
+  return { [key]: form.value.targetId };
+}
+
+function validate(): boolean {
+  formError.value = null;
+  if (!form.value.title.trim()) formError.value = 'Cần tiêu đề.';
+  else if (!form.value.body.trim()) formError.value = 'Cần nội dung.';
+  else if (!form.value.targetId.trim())
+    formError.value = scopeIsFreeText.value
+      ? 'Cần id của phạm vi gửi — không có nó thì cảnh báo không tới được ai.'
+      : 'Chọn nơi nhận cảnh báo.';
+  else if (
+    form.value.expiresAt &&
+    Date.parse(form.value.expiresAt) <= Date.parse(form.value.effectiveAt)
+  )
+    formError.value = 'Thời điểm hết hạn phải sau thời điểm hiệu lực.';
+  return formError.value === null;
+}
+
+async function send() {
+  if (!validate()) return;
+  sending.value = true;
+  try {
+    await alertApi.create(props.authToken, {
+      ...targetField(),
+      alertType: form.value.alertType,
+      title: form.value.title.trim(),
+      body: form.value.body.trim(),
+      priority: form.value.priority,
+      effectiveAt: new Date(form.value.effectiveAt).toISOString(),
+      expiresAt: form.value.expiresAt
+        ? new Date(form.value.expiresAt).toISOString()
+        : undefined,
+      acknowledgmentRequired: form.value.acknowledgmentRequired,
+    });
+    notice.value = 'Đã gửi cảnh báo.';
+    form.value.title = '';
+    form.value.body = '';
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    formError.value = apiErr?.message ?? 'Không gửi được cảnh báo';
+  } finally {
+    sending.value = false;
   }
-  finalize("Active");
 }
-function finalize(status: AlertRow["status"]) {
-  alerts.value.unshift({
-    id: Date.now(),
-    status,
-    severity: draft.value.severity,
-    type: draft.value.type,
-    title: draft.value.title || "(Không tiêu đề)",
-    target: draft.value.target,
-    endsAt: "—",
-    delivered: 0,
-    audience: 185,
-  });
-  showConfirm.value = false;
-  showCreate.value = false;
-  activeTab.value = status;
-  draft.value = { type: "Safety", severity: "CRITICAL", title: "", body: "", target: "Tất cả golfer (Toàn bộ sân)" };
+
+// ─── List ───────────────────────────────────────────────────────────────────
+
+async function load() {
+  loading.value = true;
+  error.value = null;
+  try {
+    const resp = await alertApi.list(props.authToken, filters.value);
+    alerts.value = resp.alerts ?? [];
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không tải được danh sách cảnh báo';
+  } finally {
+    loading.value = false;
+  }
 }
+
+async function cancel(alert: CourseAlert) {
+  error.value = null;
+  try {
+    await alertApi.cancel(props.authToken, alert.id);
+    notice.value = `Đã huỷ cảnh báo “${alert.title}”.`;
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không huỷ được cảnh báo';
+  }
+}
+
+const pendingCount = computed(
+  () => alerts.value.filter((a) => a.deliveryStatus === 'PENDING').length,
+);
+
+function fmt(iso?: string): string {
+  return iso ? new Date(iso).toLocaleString('vi-VN') : '—';
+}
+
+function statusClass(s?: DeliveryStatus): string {
+  if (s === 'DELIVERED') return 'badge-ok';
+  if (s === 'FAILED') return 'badge-bad';
+  return 'badge-idle';
+}
+
+onMounted(async () => {
+  await load();
+  try {
+    facilities.value = await facilityAdminApi.listFacilities(props.authToken);
+  } catch {
+    // The alert list is the page's job; a facility list that failed to load
+    // shows as an empty picker, which the send button already refuses.
+    facilities.value = [];
+  }
+});
 </script>
 
 <template>
-  <div class="alerts">
-    <div class="page-head">
-      <div class="crumbs mono">Portal <span class="material-symbols-outlined">chevron_right</span> BRG Legend Hill <span class="material-symbols-outlined">chevron_right</span> <span class="c-primary">Alerts</span></div>
-      <div class="head-actions">
-        <div class="search-box">
-          <span class="material-symbols-outlined">search</span>
-          <input v-model="search" type="text" placeholder="Tìm kiếm cảnh báo..." />
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-title">Cảnh báo sân</h1>
+      <p class="page-subtitle">
+        Gửi thông báo an toàn và vận hành tới golfer đang trên sân, theo phạm vi
+        cơ sở, sân, hố, nhóm hoặc flight.
+      </p>
+    </header>
+
+    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+    <p v-if="error" class="error" role="alert">
+      {{ error }}
+      <button type="button" class="btn-link" @click="load">Thử lại</button>
+    </p>
+
+    <!-- ─── Compose ──────────────────────────────────────────────────────── -->
+    <section class="card">
+      <h2 class="card-title">Gửi cảnh báo</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label class="label" for="al-type">Loại</label>
+          <select id="al-type" v-model="form.alertType" class="input">
+            <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ t }}</option>
+          </select>
         </div>
-        <button class="btn-primary" @click="openCreate"><span class="material-symbols-outlined">add_alert</span> Tạo cảnh báo</button>
+        <div class="field">
+          <label class="label" for="al-scope">Phạm vi</label>
+          <select id="al-scope" v-model="form.targetType" class="input">
+            <option v-for="t in ALERT_TARGET_TYPES" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+        <div v-if="!scopeIsFreeText" class="field">
+          <label class="label" for="al-facility">Cơ sở</label>
+          <select id="al-facility" v-model="scopeFacilityId" class="input">
+            <option :value="null">— Chọn cơ sở —</option>
+            <option v-for="f in facilities" :key="f.id" :value="f.id">{{ f.name }}</option>
+          </select>
+        </div>
+        <div v-if="!scopeIsFreeText && form.targetType !== 'FACILITY'" class="field">
+          <label class="label" for="al-course">Sân</label>
+          <select
+            id="al-course"
+            v-model="scopeCourseId"
+            class="input"
+            :disabled="scopeCourses.length === 0"
+          >
+            <option :value="null">— Chọn sân —</option>
+            <option v-for="c in scopeCourses" :key="c.id" :value="c.id">{{ c.name }}</option>
+          </select>
+        </div>
+        <div v-if="form.targetType === 'HOLE'" class="field">
+          <label class="label" for="al-hole">Hố</label>
+          <select
+            id="al-hole"
+            v-model="form.targetId"
+            class="input"
+            :disabled="scopeHoles.length === 0"
+          >
+            <option value="">— Chọn hố —</option>
+            <option v-for="h in scopeHoles" :key="h.id" :value="String(h.id)">
+              Hố {{ h.holeNumber }}
+            </option>
+          </select>
+        </div>
+        <div v-if="scopeIsFreeText" class="field">
+          <label class="label" for="al-target">Id {{ form.targetType === 'FLIGHT' ? 'flight' : 'nhóm' }}</label>
+          <input id="al-target" v-model="form.targetId" class="input" placeholder="UUID" />
+        </div>
+        <div class="field">
+          <label class="label" for="al-pri">Mức ưu tiên</label>
+          <select id="al-pri" v-model="form.priority" class="input">
+            <option v-for="p in ALERT_PRIORITIES" :key="p" :value="p">{{ p }}</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="label" for="al-from">Hiệu lực từ</label>
+          <input id="al-from" v-model="form.effectiveAt" type="datetime-local" class="input" />
+        </div>
+        <div class="field">
+          <label class="label" for="al-to">Hết hạn</label>
+          <input id="al-to" v-model="form.expiresAt" type="datetime-local" class="input" />
+        </div>
+        <div class="field field-wide">
+          <label class="label" for="al-title">Tiêu đề</label>
+          <input id="al-title" v-model="form.title" class="input" maxlength="120" placeholder="Ví dụ: Tạm dừng thi đấu do sét" />
+        </div>
+        <div class="field field-wide">
+          <label class="label" for="al-body">Nội dung</label>
+          <textarea id="al-body" v-model="form.body" class="input" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="field field-wide check">
+          <label>
+            <input v-model="form.acknowledgmentRequired" type="checkbox" />
+            Yêu cầu golfer xác nhận đã đọc
+          </label>
+        </div>
       </div>
-    </div>
 
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat"><p class="stat-lbl">Đang hoạt động</p><p class="stat-val mono c-primary">{{ countFor("Active").toString().padStart(2, "0") }}</p></div>
-      <div class="stat"><p class="stat-lbl">Cảnh báo an toàn</p><p class="stat-val mono c-error">01</p></div>
-      <div class="stat"><p class="stat-lbl">Tổng lượt gửi (24h)</p><p class="stat-val mono">1,248</p></div>
-      <div class="stat"><p class="stat-lbl">Tỉ lệ phản hồi</p><p class="stat-val mono c-tertiary">92%</p></div>
-    </div>
+      <p v-if="formError" class="error" role="alert">{{ formError }}</p>
 
-    <!-- Table card -->
-    <div class="table-card">
-      <div class="tabs">
-        <button v-for="t in tabs" :key="t.key" class="tab" :class="{ active: activeTab === t.key }" @click="activeTab = t.key">
-          {{ t.label }} ({{ countFor(t.key) }})
+      <div class="actions">
+        <button type="button" class="btn-primary" :disabled="sending" @click="send">
+          {{ sending ? 'Đang gửi…' : 'Gửi cảnh báo' }}
         </button>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Status</th><th>Severity</th><th>Alert Type</th><th>Title</th><th>Target</th><th>Schedule (End)</th><th>Delivery</th><th class="ta-r">Actions</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="a in filtered" :key="a.id">
-              <td><span class="status c-tertiary"><span class="dot" :class="{ pulse: a.severity === 'CRITICAL' }"></span>{{ a.status }}</span></td>
-              <td><span class="sev" :class="sevClass[a.severity]">{{ a.severity }}</span></td>
-              <td><div class="type-cell"><span class="material-symbols-outlined" :class="typeTone[a.type]">{{ typeIcon[a.type] }}</span>{{ a.type }}</div></td>
-              <td class="strong">{{ a.title }}</td>
-              <td class="c-muted">{{ a.target }}</td>
-              <td class="mono">{{ a.endsAt }}</td>
-              <td>
-                <span class="mono">{{ a.delivered }}/{{ a.audience }}</span>
-                <div class="prog"><div class="prog-fill" :style="{ width: (a.delivered / a.audience) * 100 + '%' }"></div></div>
-              </td>
-              <td class="ta-r">
-                <button class="ico-btn" title="Sửa"><span class="material-symbols-outlined">edit</span></button>
-                <button class="ico-btn danger" title="Dừng"><span class="material-symbols-outlined">stop_circle</span></button>
-              </td>
-            </tr>
-            <tr v-if="filtered.length === 0"><td colspan="8" class="empty">Không có cảnh báo trong mục này.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    </section>
 
-    <!-- Create slide-over -->
-    <div v-if="showCreate" class="scrim" @click.self="showCreate = false">
-      <div class="sheet">
-        <header class="sheet-head">
-          <div class="sheet-title"><span class="sheet-ico"><span class="material-symbols-outlined">add_alert</span></span><div><h3>Tạo cảnh báo mới</h3><p>Thiết lập thông báo tức thì cho golfer trên sân</p></div></div>
-          <button class="ico-btn" @click="showCreate = false"><span class="material-symbols-outlined">close</span></button>
-        </header>
-        <div class="sheet-body">
-          <section>
-            <h4>1. Phân loại &amp; Mức độ</h4>
-            <div class="type-grid">
-              <label v-for="o in typeOptions" :key="o.key" class="type-opt" :class="[o.tone, { checked: draft.type === o.key }]">
-                <input type="radio" name="atype" :value="o.key" v-model="draft.type" />
-                <span class="material-symbols-outlined">{{ o.icon }}</span>
-                <p class="ot">{{ o.title }}</p><p class="od">{{ o.desc }}</p>
-              </label>
-            </div>
-            <div class="sev-grid">
-              <button v-for="s in severities" :key="s" class="sev-btn" :class="{ active: draft.severity === s, crit: s === 'CRITICAL' && draft.severity === s }" @click="draft.severity = s">{{ s.charAt(0) + s.slice(1).toLowerCase() }}</button>
-            </div>
-          </section>
-          <section>
-            <h4>2. Nội dung cảnh báo</h4>
-            <label class="fl">Tiêu đề cảnh báo</label>
-            <input v-model="draft.title" class="fin" type="text" placeholder="Nhập tiêu đề ngắn gọn..." />
-            <label class="fl">Nội dung chi tiết (Max 160 ký tự)</label>
-            <textarea v-model="draft.body" class="fin" rows="3" maxlength="160" placeholder="Mô tả chi tiết hướng dẫn cho golfer..."></textarea>
-            <div class="char"><span v-if="draft.severity === 'CRITICAL' && !draft.body" class="c-error">Yêu cầu nội dung cho trường hợp khẩn cấp</span><span class="c-muted">{{ draft.body.length }} / 160</span></div>
-          </section>
-          <section>
-            <h4>3. Đối tượng mục tiêu</h4>
-            <select v-model="draft.target" class="fin"><option>Tất cả golfer (Toàn bộ sân)</option><option>Theo từng hố (Hole-specific)</option><option>Nhóm Golfer (Tournament A)</option></select>
-          </section>
-        </div>
-        <footer class="sheet-foot">
-          <button class="btn-ghost" @click="showCreate = false">Hủy bỏ</button>
-          <button class="btn-outline" @click="finalize('Draft')">Lưu bản nháp</button>
-          <button class="btn-primary" @click="submit">Gửi cảnh báo</button>
-        </footer>
+    <!-- ─── List ─────────────────────────────────────────────────────────── -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="card-title">Đã gửi</h2>
+        <span v-if="pendingCount" class="badge-idle">{{ pendingCount }} đang chờ gửi</span>
       </div>
-    </div>
 
-    <!-- Safety confirm -->
-    <div v-if="showConfirm" class="scrim center">
-      <div class="confirm">
-        <div class="confirm-ico"><span class="material-symbols-outlined">priority_high</span></div>
-        <h3>Xác nhận cảnh báo KHẨN CẤP?</h3>
-        <p>Thông báo này sẽ được gửi ngay lập tức tới <strong>185 golfer</strong> và yêu cầu họ phản hồi. Hành động này không thể hoàn tác.</p>
-        <div class="confirm-actions">
-          <button class="btn-ghost bordered" @click="showConfirm = false">Quay lại</button>
-          <button class="btn-danger" @click="finalize('Active')">XÁC NHẬN GỬI</button>
-        </div>
+      <div class="filters">
+        <select v-model="filters.alertType" class="input" aria-label="Lọc theo loại" @change="load">
+          <option :value="undefined">Mọi loại</option>
+          <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ t }}</option>
+        </select>
+        <select v-model="filters.deliveryStatus" class="input" aria-label="Lọc theo trạng thái" @change="load">
+          <option :value="undefined">Mọi trạng thái</option>
+          <option v-for="s in DELIVERY_STATUSES" :key="s" :value="s">{{ s }}</option>
+        </select>
       </div>
-    </div>
+
+      <p v-if="loading" class="muted">Đang tải…</p>
+      <p v-else-if="alerts.length === 0" class="muted">Chưa có cảnh báo nào.</p>
+      <table v-else class="table">
+        <thead>
+          <tr><th>Tiêu đề</th><th>Loại</th><th>Hiệu lực</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr>
+        </thead>
+        <tbody>
+          <tr v-for="a in alerts" :key="a.id">
+            <td>
+              <strong>{{ a.title }}</strong>
+              <p class="body-preview">{{ a.body }}</p>
+            </td>
+            <td>{{ a.alertType }}</td>
+            <td>{{ fmt(a.effectiveAt) }}</td>
+            <td>{{ fmt(a.expiresAt) }}</td>
+            <td><span :class="statusClass(a.deliveryStatus)">{{ a.deliveryStatus ?? '—' }}</span></td>
+            <td><button type="button" class="btn-link danger" @click="cancel(a)">Huỷ</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.alerts { max-width: 1400px; }
-.mono { font-family: var(--font-mono); }
-.strong { font-weight: 700; }
-.c-primary { color: var(--primary-bright); }
-.c-error { color: var(--error); }
-.c-secondary { color: var(--secondary); }
-.c-tertiary { color: var(--tertiary); }
-.c-muted { color: var(--on-surface-variant); }
-
-.page-head { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 32px; gap: 16px; flex-wrap: wrap; }
-.crumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--on-surface-variant); }
-.crumbs .material-symbols-outlined { font-size: 14px; }
-.head-actions { display: flex; align-items: center; gap: 16px; }
-.search-box { position: relative; display: flex; align-items: center; }
-.search-box .material-symbols-outlined { position: absolute; left: 12px; color: var(--on-surface-variant); }
-.search-box input { background: var(--surface-container-high); border: none; border-radius: 8px; padding: 8px 16px 8px 40px; width: 240px; color: var(--on-surface); }
-.search-box input:focus { outline: 2px solid var(--primary-bright); }
-.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-container); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; }
-.btn-primary:hover { filter: brightness(1.1); }
-
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-.stat { background: var(--surface-container-low); padding: 20px; border-radius: 12px; border: 1px solid var(--border); }
-.stat-lbl { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--on-surface-variant); }
-.stat-val { margin: 0; font-size: 40px; font-weight: 700; line-height: 1.1; }
-
-.table-card { background: var(--surface-container-low); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-.tabs { display: flex; border-bottom: 1px solid var(--border); padding: 0 16px; }
-.tab { padding: 16px 24px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--on-surface-variant); font-weight: 600; cursor: pointer; }
-.tab.active { color: var(--primary-bright); border-bottom-color: var(--primary-bright); }
-.table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead { background: rgba(23,31,51,.5); }
-th { padding: 16px 24px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--on-surface-variant); }
-td { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,.05); color: var(--on-surface); }
-tbody tr:hover { background: rgba(45,52,73,.3); }
-.ta-r { text-align: right; }
-.status { display: inline-flex; align-items: center; gap: 8px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--tertiary); }
-.pulse { animation: pulse 1.6s infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .3; } }
-.sev { padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
-.sev-crit { background: var(--error-container); color: var(--on-error-container); }
-.sev-high { background: rgba(255,180,171,.15); color: var(--error); }
-.sev-med { background: var(--secondary-container); color: var(--on-secondary-container); }
-.sev-low { background: var(--surface-container-highest); color: var(--on-surface-variant); }
-.type-cell { display: inline-flex; align-items: center; gap: 8px; }
-.prog { width: 96px; height: 4px; background: var(--surface-container-highest); border-radius: 999px; margin-top: 4px; }
-.prog-fill { height: 100%; background: var(--tertiary); border-radius: 999px; }
-.ico-btn { background: none; border: none; color: var(--on-surface-variant); padding: 8px; cursor: pointer; border-radius: 8px; }
-.ico-btn:hover { color: var(--primary-bright); }
-.ico-btn.danger:hover { color: var(--error); }
-.empty { text-align: center; color: var(--on-surface-variant); padding: 48px; }
-
-/* Slide-over */
-.scrim { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); display: flex; justify-content: flex-end; }
-.scrim.center { align-items: center; justify-content: center; }
-.sheet { width: min(680px, 100%); height: 100%; background: var(--surface-container); display: flex; flex-direction: column; animation: slide .3s ease-out; }
-@keyframes slide { from { transform: translateX(100%); } to { transform: translateX(0); } }
-.sheet-head { padding: 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-.sheet-title { display: flex; align-items: center; gap: 12px; }
-.sheet-ico { width: 40px; height: 40px; border-radius: 8px; background: var(--primary-container); display: grid; place-items: center; color: #fff; }
-.sheet-title h3 { margin: 0; font-size: 24px; }
-.sheet-title p { margin: 0; font-size: 14px; color: var(--on-surface-variant); }
-.sheet-body { flex: 1; overflow-y: auto; padding: 32px; display: flex; flex-direction: column; gap: 32px; }
-.sheet-body h4 { margin: 0 0 16px; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--primary-bright); text-transform: uppercase; }
-.type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
-.type-opt { position: relative; padding: 16px; border-radius: 12px; border: 1px solid var(--outline-variant); cursor: pointer; display: block; }
-.type-opt input { position: absolute; opacity: 0; }
-.type-opt .material-symbols-outlined { display: block; margin-bottom: 8px; }
-.type-opt.opt-error .material-symbols-outlined { color: var(--error); }
-.type-opt.opt-primary .material-symbols-outlined { color: var(--primary-bright); }
-.type-opt.opt-tertiary .material-symbols-outlined { color: var(--tertiary); }
-.type-opt .ot { margin: 0; font-weight: 700; }
-.type-opt .od { margin: 0; font-size: 12px; opacity: .7; }
-.type-opt.checked.opt-error { border-color: var(--error); background: rgba(147,0,10,.2); }
-.type-opt.checked.opt-primary { border-color: var(--primary-bright); background: rgba(246,96,24,.15); }
-.type-opt.checked.opt-tertiary { border-color: var(--tertiary); background: rgba(37,164,117,.2); }
-.sev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-.sev-btn { background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 8px 12px; color: var(--on-surface); cursor: pointer; }
-.sev-btn:hover { border-color: var(--on-surface); }
-.sev-btn.active { border-color: var(--primary-bright); }
-.sev-btn.crit { background: var(--error-container); color: var(--on-error-container); font-weight: 700; border-color: var(--error-container); }
-.fl { display: block; font-size: 14px; color: var(--on-surface-variant); margin: 16px 0 8px; }
-.fin { width: 100%; background: var(--surface-container-high); border: 1px solid var(--outline-variant); border-radius: 12px; padding: 12px 16px; color: var(--on-surface); }
-.fin:focus { outline: none; border-color: var(--primary-bright); }
-.char { display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px; }
-.sheet-foot { padding: 24px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 16px; }
-.btn-ghost { background: none; border: none; padding: 8px 24px; border-radius: 12px; color: var(--on-surface-variant); cursor: pointer; }
-.btn-ghost:hover { background: var(--surface-bright); }
-.btn-ghost.bordered { border: 1px solid var(--outline-variant); }
-.btn-outline { background: none; border: 1px solid var(--primary-bright); color: var(--primary-bright); padding: 8px 24px; border-radius: 12px; cursor: pointer; }
-.btn-danger { background: var(--error); color: #690005; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-
-.confirm { max-width: 420px; background: var(--surface-container-highest); border-radius: 16px; padding: 32px; border: 1px solid rgba(255,180,171,.3); text-align: center; }
-.confirm-ico { width: 80px; height: 80px; margin: 0 auto 24px; border-radius: 50%; background: rgba(147,0,10,.3); color: var(--error); display: grid; place-items: center; }
-.confirm-ico .material-symbols-outlined { font-size: 48px; }
-.confirm h3 { margin: 0 0 8px; font-size: 24px; }
-.confirm p { color: var(--on-surface-variant); margin: 0 0 32px; }
-.confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-
-@media (max-width: 1100px) { .stats { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px) { .stats { grid-template-columns: 1fr; } .type-grid { grid-template-columns: 1fr; } }
+.page { padding: 24px; max-width: 1100px; }
+.page-title { margin: 0 0 4px; font-size: 22px; }
+.page-subtitle { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface-container-low); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.card-head { display: flex; align-items: center; gap: 12px; }
+.card-title { margin: 0 0 12px; font-size: 16px; }
+.filters { display: flex; gap: 8px; margin-bottom: 12px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-wide { grid-column: 1 / -1; }
+.check label { font-size: 14px; display: flex; gap: 8px; align-items: center; }
+.label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.input { padding: 8px 10px; border: 1px solid var(--outline-variant); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--surface-container-lowest); color: var(--on-surface); color-scheme: dark; }
+.input option { background: var(--surface-container); color: var(--on-surface); }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.btn-primary:disabled { opacity: 0.6; cursor: default; }
+.btn-link { background: none; border: none; color: var(--primary-bright); cursor: pointer; padding: 0 4px; }
+.btn-link.danger { color: var(--error); }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.body-preview { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.muted { color: var(--muted); font-size: 14px; }
+.error { color: var(--error); font-size: 13px; }
+.notice { color: var(--tertiary); font-size: 13px; }
+.badge-ok { background: var(--tertiary-container); color: var(--on-tertiary); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.badge-bad { background: var(--error-container); color: var(--on-error-container); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.badge-idle { background: var(--surface-container-high); color: var(--on-surface); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
 </style>

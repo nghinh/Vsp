@@ -101,11 +101,15 @@ async function onSignOut() {
     <section class="workspace">
       <header class="topbar">
         <div><p>Vietnam Smart Golf</p><h1>{{ pageTitle }}</h1></div>
-        <div class="topbar-actions">
-          <button class="icon-button" aria-label="Tìm kiếm"><span class="material-symbols-outlined">search</span></button>
-          <button class="icon-button has-dot" aria-label="Thông báo"><span class="material-symbols-outlined">notifications</span></button>
-          <div class="sync-pill"><span></span> Đồng bộ</div>
-        </div>
+        <!--
+          A search button, a notifications button carrying an unread dot, and a
+          "Đồng bộ" pill used to sit here. None of them had a @click handler:
+          the whole row was decoration, and the unread dot in particular told an
+          operator there was something waiting for them that did not exist.
+          Removed rather than stubbed — a control that does nothing is worse
+          than no control, and these will come back when there is something
+          behind them.
+        -->
       </header>
       <main class="content"><RouterView /></main>
     </section>

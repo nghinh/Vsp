@@ -2,26 +2,25 @@
   <div class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="reject-title">
     <div class="dialog-panel">
       <div class="dialog-header">
-        <h2 id="reject-title" class="dialog-title">Reject Correction</h2>
-        <button class="close-btn" @click="$emit('cancel')" aria-label="Close dialog">×</button>
+        <h2 id="reject-title" class="dialog-title">Từ chối báo lỗi</h2>
+        <button class="close-btn" @click="$emit('cancel')" aria-label="Đóng hộp thoại">×</button>
       </div>
 
       <div class="dialog-body">
         <p class="dialog-message">
-          Please provide a reason for rejecting this correction. This will be visible
-          in the audit trail.
+          Nêu lý do từ chối hiệu chỉnh này. Lý do sẽ hiện trong nhật ký kiểm toán.
         </p>
 
         <div class="form-field">
           <label for="reject-reason" class="field-label">
-            Reason <span class="required" aria-hidden="true">*</span>
+            Lý do <span class="required" aria-hidden="true">*</span>
           </label>
           <textarea
             id="reject-reason"
             v-model="reason"
             class="field-input"
             rows="3"
-            placeholder="Explain why this correction is being rejected…"
+            placeholder="Giải thích vì sao từ chối báo lỗi này…"
             maxlength="500"
             :aria-invalid="reasonError ? 'true' : undefined"
             :aria-describedby="reasonError ? 'reason-error' : undefined"
@@ -29,35 +28,35 @@
           <span v-if="reasonError" id="reason-error" class="field-error" role="alert">
             {{ reasonError }}
           </span>
-          <span class="field-hint">{{ reason.length }}/500 characters</span>
+          <span class="field-hint">{{ reason.length }}/500 ký tự</span>
         </div>
 
         <div class="form-field">
           <label for="reject-note" class="field-label">
-            Internal Note <span class="optional">(optional)</span>
+            Ghi chú nội bộ <span class="optional">(không bắt buộc)</span>
           </label>
           <textarea
             id="reject-note"
             v-model="note"
             class="field-input"
             rows="2"
-            placeholder="Optional note for the audit trail…"
+            placeholder="Ghi chú cho nhật ký (không bắt buộc)…"
             maxlength="500"
           ></textarea>
-          <span class="field-hint">{{ note.length }}/500 characters</span>
+          <span class="field-hint">{{ note.length }}/500 ký tự</span>
         </div>
       </div>
 
       <div class="dialog-footer">
         <button class="action-btn cancel-btn" @click="$emit('cancel')" :disabled="loading">
-          Cancel
+          Huỷ
         </button>
         <button
           class="action-btn confirm-btn"
           :disabled="loading"
           @click="confirm"
         >
-          {{ loading ? 'Processing…' : 'Reject Correction' }}
+          {{ loading ? 'Đang xử lý…' : 'Từ chối hiệu chỉnh' }}
         </button>
       </div>
     </div>
@@ -83,7 +82,7 @@ const reasonError = ref<string | null>(null);
 function confirm() {
   reasonError.value = null;
   if (!reason.value.trim()) {
-    reasonError.value = 'A reason is required to reject a correction.';
+    reasonError.value = 'Phải nêu lý do khi từ chối một hiệu chỉnh.';
     return;
   }
   emit('confirm', reason.value.trim(), note.value.trim());
@@ -162,6 +161,11 @@ function confirm() {
 .required { color: #dc2626; }
 .optional { font-weight: 400; color: #97a2c0; }
 .field-input {
+  /* The dialog is dark; without these three the control falls back to the
+     browser default — a white box with black text, in a dark panel. */
+  background: #0f1626;
+  color: #dae2fd;
+  color-scheme: dark;
   padding: 0.5rem 0.75rem;
   border: 1px solid #2d3449;
   border-radius: 6px;

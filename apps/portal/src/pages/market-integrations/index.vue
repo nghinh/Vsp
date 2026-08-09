@@ -12,7 +12,7 @@
       </div>
       <div class="global-sync" role="status">
         <span class="material-symbols-outlined">cloud_done</span>
-        <span>Global Sync Active</span>
+        <span>Đồng bộ toàn cục đang bật</span>
       </div>
     </header>
 
@@ -50,7 +50,7 @@
             <span class="material-symbols-outlined territory-flag">flag</span>
             <span class="territory-name">{{ m.name }}</span>
             <span class="status-badge" :class="m.active ? 'badge-active' : 'badge-draft'">
-              {{ m.active ? 'Active' : 'Draft' }}
+              {{ m.active ? 'Active' : 'Bản nháp' }}
             </span>
           </li>
         </ul>
@@ -72,7 +72,7 @@
             <div>
               <h2 class="panel-title">
                 <span class="material-symbols-outlined">security</span>
-                Commercial Boundaries
+                Ranh giới thương mại
               </h2>
               <p class="panel-hint">
                 Tách biệt Core GPS (Lĩnh vực kỹ thuật) và Commercial (Lĩnh vực thanh toán).
@@ -84,7 +84,7 @@
           <div v-if="distributionBlocked" class="blocked-banner" role="alert">
             <span class="material-symbols-outlined">block</span>
             <div>
-              <strong>Distribution Blocked</strong>
+              <strong>Chặn phân phối</strong>
               <p>
                 Việc phát hành bị hạn chế cho tới khi tất cả giấy phép bắt buộc được xác thực cho
                 thị trường {{ selectedMarket?.name }}.
@@ -115,7 +115,7 @@
             </div>
             <div class="field-grid">
               <div class="form-field">
-                <label class="form-label">LOCALE / LANGUAGE</label>
+                <label class="form-label">NGÔN NGỮ / VÙNG</label>
                 <select v-model="marketForm.defaultLanguage" class="form-input">
                   <option value="vi">Vietnamese (VN)</option>
                   <option value="en">English (US)</option>
@@ -124,10 +124,10 @@
                 </select>
               </div>
               <div class="form-field">
-                <label class="form-label">DISTANCE UNITS</label>
+                <label class="form-label">ĐƠN VỊ KHOẢNG CÁCH</label>
                 <select v-model="marketForm.measurementUnit" class="form-input">
-                  <option value="METRIC">Meters</option>
-                  <option value="IMPERIAL">Yards</option>
+                  <option value="METRIC">Mét</option>
+                  <option value="IMPERIAL">Yard</option>
                 </select>
               </div>
               <div class="form-field">
@@ -139,14 +139,14 @@
                 <input v-model="marketForm.timezone" class="form-input" type="text" />
               </div>
               <div class="form-field">
-                <label class="form-label">DATE FORMAT</label>
+                <label class="form-label">ĐỊNH DẠNG NGÀY</label>
                 <input v-model="marketForm.dateFormat" class="form-input" type="text" />
               </div>
               <div class="form-field">
                 <label class="form-label">TRẠNG THÁI</label>
                 <label class="toggle">
                   <input v-model="marketForm.active" type="checkbox" />
-                  <span>{{ marketForm.active ? 'Active' : 'Draft' }}</span>
+                  <span>{{ marketForm.active ? 'Active' : 'Bản nháp' }}</span>
                 </label>
               </div>
             </div>
@@ -173,7 +173,7 @@
           <div v-else-if="activeTab === 'commercial'" class="tab-body">
             <div class="section-title-row">
               <span class="material-symbols-outlined">analytics</span>
-              <span>Separation of Concerns</span>
+              <span>Tách bạch trách nhiệm</span>
             </div>
             <p class="panel-hint">
               Core GPS Rounds tách biệt khỏi Commercial Services. Việc phân phối gói dữ liệu cần
@@ -182,21 +182,21 @@
             <div class="boundary-list">
               <label class="boundary-row">
                 <div>
-                  <strong>Fork GPS behavior</strong>
+                  <strong>Tách hành vi GPS</strong>
                   <small>Cho phép thị trường tách xử lý GPS khỏi lõi.</small>
                 </div>
                 <input v-model="configForm.forkGpsBehavior" type="checkbox" class="switch" />
               </label>
               <label class="boundary-row">
                 <div>
-                  <strong>Fork score behavior</strong>
+                  <strong>Tách hành vi tính điểm</strong>
                   <small>Cho phép thị trường tách xử lý điểm số khỏi lõi.</small>
                 </div>
                 <input v-model="configForm.forkScoreBehavior" type="checkbox" class="switch" />
               </label>
               <label class="boundary-row">
                 <div>
-                  <strong>Redistribution requires license</strong>
+                  <strong>Phân phối lại cần giấy phép</strong>
                   <small>Bắt buộc xác thực giấy phép trước khi phát hành gói.</small>
                 </div>
                 <input v-model="configForm.redistributionRequiresLicense" type="checkbox" class="switch" />
@@ -214,33 +214,33 @@
           <div v-else-if="activeTab === 'compliance'" class="tab-body">
             <div class="section-title-row">
               <span class="material-symbols-outlined">verified_user</span>
-              <span>Pre-publish Checklist</span>
+              <span>Danh mục kiểm tra trước công bố</span>
             </div>
 
             <ul class="checklist">
               <li class="check-row ok">
                 <span class="material-symbols-outlined">check_circle</span>
-                <span>Data Privacy Policy</span>
+                <span>Chính sách quyền riêng tư</span>
                 <span class="check-tag">v2.4.1</span>
               </li>
               <li class="check-row" :class="redistributionOk ? 'ok' : 'fail'">
                 <span class="material-symbols-outlined">
                   {{ redistributionOk ? 'check_circle' : 'error' }}
                 </span>
-                <span>Market Redistribution License</span>
+                <span>Giấy phép phân phối lại</span>
                 <button
                   v-if="!redistributionOk"
                   class="btn-link fix"
                   @click="validateRedistribution"
                 >
-                  {{ validating ? 'ĐANG KIỂM TRA…' : 'FIX NOW' }}
+                  {{ validating ? 'ĐANG KIỂM TRA…' : 'SỬA NGAY' }}
                 </button>
-                <span v-else class="check-tag ok-tag">Validated</span>
+                <span v-else class="check-tag ok-tag">Đã kiểm tra</span>
               </li>
               <li class="check-row ok">
                 <span class="material-symbols-outlined">check_circle</span>
-                <span>Consent Management System</span>
-                <span class="check-tag ok-tag">Active</span>
+                <span>Hệ thống quản lý đồng ý</span>
+                <span class="check-tag ok-tag">Đang hoạt động</span>
               </li>
             </ul>
 
@@ -254,7 +254,7 @@
             <!-- Licenses table -->
             <div class="section-title-row spaced">
               <span class="material-symbols-outlined">receipt_long</span>
-              <span>Data Licenses</span>
+              <span>Giấy phép dữ liệu</span>
               <button class="btn btn-secondary small" @click="showLicenseForm = !showLicenseForm">
                 + Thêm giấy phép
               </button>
@@ -263,7 +263,7 @@
             <div v-if="showLicenseForm" class="license-form">
               <div class="field-grid">
                 <div class="form-field">
-                  <label class="form-label">Name</label>
+                  <label class="form-label">Tên</label>
                   <input v-model="licenseForm.name" class="form-input" type="text" placeholder="CC BY 4.0" />
                 </div>
                 <div class="form-field">
@@ -271,7 +271,7 @@
                   <input v-model="licenseForm.spdxId" class="form-input" type="text" placeholder="CC-BY-4.0" />
                 </div>
                 <div class="form-field">
-                  <label class="form-label">Licensee</label>
+                  <label class="form-label">Bên được cấp phép</label>
                   <input v-model="licenseForm.licensee" class="form-input" type="text" />
                 </div>
                 <div class="form-field">
@@ -290,6 +290,10 @@
 
             <div v-if="licensesLoading" class="loading-state">
               <div class="skeleton-row" />
+            </div>
+            <div v-else-if="licensesError" class="empty-state" role="alert">
+              <p>Không tải được danh sách giấy phép: {{ licensesError }}</p>
+              <button type="button" class="btn-secondary" @click="loadLicenses">Thử lại</button>
             </div>
             <div v-else-if="licenses.length === 0" class="empty-state">
               <p>Chưa có giấy phép dữ liệu.</p>
@@ -320,7 +324,7 @@
                     <td>{{ lic.expiresAt ? formatDate(lic.expiresAt) : 'Không giới hạn' }}</td>
                     <td>
                       <span class="status-badge" :class="lic.valid ? 'badge-active' : 'badge-cancelled'">
-                        {{ lic.valid ? 'Valid' : 'Expired' }}
+                        {{ lic.valid ? 'Valid' : 'Hết hạn' }}
                       </span>
                     </td>
                   </tr>
@@ -336,6 +340,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { formatDay } from '@/lib/datetime';
 import { marketApi } from '@/api/market';
 import type {
   Market,
@@ -348,9 +353,9 @@ import type {
 const props = defineProps<{ authToken: string }>();
 
 const tabs = [
-  { id: 'general', label: 'General Settings' },
-  { id: 'commercial', label: 'Commercial Boundaries' },
-  { id: 'compliance', label: 'Compliance & Licenses' },
+  { id: 'general', label: 'Cài đặt chung' },
+  { id: 'commercial', label: 'Ranh giới thương mại' },
+  { id: 'compliance', label: 'Tuân thủ & Giấy phép' },
 ];
 
 // ─── Markets ────────────────────────────────────────────────────────────────
@@ -369,6 +374,8 @@ const configForm = ref<MarketConfig>({ marketId: '' });
 // ─── Licenses ─────────────────────────────────────────────────────────────────
 const licenses = ref<DataLicense[]>([]);
 const licensesLoading = ref(false);
+/// Why the list is empty, when it is empty because something broke.
+const licensesError = ref<string | null>(null);
 const showLicenseForm = ref(false);
 const licenseForm = ref({ name: '', spdxId: '', licensee: '' });
 const licenseMarketsText = ref('');
@@ -459,8 +466,13 @@ async function loadLicenses() {
   licensesLoading.value = true;
   try {
     licenses.value = await marketApi.listLicenses(props.authToken);
-  } catch (_) {
-    licenses.value = [];
+    licensesError.value = null;
+  } catch (e: unknown) {
+    // Emptying the list on failure made a broken request and a genuinely
+    // empty licence list look identical, and the second one is the answer an
+    // operator would act on.
+    const apiErr = e as { message?: string };
+    licensesError.value = apiErr?.message ?? 'Không tải được giấy phép';
   } finally {
     licensesLoading.value = false;
   }
@@ -566,7 +578,7 @@ async function validateRedistribution() {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function formatDate(iso?: string | null): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString();
+  return formatDay(iso);
 }
 
 // ─── Init ─────────────────────────────────────────────────────────────────────

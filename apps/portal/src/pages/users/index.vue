@@ -1,231 +1,333 @@
 <script setup lang="ts">
-import { ref } from "vue";
+/**
+ * Operators, roles and two-factor authentication.
+ *
+ * These endpoints govern who can change course data, and until now the only
+ * way to grant a role was a SQL statement. That is the kind of gap that gets
+ * closed by giving somebody SUPER_ADMIN "temporarily".
+ *
+ * Two deliberate frictions, because this page hands out authority:
+ *
+ *   • Revoking a role asks first. Granting does not — an unwanted grant is
+ *     undone by a revoke, while an accidental revoke can lock the last
+ *     administrator out of the tool they would use to undo it.
+ *   • The enrolment secret is shown once, where it is generated, and is never
+ *     re-fetched into the list. Anything that renders a TOTP secret next to a
+ *     username in a table will eventually be photographed.
+ */
+import { computed, onMounted, ref } from 'vue';
 
-type Tab = "users" | "roles" | "privacy";
-const tab = ref<Tab>("users");
+import { ROLE_NAMES, userAdminApi } from '@/api/admin/users';
+import type { AdminAccount, MfaEnrolment, RoleName } from '@/api/admin/users';
 
-interface UserRow {
-  name: string;
-  email: string;
-  facility: string;
-  role: string;
-  roleTone: string;
-  mfa: "verified" | "shield-on" | "shield-off";
-  active: boolean;
+const props = defineProps<{ authToken: string }>();
+
+const accounts = ref<AdminAccount[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const notice = ref<string | null>(null);
+const busyAccountId = ref<number | null>(null);
+
+// ─── Load ───────────────────────────────────────────────────────────────────
+
+async function load() {
+  loading.value = true;
+  error.value = null;
+  try {
+    accounts.value = await userAdminApi.listAccounts(props.authToken);
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string; code?: string };
+    // A non-SUPER_ADMIN gets 403 here. Saying so is more useful than "failed".
+    error.value =
+      apiErr?.code === 'VSP-ERR-AUTH-003' || apiErr?.code === 'FORBIDDEN'
+        ? 'Chỉ SUPER_ADMIN mới xem được danh sách người vận hành.'
+        : (apiErr?.message ?? 'Không tải được danh sách người vận hành');
+  } finally {
+    loading.value = false;
+  }
 }
-const users = ref<UserRow[]>([
-  { name: "Hoàng Nam", email: "nam.hoang@golfops.pro", facility: "Global Access", role: "Super Admin", roleTone: "r-primary", mfa: "verified", active: true },
-  { name: "Linh Trịnh", email: "linh.trinh@legendhill.com", facility: "BRG Legend Hill", role: "Greenkeeper", roleTone: "r-tertiary", mfa: "shield-on", active: true },
-  { name: "Minh Quân", email: "m.quan@pga.vn", facility: "Phoenix Resort", role: "Auditor", roleTone: "r-muted", mfa: "shield-off", active: false },
-]);
 
-const stats = [
-  { lbl: "Active Sessions", val: "142", tone: "c-primary", extra: "+8.4%", extraTone: "c-tertiary" },
-  { lbl: "MFA Adoption", val: "89%", tone: "", bar: 89 },
-  { lbl: "Avg Session Time", val: "4h 12m", tone: "" },
-  { lbl: "Recent Revokes", val: "3", tone: "c-error", extra: "past 24h", extraTone: "c-muted" },
-];
+// ─── Roles ──────────────────────────────────────────────────────────────────
 
-const roleCols = ["Super Admin", "Course Admin", "Greenkeeper", "Director", "Caddie Master", "Auditor"];
-const matrix = [
-  { scope: "Map Geometry Editing", perms: [true, true, false, false, false, false] },
-  { scope: "Pin Position Updates", perms: [true, true, true, true, true, false] },
-  { scope: "Manage Users & Billing", perms: [true, false, false, false, false, false] },
-  { scope: "Audit History Export", perms: [true, true, false, false, false, true] },
-  { scope: "Publish Course Version", perms: [true, true, false, false, false, false] },
-  { scope: "Issue Course Alerts", perms: [true, true, true, false, true, false] },
-];
+const grantRole = ref<Record<number, RoleName>>({});
 
-const privacy = [
-  { type: "Delete Account", icon: "delete_sweep", requester: "u-9928-331", due: "2h remaining", dueTone: "c-error", status: "Processing", statusTone: "st-proc", assignee: "Hoàng Nam", log: "LOG_4412" },
-  { type: "Data Export", icon: "download", requester: "u-8811-204", due: "3 days", dueTone: "c-muted", status: "Queued", statusTone: "st-queue", assignee: "Linh Trịnh", log: "LOG_4409" },
-];
+function availableRoles(account: AdminAccount): RoleName[] {
+  return ROLE_NAMES.filter((r) => !account.roles?.includes(r));
+}
 
-const initials = (n: string) => n.split(" ").map((p) => p[0]).slice(-2).join("");
+async function grant(account: AdminAccount) {
+  const role = grantRole.value[account.golferAccountId];
+  if (!role) return;
+  busyAccountId.value = account.golferAccountId;
+  error.value = null;
+  try {
+    await userAdminApi.grantRole(props.authToken, account.golferAccountId, role);
+    notice.value = `Đã cấp quyền ${role}.`;
+    delete grantRole.value[account.golferAccountId];
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không cấp được quyền';
+  } finally {
+    busyAccountId.value = null;
+  }
+}
+
+const confirmRevoke = ref<{ accountId: number; role: RoleName } | null>(null);
+
+async function revoke() {
+  const target = confirmRevoke.value;
+  if (!target) return;
+  busyAccountId.value = target.accountId;
+  error.value = null;
+  try {
+    await userAdminApi.revokeRole(props.authToken, target.accountId, target.role);
+    notice.value = `Đã thu hồi quyền ${target.role}.`;
+    confirmRevoke.value = null;
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không thu hồi được quyền';
+  } finally {
+    busyAccountId.value = null;
+  }
+}
+
+const superAdminCount = computed(
+  () => accounts.value.filter((a) => a.roles?.includes('SUPER_ADMIN')).length,
+);
+
+/** True when revoking this would leave nobody able to grant it back. */
+function isLastSuperAdmin(account: AdminAccount, role: RoleName): boolean {
+  return role === 'SUPER_ADMIN' && superAdminCount.value <= 1 && account.roles.includes('SUPER_ADMIN');
+}
+
+// ─── MFA ────────────────────────────────────────────────────────────────────
+
+const enrolment = ref<{ accountId: number; data: MfaEnrolment } | null>(null);
+const totpCode = ref('');
+const mfaError = ref<string | null>(null);
+
+async function beginEnrolment(account: AdminAccount) {
+  mfaError.value = null;
+  busyAccountId.value = account.golferAccountId;
+  try {
+    const data = await userAdminApi.beginMfaEnrolment(props.authToken, account.golferAccountId);
+    enrolment.value = { accountId: account.golferAccountId, data };
+    totpCode.value = '';
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    mfaError.value = apiErr?.message ?? 'Không bắt đầu được đăng ký MFA';
+  } finally {
+    busyAccountId.value = null;
+  }
+}
+
+async function confirmEnrolment() {
+  const current = enrolment.value;
+  if (!current) return;
+  mfaError.value = null;
+  try {
+    await userAdminApi.confirmMfaEnrolment(props.authToken, current.accountId, totpCode.value.trim());
+    notice.value = 'Đã bật xác thực hai lớp.';
+    enrolment.value = null;
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    mfaError.value = apiErr?.message ?? 'Mã không đúng hoặc đã hết hiệu lực';
+  }
+}
+
+async function disableMfa(account: AdminAccount) {
+  busyAccountId.value = account.golferAccountId;
+  error.value = null;
+  try {
+    await userAdminApi.disableMfa(props.authToken, account.golferAccountId);
+    notice.value = 'Đã tắt xác thực hai lớp.';
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không tắt được xác thực hai lớp';
+  } finally {
+    busyAccountId.value = null;
+  }
+}
+
+function fmt(iso?: string): string {
+  return iso ? new Date(iso).toLocaleString('vi-VN') : '—';
+}
+
+onMounted(load);
 </script>
 
 <template>
-  <div class="users">
-    <div class="tab-nav">
-      <button class="tab" :class="{ active: tab === 'users' }" @click="tab = 'users'">Người dùng</button>
-      <button class="tab" :class="{ active: tab === 'roles' }" @click="tab = 'roles'">Vai trò &amp; Quyền</button>
-      <button class="tab" :class="{ active: tab === 'privacy' }" @click="tab = 'privacy'">Yêu cầu quyền riêng tư</button>
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-title">Người vận hành</h1>
+      <p class="page-subtitle">
+        Cấp và thu hồi quyền, quản lý xác thực hai lớp. Mọi thao tác ở đây đều
+        do máy chủ kiểm tra lại — trang này chỉ là giao diện.
+      </p>
+    </header>
+
+    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+    <p v-if="error" class="error" role="alert">
+      {{ error }}
+      <button type="button" class="btn-link" @click="load">Thử lại</button>
+    </p>
+
+    <section class="card">
+      <p v-if="loading" class="muted">Đang tải…</p>
+      <p v-else-if="accounts.length === 0" class="muted">Chưa có tài khoản vận hành nào.</p>
+      <table v-else class="table">
+        <thead>
+          <tr>
+            <th>Tài khoản</th>
+            <th>Quyền</th>
+            <th>Xác thực hai lớp</th>
+            <th>Cấp thêm quyền</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="a in accounts" :key="a.id">
+            <td>
+              <strong>#{{ a.golferAccountId }}</strong>
+              <p class="muted small">Tạo: {{ fmt(a.createdAt) }}</p>
+            </td>
+
+            <td>
+              <span v-if="!a.roles?.length" class="muted">—</span>
+              <span v-for="r in a.roles" :key="r" class="role-chip">
+                {{ r }}
+                <button
+                  type="button" class="chip-x" :title="`Thu hồi ${r}`"
+                  :disabled="busyAccountId === a.golferAccountId"
+                  @click="confirmRevoke = { accountId: a.golferAccountId, role: r }"
+                >×</button>
+              </span>
+            </td>
+
+            <td>
+              <span :class="a.mfaEnabled ? 'badge-ok' : 'badge-idle'">
+                {{ a.mfaEnabled ? 'Đã bật' : 'Chưa bật' }}
+              </span>
+              <div class="mfa-actions">
+                <button
+                  v-if="!a.mfaEnabled" type="button" class="btn-link"
+                  :disabled="busyAccountId === a.golferAccountId"
+                  @click="beginEnrolment(a)"
+                >Đăng ký</button>
+                <button
+                  v-else type="button" class="btn-link danger"
+                  :disabled="busyAccountId === a.golferAccountId"
+                  @click="disableMfa(a)"
+                >Tắt</button>
+              </div>
+            </td>
+
+            <td>
+              <div class="grant-row">
+                <select v-model="grantRole[a.golferAccountId]" class="input" :aria-label="`Quyền cấp cho tài khoản ${a.golferAccountId}`">
+                  <option :value="undefined">— Chọn quyền —</option>
+                  <option v-for="r in availableRoles(a)" :key="r" :value="r">{{ r }}</option>
+                </select>
+                <button
+                  type="button" class="btn-primary small"
+                  :disabled="!grantRole[a.golferAccountId] || busyAccountId === a.golferAccountId"
+                  @click="grant(a)"
+                >Cấp</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ─── Revoke confirmation ──────────────────────────────────────────── -->
+    <div v-if="confirmRevoke" class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 class="modal-title">Thu hồi quyền {{ confirmRevoke.role }}?</h2>
+        <p class="modal-body">
+          Tài khoản #{{ confirmRevoke.accountId }} sẽ mất quyền này ngay lập tức.
+        </p>
+        <p
+          v-if="isLastSuperAdmin(
+            accounts.find(a => a.golferAccountId === confirmRevoke!.accountId)!,
+            confirmRevoke.role,
+          )"
+          class="error"
+        >
+          Đây là SUPER_ADMIN cuối cùng. Thu hồi xong sẽ không còn ai cấp lại được
+          quyền này từ trang quản trị.
+        </p>
+        <div class="actions">
+          <button type="button" class="btn-secondary" @click="confirmRevoke = null">Huỷ</button>
+          <button type="button" class="btn-danger" @click="revoke">Thu hồi</button>
+        </div>
+      </div>
     </div>
 
-    <!-- USERS -->
-    <section v-if="tab === 'users'" class="stack">
-      <div class="filter-bar">
-        <div class="filters">
-          <select><option>Vai trò: Tất cả</option><option>Super Admin</option><option>Course Admin</option><option>Greenkeeper</option></select>
-          <select><option>Cơ sở: Tất cả</option><option>BRG Legend Hill</option><option>Phoenix Golf Resort</option></select>
-          <select><option>Trạng thái: Active</option><option>Inactive</option></select>
-        </div>
-        <button class="btn-primary"><span class="material-symbols-outlined">person_add</span> Thêm người dùng</button>
-      </div>
+    <!-- ─── MFA enrolment ────────────────────────────────────────────────── -->
+    <div v-if="enrolment" class="modal-backdrop">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 class="modal-title">Đăng ký xác thực hai lớp</h2>
+        <p class="modal-body">
+          Quét mã hoặc nhập khoá thủ công vào ứng dụng xác thực, rồi nhập mã sáu
+          số để xác nhận. Khoá này chỉ hiện một lần.
+        </p>
+        <p class="secret">{{ enrolment.data.secret }}</p>
+        <p class="muted small break">{{ enrolment.data.provisioningUri }}</p>
 
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr><th>Name</th><th>Email</th><th>Scoped Facility</th><th>Role</th><th>MFA</th><th>Status</th><th class="ta-r">Actions</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="u in users" :key="u.email">
-              <td><div class="name-cell"><span class="avatar">{{ initials(u.name) }}</span><span class="uname" :class="{ struck: !u.active }">{{ u.name }}</span></div></td>
-              <td class="mono c-muted">{{ u.email }}</td>
-              <td><span class="chip">{{ u.facility }}</span></td>
-              <td><span class="role-badge" :class="u.roleTone">{{ u.role }}</span></td>
-              <td>
-                <span v-if="u.mfa === 'verified'" class="material-symbols-outlined fill c-tertiary" title="MFA verified">verified_user</span>
-                <span v-else-if="u.mfa === 'shield-on'" class="material-symbols-outlined c-error" title="MFA required">shield</span>
-                <span v-else class="material-symbols-outlined c-muted" title="MFA off">shield</span>
-              </td>
-              <td><div class="status"><span class="dot" :class="u.active ? 'd-on' : 'd-off'"></span>{{ u.active ? "Active" : "Inactive" }}</div></td>
-              <td class="ta-r">
-                <button class="ico-btn" title="Sửa"><span class="material-symbols-outlined">{{ u.active ? "edit" : "settings_backup_restore" }}</span></button>
-                <button class="ico-btn danger" :title="u.active ? 'Thu hồi phiên' : 'Xóa'"><span class="material-symbols-outlined">{{ u.active ? "logout" : "delete_forever" }}</span></button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+        <label class="label" for="mfa-code">Mã xác thực</label>
+        <input id="mfa-code" v-model="totpCode" class="input" inputmode="numeric" maxlength="6" placeholder="000000" />
 
-      <div class="stat-grid">
-        <div v-for="s in stats" :key="s.lbl" class="stat">
-          <span class="stat-lbl">{{ s.lbl }}</span>
-          <div class="stat-body">
-            <span class="stat-val mono" :class="s.tone">{{ s.val }}</span>
-            <span v-if="s.extra" class="stat-extra" :class="s.extraTone">{{ s.extra }}</span>
-            <div v-if="s.bar" class="mini-bar"><div class="mini-fill" :style="{ width: s.bar + '%' }"></div></div>
-          </div>
-        </div>
-      </div>
-    </section>
+        <p v-if="mfaError" class="error" role="alert">{{ mfaError }}</p>
 
-    <!-- ROLES -->
-    <section v-else-if="tab === 'roles'" class="stack">
-      <div class="warn-card">
-        <span class="material-symbols-outlined">warning</span>
-        <div>
-          <h4>Least-Privilege Warning</h4>
-          <p>Super Admin roles have unrestricted access to all course GPS data, financial logs, and PII. Ensure only verified operational managers hold this role. Audit logs for Super Admin actions are permanent and immutable.</p>
+        <div class="actions">
+          <button type="button" class="btn-secondary" @click="enrolment = null">Huỷ</button>
+          <button type="button" class="btn-primary" :disabled="totpCode.trim().length < 6" @click="confirmEnrolment">
+            Xác nhận
+          </button>
         </div>
       </div>
-      <div class="matrix-card">
-        <div class="matrix-row head">
-          <div class="cell scope">Scope / Permission</div>
-          <div v-for="c in roleCols" :key="c" class="cell col-head">{{ c }}</div>
-        </div>
-        <div v-for="m in matrix" :key="m.scope" class="matrix-row">
-          <div class="cell scope perm">{{ m.scope }}</div>
-          <div v-for="(p, i) in m.perms" :key="i" class="cell center">
-            <span class="material-symbols-outlined" :class="p ? 'c-tertiary' : 'c-outline'">{{ p ? "check_circle" : "cancel" }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    </div>
 
-    <!-- PRIVACY -->
-    <section v-else class="stack">
-      <div class="table-card">
-        <table>
-          <thead>
-            <tr><th>Type</th><th>Requester</th><th>Due Date</th><th>Status</th><th>Assignee</th><th class="ta-r">Audit Trail</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in privacy" :key="p.log">
-              <td><div class="type-cell"><span class="material-symbols-outlined c-secondary">{{ p.icon }}</span>{{ p.type }}</div></td>
-              <td class="mono">{{ p.requester }}</td>
-              <td class="mono strong" :class="p.dueTone">{{ p.due }}</td>
-              <td><span class="st-badge" :class="p.statusTone">{{ p.status }}</span></td>
-              <td class="c-muted">{{ p.assignee }}</td>
-              <td class="ta-r"><a class="mono link" href="#">{{ p.log }}</a></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <p v-if="mfaError && !enrolment" class="error" role="alert">{{ mfaError }}</p>
   </div>
 </template>
 
 <style scoped>
-.users { max-width: 1400px; }
-.mono { font-family: var(--font-mono); }
-.strong { font-weight: 700; }
-.struck { text-decoration: line-through; color: var(--on-surface-variant); }
-.c-primary { color: var(--primary-bright); }
-.c-secondary { color: var(--secondary); }
-.c-tertiary { color: var(--tertiary); }
-.c-error { color: var(--error); }
-.c-muted { color: var(--on-surface-variant); }
-.c-outline { color: var(--outline); }
-.fill { font-variation-settings: "FILL" 1; }
-.stack { display: flex; flex-direction: column; gap: 24px; }
-
-.tab-nav { display: flex; gap: 32px; margin-bottom: 32px; border-bottom: 1px solid rgba(255,255,255,.05); }
-.tab { padding-bottom: 16px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--on-surface-variant); font-weight: 500; font-size: 14px; cursor: pointer; }
-.tab.active { color: var(--primary-bright); border-bottom-color: var(--primary-bright); font-weight: 700; }
-
-.filter-bar { display: flex; justify-content: space-between; align-items: center; background: var(--surface-container-low); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.05); gap: 16px; flex-wrap: wrap; }
-.filters { display: flex; gap: 16px; flex-wrap: wrap; }
-select { background: var(--surface-container-high); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 8px 16px; font-size: 14px; color: var(--on-surface); }
-.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-container); color: #fff; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; }
-.btn-primary:hover { filter: brightness(1.1); }
-
-.table-card { background: var(--surface-container-low); border: 1px solid rgba(255,255,255,.05); border-radius: 12px; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; }
-thead tr { background: rgba(45,52,73,.5); border-bottom: 1px solid rgba(255,255,255,.1); }
-th { padding: 16px 24px; text-align: left; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--on-surface-variant); }
-td { padding: 16px 24px; border-top: 1px solid rgba(255,255,255,.05); color: var(--on-surface); }
-tbody tr:hover { background: rgba(255,255,255,.05); }
-.ta-r { text-align: right; }
-.name-cell { display: flex; align-items: center; gap: 12px; }
-.avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-container-highest); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--on-surface); border: 1px solid rgba(255,255,255,.1); }
-.uname { font-weight: 600; }
-.chip { font-size: 12px; padding: 4px 8px; background: var(--surface-container-highest); border-radius: 4px; border: 1px solid rgba(255,255,255,.1); }
-.role-badge { font-size: 10px; padding: 2px 8px; font-weight: 700; text-transform: uppercase; border-radius: 4px; border: 1px solid; }
-.r-primary { background: rgba(246,96,24,.2); color: var(--primary-bright); border-color: rgba(255,181,153,.3); }
-.r-tertiary { background: rgba(37,164,117,.2); color: var(--tertiary); border-color: rgba(104,219,169,.3); }
-.r-muted { background: var(--surface-container-highest); color: var(--on-surface-variant); border-color: rgba(255,255,255,.1); }
-.status { display: flex; align-items: center; gap: 8px; font-size: 12px; }
-.dot { width: 8px; height: 8px; border-radius: 50%; }
-.d-on { background: var(--tertiary); }
-.d-off { background: var(--outline-variant); }
-.ico-btn { background: none; border: none; color: var(--on-surface-variant); padding: 8px; cursor: pointer; border-radius: 8px; }
-.ico-btn:hover { color: var(--primary-bright); background: rgba(246,96,24,.1); }
-.ico-btn.danger:hover { color: var(--error); background: rgba(147,0,10,.1); }
-
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-.stat { background: var(--surface-container); padding: 24px; border-radius: 16px; border: 1px solid rgba(255,255,255,.05); }
-.stat-lbl { font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: .08em; color: var(--on-surface-variant); }
-.stat-body { margin-top: 8px; display: flex; align-items: baseline; gap: 8px; }
-.stat-val { font-size: 40px; font-weight: 700; }
-.stat-extra { font-weight: 700; font-size: 13px; }
-.mini-bar { height: 8px; width: 96px; background: var(--surface-container-high); border-radius: 999px; overflow: hidden; align-self: center; }
-.mini-fill { height: 100%; background: var(--tertiary); }
-
-.warn-card { background: var(--surface-container); border-left: 4px solid var(--primary-bright); padding: 24px; border-radius: 12px; display: flex; gap: 16px; }
-.warn-card .material-symbols-outlined { color: var(--primary-bright); font-size: 30px; }
-.warn-card h4 { margin: 0 0 4px; color: var(--primary-bright); font-size: 20px; }
-.warn-card p { margin: 0; color: var(--on-surface-variant); font-size: 14px; }
-
-.matrix-card { background: var(--surface-container-low); border: 1px solid rgba(255,255,255,.05); border-radius: 16px; overflow: hidden; }
-.matrix-row { display: grid; grid-template-columns: 2fr repeat(6, 1fr); }
-.matrix-row.head { background: rgba(45,52,73,.3); border-bottom: 1px solid rgba(255,255,255,.1); }
-.matrix-row:not(.head):hover { background: rgba(255,255,255,.05); }
-.matrix-row:not(.head) + .matrix-row:not(.head) { border-top: 1px solid rgba(255,255,255,.05); }
-.cell { padding: 20px 16px; }
-.cell.scope { font-weight: 700; font-size: 14px; }
-.cell.perm { font-weight: 500; }
-.cell.col-head { text-align: center; font-size: 10px; text-transform: uppercase; font-weight: 700; color: var(--on-surface-variant); }
-.cell.center { display: flex; align-items: center; justify-content: center; }
-
-.type-cell { display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
-.st-badge { padding: 4px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; border: 1px solid; }
-.st-proc { background: rgba(236,106,6,.2); color: var(--secondary); border-color: rgba(255,182,144,.3); }
-.st-queue { background: var(--surface-container-highest); color: var(--on-surface-variant); border-color: rgba(255,255,255,.1); }
-.link { color: var(--primary-bright); }
-.link:hover { text-decoration: underline; }
-
-@media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } .matrix-row { grid-template-columns: 1.5fr repeat(6, 1fr); } }
-@media (max-width: 640px) { .stat-grid { grid-template-columns: 1fr; } .matrix-card { overflow-x: auto; } .matrix-row { min-width: 720px; } }
+.page { padding: 24px; max-width: 1100px; }
+.page-title { margin: 0 0 4px; font-size: 22px; }
+.page-subtitle { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface-container-low); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.role-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface-container-high); border-radius: 4px; padding: 2px 6px; margin: 0 4px 4px 0; font-size: 12px; }
+.chip-x { border: none; background: none; color: var(--error); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; }
+.grant-row { display: flex; gap: 6px; }
+.input { padding: 8px 10px; border: 1px solid var(--outline-variant); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--surface-container-lowest); color: var(--on-surface); color-scheme: dark; }
+.input option { background: var(--surface-container); color: var(--on-surface); }
+.label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-top: 8px; }
+.mfa-actions { margin-top: 4px; }
+.actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+.btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.btn-primary.small { padding: 6px 12px; }
+.btn-primary:disabled { opacity: 0.6; cursor: default; }
+.btn-secondary { background: transparent; border: 1px solid var(--outline-variant); border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.btn-danger { background: var(--error-container); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.btn-link { background: none; border: none; color: var(--primary-bright); cursor: pointer; padding: 0; font-size: 13px; }
+.btn-link.danger { color: var(--error); }
+.muted { color: var(--muted); font-size: 14px; }
+.small { font-size: 12px; margin: 2px 0 0; }
+.break { word-break: break-all; }
+.error { color: var(--error); font-size: 13px; }
+.notice { color: var(--tertiary); font-size: 13px; }
+.badge-ok { background: var(--tertiary-container); color: var(--on-tertiary); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.badge-idle { background: var(--surface-container-high); color: var(--on-surface); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.modal-backdrop { position: fixed; inset: 0; background: rgba(3, 7, 18, 0.72); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal { background: var(--surface-container-low); border-radius: 10px; padding: 20px; width: min(480px, 92vw); }
+.modal-title { margin: 0 0 8px; font-size: 17px; }
+.modal-body { margin: 0 0 8px; color: var(--muted); font-size: 14px; }
+.secret { font-family: ui-monospace, monospace; font-size: 18px; letter-spacing: 2px; background: var(--surface-container-high); border: 1px dashed #cbd5e1; border-radius: 6px; padding: 10px; text-align: center; }
 </style>

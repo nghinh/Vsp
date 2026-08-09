@@ -2,46 +2,46 @@
   <div class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="convert-title">
     <div class="dialog-panel">
       <div class="dialog-header">
-        <h2 id="convert-title" class="dialog-title">Convert to Draft Edit</h2>
-        <button class="close-btn" @click="$emit('cancel')" aria-label="Close dialog">×</button>
+        <h2 id="convert-title" class="dialog-title">Chuyển thành bản nháp</h2>
+        <button class="close-btn" @click="$emit('cancel')" aria-label="Đóng hộp thoại">×</button>
       </div>
 
       <div class="dialog-body">
         <div class="convert-notice">
           <span aria-hidden="true">📝</span>
           <p>
-            Converting this correction to a draft edit will create a draft in the
-            geometry editor. You can then refine and publish it as part of the
-            normal editing workflow.
+            Chuyển hiệu chỉnh này thành bản nháp sẽ tạo một bản nháp trong trình
+            biên tập bản đồ. Bạn có thể chỉnh lại rồi publish theo quy trình biên
+            tập thông thường.
           </p>
         </div>
 
         <div class="form-field">
           <label for="convert-note" class="field-label">
-            Note <span class="optional">(optional)</span>
+            Ghi chú <span class="optional">(không bắt buộc)</span>
           </label>
           <textarea
             id="convert-note"
             v-model="note"
             class="field-input"
             rows="3"
-            placeholder="Optional note about this conversion…"
+            placeholder="Ghi chú về việc chuyển đổi này (không bắt buộc)…"
             maxlength="500"
           ></textarea>
-          <span class="field-hint">{{ note.length }}/500 characters</span>
+          <span class="field-hint">{{ note.length }}/500 ký tự</span>
         </div>
       </div>
 
       <div class="dialog-footer">
         <button class="action-btn cancel-btn" @click="$emit('cancel')" :disabled="loading">
-          Cancel
+          Huỷ
         </button>
         <button
           class="action-btn confirm-btn"
           :disabled="loading"
           @click="confirm"
         >
-          {{ loading ? 'Creating…' : 'Convert to Draft' }}
+          {{ loading ? 'Đang tạo…' : 'Chuyển thành bản nháp' }}
         </button>
       </div>
     </div>
@@ -145,6 +145,11 @@ function confirm() {
 }
 .optional { font-weight: 400; color: #97a2c0; }
 .field-input {
+  /* The dialog is dark; without these three the control falls back to the
+     browser default — a white box with black text, in a dark panel. */
+  background: #0f1626;
+  color: #dae2fd;
+  color-scheme: dark;
   padding: 0.5rem 0.75rem;
   border: 1px solid #2d3449;
   border-radius: 6px;

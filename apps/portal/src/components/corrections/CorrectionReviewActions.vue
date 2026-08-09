@@ -1,22 +1,22 @@
 <template>
-  <section class="correction-review-actions" aria-label="Review actions">
-    <h3 class="section-title">Review Actions</h3>
+  <section class="correction-review-actions" aria-label="Thao tác xử lý">
+    <h3 class="section-title">Thao tác xử lý</h3>
 
     <!-- Current status indicator -->
     <div class="current-status">
-      <span class="status-label">Current Status:</span>
+      <span class="status-label">Trạng thái hiện tại:</span>
       <CorrectionStatusBadge :status="currentStatus" />
     </div>
 
     <!-- Action buttons -->
-    <div class="action-buttons" role="group" aria-label="Review actions">
+    <div class="action-buttons" role="group" aria-label="Thao tác xử lý">
       <button
         class="action-btn approve-btn"
         @click="showApproveDialog = true"
         :disabled="actionLoading"
       >
         <span aria-hidden="true">✅</span>
-        Approve
+        Duyệt
       </button>
 
       <button
@@ -25,7 +25,7 @@
         :disabled="actionLoading"
       >
         <span aria-hidden="true">❌</span>
-        Reject
+        Từ chối
       </button>
 
       <button
@@ -34,7 +34,7 @@
         :disabled="actionLoading"
       >
         <span aria-hidden="true">💬</span>
-        Request Info
+        Yêu cầu bổ sung
       </button>
 
       <button
@@ -43,7 +43,7 @@
         :disabled="actionLoading"
       >
         <span aria-hidden="true">📝</span>
-        Convert to Draft
+        Chuyển thành nháp
       </button>
     </div>
 
@@ -55,7 +55,7 @@
     <!-- ─── Approve Dialog ─────────────────────────────────────────── -->
     <CorrectionApproveDialog
       v-if="showApproveDialog"
-      title="Approve Correction"
+      title="Duyệt báo lỗi"
       message="Confirm that this correction is valid and should be applied. An audit entry will be created."
       confirm-label="Approve"
       :loading="actionLoading"
@@ -132,7 +132,7 @@ async function submitAction(action: CorrectionReviewActionValue, reason = '', no
     emit('reviewed', action);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    const msg = apiErr?.message ?? 'Review action failed. Please try again.';
+    const msg = apiErr?.message ?? 'Thao tác xem xét thất bại. Hãy thử lại.';
     globalError.value = msg;
     emit('error', msg);
   } finally {
@@ -221,32 +221,36 @@ function handleConvertToDraft(note: string) {
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .approve-btn {
-  background: #f0fdf4;
-  border-color: #86efac;
-  color: #15803d;
+  background: rgba(34, 197, 94, 0.12);
+  border-color: #2f6f4a;
+  color: #6ee7a8;
 }
-.approve-btn:hover:not(:disabled) { background: #dcfce7; }
+.approve-btn:hover:not(:disabled) { background: rgba(34, 197, 94, 0.22); }
 
 .reject-btn {
-  background: #fef2f2;
-  border-color: #fca5a5;
-  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.12);
+  border-color: #7a3838;
+  color: #fca5a5;
 }
-.reject-btn:hover:not(:disabled) { background: #fee2e2; }
+.reject-btn:hover:not(:disabled) { background: rgba(239, 68, 68, 0.22); }
 
 .request-info-btn {
-  background: #faf5ff;
-  border-color: #e9d5ff;
-  color: #7c3aed;
+  background: rgba(124, 58, 237, 0.16);
+  border-color: #4c3a7a;
+  color: #c4b5fd;
 }
-.request-info-btn:hover:not(:disabled) { background: #ede9fe; }
+.request-info-btn:hover:not(:disabled) { background: rgba(124, 58, 237, 0.26); }
 
 .convert-btn {
-  background: #f0fdfa;
-  border-color: #99f6e4;
-  color: #0f766e;
+  background: rgba(20, 184, 166, 0.12);
+  border-color: #2b6560;
+  color: #7fe0d4;
 }
-.convert-btn:hover:not(:disabled) { background: #ccfbf1; }
+.convert-btn:hover:not(:disabled) { background: rgba(20, 184, 166, 0.22); }
+
+/* These four kept their hue but sat on near-white fills, which read as a
+   light-theme widget dropped into the dark review panel. Same hues, dark
+   surfaces. */
 
 /* Error */
 .action-error {
@@ -254,10 +258,10 @@ function handleConvertToDraft(note: string) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid #7a3838;
   border-radius: 6px;
   font-size: 0.875rem;
-  color: #991b1b;
+  color: #fca5a5;
 }
 </style>

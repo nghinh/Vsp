@@ -1,3 +1,5 @@
+import { API_BASE } from '../base';
+
 /**
  * API client for Facility Admin endpoints.
  * Per Story 8.1 Slice 2.
@@ -17,7 +19,7 @@ import type {
   ApiError,
 } from '@/types/admin/facility';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

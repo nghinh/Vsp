@@ -4,16 +4,16 @@
     <!-- ─── Page Header ─────────────────────────────────────────────────────── -->
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">Data Quality Dashboard</h1>
-        <p class="page-subtitle">Monitor geometry completeness, course verification, Class A/B coverage, corrections, and resolution times.</p>
+        <h1 class="page-title">Bảng chất lượng dữ liệu</h1>
+        <p class="page-subtitle">Theo dõi độ đầy đủ hình học, mức xác minh sân, tỷ lệ hạng A/B, lượng hiệu chỉnh và thời gian xử lý.</p>
       </div>
     </header>
 
     <!-- ─── Filter Bar ──────────────────────────────────────────────────────── -->
-    <section class="filter-bar" aria-label="Data quality filters">
+    <section class="filter-bar" aria-label="Bộ lọc chất lượng dữ liệu">
       <div class="filter-grid">
         <div class="filter-field">
-          <label class="filter-label" for="facility-select">Facility</label>
+          <label class="filter-label" for="facility-select">Cơ sở</label>
           <select
             id="facility-select"
             v-model="filters.facilityId"
@@ -21,26 +21,26 @@
             :disabled="loading"
             @change="onFacilityChange"
           >
-            <option :value="undefined">All Facilities</option>
+            <option :value="undefined">Tất cả cơ sở</option>
             <option v-for="f in facilities" :key="f.id" :value="f.id">{{ f.name }}</option>
           </select>
         </div>
 
         <div class="filter-field">
-          <label class="filter-label" for="course-select">Course</label>
+          <label class="filter-label" for="course-select">Sân</label>
           <select
             id="course-select"
             v-model="filters.courseId"
             class="filter-select"
             :disabled="loading || !filters.facilityId"
           >
-            <option :value="undefined">All Courses</option>
+            <option :value="undefined">Tất cả sân</option>
             <option v-for="c in filteredCourses" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
 
         <div class="filter-field">
-          <label class="filter-label" for="date-from">From</label>
+          <label class="filter-label" for="date-from">Từ</label>
           <input
             id="date-from"
             v-model="filters.from"
@@ -52,7 +52,7 @@
         </div>
 
         <div class="filter-field">
-          <label class="filter-label" for="date-to">To</label>
+          <label class="filter-label" for="date-to">Đến</label>
           <input
             id="date-to"
             v-model="filters.to"
@@ -69,79 +69,79 @@
             :disabled="loading || !filters.from || !filters.to"
             @click="applyFilters"
           >
-            {{ loading ? 'Loading…' : 'Apply Filters' }}
+            {{ loading ? 'Đang tải…' : 'Áp dụng' }}
           </button>
           <button
             class="btn btn-secondary"
             :disabled="loading"
             @click="resetFilters"
           >
-            Reset
+            Đặt lại
           </button>
         </div>
       </div>
     </section>
 
     <!-- ─── Metric Cards ────────────────────────────────────────────────────── -->
-    <section v-if="metrics" class="metrics-grid" aria-label="Data quality metrics">
+    <section v-if="metrics" class="metrics-grid" aria-label="Chỉ số chất lượng dữ liệu">
       <div class="metric-card" :class="cardStatus(metrics.geometryCompleteness, 80)">
         <div class="metric-icon" aria-hidden="true">📐</div>
         <div class="metric-body">
-          <span class="metric-label">Geometry Completeness</span>
+          <span class="metric-label">Độ đầy đủ hình học</span>
           <span class="metric-value">
             <template v-if="metrics !== null">{{ fmtPct(metrics.geometryCompleteness) }}</template>
             <template v-else>—</template>
           </span>
-          <span class="metric-sub">% of holes with all required layers</span>
+          <span class="metric-sub">% số hố có đủ các lớp bắt buộc</span>
         </div>
       </div>
 
       <div class="metric-card" :class="cardStatus(metrics.verifiedCoursesCount, 1)">
         <div class="metric-icon" aria-hidden="true">✓</div>
         <div class="metric-body">
-          <span class="metric-label">Verified Courses</span>
+          <span class="metric-label">Sân đã xác minh</span>
           <span class="metric-value">
             <template v-if="metrics !== null">{{ metrics.verifiedCoursesCount }}<span class="metric-total"> / {{ metrics.totalCoursesCount }}</span></template>
             <template v-else>—</template>
           </span>
-          <span class="metric-sub">published + verified courses</span>
+          <span class="metric-sub">sân đã publish và đã xác minh</span>
         </div>
       </div>
 
       <div class="metric-card" :class="cardStatus(metrics.classABCoverage, 80)">
         <div class="metric-icon" aria-hidden="true">🏅</div>
         <div class="metric-body">
-          <span class="metric-label">Class A/B Coverage</span>
+          <span class="metric-label">Tỷ lệ hạng A/B</span>
           <span class="metric-value">
             <template v-if="metrics !== null">{{ fmtPct(metrics.classABCoverage) }}</template>
             <template v-else>—</template>
           </span>
-          <span class="metric-sub">% of courses with accuracy class A or B</span>
+          <span class="metric-sub">% sân đạt hạng độ chính xác A hoặc B</span>
         </div>
       </div>
 
       <div class="metric-card metric-card--neutral">
         <div class="metric-icon" aria-hidden="true">🔧</div>
         <div class="metric-body">
-          <span class="metric-label">Correction Volume</span>
+          <span class="metric-label">Lượng hiệu chỉnh</span>
           <span class="metric-value">
             <template v-if="metrics !== null">{{ metrics.correctionVolume }}</template>
             <template v-else>—</template>
           </span>
-          <span class="metric-sub">corrections in selected period</span>
+          <span class="metric-sub">lượt hiệu chỉnh trong kỳ đã chọn</span>
         </div>
       </div>
 
       <div class="metric-card" :class="cardStatus(metrics.avgResolutionTimeHours, 48, true)">
         <div class="metric-icon" aria-hidden="true">⏱</div>
         <div class="metric-body">
-          <span class="metric-label">Avg Resolution Time</span>
+          <span class="metric-label">Thời gian xử lý trung bình</span>
           <span class="metric-value">
             <template v-if="metrics !== null && metrics.avgResolutionTimeHours !== null">{{ fmtHours(metrics.avgResolutionTimeHours) }}</template>
-            <template v-else-if="metrics !== null">pending</template>
+            <template v-else-if="metrics !== null">chưa có</template>
             <template v-else>—</template>
           </span>
-          <span class="metric-sub">avg · median: {{ fmtHours(metrics?.medianResolutionTimeHours ?? null) }}</span>
+          <span class="metric-sub">trung bình · trung vị: {{ fmtHours(metrics?.medianResolutionTimeHours ?? null) }}</span>
         </div>
       </div>
     </section>
@@ -152,14 +152,14 @@
         class="btn btn-export"
         :disabled="loading || !metrics"
         @click="handleExport"
-        aria-label="Export data quality report as CSV"
+        aria-label="Xuất báo cáo chất lượng dữ liệu ra CSV"
       >
-        {{ exporting ? 'Exporting…' : 'Export CSV' }}
+        {{ exporting ? 'Đang xuất…' : 'Xuất CSV' }}
       </button>
     </div>
 
     <!-- ─── Loading ─────────────────────────────────────────────────────────── -->
-    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Loading data quality metrics">
+    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Đang tải chỉ số chất lượng dữ liệu">
       <div v-for="i in 5" :key="i" class="skeleton-card" />
     </div>
 
@@ -167,36 +167,36 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon" aria-hidden="true">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="applyFilters">Retry</button>
+      <button class="btn btn-secondary" @click="applyFilters">Thử lại</button>
     </div>
 
     <!-- ─── Stale Records ───────────────────────────────────────────────────── -->
     <section v-if="!loading && !fetchError" class="stale-section" aria-labelledby="stale-heading">
       <header class="stale-header">
-        <h2 id="stale-heading" class="section-title">Stale Records</h2>
+        <h2 id="stale-heading" class="section-title">Dữ liệu quá hạn</h2>
         <span v-if="staleRecords.length > 0" class="stale-count" aria-live="polite">
-          {{ staleRecords.length }} record{{ staleRecords.length !== 1 ? 's' : '' }} flagged
+          {{ staleRecords.length }} bản ghi bị đánh dấu
         </span>
       </header>
 
       <!-- Empty stale state -->
       <div v-if="staleRecords.length === 0" class="empty-stale">
         <span class="empty-icon" aria-hidden="true">✅</span>
-        <p class="empty-title">No stale records</p>
-        <p class="empty-subtitle">All pin positions, green speeds, and course conditions are current.</p>
+        <p class="empty-title">Không có dữ liệu quá hạn</p>
+        <p class="empty-subtitle">Mọi vị trí cắm cờ, tốc độ green và tình trạng sân đều còn hiệu lực.</p>
       </div>
 
       <!-- Stale records table -->
-      <div v-else class="table-wrapper" role="region" aria-label="Stale records table" tabindex="0">
+      <div v-else class="table-wrapper" role="region" aria-label="Bảng dữ liệu quá hạn" tabindex="0">
         <table class="stale-table" aria-describedby="stale-heading">
           <thead>
             <tr>
-              <th scope="col">Type</th>
-              <th scope="col">Facility</th>
-              <th scope="col">Course</th>
-              <th scope="col">Hole</th>
-              <th scope="col">Expired At</th>
-              <th scope="col">Severity</th>
+              <th scope="col">Loại</th>
+              <th scope="col">Cơ sở</th>
+              <th scope="col">Sân</th>
+              <th scope="col">Hố</th>
+              <th scope="col">Hết hạn lúc</th>
+              <th scope="col">Mức độ</th>
             </tr>
           </thead>
           <tbody>
@@ -226,6 +226,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
+import { formatInstant } from '@/lib/datetime';
 import type { DataQualityMetrics, StaleRecord, FacilityOption, CourseOption } from '@/types/admin/data-quality';
 import { dataQualityAdminApi } from '@/api/admin/data-quality';
 import { facilityAdminApi } from '@/api/admin/facilities';
@@ -272,17 +273,16 @@ function fmtPct(value: number | null): string {
   return `${Number(value).toFixed(1)}%`;
 }
 
+// Units in Vietnamese, because they are read as words rather than symbols:
+// "1.9 ngày", not "1.9d". A guard over template text cannot catch this one —
+// the string is built here and only ever exists at runtime.
 function fmtHours(value: number | null): string {
   if (value == null) return '—';
-  if (value < 1) return `${Math.round(value * 60)}m`;
-  if (value < 24) return `${Number(value).toFixed(1)}h`;
-  return `${(value / 24).toFixed(1)}d`;
+  if (value < 1) return `${Math.round(value * 60)} phút`;
+  if (value < 24) return `${Number(value).toFixed(1)} giờ`;
+  return `${(value / 24).toFixed(1)} ngày`;
 }
 
-function formatInstant(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString();
-}
 
 /**
  * Returns a status class for a metric card.
@@ -321,11 +321,11 @@ async function loadCourses() {
 // ─── Fetch ─────────────────────────────────────────────────────────────────────
 async function applyFilters() {
   if (!filters.from || !filters.to) {
-    fetchError.value = 'Please select both From and To dates.';
+    fetchError.value = 'Hãy chọn cả ngày Từ và ngày Đến.';
     return;
   }
   if (filters.from > filters.to) {
-    fetchError.value = 'From date must be before or equal to To date.';
+    fetchError.value = 'Ngày Từ phải trước hoặc bằng ngày Đến.';
     return;
   }
 
@@ -349,7 +349,7 @@ async function applyFilters() {
     staleRecords.value = staleData;
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    fetchError.value = apiErr?.message ?? 'Failed to load data quality metrics.';
+    fetchError.value = apiErr?.message ?? 'Không tải được chỉ số chất lượng dữ liệu.';
   } finally {
     loading.value = false;
   }
@@ -397,7 +397,7 @@ async function handleExport() {
     URL.revokeObjectURL(url);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    fetchError.value = apiErr?.message ?? 'Failed to export data.';
+    fetchError.value = apiErr?.message ?? 'Không xuất được dữ liệu.';
   } finally {
     exporting.value = false;
   }

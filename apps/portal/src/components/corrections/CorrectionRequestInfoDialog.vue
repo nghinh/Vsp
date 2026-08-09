@@ -2,26 +2,26 @@
   <div class="dialog-overlay" role="dialog" aria-modal="true" aria-labelledby="request-info-title">
     <div class="dialog-panel">
       <div class="dialog-header">
-        <h2 id="request-info-title" class="dialog-title">Request More Information</h2>
-        <button class="close-btn" @click="$emit('cancel')" aria-label="Close dialog">×</button>
+        <h2 id="request-info-title" class="dialog-title">Yêu cầu bổ sung thông tin</h2>
+        <button class="close-btn" @click="$emit('cancel')" aria-label="Đóng hộp thoại">×</button>
       </div>
 
       <div class="dialog-body">
         <p class="dialog-message">
-          Send a message to the reporter requesting additional information.
-          The correction will be marked as "Info Requested".
+          Gửi tin nhắn cho người báo để xin thêm thông tin. Hiệu chỉnh sẽ được
+          đánh dấu "Đang chờ thông tin".
         </p>
 
         <div class="form-field">
           <label for="info-message" class="field-label">
-            Message to Reporter <span class="required" aria-hidden="true">*</span>
+            Lời nhắn cho người báo <span class="required" aria-hidden="true">*</span>
           </label>
           <textarea
             id="info-message"
             v-model="message"
             class="field-input"
             rows="4"
-            placeholder="What additional information would help you evaluate this correction?…"
+            placeholder="Bạn cần thêm thông tin gì để đánh giá hiệu chỉnh này?…"
             maxlength="500"
             :aria-invalid="messageError ? 'true' : undefined"
             :aria-describedby="messageError ? 'message-error' : undefined"
@@ -29,35 +29,35 @@
           <span v-if="messageError" id="message-error" class="field-error" role="alert">
             {{ messageError }}
           </span>
-          <span class="field-hint">{{ message.length }}/500 characters</span>
+          <span class="field-hint">{{ message.length }}/500 ký tự</span>
         </div>
 
         <div class="form-field">
           <label for="info-note" class="field-label">
-            Internal Note <span class="optional">(optional)</span>
+            Ghi chú nội bộ <span class="optional">(không bắt buộc)</span>
           </label>
           <textarea
             id="info-note"
             v-model="note"
             class="field-input"
             rows="2"
-            placeholder="Optional internal note for the audit trail…"
+            placeholder="Ghi chú nội bộ cho nhật ký (không bắt buộc)…"
             maxlength="500"
           ></textarea>
-          <span class="field-hint">{{ note.length }}/500 characters</span>
+          <span class="field-hint">{{ note.length }}/500 ký tự</span>
         </div>
       </div>
 
       <div class="dialog-footer">
         <button class="action-btn cancel-btn" @click="$emit('cancel')" :disabled="loading">
-          Cancel
+          Huỷ
         </button>
         <button
           class="action-btn confirm-btn"
           :disabled="loading"
           @click="confirm"
         >
-          {{ loading ? 'Sending…' : 'Send Request' }}
+          {{ loading ? 'Đang gửi…' : 'Gửi yêu cầu' }}
         </button>
       </div>
     </div>
@@ -83,7 +83,7 @@ const messageError = ref<string | null>(null);
 function confirm() {
   messageError.value = null;
   if (!message.value.trim()) {
-    messageError.value = 'A message is required to request more information.';
+    messageError.value = 'Phải nhập nội dung khi xin thêm thông tin.';
     return;
   }
   emit('confirm', message.value.trim(), note.value.trim());
@@ -162,6 +162,11 @@ function confirm() {
 .required { color: #dc2626; }
 .optional { font-weight: 400; color: #97a2c0; }
 .field-input {
+  /* The dialog is dark; without these three the control falls back to the
+     browser default — a white box with black text, in a dark panel. */
+  background: #0f1626;
+  color: #dae2fd;
+  color-scheme: dark;
   padding: 0.5rem 0.75rem;
   border: 1px solid #2d3449;
   border-radius: 6px;

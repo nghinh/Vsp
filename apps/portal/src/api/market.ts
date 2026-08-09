@@ -1,3 +1,5 @@
+import { API_BASE } from './base';
+
 /**
  * Market & Integrations API client for the VSP Portal.
  *
@@ -27,7 +29,7 @@ import type {
   LicenseValidationResult,
 } from '@/types/market';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {

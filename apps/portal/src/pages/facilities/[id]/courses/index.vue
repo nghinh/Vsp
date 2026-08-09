@@ -2,36 +2,36 @@
   <div class="courses-page">
 
     <header class="page-header">
-      <button class="btn btn-secondary back-btn" @click="router.back()">← Back to Facility</button>
+      <button class="btn btn-secondary back-btn" @click="router.back()">← Quay lại cơ sở</button>
       <div class="header-content">
-        <h1 class="page-title">Courses at {{ facilityName }}</h1>
-        <p class="page-subtitle">Manage golf courses at this facility.</p>
+        <h1 class="page-title">Các sân tại {{ facilityName }}</h1>
+        <p class="page-subtitle">Quản lý các sân tại cơ sở này.</p>
       </div>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-        {{ showCreateForm ? 'Cancel' : '+ New Course' }}
+        {{ showCreateForm ? 'Huỷ' : '+ Tạo sân' }}
       </button>
     </header>
 
     <!-- ─── Create form ─────────────────────────────────────────────────────── -->
     <div v-if="showCreateForm" class="create-form-panel">
-      <h2 class="form-title">Create Golf Course</h2>
+      <h2 class="form-title">Tạo sân golf</h2>
 
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label" for="course-name">Course Name <span class="required">*</span></label>
+          <label class="form-label" for="course-name">Tên sân <span class="required">*</span></label>
           <input
             id="course-name"
             v-model="createForm.name"
             class="form-input"
             type="text"
-            placeholder="e.g. North Course"
+            placeholder="ví dụ Sân Bắc"
             autocomplete="off"
           />
           <span v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</span>
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="course-holes">Number of Holes</label>
+          <label class="form-label" for="course-holes">Số hố</label>
           <input
             id="course-holes"
             v-model.number="createForm.holesCount"
@@ -45,7 +45,7 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="course-par">Total Par</label>
+          <label class="form-label" for="course-par">Tổng par</label>
           <input
             id="course-par"
             v-model.number="createForm.parTotal"
@@ -65,7 +65,7 @@
           :disabled="creating"
           @click="handleCreate"
         >
-          {{ creating ? 'Creating…' : 'Create Course' }}
+          {{ creating ? 'Đang tạo…' : 'Tạo sân' }}
         </button>
       </div>
     </div>
@@ -79,15 +79,15 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadCourses">Retry</button>
+      <button class="btn btn-secondary" @click="loadCourses">Thử lại</button>
     </div>
 
     <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
     <div v-else-if="courses.length === 0 && !showCreateForm" class="empty-state">
       <span class="empty-icon">⛳</span>
-      <p class="empty-title">No courses yet.</p>
-      <p class="empty-subtitle">Add your first course to this facility.</p>
-      <button class="btn btn-primary" @click="showCreateForm = true">Add First Course</button>
+      <p class="empty-title">Chưa có sân nào.</p>
+      <p class="empty-subtitle">Thêm sân đầu tiên cho cơ sở này.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Thêm sân đầu tiên</button>
     </div>
 
     <!-- ─── Course list ─────────────────────────────────────────────────────── -->
@@ -107,13 +107,13 @@
         </div>
 
         <div class="course-details">
-          <span v-if="course.holesCount" class="detail-pill">{{ course.holesCount }} holes</span>
+          <span v-if="course.holesCount" class="detail-pill">{{ course.holesCount }} hố</span>
           <span v-if="course.parTotal" class="detail-pill">Par {{ course.parTotal }}</span>
-          <span v-if="course.teeSets?.length" class="detail-pill">{{ course.teeSets.length }} tee sets</span>
+          <span v-if="course.teeSets?.length" class="detail-pill">{{ course.teeSets.length }} bộ tee</span>
         </div>
 
         <div class="course-meta">
-          <span class="meta-item">Created {{ formatInstant(course.createdAt) }}</span>
+          <span class="meta-item">Tạo lúc {{ formatInstant(course.createdAt) }}</span>
         </div>
       </div>
     </div>
@@ -137,24 +137,6 @@ const facilityName = ref('…');
 const loading = ref(false);
 const fetchError = ref<string | null>(null);
 
-// ─── Mock data ─────────────────────────────────────────────────────────────────
-const MOCK_COURSES: CourseResponse[] = [
-  {
-    id: 1,
-    facilityId,
-    name: 'North Course',
-    holesCount: 18,
-    parTotal: 72,
-    location: 'POINT(-74.567 39.789)',
-    dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-    teeSets: [
-      { id: 1, name: 'Black', totalPar: 72, yardages: {}, rating: 75.3, slope: 143, dataQuality: null },
-      { id: 2, name: 'White', totalPar: 72, yardages: {}, rating: 73.1, slope: 138, dataQuality: null },
-    ],
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-01T10:00:00Z',
-  },
-];
 
 // ─── Create form state ─────────────────────────────────────────────────────────
 const showCreateForm = ref(false);
@@ -179,9 +161,15 @@ async function loadCourses() {
     ]);
     courses.value = coursesData;
     facilityName.value = facility.name;
-  } catch {
-    courses.value = MOCK_COURSES;
-    facilityName.value = 'Pine Valley Golf Club';
+  } catch (err: unknown) {
+    // Was `courses.value = MOCK_COURSES`, with fetchError left null — so an
+    // operator whose API was down saw invented golf courses stamped
+    // accuracyClass 'A' / VERIFIED, with no error banner, and every edit
+    // targeted ids that do not exist. A missing danh sách sân is now a
+    // missing danh sách sân.
+    const apiErr = err as { message?: string };
+    fetchError.value = apiErr?.message ?? 'Không tải được dữ liệu từ máy chủ.';
+    courses.value = [];
   } finally {
     loading.value = false;
   }
@@ -189,7 +177,7 @@ async function loadCourses() {
 
 async function handleCreate() {
   validationErrors.name = createForm.name?.trim() ? '' : 'Course name is required';
-  validationErrors.holesCount = !createForm.holesCount ? 'Number of holes is required' : '';
+  validationErrors.holesCount = !createForm.holesCount ? 'Phải nhập số hố' : '';
   if (validationErrors.name || validationErrors.holesCount) return;
 
   creating.value = true;
@@ -201,7 +189,7 @@ async function handleCreate() {
     router.push(`/courses/${course.id}/holes`);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    createError.value = apiErr?.message ?? 'Failed to create course';
+    createError.value = apiErr?.message ?? 'Không tạo được sân';
   } finally {
     creating.value = false;
   }

@@ -2,9 +2,9 @@
   <div class="corrections-page">
     <!-- Page header -->
     <header class="page-header">
-      <h1 class="page-title">Correction Queue</h1>
+      <h1 class="page-title">Hàng đợi hiệu chỉnh</h1>
       <p class="page-subtitle">
-        Review and act on golfer-submitted course data corrections.
+        Xem và xử lý các báo lỗi dữ liệu sân do golfer gửi.
       </p>
     </header>
 
@@ -22,7 +22,7 @@
         <div class="queue-toolbar">
           <span class="result-count">
             <span v-if="!loading && !fetchError">
-              {{ total }} correction{{ total !== 1 ? 's' : '' }} found
+              {{ total }} báo lỗi
             </span>
           </span>
         </div>
@@ -38,23 +38,23 @@
         />
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Correction queue pagination">
+        <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Phân trang hàng đợi">
           <button
             class="page-btn"
             :disabled="currentPage === 0"
             @click="goToPage(currentPage - 1)"
-            aria-label="Previous page"
+            aria-label="Trang trước"
           >
-            ← Prev
+            ← Trước
           </button>
-          <span class="page-info">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+          <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
           <button
             class="page-btn"
             :disabled="currentPage >= totalPages - 1"
             @click="goToPage(currentPage + 1)"
-            aria-label="Next page"
+            aria-label="Trang sau"
           >
-            Next →
+            Sau →
           </button>
         </div>
       </main>
@@ -62,23 +62,23 @@
 
     <!-- ─── Correction Detail Panel ─────────────────────────────────────── -->
     <div v-if="showDetail" class="detail-overlay" @click.self="closeDetail">
-      <div class="detail-panel" role="dialog" aria-modal="true" aria-label="Correction detail">
+      <div class="detail-panel" role="dialog" aria-modal="true" aria-label="Chi tiết báo lỗi">
         <div class="detail-header">
           <h2 class="detail-title">
-            Correction #{{ selectedCorrectionId }}
+            Hiệu chỉnh #{{ selectedCorrectionId }}
           </h2>
-          <button class="close-btn" @click="closeDetail" aria-label="Close detail panel">×</button>
+          <button class="close-btn" @click="closeDetail" aria-label="Đóng bảng chi tiết">×</button>
         </div>
 
         <!-- Loading detail -->
         <div v-if="detailLoading" class="detail-loading">
-          <span>Loading correction detail…</span>
+          <span>Đang tải chi tiết hiệu chỉnh…</span>
         </div>
 
         <!-- Detail error -->
         <div v-else-if="detailError" class="detail-error">
           <span>⚠ {{ detailError }}</span>
-          <button class="retry-btn" @click="loadDetail">Retry</button>
+          <button class="retry-btn" @click="loadDetail">Thử lại</button>
         </div>
 
         <!-- Detail content -->
@@ -102,7 +102,7 @@
 
           <!-- Terminal state notice -->
           <div v-else class="terminal-notice">
-            <span>This correction has been reviewed: <strong>{{ detail.status }}</strong></span>
+            <span>Báo lỗi này đã được xử lý: <strong>{{ detail.status }}</strong></span>
           </div>
         </div>
       </div>
@@ -112,14 +112,14 @@
     <div v-if="showSuccessToast" class="toast toast-success" role="status" aria-live="polite">
       <span aria-hidden="true">✅</span>
       <span>{{ successToastMessage }}</span>
-      <button class="toast-close" @click="showSuccessToast = false" aria-label="Dismiss success message">×</button>
+      <button class="toast-close" @click="showSuccessToast = false" aria-label="Đóng thông báo thành công">×</button>
     </div>
 
     <!-- ─── Error Toast ───────────────────────────────────────────────── -->
     <div v-if="showErrorToast" class="toast toast-error" role="alert" aria-live="assertive">
       <span aria-hidden="true">⚠</span>
       <span>{{ errorToastMessage }}</span>
-      <button class="toast-close" @click="showErrorToast = false" aria-label="Dismiss error message">×</button>
+      <button class="toast-close" @click="showErrorToast = false" aria-label="Đóng thông báo lỗi">×</button>
     </div>
   </div>
 </template>
@@ -178,7 +178,7 @@ async function loadQueue(page = 0) {
     currentPage.value = page;
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    fetchError.value = apiErr?.message ?? 'Failed to load corrections';
+    fetchError.value = apiErr?.message ?? 'Không tải được danh sách hiệu chỉnh';
   } finally {
     loading.value = false;
   }
@@ -206,7 +206,7 @@ async function openDetail(id: number) {
     detail.value = await correctionApi.getDetail(props.authToken, id);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    detailError.value = apiErr?.message ?? 'Failed to load correction detail';
+    detailError.value = apiErr?.message ?? 'Không tải được chi tiết hiệu chỉnh';
   } finally {
     detailLoading.value = false;
   }

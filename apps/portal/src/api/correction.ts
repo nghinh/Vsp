@@ -1,3 +1,5 @@
+import { API_BASE } from './base';
+
 /**
  * API client for correction queue endpoints.
  *
@@ -20,7 +22,7 @@ import type {
   CorrectionApiError,
 } from '@/types/correction';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 async function parseError(res: Response): Promise<CorrectionApiError> {
   return await res.json().catch(() => ({

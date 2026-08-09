@@ -65,8 +65,10 @@ const OPEN_TO_ANY_OPERATOR: Record<string, string> = {
   '/login': 'public by design — it is how a session is obtained',
   '/forbidden': 'what the guard shows someone it just refused',
   '/dashboard': 'operational summary; every role that reaches the shell may see it',
-  '/map-editor': 'redirect to /facilities, which is role-gated',
 };
+// /map-editor was here while it was a bare redirect to /facilities. It is now
+// a real page that picks a course and opens the geometry editor, so it carries
+// COURSE_ROLES like everything else that page leads to.
 
 /** Substitute something concrete for `:id`, so a declared path resolves. */
 const concrete = (path: string) => path.replace(/:[^/]+/g, '1');

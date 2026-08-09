@@ -81,6 +81,16 @@ const router = createRouter({
       meta: { title: "Bộ tee", roles: COURSE_ROLES },
     },
     {
+      // The gate between imported course data and course data the app draws.
+      // COURSE_ROLES rather than a wider list: verifying a hole is what lets
+      // the app walk a golfer to it.
+      path: "/courses/:courseId/geometry-review",
+      component: () =>
+        import("./pages/courses/[courseId]/geometry-review/index.vue"),
+      props: withAuth(),
+      meta: { title: "Duyệt hình học sân", roles: COURSE_ROLES },
+    },
+    {
       path: "/courses/:courseId/edit-geometry",
       component: () => import("./pages/courses/[courseId]/edit-geometry/index.vue"),
       props: withAuth((route) => ({
@@ -108,22 +118,32 @@ const router = createRouter({
       meta: { title: "Lịch sử đóng gói", roles: COURSE_ROLES },
     },
 
-    { path: "/map-editor", redirect: "/facilities" },
+    {
+      // Was a bare redirect to /facilities: clicking "Biên tập bản đồ" landed
+      // on a list of clubs with nothing said about why.
+      path: "/map-editor",
+      component: () => import("./pages/map-editor/index.vue"),
+      props: withAuth(),
+      meta: { title: "Biên tập bản đồ", roles: COURSE_ROLES },
+    },
 
     // ─── Operations ──────────────────────────────────────────────────────────
     {
       path: "/pin-positions",
       component: () => import("./pages/pin-positions/index.vue"),
+      props: withAuth(),
       meta: { title: "Vị trí cờ & Điều kiện sân", roles: GREENKEEPING_ROLES },
     },
     {
       path: "/course-conditions",
       component: () => import("./pages/course-conditions/index.vue"),
+      props: withAuth(),
       meta: { title: "Tình trạng sân", roles: GREENKEEPING_ROLES },
     },
     {
       path: "/alerts",
       component: () => import("./pages/alerts/index.vue"),
+      props: withAuth(),
       meta: { title: "Cảnh báo sân", roles: COURSE_ROLES },
     },
     {
@@ -153,6 +173,13 @@ const router = createRouter({
       meta: { title: "Tạo giải đấu", roles: TOURNAMENT_ROLES },
     },
     {
+      // Running the outing on the day: rules, roster, score entry, prizes.
+      path: "/tournament/:id/outing",
+      component: () => import("./pages/tournament/outing.vue"),
+      props: withAuth(),
+      meta: { title: "Điều hành giải đấu", roles: TOURNAMENT_ROLES },
+    },
+    {
       path: "/tournament/:id",
       component: () => import("./pages/tournament/detail.vue"),
       props: withAuth(),
@@ -177,6 +204,7 @@ const router = createRouter({
     {
       path: "/users",
       component: () => import("./pages/users/index.vue"),
+      props: withAuth(),
       meta: { title: "Người dùng & Vai trò", roles: SUPER_ADMIN_ONLY },
     },
     {

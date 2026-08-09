@@ -2,13 +2,13 @@
   <div class="facility-detail-page">
 
     <header class="page-header">
-      <button class="btn btn-secondary back-btn" @click="router.back()">← Back</button>
+      <button class="btn btn-secondary back-btn" @click="router.back()">← Quay lại</button>
       <div class="header-content">
-        <h1 class="page-title">{{ facility?.name ?? 'Facility' }}</h1>
+        <h1 class="page-title">{{ facility?.name ?? 'Cơ sở' }}</h1>
         <p v-if="facility?.address" class="page-subtitle">{{ facility.address }}</p>
       </div>
       <button class="btn btn-primary" :disabled="!isDirty" @click="handleSave">
-        {{ saving ? 'Saving…' : 'Save Changes' }}
+        {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
       </button>
     </header>
 
@@ -21,31 +21,31 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadFacility">Retry</button>
+      <button class="btn btn-secondary" @click="loadFacility">Thử lại</button>
     </div>
 
     <!-- ─── Facility form ────────────────────────────────────────────────────── -->
     <div v-else-if="facility" class="facility-form-panel">
 
       <section class="form-section">
-        <h2 class="section-title">Basic Information</h2>
+        <h2 class="section-title">Thông tin cơ bản</h2>
 
         <div class="form-grid">
           <div class="form-field">
-            <label class="form-label" for="facility-name">Facility Name <span class="required">*</span></label>
+            <label class="form-label" for="facility-name">Tên cơ sở <span class="required">*</span></label>
             <input
               id="facility-name"
               v-model="editForm.name"
               class="form-input"
               type="text"
-              placeholder="Facility name"
+              placeholder="Tên cơ sở"
               @input="markDirty"
             />
-            <span v-if="saveError && !editForm.name" class="field-error">Facility name is required</span>
+            <span v-if="saveError && !editForm.name" class="field-error">Cần nhập tên cơ sở</span>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="facility-phone">Phone</label>
+            <label class="form-label" for="facility-phone">Điện thoại</label>
             <input
               id="facility-phone"
               v-model="editForm.phone"
@@ -57,7 +57,7 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="facility-website">Website</label>
+            <label class="form-label" for="facility-website">Trang web</label>
             <input
               id="facility-website"
               v-model="editForm.website"
@@ -69,13 +69,13 @@
           </div>
 
           <div class="form-field full-width">
-            <label class="form-label" for="facility-address">Address</label>
+            <label class="form-label" for="facility-address">Địa chỉ</label>
             <input
               id="facility-address"
               v-model="editForm.address"
               class="form-input"
               type="text"
-              placeholder="Street address"
+              placeholder="Địa chỉ"
               @input="markDirty"
             />
           </div>
@@ -84,22 +84,22 @@
 
       <!-- Data quality -->
       <section v-if="facility.dataQuality" class="form-section">
-        <h2 class="section-title">Data Quality</h2>
+        <h2 class="section-title">Chất lượng dữ liệu</h2>
         <div class="quality-row">
           <div class="quality-item">
-            <span class="quality-label">Accuracy Class</span>
+            <span class="quality-label">Hạng độ chính xác</span>
             <span class="quality-value">{{ facility.dataQuality.accuracyClass ?? '—' }}</span>
           </div>
           <div class="quality-item">
-            <span class="quality-label">Verification</span>
+            <span class="quality-label">Xác minh</span>
             <span class="quality-value">{{ facility.dataQuality.verificationStatus ?? '—' }}</span>
           </div>
           <div class="quality-item">
-            <span class="quality-label">Created</span>
+            <span class="quality-label">Tạo lúc</span>
             <span class="quality-value">{{ formatInstant(facility.createdAt) }}</span>
           </div>
           <div class="quality-item">
-            <span class="quality-label">Updated</span>
+            <span class="quality-label">Cập nhật</span>
             <span class="quality-value">{{ formatInstant(facility.updatedAt) }}</span>
           </div>
         </div>
@@ -107,11 +107,11 @@
 
       <!-- Navigation links -->
       <section class="form-section">
-        <h2 class="section-title">Manage</h2>
+        <h2 class="section-title">Quản lý</h2>
         <div class="nav-links">
           <router-link :to="`/facilities/${facility.id}/courses`" class="nav-link-card">
-            <span class="nav-link-title">Courses</span>
-            <span class="nav-link-desc">View and manage courses at this facility</span>
+            <span class="nav-link-title">Sân golf</span>
+            <span class="nav-link-desc">Xem và quản lý sân tại cơ sở này</span>
           </router-link>
         </div>
       </section>
@@ -124,6 +124,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { formatInstant } from '@/lib/datetime';
 import { useRouter, useRoute } from 'vue-router';
 import type { FacilityResponse, FacilityUpdateRequest } from '@/types/admin/facility';
 import { facilityAdminApi } from '@/api/admin/facilities';
@@ -141,26 +142,21 @@ const isDirty = ref(false);
 
 const editForm = reactive<FacilityUpdateRequest>({});
 
-// ─── Mock data (used when API unavailable) ─────────────────────────────────────
-const MOCK_FACILITY: FacilityResponse = {
-  id: facilityId,
-  name: 'Pine Valley Golf Club',
-  address: '1 Pine Valley Dr, Pine Valley, NJ 08080',
-  phone: '+1 609-555-0100',
-  website: 'https://pinevalley.com',
-  location: 'POINT(-74.567 39.789)',
-  dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-  createdAt: '2025-03-01T10:00:00Z',
-  updatedAt: '2025-03-01T12:00:00Z',
-};
 
 async function loadFacility() {
   loading.value = true;
   fetchError.value = null;
   try {
     facility.value = await facilityAdminApi.getFacility(facilityId, props.authToken);
-  } catch {
-    facility.value = MOCK_FACILITY;
+  } catch (err: unknown) {
+    // Was `facility.value = MOCK_FACILITY`, with fetchError left null — so an
+    // operator whose API was down saw invented golf courses stamped
+    // accuracyClass 'A' / VERIFIED, with no error banner, and every edit
+    // targeted ids that do not exist. A missing thông tin cơ sở is now a
+    // missing thông tin cơ sở.
+    const apiErr = err as { message?: string };
+    fetchError.value = apiErr?.message ?? 'Không tải được dữ liệu từ máy chủ.';
+    facility.value = null;
   } finally {
     loading.value = false;
   }
@@ -172,7 +168,7 @@ function markDirty() {
 
 async function handleSave() {
   if (!editForm.name?.trim()) {
-    saveError.value = 'Facility name is required';
+    saveError.value = 'Phải nhập tên cơ sở';
     return;
   }
   saving.value = true;
@@ -182,15 +178,12 @@ async function handleSave() {
     isDirty.value = false;
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    saveError.value = apiErr?.message ?? 'Failed to save facility';
+    saveError.value = apiErr?.message ?? 'Không lưu được cơ sở';
   } finally {
     saving.value = false;
   }
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
 
 // Populate edit form when facility loads
 function populateForm(f: FacilityResponse) {

@@ -71,7 +71,9 @@ export interface PublishResponse {
   newVersionId: number;
   status: 'PUBLISHED';
   auditId: string;
-  buildJobId: string;
+  /// Null when the package build could not be queued: the version is
+  /// published and no package will be built from it.
+  buildJobId: string | null;
   publishedAt: string; // ISO-8601
 }
 

@@ -1,3 +1,5 @@
+import { API_BASE } from './base';
+
 /**
  * The two calls that establish who the operator is.
  *
@@ -13,7 +15,7 @@
  * against a real server or nothing else in the portal can, so it takes the
  * default that does.
  */
-const BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
+const BASE = API_BASE;
 
 /** The API's error envelope: { code, message, correlationId, field? }. */
 export interface ApiError {
