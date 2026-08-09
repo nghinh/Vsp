@@ -2,22 +2,22 @@
   <div
     class="course-version-publish"
     role="main"
-    aria-label="Course version publish"
+    aria-label="Công bố phiên bản sân"
   >
     <!-- Page header -->
     <header class="page-header">
       <div class="header-text">
-        <h1 class="page-title">Publish Course Version</h1>
-        <p class="page-subtitle" aria-label="Course and version">
-          Course #{{ courseId }} &mdash; Version #{{ versionId }}
+        <h1 class="page-title">Công bố phiên bản sân</h1>
+        <p class="page-subtitle" aria-label="Sân và phiên bản">
+          Sân #{{ courseId }} &mdash; Phiên bản #{{ versionId }}
         </p>
       </div>
       <button
         class="back-btn"
-        aria-label="Go back to course version management"
+        aria-label="Quay lại quản lý phiên bản sân"
         @click="$emit('back')"
       >
-        &#8592; Back
+        &#8592; Quay lại
       </button>
     </header>
 
@@ -25,10 +25,10 @@
     <div v-if="loadError" class="load-error" role="alert">
       <span class="error-icon" aria-hidden="true">&#9888;</span>
       <div class="error-content">
-        <strong>Failed to load data</strong>
+        <strong>Không tải được dữ liệu</strong>
         <span>{{ loadError }}</span>
       </div>
-      <button class="retry-btn" @click="loadAll">Retry</button>
+      <button class="retry-btn" @click="loadAll">Thử lại</button>
     </div>
 
     <div v-else class="publish-layout">
@@ -39,30 +39,30 @@
         <!-- Validation section -->
         <section class="publish-section" aria-labelledby="validation-heading">
           <div class="section-header">
-            <h2 id="validation-heading" class="section-title">Pre-publish validation</h2>
+            <h2 id="validation-heading" class="section-title">Kiểm tra trước khi công bố</h2>
             <button
               class="validate-btn"
               :class="{ loading: validating }"
               :disabled="validating || publishing"
-              aria-label="Run validation"
+              aria-label="Chạy kiểm tra"
               @click="handleValidate"
             >
               <span v-if="validating" class="btn-spinner" aria-hidden="true"></span>
               <span v-else aria-hidden="true">&#10004;</span>
-              {{ validating ? 'Validating…' : 'Validate' }}
+              {{ validating ? 'Đang kiểm tra…' : 'Kiểm tra' }}
             </button>
           </div>
 
           <!-- Initial idle state -->
           <div v-if="!validationResult && !validating" class="idle-state" role="status">
             <span class="idle-icon" aria-hidden="true">&#128269;</span>
-            <span>Run validation to check geometry, metadata, source, license, and data quality.</span>
+            <span>Chạy kiểm tra hình học, siêu dữ liệu, nguồn, giấy phép và chất lượng dữ liệu.</span>
           </div>
 
           <!-- Validation loading -->
-          <div v-if="validating" class="loading-state" aria-busy="true" aria-label="Running validation">
+          <div v-if="validating" class="loading-state" aria-busy="true" aria-label="Đang kiểm tra">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <span>Running pre-publish validation…</span>
+            <span>Đang kiểm tra trước khi publish…</span>
           </div>
 
           <!-- Validation result -->
@@ -75,27 +75,27 @@
           <div v-if="validationError && !validating" class="api-error" role="alert">
             <span class="error-icon" aria-hidden="true">&#9888;</span>
             <span>{{ validationError }}</span>
-            <button class="inline-retry-btn" @click="handleValidate">Retry</button>
+            <button class="inline-retry-btn" @click="handleValidate">Thử lại</button>
           </div>
         </section>
 
         <!-- Diff section -->
         <section class="publish-section" aria-labelledby="diff-heading">
           <div class="section-header">
-            <h2 id="diff-heading" class="section-title">Changes since last publish</h2>
+            <h2 id="diff-heading" class="section-title">Thay đổi so với lần công bố trước</h2>
             <button
               class="reload-diff-btn"
               :disabled="diffLoading || publishing"
-              aria-label="Reload diff"
+              aria-label="Tải lại so sánh"
               @click="loadDiff"
             >
-              {{ diffLoading ? 'Loading…' : 'Reload' }}
+              {{ diffLoading ? 'Đang tải…' : 'Tải lại' }}
             </button>
           </div>
 
-          <div v-if="diffLoading" class="loading-state" aria-busy="true" aria-label="Loading diff">
+          <div v-if="diffLoading" class="loading-state" aria-busy="true" aria-label="Đang tải so sánh">
             <div class="loading-spinner" aria-hidden="true"></div>
-            <span>Loading version diff…</span>
+            <span>Đang tải khác biệt phiên bản…</span>
           </div>
 
           <VersionDiff v-if="diffResult && !diffLoading" :diff="diffResult" />
@@ -103,12 +103,12 @@
           <div v-if="diffError && !diffLoading" class="api-error" role="alert">
             <span class="error-icon" aria-hidden="true">&#9888;</span>
             <span>{{ diffError }}</span>
-            <button class="inline-retry-btn" @click="loadDiff">Retry</button>
+            <button class="inline-retry-btn" @click="loadDiff">Thử lại</button>
           </div>
 
           <div v-if="!diffResult && !diffLoading && !diffError" class="idle-state" role="status">
             <span class="idle-icon" aria-hidden="true">&#8801;</span>
-            <span>Diff will appear after validation runs.</span>
+            <span>Bảng so sánh hiện sau khi chạy kiểm tra.</span>
           </div>
         </section>
       </div>
@@ -120,13 +120,13 @@
         <div class="publish-card" :class="{ 'publish-card--blocked': !canPublish }">
 
           <div class="card-header">
-            <h2 class="card-title">Publish Version</h2>
+            <h2 class="card-title">Công bố phiên bản</h2>
           </div>
 
           <!-- Blocking banner -->
           <div v-if="!canPublish" class="blocking-banner" role="alert">
             <span class="blocking-icon" aria-hidden="true">&#9888;</span>
-            <span>Fix all blocking errors above before publishing.</span>
+            <span>Sửa hết lỗi chặn ở trên rồi mới công bố.</span>
           </div>
 
           <div class="card-body">
@@ -145,10 +145,10 @@
               @click="showConfirmDialog = true"
             >
               <span v-if="publishing" class="btn-spinner" aria-hidden="true"></span>
-              <span v-if="publishing">Publishing…</span>
+              <span v-if="publishing">Đang publish…</span>
               <span v-else>
                 <span aria-hidden="true">&#128640;</span>
-                Publish Version
+                Công bố phiên bản
               </span>
             </button>
 
@@ -156,10 +156,10 @@
             <div v-if="publishError" class="publish-error" role="alert">
               <span class="error-icon" aria-hidden="true">&#10060;</span>
               <div class="publish-error-content">
-                <strong>Publish failed</strong>
+                <strong>Công bố thất bại</strong>
                 <span>{{ publishError }}</span>
               </div>
-              <button class="inline-retry-btn" @click="handlePublish">Retry</button>
+              <button class="inline-retry-btn" @click="handlePublish">Thử lại</button>
             </div>
           </div>
         </div>
@@ -177,16 +177,16 @@
       @keydown.escape="showConfirmDialog = false"
     >
       <div class="dialog-panel" role="document">
-        <h2 id="confirm-dialog-title" class="dialog-title">Confirm publish</h2>
+        <h2 id="confirm-dialog-title" class="dialog-title">Xác nhận công bố</h2>
         <div class="dialog-body">
           <p class="dialog-message">
-            You are about to publish version <strong>#{{ versionId }}</strong> of course <strong>#{{ courseId }}</strong>.
+            Bạn sắp công bố phiên bản <strong>#{{ versionId }}</strong> của sân <strong>#{{ courseId }}</strong>.
           </p>
           <p class="dialog-message dialog-message--warning">
-            This will make the version immutable and available to mobile clients. A package build job will be queued automatically.
+            Phiên bản sẽ được khoá lại và mở cho ứng dụng di động. Một tác vụ đóng gói sẽ tự động được xếp hàng.
           </p>
           <div class="dialog-note-preview" v-if="publishForm.note">
-            <span class="dialog-note-label">Your publish note:</span>
+            <span class="dialog-note-label">Ghi chú công bố của bạn:</span>
             <blockquote class="dialog-note-text">{{ publishForm.note }}</blockquote>
           </div>
         </div>
@@ -196,7 +196,7 @@
             :disabled="publishing"
             @click="showConfirmDialog = false"
           >
-            Cancel
+            Huỷ
           </button>
           <button
             class="dialog-confirm-btn"
@@ -205,7 +205,7 @@
             @click="confirmPublish"
           >
             <span v-if="publishing" class="btn-spinner btn-spinner--dark" aria-hidden="true"></span>
-            {{ publishing ? 'Publishing…' : 'Confirm publish' }}
+            {{ publishing ? 'Đang publish…' : 'Xác nhận publish' }}
           </button>
         </div>
       </div>
@@ -220,16 +220,28 @@
     >
       <div class="success-panel">
         <span class="success-icon" aria-hidden="true">&#127881;</span>
-        <h2 class="success-title">Version published!</h2>
+        <h2 class="success-title">Đã publish phiên bản!</h2>
         <p class="success-message">
-          Version <strong>#{{ publishSuccess.newVersionId }}</strong> is now live.
+          Phiên bản <strong>#{{ publishSuccess.newVersionId }}</strong> đã lên sóng.
         </p>
         <div class="success-meta">
-          <span>Audit ID: <code class="meta-code">{{ publishSuccess.auditId }}</code></span>
-          <span>Build job: <code class="meta-code">{{ publishSuccess.buildJobId }}</code></span>
+          <span>Mã audit: <code class="meta-code">{{ publishSuccess.auditId }}</code></span>
+          <span v-if="publishSuccess.buildJobId">
+            Tác vụ đóng gói: <code class="meta-code">{{ publishSuccess.buildJobId }}</code>
+          </span>
+          <!--
+            A null build job means the version was published and no package will
+            be built from it — so the course will advertise a download with
+            nothing behind it. The server logs it; this is the only place an
+            operator would ever find out.
+          -->
+          <span v-else class="build-missing" role="alert">
+            Đã phát hành, nhưng chưa xếp được hàng đợi tạo gói offline. Sân này
+            sẽ chưa tải về được — hãy báo kỹ thuật.
+          </span>
         </div>
         <button class="success-btn" @click="$emit('published', publishSuccess)">
-          View version details
+          Xem chi tiết phiên bản
         </button>
       </div>
     </div>
@@ -322,7 +334,7 @@ async function handleValidate() {
       validationError.value = err.message;
     } else {
       const apiErr = err as PublishApiError;
-      validationError.value = apiErr?.message ?? 'Validation failed. Please retry.';
+      validationError.value = apiErr?.message ?? 'Kiểm tra thất bại. Hãy thử lại.';
     }
   } finally {
     validating.value = false;
@@ -343,7 +355,7 @@ async function loadDiff() {
       diffError.value = err.message;
     } else {
       const apiErr = err as PublishApiError;
-      diffError.value = apiErr?.message ?? 'Failed to load diff. Please retry.';
+      diffError.value = apiErr?.message ?? 'Không tải được khác biệt phiên bản. Hãy thử lại.';
     }
   } finally {
     diffLoading.value = false;
@@ -379,11 +391,11 @@ async function doPublish() {
     } else {
       const apiErr = err as PublishApiError;
       if (apiErr?.code === 'VALIDATION_FAILED') {
-        publishError.value = 'Blocking validation errors remain. Fix them before publishing.';
+        publishError.value = 'Vẫn còn lỗi chặn publish. Hãy sửa hết trước khi publish.';
       } else if (apiErr?.code === 'PUBLISH_FORBIDDEN') {
-        publishError.value = 'This version is already published or not in DRAFT status.';
+        publishError.value = 'Phiên bản này đã publish hoặc không ở trạng thái DRAFT.';
       } else {
-        publishError.value = apiErr?.message ?? 'Publish failed. Please retry.';
+        publishError.value = apiErr?.message ?? 'Publish thất bại. Hãy thử lại.';
       }
     }
   } finally {

@@ -48,7 +48,7 @@
           </p>
 
           <!-- Actions -->
-          <div class="dialog-actions" role="group" aria-label="Available actions">
+          <div class="dialog-actions" role="group" aria-label="Các thao tác">
             <button
               ref="cancelRef"
               class="dialog-btn dialog-btn-cancel"
@@ -96,9 +96,9 @@ const props = withDefaults(defineProps<{
   /** Visual variant. */
   variant?: 'info' | 'warning' | 'danger';
 }>(), {
-  confirmLabel: 'Confirm',
-  cancelLabel: 'Cancel',
-  discardLabel: 'Discard',
+  confirmLabel: 'Xác nhận',
+  cancelLabel: 'Huỷ',
+  discardLabel: 'Bỏ thay đổi',
   variant: 'info',
 });
 
@@ -151,7 +151,7 @@ function handleDiscard() {
 }
 
 .dialog-panel {
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 28rem;
@@ -225,9 +225,9 @@ function handleDiscard() {
 }
 
 .dialog-btn-cancel {
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   color: #c5cde8;
-  border-color: #2d3449;
+  border-color: var(--on-surface, #dae2fd);
 }
 
 .dialog-btn-cancel:hover {
@@ -236,13 +236,13 @@ function handleDiscard() {
 }
 
 .dialog-btn-discard {
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   color: #dc2626;
   border-color: #dc2626;
 }
 
 .dialog-btn-discard:hover {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.12);
 }
 
 .dialog-btn-primary {

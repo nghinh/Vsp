@@ -2,25 +2,25 @@
   <div
     class="version-diff"
     role="region"
-    aria-label="Version diff summary"
+    aria-label="Tóm tắt so sánh phiên bản"
   >
     <!-- Diff header -->
     <div class="diff-header">
-      <h3 class="diff-title">Changes Since Last Publish</h3>
-      <div class="version-ids" aria-label="Version comparison">
+      <h3 class="diff-title">Thay đổi so với lần công bố trước</h3>
+      <div class="version-ids" aria-label="So sánh phiên bản">
         <span class="version-chip draft-chip">
-          Draft v{{ diff.draftVersionId }}
+          Bản nháp v{{ diff.draftVersionId }}
         </span>
         <span class="arrow" aria-hidden="true">&#8594;</span>
         <span v-if="diff.publishedVersionId" class="version-chip published-chip">
-          Published v{{ diff.publishedVersionId }}
+          Đã publish v{{ diff.publishedVersionId }}
         </span>
-        <span v-else class="version-chip no-published-chip">No published version</span>
+        <span v-else class="version-chip no-published-chip">Chưa có bản công bố</span>
       </div>
     </div>
 
     <!-- Summary counts -->
-    <div class="diff-summary" aria-label="Change summary">
+    <div class="diff-summary" aria-label="Tóm tắt thay đổi">
       <button
         class="summary-count added-count"
         :class="{ expanded: expandedSection === 'added' }"
@@ -30,7 +30,7 @@
       >
         <span class="count-icon" aria-hidden="true">+</span>
         <span class="count-num">{{ diff.added.length }}</span>
-        <span class="count-label">Added</span>
+        <span class="count-label">Thêm mới</span>
       </button>
       <button
         class="summary-count removed-count"
@@ -41,7 +41,7 @@
       >
         <span class="count-icon" aria-hidden="true">&#8722;</span>
         <span class="count-num">{{ diff.removed.length }}</span>
-        <span class="count-label">Removed</span>
+        <span class="count-label">Đã xoá</span>
       </button>
       <button
         class="summary-count changed-count"
@@ -52,7 +52,7 @@
       >
         <span class="count-icon" aria-hidden="true">&#8764;</span>
         <span class="count-num">{{ diff.changed.length }}</span>
-        <span class="count-label">Changed</span>
+        <span class="count-label">Đã đổi</span>
       </button>
     </div>
 
@@ -65,10 +65,10 @@
         id="diff-added"
         class="diff-section"
         role="region"
-        aria-label="Added entities"
+        aria-label="Đối tượng thêm mới"
       >
         <h4 class="section-label added-label">
-          <span aria-hidden="true">+</span> Added ({{ diff.added.length }})
+          <span aria-hidden="true">+</span> Thêm ({{ diff.added.length }})
         </h4>
         <ul v-if="diff.added.length" class="entry-list" role="list">
           <li
@@ -81,7 +81,7 @@
             <span class="entry-field">{{ entry.field }}</span>
           </li>
         </ul>
-        <p v-else class="empty-section">No entities added.</p>
+        <p v-else class="empty-section">Không có đối tượng nào được thêm.</p>
       </div>
 
       <!-- Removed entities -->
@@ -90,10 +90,10 @@
         id="diff-removed"
         class="diff-section"
         role="region"
-        aria-label="Removed entities"
+        aria-label="Đối tượng bị xoá"
       >
         <h4 class="section-label removed-label">
-          <span aria-hidden="true">&#8722;</span> Removed ({{ diff.removed.length }})
+          <span aria-hidden="true">&#8722;</span> Bỏ ({{ diff.removed.length }})
         </h4>
         <ul v-if="diff.removed.length" class="entry-list" role="list">
           <li
@@ -106,7 +106,7 @@
             <span class="entry-field">{{ entry.field }}</span>
           </li>
         </ul>
-        <p v-else class="empty-section">No entities removed.</p>
+        <p v-else class="empty-section">Không có đối tượng nào bị xoá.</p>
       </div>
 
       <!-- Changed entities -->
@@ -115,10 +115,10 @@
         id="diff-changed"
         class="diff-section"
         role="region"
-        aria-label="Changed entities"
+        aria-label="Đối tượng thay đổi"
       >
         <h4 class="section-label changed-label">
-          <span aria-hidden="true">&#8764;</span> Changed ({{ diff.changed.length }})
+          <span aria-hidden="true">&#8764;</span> Đổi ({{ diff.changed.length }})
         </h4>
         <ul v-if="diff.changed.length" class="entry-list changed-list" role="list">
           <li
@@ -132,25 +132,25 @@
               <span class="entry-field">{{ entry.field }}</span>
             </div>
             <div class="changed-values">
-              <span v-if="entry.oldValue !== null" class="value-chip old-value" aria-label="Old value">
-                <span class="value-label">was</span>
+              <span v-if="entry.oldValue !== null" class="value-chip old-value" aria-label="Giá trị cũ">
+                <span class="value-label">trước</span>
                 <span class="value-text">{{ truncate(entry.oldValue, 60) }}</span>
               </span>
-              <span v-if="entry.newValue !== null" class="value-chip new-value" aria-label="New value">
-                <span class="value-label">now</span>
+              <span v-if="entry.newValue !== null" class="value-chip new-value" aria-label="Giá trị mới">
+                <span class="value-label">sau</span>
                 <span class="value-text">{{ truncate(entry.newValue, 60) }}</span>
               </span>
             </div>
           </li>
         </ul>
-        <p v-else class="empty-section">No entities changed.</p>
+        <p v-else class="empty-section">Không có đối tượng nào thay đổi.</p>
       </div>
 
     </div>
 
     <!-- Expand all hint -->
     <div class="expand-hint" aria-hidden="true">
-      Click a count to expand details.
+      Bấm vào con số để xem chi tiết.
     </div>
   </div>
 </template>

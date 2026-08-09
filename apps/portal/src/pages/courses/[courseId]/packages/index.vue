@@ -2,8 +2,8 @@
   <div class="package-history-page">
 
     <header class="page-header">
-      <h1 class="page-title">Package Build History</h1>
-      <p class="course-id-label">Course ID: {{ courseId }}</p>
+      <h1 class="page-title">Lịch sử đóng gói</h1>
+      <p class="course-id-label">Mã sân: {{ courseId }}</p>
     </header>
 
     <!-- Loading state -->
@@ -15,14 +15,14 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="retry-btn" @click="() => loadJobs()">Retry</button>
+      <button class="retry-btn" @click="() => loadJobs()">Thử lại</button>
     </div>
 
     <!-- Empty state -->
     <div v-else-if="jobs.length === 0" class="empty-state">
       <span class="empty-icon">📦</span>
-      <p class="empty-title">No package builds yet.</p>
-      <p class="empty-subtitle">Publish a course version to start.</p>
+      <p class="empty-title">Chưa có lần đóng gói nào.</p>
+      <p class="empty-subtitle">Công bố một phiên bản để bắt đầu.</p>
     </div>
 
     <!-- Job list -->
@@ -66,94 +66,94 @@
         <!-- Duration -->
         <span class="job-duration">
           <span v-if="job.buildDurationMs">{{ formatDuration(job.buildDurationMs) }}</span>
-          <span v-else-if="isInProgress(job.status)" class="in-progress-label">In progress…</span>
+          <span v-else-if="isInProgress(job.status)" class="in-progress-label">Đang chạy…</span>
           <span v-else>—</span>
         </span>
 
         <!-- Error indicator -->
-        <span v-if="job.status === 'FAILED'" class="error-indicator" aria-label="Build failed">
+        <span v-if="job.status === 'FAILED'" class="error-indicator" aria-label="Đóng gói thất bại">
           ❌ {{ job.errorCode }}
         </span>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Pagination">
+    <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Phân trang">
       <button
         class="page-btn"
         :disabled="currentPage === 0"
         @click="goToPage(currentPage - 1)"
-        aria-label="Previous page"
+        aria-label="Trang trước"
       >
-        ← Prev
+        ← Trước
       </button>
-      <span class="page-info">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+      <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
       <button
         class="page-btn"
         :disabled="currentPage >= totalPages - 1"
         @click="goToPage(currentPage + 1)"
-        aria-label="Next page"
+        aria-label="Trang sau"
       >
-        Next →
+        Sau →
       </button>
     </div>
 
     <!-- Selected job detail panel -->
-    <div v-if="selectedJob" class="job-detail-panel" aria-label="Selected job details">
+    <div v-if="selectedJob" class="job-detail-panel" aria-label="Chi tiết tác vụ đã chọn">
       <div class="detail-header">
-        <h2 class="detail-title">Job Detail</h2>
-        <button class="close-btn" @click="selectedJob = null" aria-label="Close detail panel">×</button>
+        <h2 class="detail-title">Chi tiết tác vụ</h2>
+        <button class="close-btn" @click="selectedJob = null" aria-label="Đóng bảng chi tiết">×</button>
       </div>
 
       <div class="detail-grid">
         <div class="detail-row">
-          <span class="detail-label">Job ID</span>
+          <span class="detail-label">Mã tác vụ</span>
           <span class="detail-value mono">{{ selectedJob.jobId }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Course ID</span>
+          <span class="detail-label">Mã sân</span>
           <span class="detail-value">{{ selectedJob.courseId }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Data Version ID</span>
+          <span class="detail-label">Mã phiên bản dữ liệu</span>
           <span class="detail-value">{{ selectedJob.dataVersionId }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Manifest Version</span>
+          <span class="detail-label">Phiên bản manifest</span>
           <span class="detail-value mono">{{ selectedJob.manifestVersion ?? '—' }}</span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Status</span>
+          <span class="detail-label">Trạng thái</span>
           <span :class="['detail-badge', badgeClass(selectedJob.status)]">
             {{ statusLabel(selectedJob.status) }}
           </span>
         </div>
         <div class="detail-row">
-          <span class="detail-label">Created</span>
+          <span class="detail-label">Tạo lúc</span>
           <span class="detail-value">{{ formatInstant(selectedJob.createdAt) }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.startedAt">
-          <span class="detail-label">Started</span>
+          <span class="detail-label">Bắt đầu</span>
           <span class="detail-value">{{ formatInstant(selectedJob.startedAt) }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.completedAt">
-          <span class="detail-label">{{ selectedJob.status === 'FAILED' ? 'Failed' : 'Completed' }}</span>
+          <span class="detail-label">{{ selectedJob.status === 'FAILED' ? 'Thất bại' : 'Hoàn tất' }}</span>
           <span class="detail-value">{{ formatInstant(selectedJob.completedAt) }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.buildDurationMs">
-          <span class="detail-label">Duration</span>
+          <span class="detail-label">Thời lượng</span>
           <span class="detail-value">{{ formatDuration(selectedJob.buildDurationMs) }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.errorCode">
-          <span class="detail-label">Error Code</span>
+          <span class="detail-label">Mã lỗi</span>
           <span class="detail-value mono error-code">{{ selectedJob.errorCode }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.errorMessage">
-          <span class="detail-label">Error Message</span>
+          <span class="detail-label">Thông báo lỗi</span>
           <span class="detail-value error-message">{{ selectedJob.errorMessage }}</span>
         </div>
         <div class="detail-row" v-if="selectedJob.errorDetail">
-          <span class="detail-label">Fix Hint</span>
+          <span class="detail-label">Gợi ý khắc phục</span>
           <span class="detail-value error-detail">{{ selectedJob.errorDetail }}</span>
         </div>
       </div>
@@ -165,7 +165,7 @@
           :disabled="retrying"
           @click="handleRetry"
         >
-          {{ retrying ? 'Retrying…' : 'Retry Build' }}
+          {{ retrying ? 'Đang thử lại…' : 'Đóng gói lại' }}
         </button>
       </div>
     </div>
@@ -176,6 +176,7 @@
 import { ref, computed, onMounted } from 'vue';
 import type { PackageBuildJobDto, PackageBuildStatus } from '@/types/package-build';
 import { packageBuildApi } from '@/api/package-build';
+import { formatInstant } from '@/lib/datetime';
 
 const props = defineProps<{
   courseId: number;
@@ -210,7 +211,7 @@ async function loadJobs(page = 0) {
     total.value = resp.total;
     currentPage.value = page;
   } catch (err: unknown) {
-    fetchError.value = (err as { message?: string })?.message ?? 'Failed to load jobs';
+    fetchError.value = (err as { message?: string })?.message ?? 'Không tải được danh sách tác vụ';
   } finally {
     loading.value = false;
   }
@@ -267,11 +268,11 @@ function statusIcon(status: PackageBuildStatus): string {
 
 function statusLabel(status: PackageBuildStatus): string {
   const labels: Record<PackageBuildStatus, string> = {
-    QUEUED: 'Queued', VALIDATING: 'Validating', BUILDING: 'Building',
-    ASSEMBLING: 'Assembling', UPLOADING: 'Uploading', PUBLISHING: 'Publishing',
-    COMPLETED: 'Completed', FAILED: 'Failed',
+    QUEUED: 'Đang chờ', VALIDATING: 'Đang kiểm tra', BUILDING: 'Đang dựng',
+    ASSEMBLING: 'Đang ghép', UPLOADING: 'Đang tải lên', PUBLISHING: 'Đang publish',
+    COMPLETED: 'Hoàn tất', FAILED: 'Thất bại',
   };
-  return labels[status] ?? 'Unknown';
+  return labels[status] ?? 'Không rõ';
 }
 
 function isInProgress(status: PackageBuildStatus): boolean {
@@ -280,9 +281,6 @@ function isInProgress(status: PackageBuildStatus): boolean {
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleString();
-}
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;

@@ -2,12 +2,12 @@
   <aside
     class="layer-panel"
     role="region"
-    aria-label="Geometry layers"
+    aria-label="Các lớp hình học"
   >
     <div class="panel-header">
-      <h2 class="panel-title">Layers</h2>
+      <h2 class="panel-title">Các lớp</h2>
       <span class="feature-count" aria-live="polite">
-        {{ totalFeatureCount }} feature{{ totalFeatureCount !== 1 ? 's' : '' }}
+        {{ totalFeatureCount }} đối tượng
       </span>
     </div>
 
@@ -133,7 +133,7 @@ function geometryTypeLabel(type: LayerType): string {
   flex-direction: column;
   width: 11rem;
   flex-shrink: 0;
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   border-right: 1px solid #2d3449;
   overflow-y: auto;
 }

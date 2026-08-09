@@ -1,10 +1,17 @@
+import { API_BASE } from './base';
+
 /**
  * API client for Course Version Publish endpoints (Story 8.3 PUBLISH-PORTAL).
  *
  * Endpoints:
- *   POST /admin/courses/{courseId}/versions/{versionId}/validate  → ValidationResponse
- *   GET  /admin/courses/{courseId}/versions/{versionId}/diff       → VersionDiff
- *   POST /admin/courses/{courseId}/versions/{versionId}/publish   → PublishResponse
+ *   POST /courses/{courseId}/versions/{versionId}/validate  → ValidationResponse
+ *   GET  /courses/{courseId}/versions/{versionId}/diff       → VersionDiff
+ *   POST /courses/{courseId}/versions/{versionId}/publish   → PublishResponse
+ *
+ * These carried an `/admin` prefix that CourseVersionController has never had,
+ * and the three handlers did not exist at all — so Story 8.3's publish flow was
+ * a registered route with live UI and three 404s underneath. The prefix is gone
+ * and the handlers now exist.
  *
  * Task 4: Loading, error, retry, offline, accessibility, authorization, audit behavior.
  * - Retries with exponential backoff on network failures (3 attempts: 1s, 2s, 4s)
@@ -20,7 +27,7 @@ import type {
   PublishApiError,
 } from '@/types/course-version-publish';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 const MAX_RETRIES = 3;
 const BASE_DELAY_MS = 1000;
@@ -33,7 +40,7 @@ export class OfflineError extends Error {
   readonly code: string = 'OFFLINE';
   readonly correlationId: string = '';
   readonly message =
-    'Network unavailable. Please check your connection and try again.';
+    'Mất kết nối mạng. Hãy kiểm tra đường truyền rồi thử lại.';
 }
 
 /**
@@ -100,7 +107,7 @@ async function fetchWithRetry(
 
   // All retries exhausted — surface the last error with a descriptive wrapper
   const msg =
-    lastError instanceof Error ? lastError.message : 'Request failed after retries';
+    lastError instanceof Error ? lastError.message : 'Gọi lại nhiều lần vẫn thất bại';
   const wrapped = new Error(`Retry exhausted: ${msg}`);
   (wrapped as Error & { cause: unknown }).cause = lastError;
   throw wrapped;
@@ -175,7 +182,7 @@ export class CourseVersionPublishApi {
     token: string
   ): Promise<ValidationResponse> {
     const res = await fetchWithRetry(
-      `${this.baseUrl}/admin/courses/${courseId}/versions/${versionId}/validate`,
+      `${this.baseUrl}/courses/${courseId}/versions/${versionId}/validate`,
       {
         method: 'POST',
         headers: {
@@ -201,7 +208,7 @@ export class CourseVersionPublishApi {
     token: string
   ): Promise<VersionDiff> {
     const res = await fetchWithRetry(
-      `${this.baseUrl}/admin/courses/${courseId}/versions/${versionId}/diff`,
+      `${this.baseUrl}/courses/${courseId}/versions/${versionId}/diff`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -224,7 +231,7 @@ export class CourseVersionPublishApi {
     token: string
   ): Promise<PublishResponse> {
     const res = await fetchWithRetry(
-      `${this.baseUrl}/admin/courses/${courseId}/versions/${versionId}/publish`,
+      `${this.baseUrl}/courses/${courseId}/versions/${versionId}/publish`,
       {
         method: 'POST',
         headers: {

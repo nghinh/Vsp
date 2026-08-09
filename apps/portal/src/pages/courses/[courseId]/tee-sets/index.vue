@@ -2,36 +2,36 @@
   <div class="tee-sets-page">
 
     <header class="page-header">
-      <button class="btn btn-secondary back-btn" @click="router.back()">← Back</button>
+      <button class="btn btn-secondary back-btn" @click="router.back()">← Quay lại</button>
       <div class="header-content">
-        <h1 class="page-title">Tee Sets — {{ courseName }}</h1>
-        <p class="page-subtitle">Manage tee sets at this course.</p>
+        <h1 class="page-title">Bộ tee — {{ courseName }}</h1>
+        <p class="page-subtitle">Quản lý bộ tee của sân này.</p>
       </div>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-        {{ showCreateForm ? 'Cancel' : '+ New Tee Set' }}
+        {{ showCreateForm ? 'Huỷ' : '+ Thêm bộ tee' }}
       </button>
     </header>
 
     <!-- ─── Create form ─────────────────────────────────────────────────────── -->
     <div v-if="showCreateForm" class="create-form-panel">
-      <h2 class="form-title">Create Tee Set</h2>
+      <h2 class="form-title">Tạo bộ tee</h2>
 
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label" for="tee-name">Tee Name <span class="required">*</span></label>
+          <label class="form-label" for="tee-name">Tên bộ tee <span class="required">*</span></label>
           <input
             id="tee-name"
             v-model="createForm.name"
             class="form-input"
             type="text"
-            placeholder="e.g. Black, White, Gold"
+            placeholder="ví dụ Black, White, Gold"
             autocomplete="off"
           />
           <span v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</span>
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="tee-par">Total Par</label>
+          <label class="form-label" for="tee-par">Tổng par</label>
           <input
             id="tee-par"
             v-model.number="createForm.totalPar"
@@ -51,7 +51,7 @@
           :disabled="creating"
           @click="handleCreate"
         >
-          {{ creating ? 'Creating…' : 'Create Tee Set' }}
+          {{ creating ? 'Đang tạo…' : 'Tạo bộ tee' }}
         </button>
       </div>
     </div>
@@ -65,15 +65,15 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadTeeSets">Retry</button>
+      <button class="btn btn-secondary" @click="loadTeeSets">Thử lại</button>
     </div>
 
     <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
     <div v-else-if="teeSets.length === 0 && !showCreateForm" class="empty-state">
       <span class="empty-icon">⛳</span>
-      <p class="empty-title">No tee sets yet.</p>
-      <p class="empty-subtitle">Add tee sets to this course.</p>
-      <button class="btn btn-primary" @click="showCreateForm = true">Add First Tee Set</button>
+      <p class="empty-title">Chưa có bộ tee nào.</p>
+      <p class="empty-subtitle">Thêm bộ tee cho sân này.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Thêm bộ tee đầu tiên</button>
     </div>
 
     <!-- ─── Tee set list ─────────────────────────────────────────────────────── -->
@@ -93,8 +93,8 @@
         </div>
 
         <div class="tee-set-meta">
-          <span class="meta-item">Created {{ formatInstant(ts.createdAt) }}</span>
-          <span class="meta-item">Updated {{ formatInstant(ts.updatedAt) }}</span>
+          <span class="meta-item">Tạo lúc {{ formatInstant(ts.createdAt) }}</span>
+          <span class="meta-item">Cập nhật {{ formatInstant(ts.updatedAt) }}</span>
         </div>
       </div>
     </div>
@@ -108,6 +108,7 @@ import { useRouter, useRoute } from 'vue-router';
 import type { TeeSetResponse, TeeSetCreateRequest } from '@/types/admin/tee-set';
 import { teeSetAdminApi } from '@/api/admin/tee-sets';
 import { courseAdminApi } from '@/api/admin/courses';
+import { formatDay as formatInstant } from '@/lib/datetime';
 
 const router = useRouter();
 const route = useRoute();
@@ -118,36 +119,6 @@ const courseName = ref('…');
 const loading = ref(false);
 const fetchError = ref<string | null>(null);
 
-// ─── Mock data ─────────────────────────────────────────────────────────────────
-const MOCK_TEE_SETS: TeeSetResponse[] = [
-  {
-    id: 1,
-    courseId,
-    name: 'Black',
-    totalPar: 72,
-    dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 2,
-    courseId,
-    name: 'White',
-    totalPar: 72,
-    dataQuality: { accuracyClass: 'A', verificationStatus: 'VERIFIED' },
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 3,
-    courseId,
-    name: 'Gold',
-    totalPar: 72,
-    dataQuality: { accuracyClass: 'B', verificationStatus: 'PENDING_REVIEW' },
-    createdAt: '2025-03-01T10:00:00Z',
-    updatedAt: '2025-03-02T08:00:00Z',
-  },
-];
 
 // ─── Create form state ─────────────────────────────────────────────────────────
 const showCreateForm = ref(false);
@@ -171,9 +142,15 @@ async function loadTeeSets() {
     ]);
     teeSets.value = teeSetsData;
     courseName.value = course.name;
-  } catch {
-    teeSets.value = MOCK_TEE_SETS;
-    courseName.value = 'North Course';
+  } catch (err: unknown) {
+    // Was `teeSets.value = MOCK_TEE_SETS`, with fetchError left null — so an
+    // operator whose API was down saw invented golf courses stamped
+    // accuracyClass 'A' / VERIFIED, with no error banner, and every edit
+    // targeted ids that do not exist. A missing danh sách điểm phát bóng is now a
+    // missing danh sách điểm phát bóng.
+    const apiErr = err as { message?: string };
+    fetchError.value = apiErr?.message ?? 'Không tải được dữ liệu từ máy chủ.';
+    teeSets.value = [];
   } finally {
     loading.value = false;
   }
@@ -192,15 +169,12 @@ async function handleCreate() {
     teeSets.value.push(ts);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    createError.value = apiErr?.message ?? 'Failed to create tee set';
+    createError.value = apiErr?.message ?? 'Không tạo được bộ tee';
   } finally {
     creating.value = false;
   }
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
 
 function qualityClass(dq: { accuracyClass: string | null; verificationStatus: string | null }) {
   if (dq.verificationStatus === 'VERIFIED') return 'badge-verified';

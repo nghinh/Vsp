@@ -2,12 +2,12 @@
   <div
     class="publish-note"
     role="region"
-    aria-label="Publish note"
+    aria-label="Ghi chú công bố"
   >
     <label class="note-label" :for="textareaId">
-      Publish note
+      Ghi chú công bố
       <span class="required-asterisk" aria-hidden="true">*</span>
-      <span class="required-note">(min. 10 characters)</span>
+      <span class="required-note">(tối thiểu 10 ký tự)</span>
     </label>
 
     <textarea
@@ -21,7 +21,7 @@
       :aria-describedby="showError ? `${textareaId}-error` : `${textareaId}-hint`"
       :aria-invalid="showError"
       :disabled="disabled"
-      placeholder="Describe what changed in this version — e.g., Updated hole 5 fairway geometry and added new bunker on hole 12"
+      placeholder="Mô tả thay đổi của phiên bản này — ví dụ: Cập nhật fairway hố 5 geometry and added new bunker on hole 12"
       rows="4"
       maxlength="2000"
       @blur="touched = true"
@@ -34,14 +34,14 @@
         class="error-message"
         role="alert"
       >
-        Publish note must be at least 10 characters.
+        Ghi chú publish phải có ít nhất 10 ký tự.
       </span>
       <span
         v-else
         :id="`${textareaId}-hint`"
         class="hint-message"
       >
-        Explain what changed in this version.
+        Mô tả những gì đã thay đổi ở phiên bản này.
       </span>
       <span
         class="char-count"
@@ -49,7 +49,7 @@
           'near-limit': charCount > 1900,
           'at-limit': charCount >= 2000,
         }"
-        aria-label="Character count"
+        aria-label="Số ký tự"
         aria-live="polite"
       >
         {{ charCount }}/2000
@@ -67,10 +67,10 @@
           :disabled="disabled"
           aria-describedby="force-hint"
         />
-        <span>Force publish</span>
+        <span>Công bố cưỡng chế</span>
       </label>
       <span id="force-hint" class="force-hint">
-        Bypass quality class threshold warning (validation must still pass)
+        Bỏ qua cảnh báo ngưỡng hạng chất lượng (vẫn phải qua được bước kiểm tra)
       </span>
     </div>
   </div>

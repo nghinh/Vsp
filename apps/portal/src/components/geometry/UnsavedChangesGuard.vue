@@ -40,11 +40,11 @@ const props = withDefaults(defineProps<{
   /** Cancel button label. */
   cancelLabel?: string;
 }>(), {
-  title: 'Unsaved Changes',
-  message: 'You have unsaved geometry edits. What would you like to do?',
-  saveLabel: 'Save Draft',
-  discardLabel: 'Discard',
-  cancelLabel: 'Cancel',
+  title: 'Thay đổi chưa lưu',
+  message: 'Bạn còn chỉnh sửa hình học chưa lưu. Bạn muốn làm gì?',
+  saveLabel: 'Lưu nháp',
+  discardLabel: 'Bỏ thay đổi',
+  cancelLabel: 'Huỷ',
 });
 
 const emit = defineEmits<{

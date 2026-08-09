@@ -2,25 +2,28 @@
   <div
     class="geometry-editor"
     role="application"
-    aria-label="Course Geometry Editor"
+    aria-label="Biên tập hình học sân"
   >
     <!-- Editor header -->
     <header class="editor-header" role="banner">
       <div class="header-left">
-        <span class="course-id-label">Course {{ courseId }}</span>
+        <span class="course-id-label">{{ courseName || `Sân #${courseId}` }}</span>
+        <span v-if="courseCentre === null" class="no-location" role="status">
+          Sân chưa có toạ độ — bản đồ đang mở ở mức toàn quốc
+        </span>
         <span
           class="state-badge"
           :class="draftIndicatorClass"
           role="status"
-          :aria-label="`Geometry state: ${isDraft ? 'draft' : 'published'}`"
+          :aria-label="`Trạng thái: ${isDraft ? 'bản nháp' : 'đã công bố'}`"
         >
-          {{ isDraft ? 'Draft' : 'Published' }}
+          {{ isDraft ? 'Bản nháp' : 'Đã công bố' }}
         </span>
       </div>
 
       <div class="header-center">
         <span v-if="isDirty" class="unsaved-indicator" aria-live="polite">
-          ● Unsaved changes
+          ● Có thay đổi chưa lưu
         </span>
       </div>
 
@@ -30,22 +33,22 @@
           v-if="isDirty"
           class="header-btn save-btn"
           :disabled="saving || !canEdit"
-          aria-label="Save draft geometry"
-          title="Save Draft (Ctrl+S)"
+          aria-label="Lưu bản nháp hình học"
+          title="Lưu nháp (Ctrl+S)"
           @click="emit('save-draft')"
         >
-          {{ saving ? 'Saving…' : 'Save Draft' }}
+          {{ saving ? 'Đang lưu…' : 'Lưu nháp' }}
         </button>
 
         <!-- Validate -->
         <button
           class="header-btn validate-btn"
           :disabled="validating || !canEdit"
-          aria-label="Validate geometry before publishing"
-          title="Validate"
+          aria-label="Kiểm tra hình học trước khi công bố"
+          title="Kiểm tra"
           @click="emit('validate')"
         >
-          {{ validating ? 'Validating…' : 'Validate' }}
+          {{ validating ? 'Đang kiểm tra…' : 'Kiểm tra' }}
         </button>
       </div>
     </header>
@@ -54,20 +57,77 @@
     <div v-if="loadError" class="editor-error-banner" role="alert">
       <span class="error-icon">⚠</span>
       <span class="error-message">{{ loadError }}</span>
-      <button class="retry-btn" @click="emit('retry')">Retry</button>
+      <button class="retry-btn" @click="emit('retry')">Thử lại</button>
+    </div>
+
+    <!-- A failed save or validate. Sits above the editor rather than
+         replacing it: the features are still in memory and still on screen,
+         and the operator's next move is to try again, not to reload and lose
+         them. -->
+    <div v-if="actionError" class="editor-action-banner" role="alert">
+      <span class="error-icon" aria-hidden="true">⚠</span>
+      <span class="error-message">{{ actionError }}</span>
+      <button class="dismiss-btn" aria-label="Đóng thông báo" @click="emit('dismiss-action-error')">
+        ×
+      </button>
+    </div>
+
+    <!-- What "Kiểm tra" found. The result used to go only to a screen-reader
+         live region, so a sighted operator clicked the button and watched
+         nothing happen. -->
+    <div
+      v-if="validation"
+      class="editor-validation"
+      :class="validation.valid ? 'is-ok' : 'is-bad'"
+      role="status"
+    >
+      <span aria-hidden="true">{{ validation.valid ? '✓' : '⚠' }}</span>
+      <span v-if="validation.valid">
+        Hình học hợp lệ — đã kiểm tra {{ validation.totalChecked }} đối tượng.
+      </span>
+      <span v-else>
+        {{ validation.invalidCount }}/{{ validation.totalChecked }} đối tượng có lỗi.
+      </span>
+
+      <span v-if="validation.staleFor" class="stale">
+        Chỉ kiểm tra bản nháp <strong>đã lưu</strong> — các thay đổi chưa lưu
+        không nằm trong kết quả này.
+      </span>
+
+      <ul v-if="validation.errors.length" class="validation-errors">
+        <li v-for="(err, i) in validation.errors" :key="i">
+          <template v-if="err.layerType">[{{ err.layerType }}] </template>
+          {{ err.errorMessage ?? 'Không rõ lỗi' }}
+        </li>
+      </ul>
+    </div>
+
+    <!-- A shape in progress. Without this the only cue that anything is
+         happening is the shape itself, and an unfinished polygon is not drawn
+         at all — so on a course with no basemap you click into a dark square
+         and nothing appears. -->
+    <div v-if="(drawVertexCount ?? 0) > 0" class="editor-drawing" role="status">
+      <span>Đang vẽ — đã đặt <strong>{{ drawVertexCount }}</strong> điểm.</span>
+      <button type="button" class="draw-btn" @click="emit('finish-drawing')">
+        Hoàn tất (Enter)
+      </button>
+      <button type="button" class="draw-btn draw-btn-quiet" @click="emit('cancel-drawing')">
+        Huỷ (Esc)
+      </button>
+      <span class="draw-hint">Hoặc nháy đúp lên bản đồ để đóng hình.</span>
     </div>
 
     <!-- Loading state -->
-    <div v-else-if="loading" class="editor-loading" aria-busy="true" aria-label="Loading geometry">
+    <div v-if="loading" class="editor-loading" aria-busy="true" aria-label="Đang tải hình học">
       <div class="loading-spinner" aria-hidden="true"></div>
-      <span class="loading-label">Loading course geometry…</span>
+      <span class="loading-label">Đang tải hình học sân…</span>
     </div>
 
     <!-- Empty state -->
     <div v-else-if="isEmpty && !canEdit" class="editor-empty" role="status">
       <span class="empty-icon" aria-hidden="true">🗺</span>
-      <p class="empty-title">No geometry for this course yet.</p>
-      <p class="empty-subtitle">A Course Admin can add geometry features.</p>
+      <p class="empty-title">Sân này chưa có hình học nào.</p>
+      <p class="empty-subtitle">Cần quyền Course Admin để vẽ.</p>
     </div>
 
     <!-- Main editor body -->
@@ -96,7 +156,7 @@
       <main
         class="map-canvas"
         role="main"
-        aria-label="Map editing canvas"
+        aria-label="Khung vẽ bản đồ"
         tabindex="-1"
       >
         <CourseMap
@@ -104,6 +164,7 @@
           :layer-features="layerFeatures"
           :layer-states="layerStates"
           :course-id="courseId"
+          :initial-center="courseCentre ?? undefined"
           :active-tool="activeTool"
           :selected-feature-id="selectedFeatureId"
           @map-ready="handleMapReady"
@@ -145,13 +206,32 @@ const courseMapRef = ref<any>(null);
 
 const props = defineProps<{
   courseId: number;
+  /** The course's own name, so the header is not just an id. */
+  courseName?: string | null;
+  /** Where the map opens, as [lng, lat]. Null when the course has no location. */
+  courseCentre?: [number, number] | null;
+  /** Vertices placed in the shape currently being drawn, if any. */
+  drawVertexCount?: number;
   /** Whether geometry data is currently loading. */
   loading: boolean;
   /** Whether a save or validate operation is in progress. */
   saving?: boolean;
   validating?: boolean;
   /** Error message if the last load failed. */
+  /** The geometry could not be loaded — there is nothing to edit. */
   loadError: string | null;
+  /** A save or validate failed. The editor stays up; the work is still there. */
+  actionError?: string | null;
+  /** The last validation result, or null if none has run since the last load. */
+  validation?: {
+    valid: boolean;
+    totalChecked: number;
+    validCount: number;
+    invalidCount: number;
+    errors: Array<{ featureUuid: string | null; errorMessage: string | null; layerType: string | null }>;
+    /** True when the editor had unsaved work, so this covers the saved draft only. */
+    staleFor: boolean;
+  } | null;
   /** Whether the current user can edit geometry. */
   canEdit: boolean;
   /** Whether there are unsaved changes. */
@@ -183,6 +263,9 @@ const emit = defineEmits<{
   (e: 'save-draft'): void;
   (e: 'validate'): void;
   (e: 'retry'): void;
+  (e: 'dismiss-action-error'): void;
+  (e: 'finish-drawing'): void;
+  (e: 'cancel-drawing'): void;
   (e: 'map-click', coord: GeoCoordinate, zoom: number): void;
   (e: 'map-dblclick', coord: GeoCoordinate, zoom: number): void;
   (e: 'feature-select', payload: { id: string | number; layerType: LayerType }): void;
@@ -222,7 +305,7 @@ function handleLayerSelect(layerType: LayerType) {
 }
 
 function handleMapReady() {
-  screenReaderAnnouncement.value = 'Map loaded and ready';
+  screenReaderAnnouncement.value = 'Bản đồ đã sẵn sàng';
 }
 
 function handleFeatureClick(feature: GeometryFeature) {
@@ -248,7 +331,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.625rem 1rem;
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   border-bottom: 1px solid #2d3449;
   flex-shrink: 0;
   min-height: 3.25rem;
@@ -260,6 +343,14 @@ function handleFeatureClick(feature: GeometryFeature) {
   gap: 0.75rem;
 }
 
+.no-location {
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(240, 180, 41, 0.14);
+  color: #f0c869;
+  font-size: 11px;
+}
 .course-id-label {
   font-size: 0.875rem;
   font-weight: 700;
@@ -277,13 +368,13 @@ function handleFeatureClick(feature: GeometryFeature) {
 }
 
 .badge-draft {
-  color: #92400e;
-  background: #fef3c7;
+  color: #f0c869;
+  background: rgba(240, 180, 41, 0.14);
 }
 
 .badge-published {
-  color: #15803d;
-  background: #dcfce7;
+  color: #6ee7a8;
+  background: rgba(34, 197, 94, 0.14);
 }
 
 .header-center {
@@ -294,7 +385,7 @@ function handleFeatureClick(feature: GeometryFeature) {
 
 .unsaved-indicator {
   font-size: 0.75rem;
-  color: #92400e;
+  color: #f0c869;
   font-weight: 500;
   display: flex;
   align-items: center;
@@ -339,9 +430,9 @@ function handleFeatureClick(feature: GeometryFeature) {
 }
 
 .validate-btn {
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   color: #c5cde8;
-  border-color: #2d3449;
+  border-color: var(--on-surface, #dae2fd);
 }
 
 .validate-btn:hover:not(:disabled) {
@@ -356,12 +447,91 @@ function handleFeatureClick(feature: GeometryFeature) {
 
 /* ─── Error banner ────────────────────────────────────────────────────────── */
 
+.editor-validation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--outline-variant, #2d3449);
+  font-size: 0.8125rem;
+}
+.editor-validation.is-ok {
+  background: rgba(34, 197, 94, 0.1);
+  border-bottom-color: #2f6f4a;
+  color: #6ee7a8;
+}
+.editor-validation.is-bad {
+  background: rgba(240, 180, 41, 0.12);
+  border-bottom-color: #6b5620;
+  color: #f0c869;
+}
+.stale {
+  color: var(--muted, #97a2c0);
+}
+.validation-errors {
+  flex-basis: 100%;
+  margin: 0.25rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.75rem;
+}
+
+.editor-drawing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 1rem;
+  border-bottom: 1px solid #2f6f4a;
+  background: rgba(34, 197, 94, 0.1);
+  color: #6ee7a8;
+  font-size: 0.8125rem;
+}
+.draw-btn {
+  padding: 0.25rem 0.7rem;
+  border: 1px solid #2f6f4a;
+  border-radius: 5px;
+  background: rgba(34, 197, 94, 0.16);
+  color: #6ee7a8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.draw-btn-quiet {
+  border-color: var(--outline-variant, #2d3449);
+  background: transparent;
+  color: var(--muted, #97a2c0);
+}
+.draw-hint {
+  color: var(--muted, #97a2c0);
+  font-size: 0.75rem;
+}
+
+.editor-action-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid #7a3838;
+  background: rgba(239, 68, 68, 0.14);
+  color: #fca5a5;
+  font-size: 0.8125rem;
+}
+.dismiss-btn {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
 .editor-error-banner {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: #fff5f5;
+  background: rgba(239, 68, 68, 0.12);
   border-bottom: 1px solid #fecaca;
   color: #dc2626;
   flex-shrink: 0;

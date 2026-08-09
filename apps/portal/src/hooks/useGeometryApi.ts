@@ -16,9 +16,24 @@ import { ref } from 'vue';
 import type {
   GeometryFeature,
   DraftGeometryResponse,
-  ValidateGeometryRequest,
-  ValidateGeometryResponse,
 } from '@/types/geometry';
+import { toClientFeatures } from '@/api/geometry-mapping';
+import type { DraftFeatureOperation, ServerDraftGeometry } from '@/api/geometry-mapping';
+
+/** What the validate endpoint actually answers with. */
+export interface ServerValidationResult {
+  courseId: number;
+  valid: boolean;
+  totalChecked: number;
+  validCount: number;
+  invalidCount: number;
+  errors: Array<{
+    featureUuid: string | null;
+    errorCode: string | null;
+    errorMessage: string | null;
+    layerType: string | null;
+  }>;
+}
 
 // ─── Audit log entry ─────────────────────────────────────────────────────────
 
@@ -45,6 +60,38 @@ function buildHeaders(token: string): HeadersInit {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`,
   };
+}
+
+/**
+ * Headers for a write, including the idempotency key the server insists on.
+ *
+ * Every mutating geometry endpoint carries `@Idempotent`, and the filter in
+ * front of them rejects a request with no `Idempotency-Key` outright. Nothing
+ * here sent one, so *every* save failed with "Idempotency-Key header missing
+ * on idempotent endpoint" — the editor could draw and could not save a single
+ * feature.
+ *
+ * A fresh key per call is the right granularity: each press of Save is a new
+ * intent, carrying whatever is on screen at that moment. Its value is the
+ * network retry — if the response is lost after the server committed, sending
+ * the same key again replays the cached result instead of applying the batch
+ * twice.
+ */
+function buildWriteHeaders(token: string, idempotencyKey?: string): HeadersInit {
+  return {
+    ...buildHeaders(token),
+    'Idempotency-Key': idempotencyKey ?? newIdempotencyKey(),
+  };
+}
+
+function newIdempotencyKey(): string {
+  // crypto.randomUUID needs a secure context; localhost counts, but a portal
+  // served over plain HTTP on a LAN does not, and a save must not fail over
+  // where the key came from.
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID();
+  }
+  return `geom-${Date.now()}-${Math.random().toString(36).slice(2, 12)}`;
 }
 
 function now(): string {
@@ -83,15 +130,20 @@ export function useGeometryApi(options: GeometryApiOptions) {
         const body = await res.json().catch(() => ({}));
         throw new Error((body as { message?: string }).message ?? `HTTP ${res.status}`);
       }
-      const data = (await res.json()) as DraftGeometryResponse;
+      // The server's shape is not the editor's; see api/geometry-mapping.
+      const raw = (await res.json()) as ServerDraftGeometry;
+      const { features, skipped } = toClientFeatures(raw);
+      if (skipped > 0) {
+        console.warn(`[geometry] ${skipped} feature(s) had unreadable geometry and were skipped`);
+      }
       audit({
         userId: 'current-user', // injected by server from session
         action: 'fetch',
         courseId,
-        detail: `Loaded draft geometry v${data.version}`,
-        featureCount: data.features.length,
+        detail: `Loaded ${features.length} draft feature(s)`,
+        featureCount: features.length,
       });
-      return data;
+      return { courseId, state: 'draft', version: 0, features, updatedAt: '', updatedBy: '' };
     } catch (err: unknown) {
       error.value = (err as Error)?.message ?? 'Failed to load draft geometry';
       throw err;
@@ -102,9 +154,16 @@ export function useGeometryApi(options: GeometryApiOptions) {
 
   // ─── PUT batch update draft geometry ─────────────────────────────────────
 
+  /**
+   * Save what changed.
+   *
+   * Takes the operations rather than the features, because only the caller
+   * knows what the draft looked like when it was loaded — and the endpoint
+   * wants a batch of CREATE/UPDATE/DELETE, not a pile of features.
+   */
   async function saveDraftGeometry(
     courseId: number,
-    features: GeometryFeature[]
+    operations: DraftFeatureOperation[]
   ): Promise<DraftGeometryResponse> {
     saving.value = true;
     error.value = null;
@@ -113,20 +172,24 @@ export function useGeometryApi(options: GeometryApiOptions) {
         `${baseUrl}/admin/courses/${courseId}/geometry/draft`,
         {
           method: 'PUT',
-          headers: buildHeaders(authToken),
-          body: JSON.stringify({ features }),
+          headers: buildWriteHeaders(authToken),
+          body: JSON.stringify({ features: operations }),
         }
       );
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error((body as { message?: string }).message ?? `HTTP ${res.status}`);
       }
-      const data = (await res.json()) as DraftGeometryResponse;
+      const raw = (await res.json()) as ServerDraftGeometry;
+      const { features } = toClientFeatures(raw);
+      const data: DraftGeometryResponse = {
+        courseId, state: 'draft', version: 0, features, updatedAt: '', updatedBy: '',
+      };
       audit({
         userId: 'current-user',
         action: 'save',
         courseId,
-        detail: `Saved ${features.length} features as draft`,
+        detail: `Saved ${operations.length} change(s)`,
         featureCount: features.length,
       });
       return data;
@@ -151,7 +214,7 @@ export function useGeometryApi(options: GeometryApiOptions) {
         `${baseUrl}/admin/courses/${courseId}/geometry/draft/features`,
         {
           method: 'POST',
-          headers: buildHeaders(authToken),
+          headers: buildWriteHeaders(authToken),
           body: JSON.stringify(feature),
         }
       );
@@ -189,7 +252,7 @@ export function useGeometryApi(options: GeometryApiOptions) {
         `${baseUrl}/admin/courses/${courseId}/geometry/draft/features/${featureId}`,
         {
           method: 'PUT',
-          headers: buildHeaders(authToken),
+          headers: buildWriteHeaders(authToken),
           body: JSON.stringify(feature),
         }
       );
@@ -226,7 +289,7 @@ export function useGeometryApi(options: GeometryApiOptions) {
         `${baseUrl}/admin/courses/${courseId}/geometry/draft/features/${featureId}`,
         {
           method: 'DELETE',
-          headers: buildHeaders(authToken),
+          headers: buildWriteHeaders(authToken),
         }
       );
       if (!res.ok) {
@@ -249,19 +312,25 @@ export function useGeometryApi(options: GeometryApiOptions) {
 
   // ─── POST validate ──────────────────────────────────────────────────────
 
-  async function validateGeometry(
-    courseId: number,
-    features: GeometryFeature[]
-  ): Promise<ValidateGeometryResponse> {
+  /**
+   * Validate the course's *saved* draft.
+   *
+   * The endpoint takes `{layerType?, fullValidation}` and checks what is
+   * stored — it never sees the browser's features. The client used to send
+   * `{courseId, features}`, which Jackson quietly discarded, so the call
+   * appeared to work while validating something other than what was on screen.
+   * Unsaved edits are therefore not covered, and the caller has to say so.
+   */
+  async function validateGeometry(courseId: number): Promise<ServerValidationResult> {
     validating.value = true;
     error.value = null;
     try {
-      const body: ValidateGeometryRequest = { courseId, features };
+      const body = { fullValidation: true };
       const res = await fetch(
         `${baseUrl}/admin/courses/${courseId}/geometry/validate`,
         {
           method: 'POST',
-          headers: buildHeaders(authToken),
+          headers: buildWriteHeaders(authToken),
           body: JSON.stringify(body),
         }
       );
@@ -269,13 +338,13 @@ export function useGeometryApi(options: GeometryApiOptions) {
         const body = await res.json().catch(() => ({}));
         throw new Error((body as { message?: string }).message ?? `HTTP ${res.status}`);
       }
-      const data = (await res.json()) as ValidateGeometryResponse;
+      const data = (await res.json()) as ServerValidationResult;
       audit({
         userId: 'current-user',
         action: 'validate',
         courseId,
-        detail: `Validated ${features.length} features — ${data.valid ? 'valid' : `invalid (${data.errors.length} errors)`}`,
-        featureCount: features.length,
+        detail: `Checked ${data.totalChecked} feature(s) — ${data.valid ? 'valid' : `${data.invalidCount} invalid`}`,
+        featureCount: data.totalChecked,
       });
       return data;
     } catch (err: unknown) {

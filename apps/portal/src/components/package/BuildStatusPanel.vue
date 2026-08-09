@@ -1,8 +1,8 @@
 <template>
-  <div class="build-status-panel" role="region" aria-label="Package build status">
+  <div class="build-status-panel" role="region" aria-label="Trạng thái đóng gói">
 
     <!-- Loading skeleton -->
-    <div v-if="loading" class="status-skeleton" aria-busy="true" aria-label="Loading build status">
+    <div v-if="loading" class="status-skeleton" aria-busy="true" aria-label="Đang tải trạng thái đóng gói">
       <div class="skeleton-badge"></div>
       <div class="skeleton-meta"></div>
     </div>
@@ -11,14 +11,14 @@
     <div v-else-if="fetchError" class="status-error" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="retry-btn" @click="loadCurrentJob">Retry</button>
+      <button class="retry-btn" @click="loadCurrentJob">Thử lại</button>
     </div>
 
     <!-- No job known yet -->
     <div v-else-if="!currentJob" class="status-idle">
       <span class="idle-icon">📦</span>
-      <span>No package build yet.</span>
-      <span class="hint">Publish a course version to start.</span>
+      <span>Chưa đóng gói lần nào.</span>
+      <span class="hint">Công bố một phiên bản để bắt đầu.</span>
     </div>
 
     <!-- Job exists — show status -->
@@ -63,19 +63,19 @@
       <!-- Timing row -->
       <div class="timing-row">
         <span class="timing-item">
-          <span class="timing-label">Created</span>
+          <span class="timing-label">Tạo lúc</span>
           <span class="timing-value">{{ formatInstant(currentJob.createdAt) }}</span>
         </span>
         <span v-if="currentJob.startedAt" class="timing-item">
-          <span class="timing-label">Started</span>
+          <span class="timing-label">Bắt đầu</span>
           <span class="timing-value">{{ formatInstant(currentJob.startedAt) }}</span>
         </span>
         <span v-if="currentJob.completedAt" class="timing-item">
-          <span class="timing-label">{{ isFailed ? 'Failed' : 'Completed' }}</span>
+          <span class="timing-label">{{ isFailed ? 'Thất bại' : 'Hoàn tất' }}</span>
           <span class="timing-value">{{ formatInstant(currentJob.completedAt) }}</span>
         </span>
         <span v-if="currentJob.buildDurationMs" class="timing-item">
-          <span class="timing-label">Duration</span>
+          <span class="timing-label">Thời lượng</span>
           <span class="timing-value">{{ formatDuration(currentJob.buildDurationMs) }}</span>
         </span>
       </div>
@@ -87,7 +87,7 @@
           <span class="error-message">{{ currentJob.errorMessage }}</span>
         </div>
         <div v-if="currentJob.errorDetail" class="error-detail">
-          <strong>Fix:</strong> {{ currentJob.errorDetail }}
+          <strong>Khắc phục:</strong> {{ currentJob.errorDetail }}
         </div>
       </div>
 
@@ -99,7 +99,7 @@
           target="_blank"
           rel="noopener noreferrer"
         >
-          View manifest.json
+          Xem manifest.json
           <span class="external-icon">↗</span>
         </a>
       </div>
@@ -113,13 +113,13 @@
           :disabled="retrying"
           @click="handleRetry"
         >
-          <span v-if="retrying">Retrying…</span>
-          <span v-else>Retry Build</span>
+          <span v-if="retrying">Đang thử lại…</span>
+          <span v-else>Đóng gói lại</span>
         </button>
 
         <!-- Polling status -->
         <span v-if="isInProgress" class="polling-indicator">
-          Auto-refreshing in {{ countdown }}s…
+          Tự làm mới sau {{ countdown }}s…
         </span>
       </div>
     </div>
@@ -194,16 +194,16 @@ const statusIcon = computed(() => {
 
 const statusLabel = computed(() => {
   const labels: Record<PackageBuildStatus, string> = {
-    QUEUED:      'Queued',
-    VALIDATING:  'Validating…',
-    BUILDING:    'Building tiles…',
-    ASSEMBLING:  'Assembling files…',
-    UPLOADING:   'Uploading…',
-    PUBLISHING:  'Publishing to CDN…',
-    COMPLETED:   'Completed',
-    FAILED:      'Failed',
+    QUEUED:      'Đang chờ',
+    VALIDATING:  'Đang kiểm tra…',
+    BUILDING:    'Đang dựng tile…',
+    ASSEMBLING:  'Đang ghép tệp…',
+    UPLOADING:   'Đang tải lên…',
+    PUBLISHING:  'Đang đưa lên CDN…',
+    COMPLETED:   'Hoàn tất',
+    FAILED:      'Thất bại',
   };
-  return labels[currentJob.value?.status as PackageBuildStatus] ?? 'Unknown';
+  return labels[currentJob.value?.status as PackageBuildStatus] ?? 'Không rõ';
 });
 
 const progressPercent = computed(() => {
@@ -235,7 +235,7 @@ async function loadCurrentJob() {
     );
     emit('job-updated', currentJob.value);
   } catch (err: unknown) {
-    fetchError.value = (err as { message?: string })?.message ?? 'Failed to load build status';
+    fetchError.value = (err as { message?: string })?.message ?? 'Không tải được trạng thái đóng gói';
   } finally {
     loading.value = false;
   }
@@ -260,7 +260,7 @@ async function handleRetry() {
     emit('job-updated', currentJob.value);
     startPolling();
   } catch (err: unknown) {
-    fetchError.value = (err as { message?: string })?.message ?? 'Retry failed';
+    fetchError.value = (err as { message?: string })?.message ?? 'Thử lại thất bại';
   } finally {
     retrying.value = false;
   }
@@ -281,9 +281,6 @@ function stopPolling() {
   if (countdownTimer !== null) { clearInterval(countdownTimer); countdownTimer = null; }
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleString();
-}
 
 function formatDuration(ms: number): string {
   if (ms < 1000) return `${ms}ms`;
@@ -308,6 +305,7 @@ onUnmounted(() => {
 
 // Watch for external jobId changes (e.g., from parent polling)
 import { watch } from 'vue';
+import { formatInstant } from '@/lib/datetime';
 watch(() => props.currentJobId, async (newId) => {
   if (newId) {
     await loadCurrentJob();

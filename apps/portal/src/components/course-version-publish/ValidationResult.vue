@@ -2,7 +2,7 @@
   <div
     class="validation-result"
     role="region"
-    aria-label="Validation results"
+    aria-label="Kết quả kiểm tra"
     :aria-live="hasBlockingErrors ? 'assertive' : 'polite'"
   >
     <!-- Result badge -->
@@ -16,14 +16,14 @@
         <span class="badge-icon" aria-hidden="true">{{ resultIcon }}</span>
         <span class="badge-text">{{ resultLabel }}</span>
       </span>
-      <span class="version-ref" aria-label="Version ID">v{{ versionId }}</span>
+      <span class="version-ref" aria-label="Mã phiên bản">v{{ versionId }}</span>
     </div>
 
     <!-- Blocking errors -->
-    <div v-if="hasBlockingErrors" class="errors-section" role="alert" aria-label="Blocking errors">
+    <div v-if="hasBlockingErrors" class="errors-section" role="alert" aria-label="Lỗi chặn">
       <h3 class="section-heading error-heading">
         <span aria-hidden="true">&#10060;</span>
-        Errors — publish blocked
+        Lỗi — không thể publish
       </h3>
       <ul class="error-list" role="list">
         <li
@@ -32,23 +32,23 @@
           class="error-item"
         >
           <div class="error-main">
-            <span class="entity-badge" aria-label="Entity type">{{ err.entity }}</span>
-            <span class="error-message" aria-label="Error message">{{ err.message }}</span>
+            <span class="entity-badge" aria-label="Loại đối tượng">{{ err.entity }}</span>
+            <span class="error-message" aria-label="Thông báo lỗi">{{ err.message }}</span>
           </div>
           <div class="error-meta">
-            <span class="field-ref" aria-label="Field">Field: {{ err.field }}</span>
-            <span v-if="err.entityId" class="entity-id-ref" aria-label="Entity ID">#{{ err.entityId }}</span>
-            <span class="error-code" aria-label="Error code">{{ err.code }}</span>
+            <span class="field-ref" aria-label="Trường">Trường: {{ err.field }}</span>
+            <span v-if="err.entityId" class="entity-id-ref" aria-label="Mã đối tượng">#{{ err.entityId }}</span>
+            <span class="error-code" aria-label="Mã lỗi">{{ err.code }}</span>
           </div>
         </li>
       </ul>
     </div>
 
     <!-- Non-blocking warnings -->
-    <div v-if="hasWarnings" class="warnings-section" aria-label="Warnings">
+    <div v-if="hasWarnings" class="warnings-section" aria-label="Cảnh báo">
       <h3 class="section-heading warning-heading">
         <span aria-hidden="true">&#9888;</span>
-        Warnings
+        Cảnh báo
       </h3>
       <ul class="warning-list" role="list">
         <li
@@ -57,12 +57,12 @@
           class="warning-item"
         >
           <div class="warning-main">
-            <span class="entity-badge" aria-label="Entity type">{{ warn.entity }}</span>
-            <span class="warning-message" aria-label="Warning message">{{ warn.message }}</span>
+            <span class="entity-badge" aria-label="Loại đối tượng">{{ warn.entity }}</span>
+            <span class="warning-message" aria-label="Nội dung cảnh báo">{{ warn.message }}</span>
           </div>
           <div class="warning-meta">
-            <span class="field-ref" aria-label="Field">Field: {{ warn.field }}</span>
-            <span v-if="warn.entityId" class="entity-id-ref" aria-label="Entity ID">#{{ warn.entityId }}</span>
+            <span class="field-ref" aria-label="Trường">Trường: {{ warn.field }}</span>
+            <span v-if="warn.entityId" class="entity-id-ref" aria-label="Mã đối tượng">#{{ warn.entityId }}</span>
           </div>
         </li>
       </ul>
@@ -71,13 +71,13 @@
     <!-- Valid state -->
     <div v-if="isValid && !hasWarnings" class="valid-state" role="status">
       <span aria-hidden="true">&#9989;</span>
-      <span>No errors found. Ready to publish.</span>
+      <span>Không có lỗi. Sẵn sàng công bố.</span>
     </div>
 
     <!-- Valid with warnings -->
     <div v-if="isValid && hasWarnings" class="valid-with-warnings" role="status">
       <span aria-hidden="true">&#9989;</span>
-      <span>No blocking errors. Review warnings before publishing.</span>
+      <span>Không có lỗi chặn. Xem lại cảnh báo trước khi công bố.</span>
     </div>
   </div>
 </template>
@@ -101,15 +101,15 @@ const isValid = computed(() => result.value === 'VALID');
 
 const resultLabel = computed(() => {
   const labels: Record<ValidationResultCode, string> = {
-    VALID: 'Valid',
-    GEOMETRY_INVALID: 'Invalid geometry',
-    METADATA_MISSING: 'Missing metadata',
-    LICENSE_MISSING: 'Missing license',
-    QUALITY_INSUFFICIENT: 'Quality too low',
-    SOURCE_MISSING: 'Missing source',
-    VALIDATION_ERROR: 'Validation error',
+    VALID: 'Hợp lệ',
+    GEOMETRY_INVALID: 'Hình học không hợp lệ',
+    METADATA_MISSING: 'Thiếu siêu dữ liệu',
+    LICENSE_MISSING: 'Thiếu giấy phép',
+    QUALITY_INSUFFICIENT: 'Chất lượng chưa đạt',
+    SOURCE_MISSING: 'Thiếu nguồn',
+    VALIDATION_ERROR: 'Lỗi kiểm tra',
   };
-  return labels[result.value] ?? 'Unknown';
+  return labels[result.value] ?? 'Không rõ';
 });
 
 const badgeClass = computed(() => {

@@ -36,24 +36,42 @@
     <button
       class="sat-toggle"
       :class="{ active: satelliteEnabled }"
-      :aria-label="satelliteEnabled ? 'Switch to dark map' : 'Switch to satellite imagery'"
-      :title="satelliteEnabled ? 'Dark map' : 'Satellite'"
+      :disabled="!satelliteAvailable && !satelliteEnabled"
+      :title="satelliteAvailable
+        ? (satelliteEnabled ? 'Bản đồ tối' : 'Ảnh vệ tinh')
+        : 'Chưa cấu hình nguồn ảnh vệ tinh'"
+      :aria-label="satelliteAvailable
+        ? (satelliteEnabled ? 'Chuyển sang bản đồ tối' : 'Chuyển sang ảnh vệ tinh')
+        : 'Chưa cấu hình nguồn ảnh vệ tinh'"
       @click="toggleSatellite"
     >
       <span aria-hidden="true" class="sat-icon">🛰</span>
-      <span class="sat-label">{{ satelliteEnabled ? 'Dark' : 'Satellite' }}</span>
+      <span class="sat-label">{{ satelliteEnabled ? 'Bản đồ tối' : 'Ảnh vệ tinh' }}</span>
+    </button>
+
+    <!-- Refitting is useful; doing it uninvited is not. -->
+    <button
+      type="button"
+      class="fit-toggle"
+      title="Thu về vừa toàn bộ hình đã vẽ"
+      aria-label="Thu về vừa toàn bộ hình đã vẽ"
+      :disabled="!hasAnyFeature()"
+      @click="fitToBounds()"
+    >
+      <span aria-hidden="true">⤢</span>
+      <span class="sat-label">Vừa khung</span>
     </button>
 
     <!-- Delete selected feature (Story 8-2) -->
     <button
       v-if="activeTool === 'select' && selectedFeatureId != null"
       class="delete-selected-btn"
-      aria-label="Delete selected feature"
-      title="Delete selected feature (Del)"
+      aria-label="Xoá đối tượng đang chọn"
+      title="Xoá đối tượng đang chọn (Del)"
       @click="handleDeleteSelected"
     >
       <span aria-hidden="true">🗑</span>
-      <span class="delete-label">Delete feature</span>
+      <span class="delete-label">Xoá đối tượng</span>
     </button>
 
     <!-- Attribution (MapLibre requirement) -->
@@ -64,15 +82,27 @@
       <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
     </div>
 
+    <!-- The basemap did not arrive. Drawing still works over the blank
+         canvas, which is worth saying rather than leaving a spinner up. -->
+    <div v-if="basemapError" class="map-basemap-error" role="status">{{ basemapError }}</div>
+
     <!-- Loading overlay -->
-    <div v-if="mapLoading" class="map-loading-overlay" aria-busy="true" aria-label="Loading map">
+    <div v-if="mapLoading" class="map-loading-overlay" aria-busy="true" aria-label="Đang tải bản đồ">
       <div class="map-spinner" aria-hidden="true" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
+import { markRaw, ref, watch, onMounted, onUnmounted, computed } from 'vue';
+import {
+  baseStyleFrom,
+  blankDarkStyle,
+  fetchBasemapConfig,
+  rasterStyleFrom,
+  type RasterStyle,
+} from '@/api/basemap';
+import { visibleTimeout, type VisibleTimeout } from '@/lib/visible-timeout';
 import type {
   LayerType,
   LayerStateMap,
@@ -126,7 +156,16 @@ const props = defineProps<{
   layerFeatures: LayerFeatureMap;
   /** Per-layer visibility and selection state. */
   layerStates: LayerStateMap;
-  /** Initial map center [lng, lat] — defaults to Hanoi region. */
+  /**
+   * Where to open, as [lng, lat].
+   *
+   * Required in practice. This used to fall back to Hanoi, and because a
+   * course with no geometry yet also has nothing to fit the view to, the
+   * editor opened 1,600 km from a course in Đồng Nai — over a park — with the
+   * satellite imagery pointed at the wrong city. For a tool whose whole job is
+   * tracing a fairway off an aerial photo, that is the difference between
+   * usable and not.
+   */
   initialCenter?: [number, number];
   /** Initial zoom level. */
   initialZoom?: number;
@@ -168,6 +207,12 @@ const wrapperRef = ref<HTMLDivElement | null>(null);
 let map: any = null;
 
 const mapLoading = ref(true);
+
+/** Backstop for a load that never resolves; cancelled once one does. */
+let settleTimer: VisibleTimeout | null = null;
+
+/** Why there is no basemap, when there is no basemap. */
+const basemapError = ref<string | null>(null);
 const satelliteEnabled = ref(false);
 
 // ─── Computed ────────────────────────────────────────────────────────────────
@@ -178,11 +223,40 @@ const totalFeatureCount = computed(() =>
 
 // ─── Style URLs ──────────────────────────────────────────────────────────────
 
-/** Dark basemap — CartoDB Dark Matter (free, no API key). */
-const DARK_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json';
+/**
+ * The plain basemap, from configuration.
+ *
+ * Was CARTO's dark-matter style, hardcoded. CARTO stopped serving it during a
+ * working session: the map never fired `load`, the spinner never cleared, and
+ * there was no way to point the editor somewhere else without a release. Now
+ * it comes from /config/basemap like the imagery does, and where nothing is
+ * configured the client draws its own canvas and calls nobody.
+ */
+// markRaw because MapLibre keeps this object and mutates it internally, and
+// there is nothing for Vue to gain by tracking a style it does not render.
+// Wrapping it in a reactive proxy costs work on every internal write.
+//
+// It is not a correctness fix, despite an earlier comment here claiming it
+// stopped `load` from firing. It does not: a map whose `load` never arrives is
+// a map whose render loop is not running, because MapLibre announces the load
+// from that loop and browsers suspend requestAnimationFrame for a page that is
+// not on screen. See lib/visible-timeout.ts, which is the actual handling.
+const baseStyle = ref<Record<string, unknown>>(markRaw(blankDarkStyle()));
 
-/** Satellite basemap — ESRI World Imagery. */
-const SAT_STYLE = 'https://basemaps.cartocdn.com/gl/satellite-gl-style/style.json';
+/**
+ * Satellite basemap, from whatever provider this deployment is configured with.
+ *
+ * This used to be `https://basemaps.cartocdn.com/gl/satellite-gl-style/
+ * style.json`, hardcoded. CARTO has removed that style: the URL answers 404. So
+ * the Satellite button switched to a style that never loaded, and the one job
+ * this editor exists for — tracing a fairway off an aerial photo — could not be
+ * done at all.
+ *
+ * Null until the config arrives, and null for good on a deployment with no
+ * imagery. The button says so instead of switching to a blank canvas.
+ */
+const satStyle = ref<RasterStyle>(null);
+const satelliteAvailable = computed(() => satStyle.value !== null);
 
 // ─── GeoJSON source management ────────────────────────────────────────────────
 
@@ -252,13 +326,7 @@ function addLayers(mapInstance: import('maplibre-gl').Map, layerType: LayerType)
         id: LAYER_PREFIX + layerType + '-line',
         type: 'line',
         source: sourceId,
-        paint: {
-          'line-color': style.color,
-          'line-width': style.weight,
-          'line-dasharray': style.dashArray
-            ? style.dashArray.split(',').map(Number)
-            : undefined,
-        },
+        paint: linePaint(style),
       });
     }
   } else if (geomType === 'LineString') {
@@ -267,13 +335,7 @@ function addLayers(mapInstance: import('maplibre-gl').Map, layerType: LayerType)
         id: LAYER_PREFIX + layerType + '-line',
         type: 'line',
         source: sourceId,
-        paint: {
-          'line-color': style.color,
-          'line-width': style.weight,
-          'line-dasharray': style.dashArray
-            ? style.dashArray.split(',').map(Number)
-            : undefined,
-        },
+        paint: linePaint(style),
       });
     }
   } else {
@@ -568,12 +630,16 @@ async function initMap() {
 
   const ml = await getMapLibre();
 
-  const center: [number, number] = props.initialCenter ?? [105.85, 21.01]; // Hanoi
-  const zoom  = props.initialZoom ?? 15;
+  // Only reached when the course itself has no location on record; the page
+  // says so rather than pretending this is the course.
+  const center: [number, number] = props.initialCenter ?? [106.0, 16.0];
+  const zoom = props.initialZoom ?? (props.initialCenter ? 16 : 5);
 
   map = new ml.Map({
     container: mapRef.value,
-    style: satelliteEnabled.value ? SAT_STYLE : DARK_STYLE,
+    style: (satelliteEnabled.value && satStyle.value
+      ? satStyle.value
+      : baseStyle.value) as never,
     center,
     zoom,
     attributionControl: false,
@@ -583,14 +649,60 @@ async function initMap() {
   map.addControl(new ml.NavigationControl({ showCompass: true }), 'top-right');
   map.addControl(new ml.ScaleControl({ maxWidth: 160, unit: 'metric' }), 'bottom-left');
 
+  // Interaction is wired before, and independently of, the basemap loading.
+  //
+  // All of this used to live inside the `load` handler. When that event does
+  // not arrive — a blocked tile host, an offline laptop in a club house — the
+  // spinner never clears *and* no click handler is ever attached, so the
+  // editor becomes a dead rectangle with no explanation. Drawing does not need
+  // the basemap; it needs the map object, which exists now.
+  map.doubleClickZoom.disable();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  map.on('click', (e: any) => {
+    emit('map-click', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
+    // In select mode a click either picks the feature under the cursor or
+    // clears the selection when it lands on empty map.
+    if (props.activeTool === 'select') {
+      handleSelectClick(e);
+    }
+  });
+  map.on('dblclick', (e: { lngLat: { lng: number; lat: number } }) => {
+    emit('map-dblclick', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
+  });
+
+  // A style that fails is worth saying out loud rather than spinning forever.
+  map.on('error', (e: { error?: { message?: string } }) => {
+    const message = e?.error?.message ?? 'Không tải được nền bản đồ';
+    if (mapLoading.value) {
+      mapLoading.value = false;
+      basemapError.value = message;
+    }
+    console.warn('[CourseMap]', message);
+  });
+
+  // And a style that neither loads nor errors — a request left hanging — must
+  // not hold the editor hostage either. Measured in visible time: MapLibre
+  // reports a finished load from a requestAnimationFrame loop, and browsers
+  // suspend that loop for a background tab, so a wall-clock deadline blamed
+  // the map for time nobody spent looking at it.
+  settleTimer = visibleTimeout(12_000, () => {
+    if (!mapLoading.value) return;
+    mapLoading.value = false;
+    basemapError.value = 'Nền bản đồ tải quá lâu — vẫn vẽ được, nhưng không có ảnh nền.';
+  });
+
   map.on('load', () => {
+    settleTimer?.cancel();
+    settleTimer = null;
+    basemapError.value = null;
     mapLoading.value = false;
 
-    // Add all layers from initial features
+    // Add all layers from initial features. Every layer gets a source, even
+    // an empty one, so that emptying it later has somewhere to write.
     for (const layerType of ALL_LAYER_TYPES) {
       const features = props.layerFeatures[layerType] ?? [];
+      upsertSource(map, layerType, features);
       if (features.length > 0) {
-        upsertSource(map, layerType, features);
         addLayers(map, layerType);
       }
     }
@@ -598,24 +710,11 @@ async function initMap() {
     syncVisibility();
     ensureHandleLayer();
     syncVertexHandles();
-    fitToBounds();
+    if (hasAnyFeature()) {
+      hasFittedOnce = true;
+      fitToBounds();
+    }
     emit('map-ready');
-
-    // General map clicks drive the draw-tools engine. Double-click zoom is
-    // disabled so a double-click can complete a line/polygon instead.
-    map.doubleClickZoom.disable();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    map.on('click', (e: any) => {
-      emit('map-click', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
-      // In select mode a click either selects the feature under the cursor or
-      // deselects when clicking empty map area.
-      if (props.activeTool === 'select') {
-        handleSelectClick(e);
-      }
-    });
-    map.on('dblclick', (e: { lngLat: { lng: number; lat: number } }) => {
-      emit('map-dblclick', [e.lngLat.lng, e.lngLat.lat], map!.getZoom());
-    });
   });
 
   // Feature click
@@ -679,6 +778,52 @@ function fitToBounds() {
   );
 }
 
+/**
+ * Move to the course when its location lands after the map is already up.
+ *
+ * The map is built as soon as the container exists; the course record is a
+ * separate request. Without this the editor stays wherever it opened even once
+ * it knows better.
+ */
+watch(
+  () => props.initialCenter,
+  (centre) => {
+    if (!map || !centre) return;
+    // Anything already drawn is a better target than the course centroid —
+    // fitBounds has run and the user may have panned deliberately.
+    if (hasAnyFeature()) return;
+    map.jumpTo({ center: centre, zoom: props.initialZoom ?? 16 });
+  },
+);
+
+/** Whether the view has already been fitted to the course's geometry. */
+let hasFittedOnce = false;
+
+function hasAnyFeature(): boolean {
+  return Object.values(props.layerFeatures ?? {}).some((list) => (list?.length ?? 0) > 0);
+}
+
+/**
+ * Paint for a line layer, with the dash left out when there is no dash.
+ *
+ * MapLibre validates a paint object by the keys present, not by their values:
+ * `'line-dasharray': undefined` fails as "array expected, undefined found" and
+ * `addLayer` throws. Every layer style without a dashArray — green, fairway,
+ * bunker, tee — hit that, so their outlines were never added, and the throw
+ * escaped the features watcher and skipped the visibility and vertex-handle
+ * sync behind it.
+ */
+function linePaint(style: { color: string; weight: number; dashArray?: string }) {
+  const paint: Record<string, unknown> = {
+    'line-color': style.color,
+    'line-width': style.weight,
+  };
+  if (style.dashArray) {
+    paint['line-dasharray'] = style.dashArray.split(',').map(Number);
+  }
+  return paint;
+}
+
 function collectCoordinates(geometry: GeoJSONGeometry, out: [number, number][]) {
   switch (geometry.type) {
     case 'Point':
@@ -698,10 +843,15 @@ function collectCoordinates(geometry: GeoJSONGeometry, out: [number, number][]) 
 // ─── Satellite toggle ────────────────────────────────────────────────────────
 
 async function toggleSatellite() {
+  // Nothing to switch to. Better to leave the dark map up than to blank the
+  // editor a person is drawing on.
+  if (!satelliteEnabled.value && !satelliteAvailable.value) return;
   satelliteEnabled.value = !satelliteEnabled.value;
   if (!map) return;
 
-  const targetStyle = satelliteEnabled.value ? SAT_STYLE : DARK_STYLE;
+  const targetStyle = (satelliteEnabled.value
+    ? satStyle.value
+    : baseStyle.value) as never;
 
   // MapLibre style switch — reload style then re-add sources/layers
   // We use setStyle with {diff: false} to force a full reload
@@ -768,8 +918,14 @@ watch(
     if (!map || mapLoading.value) return;
     for (const layerType of ALL_LAYER_TYPES) {
       const features = newFeatures[layerType] ?? [];
+
+      // Push the data unconditionally, empty collections included. Skipping
+      // the update for an empty layer meant deleting a layer's last feature
+      // left it on screen: the source kept the old shape, the panel counted
+      // zero, and the operator deleted something that was already gone.
+      upsertSource(map, layerType, features);
+
       if (features.length > 0) {
-        upsertSource(map, layerType, features);
         // Ensure layers exist (may have been removed by style reload)
         if (!map.getLayer(LAYER_PREFIX + layerType + '-fill') &&
             !map.getLayer(LAYER_PREFIX + layerType + '-line') &&
@@ -780,7 +936,16 @@ watch(
     }
     syncVisibility();
     syncVertexHandles();
-    fitToBounds();
+
+    // Fit once, when the course's existing geometry first arrives — not on
+    // every change. This watcher also fires for the operator's own drawing,
+    // and refitting there moved the ground under them: finish a green and the
+    // map flies to make that green fill the screen; draw the next and it zooms
+    // out again. Tracing eighteen holes means eighteen involuntary jumps.
+    if (!hasFittedOnce && hasAnyFeature()) {
+      hasFittedOnce = true;
+      fitToBounds();
+    }
   },
   { deep: true }
 );
@@ -808,11 +973,29 @@ watch(
 
 // ─── Lifecycle ───────────────────────────────────────────────────────────────
 
-onMounted(() => {
+onMounted(async () => {
+  // Resolve the imagery provider before the map exists, so a tracer who opens
+  // the editor and immediately hits Satellite gets imagery rather than the
+  // 404 the hardcoded CARTO style used to give them.
+  const config = await fetchBasemapConfig();
+  const satellite = rasterStyleFrom(config);
+  satStyle.value = satellite ? markRaw(satellite) : null;
+  baseStyle.value = markRaw(baseStyleFrom(config));
+
+  // Start on imagery whenever there is imagery to start on. Tracing a green
+  // means tracing it over a picture of the green, so this is the working
+  // default and the dark canvas is the exception. It matters more since the
+  // plain basemap became empty by default: without this the editor opens on a
+  // blank black rectangle, which reads as a broken page rather than as a
+  // basemap one click away.
+  satelliteEnabled.value = satellite !== null;
+
   initMap();
 });
 
 onUnmounted(() => {
+  settleTimer?.cancel();
+  settleTimer = null;
   if (map) {
     map.remove();
     map = null;
@@ -860,7 +1043,7 @@ defineExpose({
   gap: 0.375rem;
   padding: 0.4rem 0.75rem;
   background: rgba(13, 17, 23, 0.85);
-  color: #2d3449;
+  color: var(--on-surface, #dae2fd);
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   cursor: pointer;
@@ -893,6 +1076,27 @@ defineExpose({
   line-height: 1;
 }
 
+.fit-toggle {
+  position: absolute;
+  top: 3.25rem;
+  left: 0.75rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--outline-variant, #2d3449);
+  border-radius: 8px;
+  background: rgba(19, 27, 46, 0.92);
+  color: var(--on-surface, #dae2fd);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fit-toggle:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
 .sat-label {
   line-height: 1;
 }
@@ -961,6 +1165,21 @@ defineExpose({
 
 /* ─── Loading overlay ─────────────────────────────────────────────────────── */
 
+.map-basemap-error {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  max-width: 80%;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #6b5620;
+  border-radius: 8px;
+  background: rgba(19, 27, 46, 0.95);
+  color: #f0c869;
+  font-size: 0.75rem;
+  text-align: center;
+}
 .map-loading-overlay {
   position: absolute;
   inset: 0;

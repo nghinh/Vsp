@@ -2,12 +2,12 @@
   <div class="versions-page">
 
     <header class="page-header">
-      <h1 class="page-title">Version History</h1>
-      <p class="course-id-label">Course ID: {{ courseId }}</p>
+      <h1 class="page-title">Lịch sử phiên bản</h1>
+      <p class="course-id-label">Mã sân: {{ courseId }}</p>
     </header>
 
     <!-- Loading state -->
-    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Loading versions">
+    <div v-if="loading" class="loading-state" aria-busy="true" aria-label="Đang tải phiên bản">
       <div v-for="i in 3" :key="i" class="skeleton-row"></div>
     </div>
 
@@ -15,14 +15,14 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon" aria-hidden="true">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="retry-btn" @click="loadVersions(0)">Retry</button>
+      <button class="retry-btn" @click="loadVersions(0)">Thử lại</button>
     </div>
 
     <!-- Empty state -->
     <div v-else-if="versions.length === 0" class="empty-state">
       <span class="empty-icon" aria-hidden="true">📋</span>
-      <p class="empty-title">No versions yet.</p>
-      <p class="empty-subtitle">Publish a course version to see it here.</p>
+      <p class="empty-title">Chưa có phiên bản nào.</p>
+      <p class="empty-subtitle">Công bố một phiên bản để thấy ở đây.</p>
     </div>
 
     <!-- Version list -->
@@ -38,7 +38,7 @@
         <span
           class="version-status-badge"
           :class="badgeClass(version.status)"
-          :aria-label="`Status: ${statusLabel(version.status)}`"
+          :aria-label="`Trạng thái: ${statusLabel(version.status)}`"
         >
           <span aria-hidden="true">{{ statusIcon(version.status) }}</span>
           <span>{{ statusLabel(version.status) }}</span>
@@ -49,7 +49,7 @@
           <span class="version-badge">v{{ version.versionNumber }}</span>
         </span>
 
-        <!-- Published by -->
+        <!-- Người publish -->
         <span class="version-published-by">
           <span v-if="version.publishedBy" class="actor">{{ version.publishedBy }}</span>
           <span v-else class="no-actor">—</span>
@@ -73,9 +73,9 @@
             class="action-btn impact-btn"
             :disabled="impactLoading[version.id] || rollbackLoading"
             @click="viewImpact(version)"
-            :aria-label="`View impact of rolling back to v${version.versionNumber}`"
+            :aria-label="`Xem ảnh hưởng khi quay về v${version.versionNumber}`"
           >
-            {{ impactLoading[version.id] ? '…' : 'View Impact' }}
+            {{ impactLoading[version.id] ? '…' : 'Xem ảnh hưởng' }}
           </button>
 
           <!-- Roll Back: only for ARCHIVED versions (when there is a current published version) -->
@@ -84,32 +84,32 @@
             class="action-btn rollback-btn"
             :disabled="rollbackLoading"
             @click="openRollbackModal(version)"
-            :aria-label="`Roll back to v${version.versionNumber}`"
+            :aria-label="`Quay về v${version.versionNumber}`"
           >
-            Roll Back
+            Khôi phục
           </button>
         </span>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Version list pagination">
+    <div v-if="totalPages > 1" class="pagination" role="navigation" aria-label="Phân trang danh sách phiên bản">
       <button
         class="page-btn"
         :disabled="currentPage === 0"
         @click="goToPage(currentPage - 1)"
-        aria-label="Previous page"
+        aria-label="Trang trước"
       >
-        ← Prev
+        ← Trước
       </button>
-      <span class="page-info">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+      <span class="page-info">Trang {{ currentPage + 1 }} / {{ totalPages }}</span>
       <button
         class="page-btn"
         :disabled="currentPage >= totalPages - 1"
         @click="goToPage(currentPage + 1)"
-        aria-label="Next page"
+        aria-label="Trang sau"
       >
-        Next →
+        Sau →
       </button>
     </div>
 
@@ -117,8 +117,8 @@
     <div v-if="showImpactModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="impact-title">
       <div class="modal-panel">
         <div class="modal-header">
-          <h2 id="impact-title" class="modal-title">Rollback Impact</h2>
-          <button class="close-btn" @click="closeImpactModal" aria-label="Close impact preview">×</button>
+          <h2 id="impact-title" class="modal-title">Ảnh hưởng khi khôi phục</h2>
+          <button class="close-btn" @click="closeImpactModal" aria-label="Đóng xem trước ảnh hưởng">×</button>
         </div>
 
         <div v-if="impactError" class="modal-error">
@@ -126,36 +126,36 @@
         </div>
 
         <div v-else-if="impactLoadingModal" class="modal-loading">
-          <span>Loading impact preview…</span>
+          <span>Đang tải dự báo ảnh hưởng…</span>
         </div>
 
         <div v-else-if="impactData" class="impact-body">
           <!-- Current published version -->
           <div v-if="impactData.currentVersion" class="impact-row impact-archive">
-            <span class="impact-label">Will be archived:</span>
+            <span class="impact-label">Sẽ lưu trữ:</span>
             <span class="impact-version">
               v{{ impactData.currentVersion.versionNumber }}
               ({{ statusLabel(impactData.currentVersion.status) }})
             </span>
             <span class="impact-meta">
-              Published by {{ impactData.currentVersion.publishedBy }} on
+              Publish bởi {{ impactData.currentVersion.publishedBy }} lúc
               {{ formatInstant(impactData.currentVersion.publishedAt) }}
             </span>
           </div>
           <div v-else class="impact-row impact-no-current">
-            <span class="impact-label">No currently published version.</span>
-            <span class="impact-meta">This will be the first published version.</span>
+            <span class="impact-label">Chưa có phiên bản nào đang công bố.</span>
+            <span class="impact-meta">Đây sẽ là phiên bản công bố đầu tiên.</span>
           </div>
 
           <!-- Target version -->
           <div class="impact-row impact-activate">
-            <span class="impact-label">Will be re-activated as published:</span>
+            <span class="impact-label">Sẽ kích hoạt lại thành bản công bố:</span>
             <span class="impact-version">
               v{{ impactData.targetVersion.versionNumber }}
               ({{ statusLabel(impactData.targetVersion.status) }})
             </span>
             <span v-if="impactData.targetVersion.publishedBy" class="impact-meta">
-              Originally published by {{ impactData.targetVersion.publishedBy }} on
+              Publish lần đầu bởi {{ impactData.targetVersion.publishedBy }} lúc
               {{ formatInstant(impactData.targetVersion.publishedAt) }}
             </span>
           </div>
@@ -167,13 +167,13 @@
         </div>
 
         <div class="modal-footer">
-          <button class="action-btn cancel-btn" @click="closeImpactModal">Close</button>
+          <button class="action-btn cancel-btn" @click="closeImpactModal">Đóng</button>
           <button
             v-if="impactData && impactData.targetVersion.status === 'ARCHIVED'"
             class="action-btn rollback-btn"
             @click="confirmRollbackFromImpact(impactData.targetVersion)"
           >
-            Roll Back to v{{ impactData.targetVersion.versionNumber }}
+            Quay về v{{ impactData.targetVersion.versionNumber }}
           </button>
         </div>
       </div>
@@ -183,14 +183,14 @@
     <div v-if="showRollbackModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rollback-title">
       <div class="modal-panel">
         <div class="modal-header">
-          <h2 id="rollback-title" class="modal-title">Confirm Rollback</h2>
-          <button class="close-btn" @click="closeRollbackModal" aria-label="Close rollback confirmation">×</button>
+          <h2 id="rollback-title" class="modal-title">Xác nhận khôi phục</h2>
+          <button class="close-btn" @click="closeRollbackModal" aria-label="Đóng xác nhận khôi phục">×</button>
         </div>
 
         <div class="rollback-body">
           <p class="rollback-warning">
-            You are about to roll back <strong>v{{ selectedVersionForRollback?.versionNumber }}</strong> to
-            the published state. This cannot be undone.
+            Bạn sắp khôi phục <strong>v{{ selectedVersionForRollback?.versionNumber }}</strong>
+            về trạng thái đã publish. Không thể hoàn tác.
           </p>
 
           <!-- Impact summary from preview if available -->
@@ -201,14 +201,14 @@
           <!-- Rollback note input -->
           <div class="form-field">
             <label for="rollback-note" class="field-label">
-              Rollback reason <span class="required" aria-hidden="true">*</span>
+              Lý do khôi phục <span class="required" aria-hidden="true">*</span>
             </label>
             <textarea
               id="rollback-note"
               v-model="rollbackNote"
               class="field-input"
               rows="3"
-              placeholder="Explain why this rollback is necessary…"
+              placeholder="Giải thích vì sao cần khôi phục…"
               :aria-invalid="rollbackNoteError ? 'true' : undefined"
               :aria-describedby="rollbackNoteError ? 'rollback-note-error' : undefined"
               maxlength="500"
@@ -216,20 +216,20 @@
             <span v-if="rollbackNoteError" id="rollback-note-error" class="field-error" role="alert">
               {{ rollbackNoteError }}
             </span>
-            <span class="field-hint">{{ rollbackNote.length }}/500 characters</span>
+            <span class="field-hint">{{ rollbackNote.length }}/500 ký tự</span>
           </div>
         </div>
 
         <div class="modal-footer">
           <button class="action-btn cancel-btn" @click="closeRollbackModal" :disabled="rollbackLoading">
-            Cancel
+            Huỷ
           </button>
           <button
             class="action-btn confirm-rollback-btn"
             :disabled="rollbackLoading || !rollbackNote.trim()"
             @click="executeRollback"
           >
-            {{ rollbackLoading ? 'Rolling back…' : 'Confirm Rollback' }}
+            {{ rollbackLoading ? 'Đang khôi phục…' : 'Xác nhận khôi phục' }}
           </button>
         </div>
       </div>
@@ -239,10 +239,10 @@
     <div v-if="showSuccessToast" class="toast toast-success" role="status" aria-live="polite">
       <span aria-hidden="true">✅</span>
       <span>
-        Rollback triggered — v{{ successToastVersion }} is now being published.
-        <span v-if="successToastJobId"> Job ID: {{ successToastJobId }}</span>
+        Đã kích hoạt quay lui — đang publish v{{ successToastVersion }}.
+        <span v-if="successToastJobId"> Mã tác vụ: {{ successToastJobId }}</span>
       </span>
-      <button class="toast-close" @click="showSuccessToast = false" aria-label="Dismiss success message">×</button>
+      <button class="toast-close" @click="showSuccessToast = false" aria-label="Đóng thông báo thành công">×</button>
     </div>
 
   </div>
@@ -250,6 +250,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { formatInstant } from '@/lib/datetime';
 import type { CourseVersionDto, RollbackImpactDto } from '@/types/course-version';
 import { courseVersionApi } from '@/api/course-version';
 
@@ -304,7 +305,7 @@ async function loadVersions(page = 0) {
     currentPage.value = page;
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    fetchError.value = apiErr?.message ?? 'Failed to load versions';
+    fetchError.value = apiErr?.message ?? 'Không tải được phiên bản';
   } finally {
     loading.value = false;
   }
@@ -327,7 +328,7 @@ async function viewImpact(version: CourseVersionDto) {
     impactData.value = await courseVersionApi.getRollbackImpact(props.courseId, version.id, props.authToken);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    impactError.value = apiErr?.message ?? 'Failed to load impact preview';
+    impactError.value = apiErr?.message ?? 'Không tải được dự báo ảnh hưởng';
   } finally {
     impactLoading.value[version.id] = false;
     impactLoadingModal.value = false;
@@ -362,7 +363,7 @@ function openRollbackModal(version: CourseVersionDto) {
       .then(data => { impactData.value = data; })
       .catch((err: unknown) => {
         const apiErr = err as { message?: string };
-        impactError.value = apiErr?.message ?? 'Failed to load impact';
+        impactError.value = apiErr?.message ?? 'Không tải được ảnh hưởng';
       })
       .finally(() => { impactLoadingModal.value = false; });
   }
@@ -379,7 +380,7 @@ async function executeRollback() {
   rollbackNoteError.value = null;
 
   if (!rollbackNote.value.trim()) {
-    rollbackNoteError.value = 'Rollback reason is required.';
+    rollbackNoteError.value = 'Phải nêu lý do khôi phục.';
     return;
   }
 
@@ -405,7 +406,7 @@ async function executeRollback() {
     setTimeout(() => { showSuccessToast.value = false; }, 8000);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    rollbackNoteError.value = apiErr?.message ?? 'Rollback failed. Please try again.';
+    rollbackNoteError.value = apiErr?.message ?? 'Khôi phục thất bại. Hãy thử lại.';
   } finally {
     rollbackLoading.value = false;
   }
@@ -433,19 +434,15 @@ function statusIcon(status: string): string {
 
 function statusLabel(status: string): string {
   switch (status) {
-    case 'PUBLISHED': return 'Published';
-    case 'ARCHIVED':  return 'Archived';
-    case 'DRAFT':     return 'Draft';
-    default:          return 'Unknown';
+    case 'PUBLISHED': return 'Đã publish';
+    case 'ARCHIVED':  return 'Đã lưu trữ';
+    case 'DRAFT':     return 'Bản nháp';
+    default:          return 'Không rõ';
   }
 }
 
 // ─── Formatting ───────────────────────────────────────────────────────────────
 
-function formatInstant(iso: string | null): string {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString();
-}
 
 // ─── Lifecycle ───────────────────────────────────────────────────────────────
 

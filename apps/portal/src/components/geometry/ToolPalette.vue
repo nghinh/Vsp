@@ -2,24 +2,24 @@
   <aside
     class="tool-palette"
     role="toolbar"
-    aria-label="Geometry drawing tools"
+    aria-label="Công cụ vẽ hình học"
     tabindex="0"
     @keydown="handleKeydown"
   >
     <div class="palette-section">
-      <span class="section-label" aria-hidden="true">Tools</span>
+      <span class="section-label" aria-hidden="true">Công cụ</span>
 
       <!-- Select / Edit tool -->
       <button
         class="tool-btn"
         :class="{ active: activeTool === 'select' }"
         :aria-pressed="activeTool === 'select'"
-        aria-label="Select and edit features"
-        title="Select (S)"
+        aria-label="Chọn và sửa đối tượng"
+        title="Chọn (S)"
         @click="emit('tool-change', 'select')"
       >
         <span aria-hidden="true" class="tool-icon">⬚</span>
-        <span class="tool-label">Select</span>
+        <span class="tool-label">Chọn</span>
       </button>
 
       <!-- Point tool -->
@@ -27,12 +27,12 @@
         class="tool-btn"
         :class="{ active: activeTool === 'point' }"
         :aria-pressed="activeTool === 'point'"
-        aria-label="Draw point — for Tee and Landmark layers"
-        title="Point (P)"
+        aria-label="Vẽ điểm — cho lớp Tee và Mốc định vị"
+        title="Điểm (P)"
         @click="emit('tool-change', 'point')"
       >
         <span aria-hidden="true" class="tool-icon">●</span>
-        <span class="tool-label">Point</span>
+        <span class="tool-label">Điểm</span>
       </button>
 
       <!-- Line tool -->
@@ -40,12 +40,12 @@
         class="tool-btn"
         :class="{ active: activeTool === 'line' }"
         :aria-pressed="activeTool === 'line'"
-        aria-label="Draw line — for Cart Path and OB layers"
-        title="Line (L)"
+        aria-label="Vẽ đường — cho lớp Đường xe điện và OB"
+        title="Đường (L)"
         @click="emit('tool-change', 'line')"
       >
         <span aria-hidden="true" class="tool-icon">╱</span>
-        <span class="tool-label">Line</span>
+        <span class="tool-label">Đường</span>
       </button>
 
       <!-- Polygon tool -->
@@ -53,12 +53,12 @@
         class="tool-btn"
         :class="{ active: activeTool === 'polygon' }"
         :aria-pressed="activeTool === 'polygon'"
-        aria-label="Draw polygon — for Fairway, Rough, Green, Bunker, Water, Penalty Area"
-        title="Polygon (G)"
+        aria-label="Vẽ vùng — dùng cho Fairway, Rough, Green, Bunker, Nước, Khu phạt"
+        title="Vùng (G)"
         @click="emit('tool-change', 'polygon')"
       >
         <span aria-hidden="true" class="tool-icon">⬡</span>
-        <span class="tool-label">Polygon</span>
+        <span class="tool-label">Vùng</span>
       </button>
     </div>
 
@@ -66,28 +66,28 @@
 
     <!-- Undo / Redo -->
     <div class="palette-section">
-      <span class="section-label" aria-hidden="true">History</span>
+      <span class="section-label" aria-hidden="true">Lịch sử</span>
 
       <button
         class="tool-btn"
         :disabled="!canUndo"
-        aria-label="Undo last change"
-        title="Undo (Ctrl+Z)"
+        aria-label="Hoàn tác thay đổi cuối"
+        title="Hoàn tác (Ctrl+Z)"
         @click="emit('undo')"
       >
         <span aria-hidden="true" class="tool-icon">↩</span>
-        <span class="tool-label">Undo</span>
+        <span class="tool-label">Hoàn tác</span>
       </button>
 
       <button
         class="tool-btn"
         :disabled="!canRedo"
-        aria-label="Redo last undone change"
-        title="Redo (Ctrl+Shift+Z)"
+        aria-label="Làm lại thay đổi vừa hoàn tác"
+        title="Làm lại (Ctrl+Shift+Z)"
         @click="emit('redo')"
       >
         <span aria-hidden="true" class="tool-icon">↪</span>
-        <span class="tool-label">Redo</span>
+        <span class="tool-label">Làm lại</span>
       </button>
     </div>
 
@@ -95,7 +95,7 @@
 
     <!-- Active layer indicator -->
     <div class="palette-section">
-      <span class="section-label" aria-hidden="true">Layer</span>
+      <span class="section-label" aria-hidden="true">Lớp đang vẽ</span>
       <span class="active-layer-badge">{{ activeLayerLabel }}</span>
     </div>
   </aside>
@@ -191,7 +191,7 @@ function handleKeydown(event: KeyboardEvent) {
   height: 3.25rem;
   border-radius: 8px;
   border: 1.5px solid #2d3449;
-  background: #ffffff;
+  background: var(--surface-container-lowest, #131b2e);
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   color: #c5cde8;

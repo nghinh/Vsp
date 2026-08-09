@@ -1,3 +1,5 @@
+import { API_BASE } from './base';
+
 /**
  * API client for package build job endpoints.
  * Base URL is injected from environment; this module does not handle auth tokens —
@@ -11,7 +13,7 @@ import type {
   TriggerBuildResponse,
 } from '@/types/package-build';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 export class PackageBuildApi {
   constructor(private baseUrl: string = BASE) {}

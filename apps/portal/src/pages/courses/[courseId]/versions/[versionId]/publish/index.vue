@@ -9,7 +9,7 @@
       @published="handlePublished"
     />
     <div v-else class="missing-params" role="alert">
-      Missing courseId or versionId in URL.
+      Thiếu mã sân hoặc mã phiên bản trên URL.
     </div>
   </div>
 </template>

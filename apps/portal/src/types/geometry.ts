@@ -77,16 +77,16 @@ export type LayerType =
 
 /** Human-readable label for each layer type. */
 export const LAYER_TYPE_LABELS: Record<LayerType, string> = {
-  tee: 'Tee',
-  fairway: 'Fairway',
-  rough: 'Rough',
-  green: 'Green',
-  bunker: 'Bunker',
-  water: 'Water Hazard',
-  penalty: 'Penalty Area',
-  ob: 'Out of Bounds',
-  cart_path: 'Cart Path',
-  landmark: 'Landmark',
+  tee: 'Tee (điểm phát bóng)',
+  fairway: 'Fairway (đường lăn)',
+  rough: 'Rough (cỏ cao)',
+  green: 'Green (vùng gạt)',
+  bunker: 'Bunker (hố cát)',
+  water: 'Chướng ngại nước',
+  penalty: 'Khu vực phạt',
+  ob: 'Ngoài biên (OB)',
+  cart_path: 'Đường xe điện',
+  landmark: 'Mốc định vị',
 };
 
 /** Default geometry type for each layer type. */

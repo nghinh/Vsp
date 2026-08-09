@@ -4,8 +4,8 @@
  * Slice 2: MapLibre Integration for Portal
  *
  * Displays:
- * - "Draft" badge (amber) when the geometry is unsaved / in-edit mode
- * - "Published" badge (green) when the geometry has been published
+ * - "Bản nháp" badge (amber) when the geometry is unsaved / in-edit mode
+ * - "Đã publish" badge (green) when the geometry has been published
  * - Version number when available
  */
 
@@ -34,7 +34,7 @@ const props = defineProps<{
   showVersion?: boolean;
 }>();
 
-const label = computed(() => props.isDraft ? 'Draft' : 'Published');
+const label = computed(() => props.isDraft ? 'Bản nháp' : 'Đã publish');
 
 const variantClass = computed(() =>
   props.isDraft ? 'indicator-draft' : 'indicator-published'
@@ -65,14 +65,14 @@ const variantClass = computed(() =>
 
 /* Draft variant */
 .indicator-draft {
-  color: #92400e;
-  background: #fef3c7;
+  color: #f0c869;
+  background: rgba(240, 180, 41, 0.14);
 }
 
 /* Published variant */
 .indicator-published {
-  color: #15803d;
-  background: #dcfce7;
+  color: #6ee7a8;
+  background: rgba(34, 197, 94, 0.14);
 }
 
 /* Version badge */

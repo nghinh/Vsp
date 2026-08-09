@@ -1,249 +1,383 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+/**
+ * Pin positions — where the hole is cut, per hole, per day.
+ *
+ * This page was a placeholder that named four endpoints under
+ * `/courses/{courseId}/pin-positions`. None of them exist. The real ones are
+ * `/admin/courses/{courseId}/holes/{holeNumber}/pins`, and they have been
+ * there, complete and unused, the whole time — so the feature read as
+ * "backend not ready" when what was missing was this file.
+ *
+ * Two things this page insists on, because a pin is a number a golfer plays a
+ * shot to:
+ *
+ *   • Every pin carries an expiry. The server requires it, and so it should:
+ *     a pin left from last Tuesday quoted as today's is worse than no pin,
+ *     because the app cannot tell it is stale.
+ *   • The pin is placed by clicking the green on satellite imagery. The first
+ *     version asked for latitude and longitude in two text boxes, which is a
+ *     coordinate entry form and not a pin placement tool — a greenkeeper knows
+ *     where the hole is cut because they cut it, not as 10.861240. The numbers
+ *     remain beside the map as a readout and for nudging.
+ */
+import { computed, ref } from 'vue';
 
-const router = useRouter();
+import { operationsApi } from '@/api/admin/operations';
+import CoursePicker from '@/components/CoursePicker.vue';
+import PinMapPicker from '@/components/PinMapPicker.vue';
+import { endOfTodayLocalInput, nowLocalInput, toLocalInput } from '@/lib/datetime';
+import { parsePoint, pointToWkt } from '@/lib/wkt';
+import type { CourseResponse } from '@/types/admin/course';
+import type { PinPosition } from '@/types/admin/operations';
+import { PIN_POSITION_TYPES } from '@/types/admin/operations';
 
-type Status = "Official" | "Scheduled" | "Expired" | "Selected";
-interface Hole {
-  num: number;
-  par: number;
-  status: Status;
-  zone: string;
-  yards: number;
-}
-const pars = [4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5];
-const holes = ref<Hole[]>(
-  pars.map((par, i) => {
-    const num = i + 1;
-    let status: Status = num === 7 ? "Selected" : i < 5 ? "Official" : i % 3 === 0 ? "Scheduled" : "Expired";
-    return { num, par, status, zone: "Center", yards: 200 + ((num * 7) % 90) };
-  }),
-);
-const selected = ref(7);
-const current = computed(() => holes.value.find((h) => h.num === selected.value)!);
-const staleCount = computed(() => holes.value.filter((h) => h.status === "Expired").length);
-const changedCount = computed(() => holes.value.filter((h) => h.status === "Scheduled" || h.status === "Selected").length);
+const props = defineProps<{ authToken: string }>();
 
-function selectHole(n: number) {
-  selected.value = n;
-}
+const courseId = ref<number | null>(null);
+const course = ref<CourseResponse | null>(null);
+const pins = ref<PinPosition[]>([]);
+const loading = ref(false);
+const error = ref<string | null>(null);
+const notice = ref<string | null>(null);
 
-const conditions = ref({
-  greenSpeed: 9.5,
-  maintenance: "Normal Operations",
-  firmness: 7.2,
-  moisture: 24,
-  cartPath: "90 Degrees",
-  courseStatus: "Open",
-  notes: "",
-  effective: "2026-08-06T06:00",
-  expiry: "2026-08-06T18:00",
+// ─── Form ───────────────────────────────────────────────────────────────────
+
+const form = ref({
+  holeNumber: 1,
+  latitude: '' as string,
+  longitude: '' as string,
+  pinPositionType: 'CURRENT',
+  effectiveFrom: nowLocalInput(),
+  expiresAt: endOfTodayLocalInput(),
 });
 
-const statusClass: Record<Status, string> = {
-  Official: "st-official",
-  Scheduled: "st-scheduled",
-  Expired: "st-expired",
-  Selected: "st-selected",
-};
+const saving = ref(false);
+const formError = ref<string | null>(null);
+const editingId = ref<number | null>(null);
+
+const holeNumbers = computed(() => {
+  const count = course.value?.holesCount ?? 18;
+  return Array.from({ length: count }, (_, i) => i + 1);
+});
+
+/** Pins whose window covers right now — what the app is serving today. */
+const activePins = computed(() => {
+  const now = Date.now();
+  return pins.value.filter(
+    (p) =>
+      Date.parse(p.effectiveFrom) <= now &&
+      (!p.expiresAt || Date.parse(p.expiresAt) > now),
+  );
+});
+
+/** Where to open the map: the course's own point. */
+const courseCentre = computed(() => {
+  // /admin/courses returns hex EWKB here, not WKT — see lib/wkt.ts.
+  const at = parsePoint(course.value?.location ?? null);
+  return at ? { latitude: at.latitude, longitude: at.longitude } : null;
+});
+
+/** Existing pins as points, for context under the one being placed. */
+const pinPoints = computed(() =>
+  pins.value
+    .map((p) => ({ at: parsePoint(p.position), holeNumber: p.holeNumber }))
+    .filter((p): p is { at: { latitude: number; longitude: number }; holeNumber: number } => p.at !== null)
+    .map((p) => ({ ...p.at, holeNumber: p.holeNumber })),
+);
+
+/**
+ * The stored geometry, as coordinates.
+ *
+ * This column used to print `pin.position` straight through, which for the
+ * endpoints that return EWKB meant a 50-character hex string in a table an
+ * operator is meant to read a pin off. Falling back to the raw value keeps an
+ * unparseable geometry visible rather than blank — but it should not be the
+ * normal case.
+ */
+function formatPosition(position: string): string {
+  const at = parsePoint(position);
+  return at ? `${at.latitude.toFixed(6)}, ${at.longitude.toFixed(6)}` : position;
+}
+
+function onPicked(point: { latitude: number; longitude: number }) {
+  form.value.latitude = point.latitude.toFixed(7);
+  form.value.longitude = point.longitude.toFixed(7);
+  formError.value = null;
+}
+
+const holesWithoutPin = computed(() => {
+  const covered = new Set(activePins.value.map((p) => p.holeNumber));
+  return holeNumbers.value.filter((n) => !covered.has(n));
+});
+
+// ─── Loading ────────────────────────────────────────────────────────────────
+
+async function onCourseChanged(next: CourseResponse | null) {
+  course.value = next;
+  pins.value = [];
+  if (next) await loadPins();
+}
+
+async function loadPins() {
+  if (courseId.value == null) return;
+  loading.value = true;
+  error.value = null;
+  try {
+    pins.value = await operationsApi.listCoursePins(courseId.value, props.authToken);
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không tải được danh sách vị trí cờ';
+  } finally {
+    loading.value = false;
+  }
+}
+
+// ─── Saving ─────────────────────────────────────────────────────────────────
+
+function validate(): boolean {
+  formError.value = null;
+  const lat = Number(form.value.latitude);
+  const lng = Number(form.value.longitude);
+
+  if (!form.value.latitude || !form.value.longitude) {
+    formError.value = 'Cần cả vĩ độ và kinh độ.';
+  } else if (Number.isNaN(lat) || lat < -90 || lat > 90) {
+    formError.value = 'Vĩ độ phải nằm trong khoảng -90 đến 90.';
+  } else if (Number.isNaN(lng) || lng < -180 || lng > 180) {
+    formError.value = 'Kinh độ phải nằm trong khoảng -180 đến 180.';
+  } else if (!form.value.expiresAt) {
+    // The server rejects this too. Saying so here saves a round trip and
+    // explains *why*, which the server error does not.
+    formError.value = 'Cần thời điểm hết hạn — một vị trí cờ không có hạn sẽ bị ứng dụng coi là của hôm nay mãi mãi.';
+  } else if (Date.parse(form.value.expiresAt) <= Date.parse(form.value.effectiveFrom)) {
+    formError.value = 'Thời điểm hết hạn phải sau thời điểm hiệu lực.';
+  }
+  return formError.value === null;
+}
+
+async function save() {
+  if (courseId.value == null || !validate()) return;
+  saving.value = true;
+  try {
+    const body = {
+      position: pointToWkt(Number(form.value.latitude), Number(form.value.longitude)),
+      pinPositionType: form.value.pinPositionType,
+      effectiveFrom: new Date(form.value.effectiveFrom).toISOString(),
+      expiresAt: new Date(form.value.expiresAt).toISOString(),
+    };
+    if (editingId.value != null) {
+      await operationsApi.updatePin(
+        courseId.value, form.value.holeNumber, editingId.value, body, props.authToken,
+      );
+      notice.value = `Đã cập nhật vị trí cờ hố ${form.value.holeNumber}.`;
+    } else {
+      await operationsApi.createPin(
+        courseId.value, form.value.holeNumber, body, props.authToken,
+      );
+      notice.value = `Đã đặt vị trí cờ hố ${form.value.holeNumber}.`;
+    }
+    editingId.value = null;
+    await loadPins();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    formError.value = apiErr?.message ?? 'Không lưu được vị trí cờ';
+  } finally {
+    saving.value = false;
+  }
+}
+
+function edit(pin: PinPosition) {
+  const at = parsePoint(pin.position);
+  editingId.value = pin.id;
+  form.value = {
+    holeNumber: pin.holeNumber,
+    latitude: at ? String(at.latitude) : '',
+    longitude: at ? String(at.longitude) : '',
+    pinPositionType: pin.pinPositionType ?? 'CURRENT',
+    effectiveFrom: toLocalInput(pin.effectiveFrom),
+    expiresAt: toLocalInput(pin.expiresAt),
+  };
+  formError.value = null;
+}
+
+function cancelEdit() {
+  editingId.value = null;
+  formError.value = null;
+}
+
+function formatWindow(pin: PinPosition): string {
+  const from = new Date(pin.effectiveFrom).toLocaleString('vi-VN');
+  const to = pin.expiresAt ? new Date(pin.expiresAt).toLocaleString('vi-VN') : '—';
+  return `${from} → ${to}`;
+}
+
+function isActive(pin: PinPosition): boolean {
+  const now = Date.now();
+  return (
+    Date.parse(pin.effectiveFrom) <= now &&
+    (!pin.expiresAt || Date.parse(pin.expiresAt) > now)
+  );
+}
 </script>
 
 <template>
-  <div class="pins">
-    <header class="topline">
-      <div>
-        <nav class="crumbs mono">Portal <span class="material-symbols-outlined">chevron_right</span> BRG Legend Hill <span class="material-symbols-outlined">chevron_right</span> <span class="c-primary">Pin &amp; Conditions</span></nav>
-      </div>
-      <div class="topline-actions">
-        <div class="seg">
-          <button class="seg-btn active">TODAY</button>
-          <button class="seg-btn">CALENDAR</button>
-        </div>
-        <button class="btn-primary"><span class="material-symbols-outlined">publish</span> PUBLISH OPERATIONS</button>
-      </div>
+  <div class="page">
+    <header class="page-header">
+      <h1 class="page-title">Vị trí cắm cờ</h1>
+      <p class="page-subtitle">
+        Đặt và lên lịch vị trí cờ theo hố. Ứng dụng của golfer chỉ dùng vị trí còn
+        trong thời hạn hiệu lực.
+      </p>
     </header>
 
-    <div class="layout">
-      <!-- Hole grid -->
-      <section class="grid-pane">
-        <div class="hole-grid">
-          <button
-            v-for="h in holes"
-            :key="h.num"
-            class="hole-card"
-            :class="{ sel: h.num === selected }"
-            @click="selectHole(h.num)"
-          >
-            <div class="hole-top">
-              <div><span class="hnum mono">#{{ h.num }}</span><span class="hpar">Par {{ h.par }}</span></div>
-              <span class="hstatus" :class="statusClass[h.num === selected ? 'Selected' : h.status]">{{ h.num === selected ? "Selected" : h.status }}</span>
-            </div>
-            <div class="green-mini">
-              <div class="dots"></div>
-              <div class="green-ring"><span class="pin-dot"></span></div>
-            </div>
-            <div class="hole-foot mono"><span>Zone: {{ h.zone }}</span><span>{{ h.yards }} Yds</span></div>
-          </button>
+    <CoursePicker
+      v-model="courseId"
+      :auth-token="props.authToken"
+      @course-changed="onCourseChanged"
+    />
+
+    <p v-if="notice" class="notice" role="status">{{ notice }}</p>
+    <p v-if="error" class="error" role="alert">
+      {{ error }}
+      <button type="button" class="btn-link" @click="loadPins">Thử lại</button>
+    </p>
+
+    <template v-if="courseId != null">
+      <!-- ─── Coverage ─────────────────────────────────────────────────── -->
+      <section class="card">
+        <h2 class="card-title">Hôm nay</h2>
+        <p v-if="loading" class="muted">Đang tải…</p>
+        <template v-else>
+          <p class="coverage">
+            <strong>{{ activePins.length }}</strong> / {{ holeNumbers.length }} hố có vị trí cờ đang hiệu lực.
+          </p>
+          <p v-if="holesWithoutPin.length" class="muted">
+            Chưa đặt: {{ holesWithoutPin.join(', ') }}
+          </p>
+        </template>
+      </section>
+
+      <!-- ─── Form ─────────────────────────────────────────────────────── -->
+      <section class="card">
+        <h2 class="card-title">
+          {{ editingId == null ? 'Đặt vị trí cờ' : `Sửa vị trí cờ #${editingId}` }}
+        </h2>
+
+        <div class="form-grid">
+          <PinMapPicker
+            :latitude="form.latitude === '' ? null : Number(form.latitude)"
+            :longitude="form.longitude === '' ? null : Number(form.longitude)"
+            :centre="courseCentre"
+            :existing="pinPoints"
+            @picked="onPicked"
+          />
+
+          <div class="field">
+            <label class="label" for="pp-hole">Hố</label>
+            <select id="pp-hole" v-model.number="form.holeNumber" class="input">
+              <option v-for="n in holeNumbers" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="pp-type">Loại</label>
+            <select id="pp-type" v-model="form.pinPositionType" class="input">
+              <option v-for="t in PIN_POSITION_TYPES" :key="t" :value="t">{{ t }}</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label class="label" for="pp-lat">Vĩ độ</label>
+            <input id="pp-lat" v-model="form.latitude" class="input" inputmode="decimal" placeholder="10.861240" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="pp-lng">Kinh độ</label>
+            <input id="pp-lng" v-model="form.longitude" class="input" inputmode="decimal" placeholder="106.896005" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="pp-from">Hiệu lực từ</label>
+            <input id="pp-from" v-model="form.effectiveFrom" type="datetime-local" class="input" />
+          </div>
+
+          <div class="field">
+            <label class="label" for="pp-to">Hết hạn</label>
+            <input id="pp-to" v-model="form.expiresAt" type="datetime-local" class="input" />
+          </div>
         </div>
 
-        <div class="summary">
-          <div class="summary-metrics">
-            <div><p class="sm-lbl">Changes Detected</p><p class="sm-val mono c-primary">{{ changedCount.toString().padStart(2, "0") }} Holes</p></div>
-            <div class="divider"></div>
-            <div><p class="sm-lbl">Stale Pins</p><p class="sm-val mono c-error">{{ staleCount.toString().padStart(2, "0") }} Holes</p></div>
-          </div>
-          <div class="summary-actions">
-            <button class="btn-outline">DISCARD ALL</button>
-            <button class="btn-primary" @click="router.push('/courses/1/versions')">REVIEW &amp; PUBLISH</button>
-          </div>
+        <p v-if="formError" class="error" role="alert">{{ formError }}</p>
+
+        <div class="actions">
+          <button type="button" class="btn-primary" :disabled="saving" @click="save">
+            {{ saving ? 'Đang lưu…' : editingId == null ? 'Đặt vị trí' : 'Lưu thay đổi' }}
+          </button>
+          <button v-if="editingId != null" type="button" class="btn-secondary" @click="cancelEdit">
+            Huỷ
+          </button>
         </div>
       </section>
 
-      <!-- Detail / conditions panel -->
-      <aside class="detail-pane">
-        <div class="detail-head">
-          <h3><span class="c-primary">Hole {{ current.num }}</span> <span class="par-sub">· Par {{ current.par }}</span></h3>
-          <div class="detail-tools">
-            <button class="tool-btn"><span class="material-symbols-outlined">content_copy</span></button>
-            <button class="tool-btn"><span class="material-symbols-outlined">delete</span></button>
-          </div>
-        </div>
-
-        <div class="green-editor">
-          <div class="dots"></div>
-          <div class="zones"><span>Front</span><span>Center</span><span>Back</span></div>
-          <div class="green-vector">
-            <div class="pin-marker"><span class="material-symbols-outlined">location_on</span></div>
-          </div>
-          <div v-if="current.status === 'Expired' || current.status === 'Selected'" class="stale-tag"><span class="material-symbols-outlined">warning</span> PIN EXPIRED — UNOFFICIAL</div>
-          <div class="coord mono">21.0285° N, 105.8542° E</div>
-        </div>
-
-        <div class="sched-grid">
-          <div><label class="fl">Effective Time</label><input v-model="conditions.effective" class="fin mono" type="datetime-local" /></div>
-          <div><label class="fl">Expiry Time</label><input v-model="conditions.expiry" class="fin mono" type="datetime-local" /></div>
-        </div>
-        <button class="btn-template"><span class="material-symbols-outlined">auto_fix_high</span> APPLY ZONE TEMPLATE</button>
-
-        <div class="conditions">
-          <h4 class="section-title">Course Global Conditions</h4>
-          <div class="cond-grid">
-            <div>
-              <label class="fl">Green Speed</label>
-              <div class="stimp"><input v-model.number="conditions.greenSpeed" class="fin-num mono" type="number" step="0.1" /><span class="mono unit">ft (Stimp)</span></div>
-            </div>
-            <div>
-              <label class="fl">Maintenance</label>
-              <select v-model="conditions.maintenance" class="fin"><option>Normal Operations</option><option>Aeration (Active)</option><option>Top Dressing</option></select>
-            </div>
-          </div>
-          <div class="slider">
-            <div class="slider-head"><label class="fl">Green Firmness</label><span class="mono c-primary">{{ conditions.firmness }} / 10</span></div>
-            <input v-model.number="conditions.firmness" type="range" min="0" max="10" step="0.1" />
-          </div>
-          <div class="slider">
-            <div class="slider-head"><label class="fl">Moisture Content</label><span class="mono c-primary">{{ conditions.moisture }}%</span></div>
-            <input v-model.number="conditions.moisture" type="range" min="0" max="100" step="1" />
-          </div>
-          <div class="cond-grid">
-            <div><label class="fl">Cart Path Status</label><select v-model="conditions.cartPath" class="fin"><option>90 Degrees</option><option>Cart Path Only</option><option>Freely Allowed</option></select></div>
-            <div><label class="fl">Course Status</label><select v-model="conditions.courseStatus" class="fin"><option>Open</option><option>Delayed (Frost)</option><option>Closed</option></select></div>
-          </div>
-          <div><label class="fl">Operational Notes</label><textarea v-model="conditions.notes" class="fin" rows="3" placeholder="Add course-wide alerts here..."></textarea></div>
-        </div>
-
-        <button class="btn-publish"><span class="material-symbols-outlined">check_circle</span> SAVE &amp; PUBLISH UPDATES</button>
-      </aside>
-    </div>
+      <!-- ─── List ─────────────────────────────────────────────────────── -->
+      <section class="card">
+        <h2 class="card-title">Đã lên lịch</h2>
+        <p v-if="loading" class="muted">Đang tải…</p>
+        <p v-else-if="pins.length === 0" class="muted">Sân này chưa có vị trí cờ nào.</p>
+        <table v-else class="table">
+          <thead>
+            <tr>
+              <th>Hố</th>
+              <th>Loại</th>
+              <th>Toạ độ</th>
+              <th>Khoảng hiệu lực</th>
+              <th>Trạng thái</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="pin in pins" :key="pin.id">
+              <td>{{ pin.holeNumber }}</td>
+              <td>{{ pin.pinPositionType ?? '—' }}</td>
+              <td class="mono">{{ formatPosition(pin.position) }}</td>
+              <td>{{ formatWindow(pin) }}</td>
+              <td>
+                <span :class="isActive(pin) ? 'badge-active' : 'badge-idle'">
+                  {{ isActive(pin) ? 'Đang hiệu lực' : 'Ngoài hiệu lực' }}
+                </span>
+              </td>
+              <td><button type="button" class="btn-link" @click="edit(pin)">Sửa</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </template>
   </div>
 </template>
 
 <style scoped>
-.pins { max-width: 1600px; }
-.mono { font-family: var(--font-mono); }
-.c-primary { color: var(--primary-bright); }
-.c-error { color: var(--error); }
-
-.topline { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; gap: 16px; flex-wrap: wrap; }
-.crumbs { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--on-surface-variant); }
-.crumbs .material-symbols-outlined { font-size: 14px; }
-.topline-actions { display: flex; align-items: center; gap: 16px; }
-.seg { display: flex; background: var(--surface-container-low); border-radius: 8px; padding: 4px; }
-.seg-btn { padding: 6px 16px; background: none; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: .05em; color: var(--on-surface-variant); cursor: pointer; }
-.seg-btn.active { background: var(--secondary-container); color: var(--on-secondary-container); }
-.btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--primary-container); color: #fff; border: none; padding: 10px 20px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .05em; cursor: pointer; }
-.btn-primary:hover { filter: brightness(1.1); }
-
-.layout { display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 24px; }
-
-.hole-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
-.hole-card { text-align: left; background: var(--surface-container); border: 1px solid rgba(90,65,56,.2); border-radius: 12px; padding: 16px; cursor: pointer; transition: border-color .2s; }
-.hole-card:hover { border-color: rgba(255,181,153,.5); }
-.hole-card.sel { border-color: var(--primary-bright); box-shadow: 0 0 0 1px var(--primary-bright); }
-.hole-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-.hnum { font-size: 24px; font-weight: 700; color: var(--on-surface); display: block; line-height: 1.1; }
-.hpar { font-size: 12px; text-transform: uppercase; color: var(--on-surface-variant); }
-.hstatus { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-.st-official { background: rgba(104,219,169,.2); color: var(--tertiary); }
-.st-scheduled { background: rgba(255,181,153,.2); color: var(--primary-bright); }
-.st-expired { background: rgba(255,180,171,.2); color: var(--error); }
-.st-selected { background: var(--secondary-container); color: var(--on-secondary-container); }
-.green-mini { aspect-ratio: 1; background: var(--surface); border-radius: 8px; border: 1px solid rgba(90,65,56,.1); position: relative; overflow: hidden; margin-bottom: 8px; }
-.dots { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,.1) 1px, transparent 1px); background-size: 20px 20px; opacity: .3; }
-.green-ring { position: absolute; inset: 16px; border-radius: 50%; border: 2px dashed rgba(104,219,169,.2); background: rgba(104,219,169,.05); display: grid; place-items: center; }
-.pin-dot { width: 8px; height: 8px; background: var(--primary-bright); border-radius: 50%; }
-.hole-foot { display: flex; justify-content: space-between; font-size: 12px; color: var(--on-surface-variant); }
-
-.summary { margin-top: 24px; background: var(--surface-container-high); border: 1px solid rgba(90,65,56,.3); border-radius: 16px; padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
-.summary-metrics { display: flex; gap: 32px; align-items: center; }
-.sm-lbl { margin: 0 0 4px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--on-surface-variant); }
-.sm-val { margin: 0; font-size: 24px; font-weight: 700; }
-.divider { width: 1px; height: 48px; background: rgba(90,65,56,.2); }
-.summary-actions { display: flex; gap: 16px; }
-.btn-outline { height: 48px; padding: 0 24px; border-radius: 12px; border: 1px solid var(--outline-variant); background: none; color: var(--on-surface); font-size: 12px; font-weight: 700; letter-spacing: .05em; cursor: pointer; }
-.btn-outline:hover { background: var(--surface-variant); }
-.summary-actions .btn-primary { height: 48px; border-radius: 12px; }
-
-/* Detail pane */
-.detail-pane { background: var(--surface-container-low); border: 1px solid var(--border); border-radius: 16px; padding: 24px; align-self: start; }
-.detail-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-.detail-head h3 { margin: 0; font-size: 24px; font-weight: 600; }
-.par-sub { color: var(--on-surface-variant); font-size: 16px; font-weight: 400; }
-.detail-tools { display: flex; gap: 8px; }
-.tool-btn { padding: 8px; background: var(--surface-variant); border: none; border-radius: 8px; color: var(--on-surface-variant); cursor: pointer; }
-.tool-btn:hover { color: var(--on-surface); }
-
-.green-editor { position: relative; aspect-ratio: 1; background: var(--surface-container-lowest); border-radius: 16px; border: 1px solid rgba(90,65,56,.3); margin-bottom: 24px; overflow: hidden; }
-.green-editor .dots { opacity: .4; }
-.zones { position: absolute; inset: 0; display: flex; flex-direction: column; pointer-events: none; }
-.zones span { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; text-transform: uppercase; font-weight: 700; color: rgba(255,181,153,.3); border-bottom: 1px dashed rgba(255,181,153,.2); }
-.zones span:last-child { border-bottom: none; }
-.green-vector { position: absolute; inset: 32px; border-radius: 50%; border: 4px solid rgba(104,219,169,.3); background: rgba(104,219,169,.05); }
-.pin-marker { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); width: 28px; height: 28px; background: var(--primary-bright); border-radius: 50%; display: grid; place-items: center; box-shadow: 0 0 0 4px rgba(255,181,153,.2); }
-.pin-marker .material-symbols-outlined { color: #fff; font-size: 16px; }
-.stale-tag { position: absolute; top: 16px; left: 16px; background: rgba(147,0,10,.9); color: var(--on-error-container); padding: 4px 12px; border-radius: 999px; font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-.stale-tag .material-symbols-outlined { font-size: 14px; }
-.coord { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: rgba(45,52,73,.9); padding: 4px 8px; border-radius: 4px; font-size: 12px; white-space: nowrap; }
-
-.sched-grid, .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-.fl { display: block; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--on-surface-variant); margin-bottom: 8px; }
-.fin { width: 100%; background: var(--surface-variant); border: none; border-radius: 8px; padding: 10px 12px; color: var(--on-surface); font-size: 14px; }
-.fin:focus { outline: 2px solid var(--primary-bright); }
-.btn-template { width: 100%; height: 48px; background: var(--surface-variant); border: 1px solid rgba(255,181,153,.3); color: var(--primary-bright); border-radius: 12px; font-size: 12px; font-weight: 700; letter-spacing: .05em; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 32px; }
-.btn-template:hover { background: rgba(246,96,24,.1); }
-
-.section-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--on-surface-variant); border-bottom: 1px solid rgba(90,65,56,.1); padding-bottom: 8px; margin: 0 0 24px; }
-.stimp { display: flex; align-items: center; gap: 12px; }
-.fin-num { width: 80px; background: var(--surface-variant); border: none; border-radius: 8px; padding: 8px; color: var(--on-surface); font-size: 24px; font-weight: 700; }
-.fin-num:focus { outline: 2px solid var(--primary-bright); }
-.unit { color: var(--on-surface-variant); font-size: 13px; }
-.slider { margin-bottom: 24px; }
-.slider-head { display: flex; justify-content: space-between; margin-bottom: 8px; }
-.slider input[type="range"] { width: 100%; accent-color: var(--primary-bright); }
-
-.btn-publish { width: 100%; height: 56px; margin-top: 8px; background: var(--primary-container); color: #fff; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,.3); }
-.btn-publish:hover { filter: brightness(1.1); }
-
-@media (max-width: 1200px) { .layout { grid-template-columns: 1fr; } .detail-pane { max-width: 560px; } }
+.page { padding: 24px; max-width: 1100px; }
+.page-title { margin: 0 0 4px; font-size: 22px; }
+.page-subtitle { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
+.card { background: var(--surface-container-low); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+.card-title { margin: 0 0 12px; font-size: 16px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.label { font-size: 12px; font-weight: 600; color: var(--muted); }
+.input { padding: 8px 10px; border: 1px solid var(--outline-variant); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--surface-container-lowest); color: var(--on-surface); color-scheme: dark; }
+.input option { background: var(--surface-container); color: var(--on-surface); }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-primary { background: var(--primary); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+.btn-primary:disabled { opacity: 0.6; cursor: default; }
+.btn-secondary { background: transparent; border: 1px solid var(--outline-variant); border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.btn-link { background: none; border: none; color: var(--primary-bright); cursor: pointer; padding: 0 4px; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+.mono { font-family: ui-monospace, monospace; font-size: 12px; }
+.muted { color: var(--muted); font-size: 14px; }
+.coverage { margin: 0 0 4px; font-size: 14px; }
+.error { color: var(--error); font-size: 13px; }
+.notice { color: var(--tertiary); font-size: 13px; }
+.badge-active { background: var(--tertiary-container); color: var(--on-tertiary); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.badge-idle { background: var(--surface-container-high); color: var(--on-surface); border-radius: 4px; padding: 2px 8px; font-size: 12px; }
 </style>

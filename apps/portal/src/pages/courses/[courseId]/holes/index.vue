@@ -2,23 +2,41 @@
   <div class="holes-page">
 
     <header class="page-header">
-      <button class="btn btn-secondary back-btn" @click="router.back()">← Back</button>
+      <button class="btn btn-secondary back-btn" @click="router.back()">← Quay lại</button>
       <div class="header-content">
-        <h1 class="page-title">Holes — {{ courseName }}</h1>
-        <p class="page-subtitle">Manage holes at this course.</p>
+        <h1 class="page-title">Các hố — {{ courseName }}</h1>
+        <p class="page-subtitle">Quản lý các hố của sân này.</p>
       </div>
+      <!--
+        The review page is where imported geometry becomes geometry the app is
+        allowed to draw, and until now nothing linked to it: the route existed
+        and could only be reached by typing the URL. A gate nobody can find is
+        a gate nobody passes, which is why 882 holes sat unverified while the
+        page to verify them was already built.
+      -->
+      <!--
+        Both of these were routed and unreachable: the pages existed and only a
+        typed URL could open them. A course whose fairway OSM never traced has
+        to be drawn by hand, and the editor that does it was invisible.
+      -->
+      <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/edit-geometry`">
+        Vẽ hình học
+      </RouterLink>
+      <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/geometry-review`">
+        Duyệt hình học
+      </RouterLink>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-        {{ showCreateForm ? 'Cancel' : '+ New Hole' }}
+        {{ showCreateForm ? 'Huỷ' : '+ Thêm hố' }}
       </button>
     </header>
 
     <!-- ─── Create form ─────────────────────────────────────────────────────── -->
     <div v-if="showCreateForm" class="create-form-panel">
-      <h2 class="form-title">Create Hole</h2>
+      <h2 class="form-title">Tạo hố</h2>
 
       <div class="form-grid">
         <div class="form-field">
-          <label class="form-label" for="hole-number">Hole Number <span class="required">*</span></label>
+          <label class="form-label" for="hole-number">Số hố <span class="required">*</span></label>
           <input
             id="hole-number"
             v-model.number="createForm.holeNumber"
@@ -46,7 +64,7 @@
         </div>
 
         <div class="form-field">
-          <label class="form-label" for="hole-length">Playing Length (meters)</label>
+          <label class="form-label" for="hole-length">Chiều dài thi đấu (mét)</label>
           <input
             id="hole-length"
             v-model.number="createForm.playingLengthMeters"
@@ -66,7 +84,7 @@
           :disabled="creating"
           @click="handleCreate"
         >
-          {{ creating ? 'Creating…' : 'Create Hole' }}
+          {{ creating ? 'Đang tạo…' : 'Tạo hố' }}
         </button>
       </div>
     </div>
@@ -80,15 +98,15 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadHoles">Retry</button>
+      <button class="btn btn-secondary" @click="loadHoles">Thử lại</button>
     </div>
 
     <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
     <div v-else-if="holes.length === 0 && !showCreateForm" class="empty-state">
       <span class="empty-icon">🏌️</span>
-      <p class="empty-title">No holes yet.</p>
-      <p class="empty-subtitle">Add holes to this course.</p>
-      <button class="btn btn-primary" @click="showCreateForm = true">Add First Hole</button>
+      <p class="empty-title">Chưa có hố nào.</p>
+      <p class="empty-subtitle">Thêm hố cho sân này.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Thêm hố đầu tiên</button>
     </div>
 
     <!-- ─── Hole list ─────────────────────────────────────────────────────── -->
@@ -100,14 +118,14 @@
         role="listitem"
       >
         <div class="hole-header">
-          <span class="hole-number">Hole {{ hole.holeNumber }}</span>
+          <span class="hole-number">Hố {{ hole.holeNumber }}</span>
           <span class="hole-par">Par {{ hole.par }}</span>
           <span v-if="hole.playingLengthMeters" class="hole-length">{{ hole.playingLengthMeters }}m</span>
-          <span v-if="hole.teeBoxesCount" class="tee-boxes-count">{{ hole.teeBoxesCount }} tee boxes</span>
+          <span v-if="hole.teeBoxesCount" class="tee-boxes-count">{{ hole.teeBoxesCount }} tee box</span>
         </div>
 
         <div class="hole-meta">
-          <span class="meta-item">Created {{ formatInstant(hole.createdAt) }}</span>
+          <span class="meta-item">Tạo lúc {{ formatInstant(hole.createdAt) }}</span>
           <span v-if="hole.dataQuality" class="quality-badge" :class="qualityClass(hole.dataQuality)">
             {{ hole.dataQuality.accuracyClass ?? '?' }}
           </span>
@@ -120,10 +138,11 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRouter, useRoute, RouterLink } from 'vue-router';
 import type { HoleResponse, HoleCreateRequest } from '@/types/admin/hole';
 import { holeAdminApi } from '@/api/admin/holes';
 import { courseAdminApi } from '@/api/admin/courses';
+import { formatDay as formatInstant } from '@/lib/datetime';
 
 const router = useRouter();
 const route = useRoute();
@@ -133,21 +152,6 @@ const holes = ref<HoleResponse[]>([]);
 const courseName = ref('…');
 const loading = ref(false);
 const fetchError = ref<string | null>(null);
-
-// ─── Mock data ─────────────────────────────────────────────────────────────────
-const MOCK_HOLES: HoleResponse[] = Array.from({ length: 18 }, (_, i) => ({
-  id: i + 1,
-  courseId,
-  holeNumber: (i % 9) + 1,
-  par: [4, 4, 3, 5, 4, 4, 3, 5, 4][i % 9],
-  teeingGroundLocation: null,
-  greenLocation: null,
-  playingLengthMeters: [350, 420, 150, 520, 380, 410, 180, 490, 360][i % 9],
-  dataQuality: { accuracyClass: 'B', verificationStatus: 'VERIFIED' },
-  teeBoxesCount: 4,
-  createdAt: '2025-03-01T10:00:00Z',
-  updatedAt: '2025-03-01T10:00:00Z',
-}));
 
 // ─── Create form state ─────────────────────────────────────────────────────────
 const showCreateForm = ref(false);
@@ -172,9 +176,15 @@ async function loadHoles() {
     ]);
     holes.value = holesData;
     courseName.value = course.name;
-  } catch {
-    holes.value = MOCK_HOLES;
-    courseName.value = 'North Course';
+  } catch (err: unknown) {
+    // Was `holes.value = MOCK_HOLES`, with fetchError left null — so an
+    // operator whose API was down saw invented golf courses stamped
+    // accuracyClass 'A' / VERIFIED, with no error banner, and every edit
+    // targeted ids that do not exist. A missing danh sách hố is now a
+    // missing danh sách hố.
+    const apiErr = err as { message?: string };
+    fetchError.value = apiErr?.message ?? 'Không tải được dữ liệu từ máy chủ.';
+    holes.value = [];
   } finally {
     loading.value = false;
   }
@@ -193,15 +203,12 @@ async function handleCreate() {
     holes.value.push(hole);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    createError.value = apiErr?.message ?? 'Failed to create hole';
+    createError.value = apiErr?.message ?? 'Không tạo được hố';
   } finally {
     creating.value = false;
   }
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
 
 function qualityClass(dq: { accuracyClass: string | null; verificationStatus: string | null }) {
   if (dq.verificationStatus === 'VERIFIED') return 'badge-verified';
