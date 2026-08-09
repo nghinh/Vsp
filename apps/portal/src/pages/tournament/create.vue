@@ -3,8 +3,8 @@
 
     <header class="page-header">
       <div class="header-left">
-        <button class="btn-back" @click="$router.push('/tournaments')">← Cancel</button>
-        <h1 class="page-title">Create Tournament</h1>
+        <button class="btn-back" @click="$router.push('/tournaments')">← Huỷ</button>
+        <h1 class="page-title">Tạo giải đấu</h1>
       </div>
     </header>
 
@@ -12,19 +12,19 @@
 
       <!-- ─── Basic Info ──────────────────────────────────────────────── -->
       <section class="form-section">
-        <h2 class="section-title">Basic Information</h2>
+        <h2 class="section-title">Thông tin cơ bản</h2>
 
         <div class="form-grid">
           <div class="form-field full-width">
             <label class="form-label" for="t-name">
-              Tournament Name <span class="required">*</span>
+              Tên giải <span class="required">*</span>
             </label>
             <input
               id="t-name"
               v-model="form.name"
               class="form-input"
               type="text"
-              placeholder="e.g. Club Championship 2026"
+              placeholder="ví dụ Giải vô địch CLB 2026"
               autocomplete="off"
               required
             />
@@ -32,29 +32,29 @@
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="t-format">Format <span class="required">*</span></label>
+            <label class="form-label" for="t-format">Thể thức <span class="required">*</span></label>
             <select id="t-format" v-model="form.format" class="form-input" required>
-              <option value="strokePlay">Stroke Play</option>
-              <option value="matchPlay">Match Play</option>
+              <option value="strokePlay">Đấu gậy</option>
+              <option value="matchPlay">Đấu đối kháng</option>
               <option value="stableford">Stableford</option>
             </select>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="t-course">Course ID <span class="required">*</span></label>
+            <label class="form-label" for="t-course">Mã sân <span class="required">*</span></label>
             <input
               id="t-course"
               v-model.number="form.courseId"
               class="form-input"
               type="number"
-              placeholder="e.g. 1"
+              placeholder="ví dụ 1"
               required
             />
             <span v-if="errors.courseId" class="field-error">{{ errors.courseId }}</span>
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="t-max">Max Players</label>
+            <label class="form-label" for="t-max">Số golfer tối đa</label>
             <input
               id="t-max"
               v-model.number="form.maxPlayers"
@@ -62,12 +62,12 @@
               type="number"
               min="2"
               max="200"
-              placeholder="e.g. 40"
+              placeholder="ví dụ 40"
             />
           </div>
 
           <div class="form-field">
-            <label class="form-label" for="t-reg-deadline">Registration Deadline</label>
+            <label class="form-label" for="t-reg-deadline">Hạn đăng ký</label>
             <input
               id="t-reg-deadline"
               v-model="form.registrationDeadline"
@@ -77,13 +77,13 @@
           </div>
 
           <div class="form-field full-width">
-            <label class="form-label" for="t-desc">Description</label>
+            <label class="form-label" for="t-desc">Mô tả</label>
             <textarea
               id="t-desc"
               v-model="form.description"
               class="form-input"
               rows="3"
-              placeholder="Optional description..."
+              placeholder="Mô tả (không bắt buộc)…"
             />
           </div>
         </div>
@@ -91,10 +91,10 @@
 
       <!-- ─── Dates ─────────────────────────────────────────────────── -->
       <section class="form-section">
-        <h2 class="section-title">Tournament Dates</h2>
+        <h2 class="section-title">Thời gian giải</h2>
         <div class="form-grid">
           <div class="form-field">
-            <label class="form-label" for="t-start">Start Date <span class="required">*</span></label>
+            <label class="form-label" for="t-start">Ngày bắt đầu <span class="required">*</span></label>
             <input
               id="t-start"
               v-model="form.startDate"
@@ -105,7 +105,7 @@
             <span v-if="errors.startDate" class="field-error">{{ errors.startDate }}</span>
           </div>
           <div class="form-field">
-            <label class="form-label" for="t-end">End Date <span class="required">*</span></label>
+            <label class="form-label" for="t-end">Ngày kết thúc <span class="required">*</span></label>
             <input
               id="t-end"
               v-model="form.endDate"
@@ -120,16 +120,16 @@
 
       <!-- ─── Policy ────────────────────────────────────────────────── -->
       <section class="form-section">
-        <h2 class="section-title">Tournament Policy</h2>
+        <h2 class="section-title">Chính sách giải</h2>
         <div class="form-field">
-          <label class="form-label" for="t-policy">Policy</label>
+          <label class="form-label" for="t-policy">Chính sách</label>
           <select id="t-policy" v-model="form.tournamentPolicyId" class="form-input">
-            <option value="">— No restrictions (all features enabled) —</option>
+            <option value="">— Không giới hạn (bật toàn bộ tính năng) —</option>
             <option v-for="p in policies" :key="p.id" :value="p.id">
               {{ p.name }} (v{{ p.version }})
             </option>
           </select>
-          <p class="field-hint">Select a policy to restrict features during tournament play.</p>
+          <p class="field-hint">Chọn chính sách để hạn chế tính năng trong lúc thi đấu.</p>
         </div>
       </section>
 
@@ -141,10 +141,10 @@
       <!-- ─── Submit ────────────────────────────────────────────────── -->
       <div class="form-actions">
         <button type="button" class="btn btn-secondary" @click="$router.push('/tournaments')">
-          Cancel
+          Huỷ
         </button>
         <button type="submit" class="btn btn-primary" :disabled="submitting">
-          {{ submitting ? 'Creating…' : 'Create Tournament' }}
+          {{ submitting ? 'Đang tạo…' : 'Tạo giải đấu' }}
         </button>
       </div>
 
@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { tournamentApi } from '@/api/tournament';
 import type { TournamentCreateRequest } from '@/types/tournament';
@@ -177,22 +177,25 @@ const form = reactive<TournamentCreateRequest & { registrationDeadline?: string 
 const errors = reactive<Record<string, string>>({});
 const submitting = ref(false);
 const submitError = ref<string | null>(null);
+// No policies are loaded, because there is nothing to load them from.
+//
+// /tournament-policies serves POST, GET /{id}, PATCH /{id}, POST /{id}/lock
+// and GET /{id}/changes — there is no list endpoint, so this dropdown cannot
+// be populated. It used to hold an empty try/catch with a comment saying a
+// real app would have one, which rendered a select containing only the
+// "no restrictions" option and no way to tell whether that was the truth or a
+// failed request.
+//
+// The picker now says so. Restore the list when the endpoint exists.
 const policies = ref<TournamentPolicyResponse[]>([]);
-
-onMounted(async () => {
-  try {
-    // Load policies for selection — use the existing policy API
-    // In a real app, there would be a list endpoint
-  } catch (_) {}
-});
 
 function validate(): boolean {
   Object.keys(errors).forEach(k => delete errors[k]);
 
-  if (!form.name.trim()) errors.name = 'Tournament name is required';
-  if (!form.courseId || form.courseId <= 0) errors.courseId = 'Valid course ID is required';
-  if (!form.startDate) errors.startDate = 'Start date is required';
-  if (!form.endDate) errors.endDate = 'End date is required';
+  if (!form.name.trim()) errors.name = 'Phải nhập tên giải đấu';
+  if (!form.courseId || form.courseId <= 0) errors.courseId = 'Phải nhập mã sân hợp lệ';
+  if (!form.startDate) errors.startDate = 'Phải nhập ngày bắt đầu';
+  if (!form.endDate) errors.endDate = 'Phải nhập ngày kết thúc';
 
   return Object.keys(errors).length === 0;
 }
@@ -222,7 +225,7 @@ async function handleSubmit() {
     router.push(`/tournament/${created.id}`);
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    submitError.value = apiErr?.message ?? 'Failed to create tournament';
+    submitError.value = apiErr?.message ?? 'Không tạo được giải đấu';
   } finally {
     submitting.value = false;
   }

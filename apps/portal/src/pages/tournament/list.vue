@@ -3,26 +3,26 @@
 
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">Tournaments</h1>
-        <p class="page-subtitle">Configure and manage tournament events.</p>
+        <h1 class="page-title">Giải đấu</h1>
+        <p class="page-subtitle">Cấu hình và quản lý các giải đấu.</p>
       </div>
       <button class="btn btn-primary" @click="$router.push('/tournament/create')">
-        + New Tournament
+        + Tạo giải đấu
       </button>
     </header>
 
     <!-- ─── Filters ──────────────────────────────────────────────────────── -->
     <div class="filters-bar">
-      <select v-model="statusFilter" class="filter-select" aria-label="Filter by status">
-        <option value="">All Statuses</option>
-        <option value="DRAFT">Draft</option>
-        <option value="REGISTRATION_OPEN">Registration Open</option>
-        <option value="IN_PROGRESS">In Progress</option>
-        <option value="COMPLETED">Completed</option>
-        <option value="CANCELLED">Cancelled</option>
+      <select v-model="statusFilter" class="filter-select" aria-label="Lọc theo trạng thái">
+        <option value="">Tất cả trạng thái</option>
+        <option value="DRAFT">Bản nháp</option>
+        <option value="REGISTRATION_OPEN">Đang mở đăng ký</option>
+        <option value="IN_PROGRESS">Đang diễn ra</option>
+        <option value="COMPLETED">Đã kết thúc</option>
+        <option value="CANCELLED">Đã huỷ</option>
       </select>
       <button class="btn btn-secondary" @click="loadTournaments" :disabled="loading">
-        Refresh
+        Tải lại
       </button>
     </div>
 
@@ -35,18 +35,18 @@
     <div v-else-if="error" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ error }}</span>
-      <button class="btn btn-secondary" @click="loadTournaments">Retry</button>
+      <button class="btn btn-secondary" @click="loadTournaments">Thử lại</button>
     </div>
 
     <!-- ─── Empty ───────────────────────────────────────────────────────── -->
     <div v-else-if="tournaments.length === 0" class="empty-state">
       <span class="empty-icon">🏌️</span>
-      <p class="empty-title">No tournaments found.</p>
+      <p class="empty-title">Không có giải đấu nào.</p>
       <p class="empty-subtitle">
-        {{ statusFilter ? 'No tournaments match the selected filter.' : 'Create your first tournament to get started.' }}
+        {{ statusFilter ? 'Không có giải nào khớp bộ lọc đã chọn.' : 'Tạo giải đầu tiên để bắt đầu.' }}
       </p>
       <button v-if="!statusFilter" class="btn btn-primary" @click="$router.push('/tournament/create')">
-        Create Tournament
+        Tạo giải đấu
       </button>
     </div>
 
@@ -71,6 +71,15 @@
             <span class="meta-sep">·</span>
             <span class="meta-item">{{ formatDate(t.startDate) }}</span>
           </div>
+          <!-- The day-of screen, one click from the list rather than two:
+               on the day this is the only page anyone opens. -->
+          <button
+            type="button"
+            class="run-outing"
+            @click.stop="$router.push(`/tournament/${t.id}/outing`)"
+          >
+            Nhập điểm &amp; kết quả →
+          </button>
         </div>
 
         <div v-if="t.courseName" class="card-course">
@@ -79,10 +88,10 @@
 
         <div class="card-footer">
           <span v-if="t.maxPlayers" class="footer-stat">
-            👥 {{ t.maxPlayers }} max players
+            👥 Tối đa {{ t.maxPlayers }} golfer
           </span>
           <span v-if="t.registrationDeadline" class="footer-stat">
-            📅 Reg. deadline: {{ formatDate(t.registrationDeadline) }}
+            📅 Hạn đăng ký: {{ formatDate(t.registrationDeadline) }}
           </span>
         </div>
       </div>
@@ -93,6 +102,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
+import { formatDay } from '@/lib/datetime';
 import { tournamentApi } from '@/api/tournament';
 import type { TournamentSummary } from '@/types/tournament';
 
@@ -114,7 +124,7 @@ async function loadTournaments() {
     });
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to load tournaments';
+    error.value = apiErr?.message ?? 'Không tải được danh sách giải đấu';
   } finally {
     loading.value = false;
   }
@@ -122,11 +132,11 @@ async function loadTournaments() {
 
 function statusLabel(status: string): string {
   const labels: Record<string, string> = {
-    DRAFT: 'Draft',
-    REGISTRATION_OPEN: 'Reg. Open',
-    IN_PROGRESS: 'In Progress',
-    COMPLETED: 'Completed',
-    CANCELLED: 'Cancelled',
+    DRAFT: 'Bản nháp',
+    REGISTRATION_OPEN: 'Đang mở đăng ký',
+    IN_PROGRESS: 'Đang diễn ra',
+    COMPLETED: 'Đã kết thúc',
+    CANCELLED: 'Đã huỷ',
   };
   return labels[status] ?? status;
 }
@@ -152,13 +162,28 @@ function formatLabel(format: string): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString();
+  return formatDay(iso);
 }
 
 onMounted(() => loadTournaments());
 </script>
 
 <style scoped>
+.run-outing {
+  margin-top: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--primary, #f66018);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--primary, #f66018);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.run-outing:hover {
+  background: rgba(246, 96, 24, 0.12);
+}
+
 .tournament-list-page {
   font-family: system-ui, -apple-system, sans-serif;
   padding: 1.5rem;

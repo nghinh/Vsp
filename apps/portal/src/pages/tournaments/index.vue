@@ -3,28 +3,28 @@
 
     <header class="page-header">
       <div class="header-content">
-        <h1 class="page-title">Tournament Policies</h1>
-        <p class="page-subtitle">Create and manage tournament mode feature restrictions.</p>
+        <h1 class="page-title">Chính sách giải đấu</h1>
+        <p class="page-subtitle">Tạo và quản lý các hạn chế tính năng khi thi đấu.</p>
       </div>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
-        {{ showCreateForm ? 'Cancel' : '+ New Policy' }}
+        {{ showCreateForm ? 'Huỷ' : '+ Tạo thể lệ' }}
       </button>
     </header>
 
     <!-- ─── Create form ─────────────────────────────────────────────────────── -->
     <div v-if="showCreateForm" class="create-form-panel">
-      <h2 class="form-title">Create Tournament Policy</h2>
+      <h2 class="form-title">Tạo chính sách giải</h2>
 
       <div class="form-grid">
         <!-- Name -->
         <div class="form-field">
-          <label class="form-label" for="policy-name">Policy Name <span class="required">*</span></label>
+          <label class="form-label" for="policy-name">Tên chính sách <span class="required">*</span></label>
           <input
             id="policy-name"
             v-model="createForm.name"
             class="form-input"
             type="text"
-            placeholder="e.g. Official Tournament 2026"
+            placeholder="ví dụ Giải chính thức 2026"
             autocomplete="off"
           />
           <span v-if="validationErrors.name" class="field-error">{{ validationErrors.name }}</span>
@@ -32,20 +32,20 @@
 
         <!-- Description -->
         <div class="form-field full-width">
-          <label class="form-label" for="policy-desc">Description</label>
+          <label class="form-label" for="policy-desc">Mô tả</label>
           <textarea
             id="policy-desc"
             v-model="createForm.description"
             class="form-input"
             rows="2"
-            placeholder="Optional description of when to use this policy…"
+            placeholder="Mô tả khi nào dùng chính sách này (không bắt buộc)…"
           />
         </div>
       </div>
 
       <!-- Feature toggles -->
       <fieldset class="feature-group">
-        <legend class="feature-group-title">Feature Flags</legend>
+        <legend class="feature-group-title">Tính năng bật/tắt</legend>
 
         <div class="toggle-grid">
           <div v-for="flag in featureFlags" :key="flag.key" class="toggle-row">
@@ -75,7 +75,7 @@
           :disabled="creating"
           @click="handleCreate"
         >
-          {{ creating ? 'Creating…' : 'Create Policy' }}
+          {{ creating ? 'Đang tạo…' : 'Tạo thể lệ' }}
         </button>
       </div>
     </div>
@@ -89,15 +89,15 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadPolicies">Retry</button>
+      <button class="btn btn-secondary" @click="loadPolicies">Thử lại</button>
     </div>
 
     <!-- ─── Empty ─────────────────────────────────────────────────────────────── -->
     <div v-else-if="policies.length === 0 && !showCreateForm" class="empty-state">
       <span class="empty-icon">🏌️</span>
-      <p class="empty-title">No tournament policies yet.</p>
-      <p class="empty-subtitle">Create your first policy to start restricting features in tournament mode.</p>
-      <button class="btn btn-primary" @click="showCreateForm = true">Create First Policy</button>
+      <p class="empty-title">Chưa có chính sách nào.</p>
+      <p class="empty-subtitle">Tạo thể lệ đầu tiên để bắt đầu giới hạn tính năng ở chế độ giải đấu.</p>
+      <button class="btn btn-primary" @click="showCreateForm = true">Tạo chính sách đầu tiên</button>
     </div>
 
     <!-- ─── Policy list ──────────────────────────────────────────────────────── -->
@@ -112,8 +112,8 @@
         <!-- Lock badge -->
         <div class="policy-header">
           <span class="policy-name">{{ policy.name }}</span>
-          <span v-if="policy.isLocked" class="lock-badge" title="Policy is locked — cannot be edited">
-            🔒 Locked
+          <span v-if="policy.isLocked" class="lock-badge" title="Chính sách đã khoá — không sửa được">
+            🔒 Đã khoá
           </span>
         </div>
 
@@ -136,7 +136,7 @@
         <!-- Meta row -->
         <div class="policy-meta">
           <span class="meta-item">v{{ policy.version }}</span>
-          <span class="meta-item">Created {{ formatInstant(policy.createdAt) }}</span>
+          <span class="meta-item">Tạo lúc {{ formatInstant(policy.createdAt) }}</span>
         </div>
       </div>
     </div>
@@ -152,6 +152,7 @@ import type {
   TournamentPolicyCreateRequest,
 } from '@/types/tournament-policy';
 import { tournamentPolicyApi } from '@/api/tournament-policy';
+import { formatDay as formatInstant } from '@/lib/datetime';
 
 const router = useRouter();
 
@@ -182,22 +183,22 @@ const createForm = reactive<TournamentPolicyCreateRequest>({
 });
 
 const featureFlags: Array<{ key: keyof TournamentPolicyCreateRequest; label: string; description: string }> = [
-  { key: 'windAdjustmentEnabled', label: 'Wind Adjustment', description: 'Allow wind adjustment on shots' },
-  { key: 'playsLikeEnabled', label: 'Plays-Like Distances', description: 'Show plays-like distances from tee' },
-  { key: 'elevationEnabled', label: 'Elevation Data', description: 'Display elevation information' },
-  { key: 'clubRecommendationEnabled', label: 'Club Recommendation', description: 'Show AI club suggestions' },
-  { key: 'contoursEnabled', label: 'Green Contours', description: 'Display putting green contours' },
-  { key: 'puttingHelpEnabled', label: 'Putting Help', description: 'Show putting assistance overlays' },
-  { key: 'aiFeaturesEnabled', label: 'AI Features', description: 'Enable Smart Target and AI features' },
+  { key: 'windAdjustmentEnabled', label: 'Hiệu chỉnh gió', description: 'Cho phép hiệu chỉnh gió cho cú đánh' },
+  { key: 'playsLikeEnabled', label: 'Cự ly quy đổi', description: 'Hiện cự ly quy đổi từ tee' },
+  { key: 'elevationEnabled', label: 'Dữ liệu độ cao', description: 'Hiện thông tin độ cao' },
+  { key: 'clubRecommendationEnabled', label: 'Gợi ý gậy', description: 'Hiện gợi ý gậy bằng AI' },
+  { key: 'contoursEnabled', label: 'Đường đồng mức green', description: 'Hiện đường đồng mức green' },
+  { key: 'puttingHelpEnabled', label: 'Hỗ trợ putt', description: 'Hiện lớp hỗ trợ putt' },
+  { key: 'aiFeaturesEnabled', label: 'Tính năng AI', description: 'Bật Smart Target và các tính năng AI' },
 ];
 
 const flagLabels: Record<string, string> = {
   windAdjustmentEnabled: 'Wind',
   playsLikeEnabled: 'Plays-Like',
   elevationEnabled: 'Elevation',
-  clubRecommendationEnabled: 'Club Rec',
+  clubRecommendationEnabled: 'Gợi ý gậy',
   contoursEnabled: 'Contours',
-  puttingHelpEnabled: 'Putting Help',
+  puttingHelpEnabled: 'Hỗ trợ putt',
   aiFeaturesEnabled: 'AI',
 };
 
@@ -227,10 +228,13 @@ async function loadPolicies() {
   loading.value = true;
   fetchError.value = null;
   try {
-    // Fetch all policies — the API currently has no list endpoint;
-    // in a real implementation this would be a paginated list.
-    // For MVP, we navigate to the policy page directly after creation.
-    policies.value = [];
+    // This used to assign an empty array with a comment saying the API had no
+    // list endpoint. It does now — and until it did, an operator who created a
+    // policy came back to a page insisting none existed.
+    policies.value = await tournamentPolicyApi.listPolicies(props.authToken);
+  } catch (e: unknown) {
+    const err = e as { message?: string };
+    fetchError.value = err?.message ?? 'Không tải được danh sách chính sách';
   } finally {
     loading.value = false;
   }
@@ -252,7 +256,7 @@ async function handleCreate() {
     router.push(`/tournaments/${policy.id}`);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
-    createError.value = apiErr?.message ?? 'Failed to create policy';
+    createError.value = apiErr?.message ?? 'Không tạo được thể lệ';
   } finally {
     creating.value = false;
   }
@@ -262,9 +266,6 @@ function navigateToPolicy(id: string) {
   router.push(`/tournaments/${id}`);
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleDateString();
-}
 
 const props = defineProps<{
   authToken: string;

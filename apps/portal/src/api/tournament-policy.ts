@@ -1,8 +1,11 @@
+import { API_BASE } from './base';
+
 /**
  * API client for Tournament Policy endpoints.
  * Per Story 7.4 Slice E + Slice G.
  *
  * Endpoints:
+ *   GET    /tournament-policies              — list policies
  *   POST   /tournament-policies              — create policy
  *   GET    /tournament-policies/{id}         — get policy
  *   PATCH  /tournament-policies/{id}         — update policy (locked policies require TD role)
@@ -18,7 +21,7 @@ import type {
   ApiError,
 } from '@/types/tournament-policy';
 
-const BASE = import.meta.env.VITE_API_BASE_URL ?? 'https://api.vsp.local';
+const BASE = API_BASE;
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
@@ -33,6 +36,14 @@ async function handleResponse<T>(res: Response): Promise<T> {
 
 export class TournamentPolicyApi {
   constructor(private baseUrl: string = BASE) {}
+
+  /** Every policy, newest first. */
+  async listPolicies(token: string): Promise<TournamentPolicyResponse[]> {
+    const res = await fetch(`${this.baseUrl}/tournament-policies`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return handleResponse<TournamentPolicyResponse[]>(res);
+  }
 
   /**
    * Create a new tournament policy.

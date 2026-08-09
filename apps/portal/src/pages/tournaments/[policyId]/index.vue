@@ -4,16 +4,16 @@
     <!-- ─── Header ──────────────────────────────────────────────────────────── -->
     <header class="page-header">
       <div class="header-left">
-        <button class="back-btn" @click="router.push('/tournaments')" aria-label="Back to policies">
-          ← Back
+        <button class="back-btn" @click="router.push('/tournaments')" aria-label="Về danh sách chính sách">
+          ← Quay lại
         </button>
         <div>
-          <h1 class="page-title">{{ policy ? policy.name : 'Loading…' }}</h1>
+          <h1 class="page-title">{{ policy ? policy.name : 'Đang tải…' }}</h1>
           <div v-if="policy" class="header-badges">
             <span v-if="policy.isLocked" class="lock-badge">
-              🔒 Locked — requires Tournament Director to edit
+              🔒 Đã khoá — cần Tournament Director mới sửa được
             </span>
-            <span v-else class="unlocked-badge">🔓 Unlocked</span>
+            <span v-else class="unlocked-badge">🔓 Đã mở khoá</span>
           </div>
         </div>
       </div>
@@ -24,7 +24,7 @@
           :disabled="locking"
           @click="handleLock"
         >
-          {{ locking ? 'Locking…' : '🔒 Lock Policy' }}
+          {{ locking ? 'Đang khoá…' : '🔒 Khoá thể lệ' }}
         </button>
       </div>
     </header>
@@ -38,7 +38,7 @@
     <div v-else-if="fetchError" class="error-state" role="alert">
       <span class="error-icon">⚠</span>
       <span>{{ fetchError }}</span>
-      <button class="btn btn-secondary" @click="loadPolicy">Retry</button>
+      <button class="btn btn-secondary" @click="loadPolicy">Thử lại</button>
     </div>
 
     <!-- ─── Policy editor ───────────────────────────────────────────────────── -->
@@ -46,28 +46,28 @@
 
       <!-- Locked notice -->
       <div v-if="policy.isLocked" class="locked-notice" role="alert">
-        <span>🔒 This policy is locked. Feature flags cannot be changed until it is unlocked by a Tournament Director.</span>
+        <span>🔒 Thể lệ này đang khoá. Không đổi được cờ tính năng cho tới khi một Tournament Director mở khoá.</span>
       </div>
 
       <!-- Save error -->
       <div v-if="saveError" class="save-error" role="alert">
         <span>⚠ {{ saveError }}</span>
-        <button @click="saveError = null">Dismiss</button>
+        <button @click="saveError = null">Bỏ qua</button>
       </div>
 
       <!-- Policy metadata -->
       <div class="meta-row">
         <span class="meta-item">v{{ policy.version }}</span>
         <span class="meta-sep">·</span>
-        <span class="meta-item">Created {{ formatInstant(policy.createdAt) }}</span>
+        <span class="meta-item">Tạo lúc {{ formatInstant(policy.createdAt) }}</span>
         <span class="meta-sep">·</span>
-        <span class="meta-item">Created by account #{{ policy.createdBy }}</span>
+        <span class="meta-item">Tạo bởi tài khoản #{{ policy.createdBy }}</span>
       </div>
 
       <!-- Name / description -->
       <div class="form-section">
         <div class="form-field">
-          <label class="form-label" for="policy-name">Policy Name</label>
+          <label class="form-label" for="policy-name">Tên chính sách</label>
           <input
             id="policy-name"
             v-model="editForm.name"
@@ -77,7 +77,7 @@
           />
         </div>
         <div class="form-field">
-          <label class="form-label" for="policy-desc">Description</label>
+          <label class="form-label" for="policy-desc">Mô tả</label>
           <textarea
             id="policy-desc"
             v-model="editForm.description"
@@ -90,7 +90,7 @@
 
       <!-- Feature flags editor -->
       <fieldset class="feature-group" :disabled="policy.isLocked">
-        <legend class="feature-group-title">Feature Flags</legend>
+        <legend class="feature-group-title">Tính năng bật/tắt</legend>
 
         <div class="toggle-grid">
           <div v-for="flag in featureFlags" :key="flag.key" class="toggle-row">
@@ -120,21 +120,21 @@
           :disabled="saving || !hasChanges"
           @click="handleSave"
         >
-          {{ saving ? 'Saving…' : 'Save Changes' }}
+          {{ saving ? 'Đang lưu…' : 'Lưu thay đổi' }}
         </button>
         <span class="change-count" v-if="changeCount > 0">
-          {{ changeCount }} change{{ changeCount !== 1 ? 's' : '' }} pending
+          {{ changeCount }} thay đổi đang chờ
         </span>
       </div>
 
       <!-- ─── Audit timeline ─────────────────────────────────────────────────── -->
       <div class="audit-section">
-        <h2 class="audit-title">Change History</h2>
+        <h2 class="audit-title">Lịch sử thay đổi</h2>
 
-        <div v-if="auditLoading" class="audit-loading">Loading history…</div>
-        <div v-else-if="auditError" class="audit-error">Failed to load history: {{ auditError }}</div>
+        <div v-if="auditLoading" class="audit-loading">Đang tải lịch sử…</div>
+        <div v-else-if="auditError" class="audit-error">Không tải được lịch sử: {{ auditError }}</div>
         <div v-else-if="auditLog.length === 0" class="audit-empty">
-          No changes recorded yet.
+          Chưa ghi nhận thay đổi nào.
         </div>
         <div v-else class="audit-timeline" role="list">
           <div
@@ -144,15 +144,15 @@
             role="listitem"
           >
             <div class="audit-entry-header">
-              <span class="audit-actor">Account #{{ entry.changedBy }}</span>
+              <span class="audit-actor">Tài khoản #{{ entry.changedBy }}</span>
               <span class="audit-time">{{ formatInstant(entry.changedAt) }}</span>
             </div>
-            <div v-if="entry.reason" class="audit-reason">Reason: {{ entry.reason }}</div>
+            <div v-if="entry.reason" class="audit-reason">Lý do: {{ entry.reason }}</div>
 
             <!-- Before / After diff -->
             <div class="audit-diff">
               <div class="diff-col diff-before">
-                <span class="diff-label">Before</span>
+                <span class="diff-label">Trước</span>
                 <div v-if="entry.beforeJson" class="diff-flags">
                   <span
                     v-for="flag in parseFlags(entry.beforeJson)"
@@ -161,11 +161,11 @@
                     :class="flag.value ? 'chip-on' : 'chip-off'"
                   >{{ flag.label }}: {{ flag.value ? 'ON' : 'OFF' }}</span>
                 </div>
-                <span v-else class="diff-none">(created)</span>
+                <span v-else class="diff-none">(mới tạo)</span>
               </div>
               <div class="diff-arrow">→</div>
               <div class="diff-col diff-after">
-                <span class="diff-label">After</span>
+                <span class="diff-label">Sau</span>
                 <div v-if="entry.afterJson" class="diff-flags">
                   <span
                     v-for="flag in parseFlags(entry.afterJson)"
@@ -174,7 +174,7 @@
                     :class="flag.value ? 'chip-on' : 'chip-off'"
                   >{{ flag.label }}: {{ flag.value ? 'ON' : 'OFF' }}</span>
                 </div>
-                <span v-else class="diff-none">(removed)</span>
+                <span v-else class="diff-none">(đã bỏ)</span>
               </div>
             </div>
           </div>
@@ -194,6 +194,7 @@ import type {
   TournamentPolicyChangeDto,
 } from '@/types/tournament-policy';
 import { tournamentPolicyApi } from '@/api/tournament-policy';
+import { formatInstant } from '@/lib/datetime';
 
 const props = defineProps<{
   policyId: string;
@@ -228,22 +229,22 @@ const editForm = reactive<TournamentPolicyUpdateRequest>({
 });
 
 const featureFlags: Array<{ key: keyof TournamentPolicyUpdateRequest; label: string; description: string }> = [
-  { key: 'windAdjustmentEnabled', label: 'Wind Adjustment', description: 'Allow wind adjustment on shots' },
-  { key: 'playsLikeEnabled', label: 'Plays-Like Distances', description: 'Show plays-like distances from tee' },
-  { key: 'elevationEnabled', label: 'Elevation Data', description: 'Display elevation information' },
-  { key: 'clubRecommendationEnabled', label: 'Club Recommendation', description: 'Show AI club suggestions' },
-  { key: 'contoursEnabled', label: 'Green Contours', description: 'Display putting green contours' },
-  { key: 'puttingHelpEnabled', label: 'Putting Help', description: 'Show putting assistance overlays' },
-  { key: 'aiFeaturesEnabled', label: 'AI Features', description: 'Enable Smart Target and AI features' },
+  { key: 'windAdjustmentEnabled', label: 'Hiệu chỉnh gió', description: 'Cho phép hiệu chỉnh gió cho cú đánh' },
+  { key: 'playsLikeEnabled', label: 'Cự ly quy đổi', description: 'Hiện cự ly quy đổi từ tee' },
+  { key: 'elevationEnabled', label: 'Dữ liệu độ cao', description: 'Hiện thông tin độ cao' },
+  { key: 'clubRecommendationEnabled', label: 'Gợi ý gậy', description: 'Hiện gợi ý gậy bằng AI' },
+  { key: 'contoursEnabled', label: 'Đường đồng mức green', description: 'Hiện đường đồng mức green' },
+  { key: 'puttingHelpEnabled', label: 'Hỗ trợ putt', description: 'Hiện lớp hỗ trợ putt' },
+  { key: 'aiFeaturesEnabled', label: 'Tính năng AI', description: 'Bật Smart Target và các tính năng AI' },
 ];
 
 const flagLabels: Record<string, string> = {
   windAdjustmentEnabled: 'Wind',
   playsLikeEnabled: 'Plays-Like',
   elevationEnabled: 'Elevation',
-  clubRecommendationEnabled: 'Club Rec',
+  clubRecommendationEnabled: 'Gợi ý gậy',
   contoursEnabled: 'Contours',
-  puttingHelpEnabled: 'Putting Help',
+  puttingHelpEnabled: 'Hỗ trợ putt',
   aiFeaturesEnabled: 'AI',
 };
 
@@ -292,7 +293,7 @@ async function loadPolicy() {
     policy.value = await tournamentPolicyApi.getPolicy(props.policyId, props.authToken);
     if (policy.value) populateEditForm(policy.value);
   } catch (err: unknown) {
-    fetchError.value = (err as { message?: string })?.message ?? 'Failed to load policy';
+    fetchError.value = (err as { message?: string })?.message ?? 'Không tải được thể lệ';
   } finally {
     loading.value = false;
   }
@@ -304,7 +305,7 @@ async function loadAuditLog() {
   try {
     auditLog.value = await tournamentPolicyApi.getPolicyChanges(props.policyId, props.authToken);
   } catch (err: unknown) {
-    auditError.value = (err as { message?: string })?.message ?? 'Failed to load audit log';
+    auditError.value = (err as { message?: string })?.message ?? 'Không tải được nhật ký kiểm toán';
   } finally {
     auditLoading.value = false;
   }
@@ -319,7 +320,7 @@ async function handleSave() {
     populateEditForm(updated);
     await loadAuditLog(); // refresh timeline
   } catch (err: unknown) {
-    saveError.value = (err as { message?: string })?.message ?? 'Failed to save changes';
+    saveError.value = (err as { message?: string })?.message ?? 'Không lưu được thay đổi';
   } finally {
     saving.value = false;
   }
@@ -352,9 +353,6 @@ function parseFlags(json: string): FlagEntry[] {
   }
 }
 
-function formatInstant(iso: string): string {
-  return new Date(iso).toLocaleString();
-}
 
 onMounted(() => {
   loadPolicy();

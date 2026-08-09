@@ -3,11 +3,11 @@
 
     <header class="page-header">
       <div class="header-left">
-        <button class="btn-back" @click="$router.push('/tournaments')" aria-label="Back to tournaments">
-          ← Back
+        <button class="btn-back" @click="$router.push('/tournaments')" aria-label="Về danh sách giải">
+          ← Quay lại
         </button>
         <div class="header-content">
-          <h1 class="page-title">{{ tournament?.name ?? 'Tournament' }}</h1>
+          <h1 class="page-title">{{ tournament?.name ?? 'Giải đấu' }}</h1>
           <p class="page-subtitle">
             <span class="status-badge" :class="statusClass(tournament?.status)">
               {{ statusLabel(tournament?.status) }}
@@ -25,7 +25,7 @@
           class="btn btn-secondary"
           @click="toggleEdit"
         >
-          Edit
+          Sửa
         </button>
         <button
           v-if="tournament?.status === 'DRAFT'"
@@ -33,7 +33,7 @@
           @click="handleOpenRegistration"
           :disabled="actionLoading"
         >
-          Open Registration
+          Mở đăng ký
         </button>
         <button
           v-if="tournament?.status === 'REGISTRATION_OPEN'"
@@ -41,7 +41,7 @@
           @click="handleStartTournament"
           :disabled="actionLoading"
         >
-          Start Tournament
+          Bắt đầu giải
         </button>
         <button
           v-if="tournament?.status === 'IN_PROGRESS'"
@@ -49,7 +49,7 @@
           @click="handleCompleteTournament"
           :disabled="actionLoading || !allFlightsConfirmed"
         >
-          Complete Tournament
+          Kết thúc giải
         </button>
       </div>
     </header>
@@ -72,32 +72,32 @@
 
     <!-- ─── Edit form (overlay, independent of tab chain) ───────────────── -->
     <div v-if="showEditForm && canEdit && !loading && !error" class="edit-form">
-      <h3 class="card-title">Edit Tournament</h3>
+      <h3 class="card-title">Sửa giải đấu</h3>
       <div class="edit-grid">
         <div class="form-field">
-          <label class="form-label">Name</label>
+          <label class="form-label">Tên</label>
           <input v-model="editForm.name" class="form-input" type="text" />
         </div>
         <div class="form-field">
-          <label class="form-label">Format</label>
+          <label class="form-label">Thể thức</label>
           <select v-model="editForm.format" class="form-input">
-            <option value="strokePlay">Stroke Play</option>
-            <option value="matchPlay">Match Play</option>
+            <option value="strokePlay">Đấu gậy</option>
+            <option value="matchPlay">Đấu đối kháng</option>
             <option value="stableford">Stableford</option>
           </select>
         </div>
         <div class="form-field">
-          <label class="form-label">Max Players</label>
+          <label class="form-label">Số golfer tối đa</label>
           <input v-model.number="editForm.maxPlayers" class="form-input" type="number" min="2" />
         </div>
         <div class="form-field full-width">
-          <label class="form-label">Description</label>
+          <label class="form-label">Mô tả</label>
           <textarea v-model="editForm.description" class="form-input" rows="2" />
         </div>
       </div>
       <div class="edit-actions">
-        <button class="btn btn-secondary" @click="showEditForm = false">Cancel</button>
-        <button class="btn btn-primary" :disabled="actionLoading" @click="handleSaveEdit">Save</button>
+        <button class="btn btn-secondary" @click="showEditForm = false">Huỷ</button>
+        <button class="btn btn-primary" :disabled="actionLoading" @click="handleSaveEdit">Lưu</button>
       </div>
     </div>
 
@@ -107,45 +107,45 @@
     </div>
     <div v-else-if="error" class="error-state" role="alert">
       <span>{{ error }}</span>
-      <button class="btn btn-secondary" @click="loadTournament">Retry</button>
+      <button class="btn btn-secondary" @click="loadTournament">Thử lại</button>
     </div>
 
     <!-- ─── Tab: Overview ─────────────────────────────────────────────── -->
     <div v-else-if="activeTab === 'overview'" class="tab-panel">
       <div class="overview-grid">
         <div class="info-card">
-          <h3 class="card-title">Tournament Info</h3>
+          <h3 class="card-title">Thông tin giải</h3>
           <dl class="info-list">
-            <dt>Format</dt><dd>{{ formatLabel(tournament?.format) }}</dd>
-            <dt>Start Date</dt><dd>{{ formatDate(tournament?.startDate) }}</dd>
-            <dt>End Date</dt><dd>{{ formatDate(tournament?.endDate) }}</dd>
-            <dt>Max Players</dt><dd>{{ tournament?.maxPlayers ?? 'Unlimited' }}</dd>
-            <dt>Reg. Deadline</dt><dd>{{ formatDate(tournament?.registrationDeadline) }}</dd>
+            <dt>Thể thức</dt><dd>{{ formatLabel(tournament?.format) }}</dd>
+            <dt>Ngày bắt đầu</dt><dd>{{ formatDate(tournament?.startDate) }}</dd>
+            <dt>Ngày kết thúc</dt><dd>{{ formatDate(tournament?.endDate) }}</dd>
+            <dt>Số golfer tối đa</dt><dd>{{ tournament?.maxPlayers ?? 'Không giới hạn' }}</dd>
+            <dt>Hạn đăng ký</dt><dd>{{ formatDate(tournament?.registrationDeadline) }}</dd>
           </dl>
         </div>
 
         <div class="info-card">
-          <h3 class="card-title">Registration</h3>
+          <h3 class="card-title">Đăng ký</h3>
           <dl class="info-list">
-            <dt>Registered</dt><dd>{{ players.length }} players</dd>
-            <dt v-if="tournament?.maxPlayers">Available Slots</dt>
+            <dt>Đã đăng ký</dt><dd>{{ players.length }} golfer</dd>
+            <dt v-if="tournament?.maxPlayers">Chỗ còn lại</dt>
             <dd v-if="tournament?.maxPlayers">
-              {{ (tournament.maxPlayers - players.length) }} remaining
+              còn {{ (tournament.maxPlayers - players.length) }} suất
             </dd>
           </dl>
         </div>
 
         <div class="info-card">
-          <h3 class="card-title">Flights</h3>
+          <h3 class="card-title">Flight</h3>
           <dl class="info-list">
-            <dt>Total Flights</dt><dd>{{ flights.length }}</dd>
-            <dt>Confirmed</dt><dd>{{ confirmedFlightsCount }} / {{ flights.length }}</dd>
+            <dt>Tổng số flight</dt><dd>{{ flights.length }}</dd>
+            <dt>Đã chốt</dt><dd>{{ confirmedFlightsCount }} / {{ flights.length }}</dd>
           </dl>
         </div>
       </div>
 
       <div v-if="tournament?.description" class="description-block">
-        <h3 class="card-title">Description</h3>
+        <h3 class="card-title">Mô tả</h3>
         <p class="description-text">{{ tournament.description }}</p>
       </div>
     </div>
@@ -154,25 +154,25 @@
     <div v-else-if="activeTab === 'players'" class="tab-panel">
       <div class="section-actions">
         <button class="btn btn-primary" @click="showAddPlayer = !showAddPlayer">
-          + Add Player
+          + Thêm người chơi
         </button>
         <button class="btn btn-secondary" @click="showImportForm = !showImportForm">
-          Bulk Import
+          Nhập hàng loạt
         </button>
       </div>
 
       <!-- Add player form -->
       <div v-if="showAddPlayer" class="inline-form">
-        <input v-model="newPlayerId" type="number" placeholder="Player ID" class="form-input" />
+        <input v-model="newPlayerId" type="number" placeholder="Mã golfer" class="form-input" />
         <input v-model="newPlayerHandicap" type="number" step="0.1" placeholder="Handicap" class="form-input" />
-        <button class="btn btn-primary" @click="handleAddPlayer" :disabled="addLoading">Add</button>
-        <button class="btn btn-secondary" @click="showAddPlayer = false">Cancel</button>
+        <button class="btn btn-primary" @click="handleAddPlayer" :disabled="addLoading">Thêm</button>
+        <button class="btn btn-secondary" @click="showAddPlayer = false">Huỷ</button>
       </div>
 
       <!-- Bulk import form -->
       <div v-if="showImportForm" class="import-form">
         <label class="form-label">
-          Paste one player per line as <code>playerId,handicap</code> (handicap optional)
+          Dán mỗi dòng một golfer theo dạng <code>playerId,handicap</code> (handicap không bắt buộc)
         </label>
         <textarea
           v-model="importText"
@@ -183,24 +183,24 @@
         <span v-if="importError" class="field-error">{{ importError }}</span>
         <div class="import-actions">
           <button class="btn btn-primary" :disabled="importLoading" @click="handleBulkImport">
-            {{ importLoading ? 'Importing…' : 'Import Players' }}
+            {{ importLoading ? 'Đang nhập…' : 'Nhập danh sách người chơi' }}
           </button>
-          <button class="btn btn-secondary" @click="showImportForm = false">Cancel</button>
+          <button class="btn btn-secondary" @click="showImportForm = false">Huỷ</button>
         </div>
       </div>
 
       <div v-if="players.length === 0" class="empty-state">
-        <p>No players registered yet.</p>
+        <p>Chưa có golfer nào đăng ký.</p>
       </div>
       <div v-else class="data-table">
         <table>
           <thead>
             <tr>
-              <th>Player ID</th>
+              <th>Mã golfer</th>
               <th>Handicap</th>
               <th>Flight</th>
-              <th>Status</th>
-              <th>Actions</th>
+              <th>Trạng thái</th>
+              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -215,7 +215,7 @@
                   class="btn-link"
                   @click="handleWithdrawPlayer(p.playerId)"
                 >
-                  Withdraw
+                  Rút tên
                 </button>
               </td>
             </tr>
@@ -227,11 +227,11 @@
     <!-- ─── Tab: Flights ──────────────────────────────────────────────── -->
     <div v-else-if="activeTab === 'flights'" class="tab-panel">
       <div class="section-actions">
-        <button class="btn btn-primary" @click="handleCreateFlight">+ Create Flight</button>
+        <button class="btn btn-primary" @click="handleCreateFlight">+ Tạo flight</button>
       </div>
 
       <div v-if="flights.length === 0" class="empty-state">
-        <p>No flights created yet.</p>
+        <p>Chưa tạo flight nào.</p>
       </div>
       <div v-else class="flights-grid">
         <div v-for="flight in flights" :key="flight.id" class="flight-card">
@@ -241,16 +241,16 @@
           </div>
           <div class="flight-players">
             <span v-for="pid in flight.playerIds" :key="pid" class="player-chip">
-              Player {{ pid }}
+              Người chơi {{ pid }}
             </span>
-            <span v-if="flight.playerIds.length === 0" class="no-players">No players assigned</span>
+            <span v-if="flight.playerIds.length === 0" class="no-players">Chưa gán golfer</span>
           </div>
           <div class="flight-tee-time">
-            <span v-if="flight.teeTimeId">Tee Time: {{ flight.teeTimeId }}</span>
-            <span v-else class="unassigned">Not scheduled</span>
+            <span v-if="flight.teeTimeId">Giờ phát bóng: {{ flight.teeTimeId }}</span>
+            <span v-else class="unassigned">Chưa xếp giờ</span>
           </div>
           <div v-if="flight.confirmedAt" class="confirmed-badge">
-            ✓ Confirmed
+            ✓ Đã xác nhận
           </div>
         </div>
       </div>
@@ -260,23 +260,23 @@
     <div v-else-if="activeTab === 'tee-times'" class="tab-panel">
       <div class="section-actions">
         <button class="btn btn-primary" @click="showCreateTeeTime = !showCreateTeeTime">
-          + Add Tee Time Slot
+          + Thêm giờ phát bóng
         </button>
       </div>
 
       <div v-if="showCreateTeeTime" class="inline-form">
         <input v-model="newTeeTime" type="datetime-local" class="form-input" />
-        <button class="btn btn-primary" @click="handleCreateTeeTime">Add</button>
-        <button class="btn btn-secondary" @click="showCreateTeeTime = false">Cancel</button>
+        <button class="btn btn-primary" @click="handleCreateTeeTime">Thêm</button>
+        <button class="btn btn-secondary" @click="showCreateTeeTime = false">Huỷ</button>
       </div>
 
       <div v-if="teeTimes.length === 0" class="empty-state">
-        <p>No tee times scheduled.</p>
+        <p>Chưa xếp giờ tee.</p>
       </div>
       <div v-else class="data-table">
         <table>
           <thead>
-            <tr><th>Tee Time</th><th>Starting Tee</th><th>Flight</th><th>Assign</th></tr>
+            <tr><th>Giờ tee</th><th>Tee xuất phát</th><th>Flight</th><th>Gán</th></tr>
           </thead>
           <tbody>
             <tr v-for="tt in teeTimes" :key="tt.id">
@@ -285,12 +285,12 @@
               <td>{{ tt.flightId ? `Flight ${flightNumber(tt.flightId)}` : '—' }}</td>
               <td>
                 <select v-if="!tt.flightId" @change="e => handleAssignFlight(tt.id, (e.target as HTMLSelectElement).value)">
-                  <option value="">Select flight...</option>
+                  <option value="">Chọn flight…</option>
                   <option v-for="f in unassignedFlights" :key="f.id" :value="f.id">
                     Flight {{ f.flightNumber }}
                   </option>
                 </select>
-                <span v-else>Assigned</span>
+                <span v-else>Đã gán</span>
               </td>
             </tr>
           </tbody>
@@ -302,25 +302,25 @@
     <div v-else-if="activeTab === 'leaderboard'" class="tab-panel">
       <div class="section-actions">
         <span class="leaderboard-version">v{{ leaderboardVersion }}</span>
-        <button class="btn btn-secondary" @click="loadLeaderboard">Refresh</button>
+        <button class="btn btn-secondary" @click="loadLeaderboard">Tải lại</button>
       </div>
 
       <div v-if="leaderboardLoading" class="loading-state">
         <div class="skeleton-block" />
       </div>
       <div v-else-if="leaderboardEntries.length === 0" class="empty-state">
-        <p>No leaderboard data available.</p>
+        <p>Chưa có dữ liệu bảng xếp hạng.</p>
       </div>
       <div v-else class="leaderboard-table">
         <table>
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Player</th>
+              <th>Hạng</th>
+              <th>Golfer</th>
               <th>Flight</th>
-              <th>Score</th>
-              <th>To Par</th>
-              <th>Status</th>
+              <th>Điểm</th>
+              <th>So par</th>
+              <th>Trạng thái</th>
             </tr>
           </thead>
           <tbody>
@@ -329,7 +329,7 @@
                 <span class="rank-cell">{{ entry.rank }}</span>
                 <span v-if="entry.tied" class="tied-badge">T</span>
               </td>
-              <td>Player {{ entry.playerId }}</td>
+              <td>Người chơi {{ entry.playerId }}</td>
               <td>{{ entry.flightId ? `Flight ${flightNumber(entry.flightId)}` : '—' }}</td>
               <td>{{ entry.score ?? '—' }}</td>
               <td>{{ entry.scoreToPar != null ? (entry.scoreToPar > 0 ? '+' : '') + entry.scoreToPar : '—' }}</td>
@@ -343,11 +343,11 @@
     <!-- ─── Tab: Score Confirmation ───────────────────────────────────── -->
     <div v-else-if="activeTab === 'confirm'" class="tab-panel">
       <div class="section-actions">
-        <button class="btn btn-primary" @click="loadTournament">Refresh</button>
+        <button class="btn btn-primary" @click="loadTournament">Tải lại</button>
       </div>
 
       <div v-if="unconfirmedFlights.length === 0" class="empty-state">
-        <p>✓ All flights have been confirmed.</p>
+        <p>✓ Tất cả các flight đã được xác nhận.</p>
       </div>
       <div v-else class="confirm-list">
         <div v-for="flight in unconfirmedFlights" :key="flight.id" class="confirm-card">
@@ -357,7 +357,7 @@
           </div>
           <div class="flight-players">
             <span v-for="pid in flight.playerIds" :key="pid" class="player-chip">
-              Player {{ pid }}
+              Người chơi {{ pid }}
             </span>
           </div>
           <button
@@ -365,7 +365,7 @@
             @click="handleConfirmFlight(flight.id)"
             :disabled="confirmLoading"
           >
-            Confirm Scores
+            Chốt điểm
           </button>
         </div>
       </div>
@@ -374,16 +374,16 @@
     <!-- ─── Tab: Results ──────────────────────────────────────────────── -->
     <div v-else-if="activeTab === 'results'" class="tab-panel">
       <div v-if="tournament?.status !== 'COMPLETED'" class="info-banner">
-        Complete the tournament to generate and publish results.
+        Kết thúc giải để tạo và công bố kết quả.
       </div>
       <div v-else-if="results.length === 0" class="empty-state">
-        <p>No results published yet.</p>
-        <button class="btn btn-primary" @click="handlePublishResults">Publish Results</button>
+        <p>Chưa công bố kết quả.</p>
+        <button class="btn btn-primary" @click="handlePublishResults">Công bố kết quả</button>
       </div>
       <div v-else class="results-table">
         <table>
           <thead>
-            <tr><th>Rank</th><th>Player</th><th>Score</th><th>To Par</th><th>Tie Break</th></tr>
+            <tr><th>Hạng</th><th>Golfer</th><th>Điểm</th><th>So par</th><th>Phân định hoà</th></tr>
           </thead>
           <tbody>
             <tr v-for="r in results" :key="r.playerId">
@@ -403,6 +403,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { formatDay, formatInstant } from '@/lib/datetime';
 import { useRoute } from 'vue-router';
 import { tournamentApi } from '@/api/tournament';
 import type {
@@ -457,13 +458,13 @@ let sseSource: EventSource | null = null;
 // ─── Computed ────────────────────────────────────────────────────────────
 
 const tabs = computed(() => [
-  { id: 'overview', label: 'Overview' },
-  { id: 'players', label: 'Players', count: players.value.length },
-  { id: 'flights', label: 'Flights', count: flights.value.length },
-  { id: 'tee-times', label: 'Tee Times', count: teeTimes.value.length },
-  { id: 'leaderboard', label: 'Leaderboard' },
-  { id: 'confirm', label: 'Confirm', count: unconfirmedFlights.value.length || undefined },
-  { id: 'results', label: 'Results' },
+  { id: 'overview', label: 'Tổng quan' },
+  { id: 'players', label: 'Người chơi', count: players.value.length },
+  { id: 'flights', label: 'Flight', count: flights.value.length },
+  { id: 'tee-times', label: 'Giờ phát bóng', count: teeTimes.value.length },
+  { id: 'leaderboard', label: 'Bảng xếp hạng' },
+  { id: 'confirm', label: 'Xác nhận', count: unconfirmedFlights.value.length || undefined },
+  { id: 'results', label: 'Kết quả' },
 ]);
 
 const canEdit = computed(() =>
@@ -499,7 +500,7 @@ async function loadTournament() {
     teeTimes.value = detail.teeTimes ?? [];
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to load tournament';
+    error.value = apiErr?.message ?? 'Không tải được giải đấu';
   } finally {
     loading.value = false;
   }
@@ -511,8 +512,10 @@ async function loadLeaderboard() {
     const lb = await tournamentApi.getLeaderboard(props.authToken, tournamentId);
     leaderboardEntries.value = lb.entries ?? [];
     leaderboardVersion.value = lb.version;
-  } catch (_) {
-    // Silently fail — leaderboard is non-critical
+  } catch {
+    // Deliberately quiet: the leaderboard refreshes on a timer and over SSE,
+    // so one failed poll is followed by another in seconds. An error banner
+    // here would flicker on every dropped request.
   } finally {
     leaderboardLoading.value = false;
   }
@@ -521,8 +524,9 @@ async function loadLeaderboard() {
 async function loadResults() {
   try {
     results.value = await tournamentApi.getResults(props.authToken, tournamentId);
-  } catch (_) {
-    // Results may not be published yet — leave empty
+  } catch {
+    // Deliberately quiet: results 404 until they are published, which is the
+    // normal state for most of a tournament, not a failure to report.
   }
 }
 
@@ -539,7 +543,10 @@ function connectLeaderboardSSE() {
         leaderboardEntries.value = data.entries;
         leaderboardVersion.value = data.version ?? leaderboardVersion.value + 1;
       }
-    } catch (_) {}
+    } catch {
+      // A malformed SSE frame is not worth a banner; the next frame replaces
+      // whatever this one would have said.
+    }
   };
   sseSource.onerror = () => {
     sseSource?.close();
@@ -584,7 +591,7 @@ async function handleOpenRegistration() {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to open registration';
+    error.value = apiErr?.message ?? 'Không mở được đăng ký';
   } finally {
     actionLoading.value = false;
   }
@@ -597,7 +604,7 @@ async function handleStartTournament() {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to start tournament';
+    error.value = apiErr?.message ?? 'Không bắt đầu được giải';
   } finally {
     actionLoading.value = false;
   }
@@ -605,7 +612,7 @@ async function handleStartTournament() {
 
 async function handleCompleteTournament() {
   if (!allFlightsConfirmed.value) {
-    error.value = 'All flights must be confirmed before completing';
+    error.value = 'Phải xác nhận hết các nhóm bay trước khi kết thúc';
     return;
   }
   actionLoading.value = true;
@@ -614,7 +621,7 @@ async function handleCompleteTournament() {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to complete tournament';
+    error.value = apiErr?.message ?? 'Không kết thúc được giải';
   } finally {
     actionLoading.value = false;
   }
@@ -632,8 +639,9 @@ async function handleAddPlayer() {
     newPlayerHandicap.value = '';
     showAddPlayer.value = false;
     await loadTournament();
-  } catch (_) {
-    // Silently fail
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không thêm được người chơi';
   } finally {
     addLoading.value = false;
   }
@@ -660,7 +668,7 @@ async function handleSaveEdit() {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to update tournament';
+    error.value = apiErr?.message ?? 'Không cập nhật được giải';
   } finally {
     actionLoading.value = false;
   }
@@ -683,7 +691,7 @@ async function handleBulkImport() {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    importError.value = apiErr?.message ?? 'Failed to import players';
+    importError.value = apiErr?.message ?? 'Không nhập được danh sách người chơi';
   } finally {
     importLoading.value = false;
   }
@@ -693,7 +701,10 @@ async function handleWithdrawPlayer(playerId: number) {
   try {
     await tournamentApi.withdrawPlayer(props.authToken, tournamentId, playerId);
     await loadTournament();
-  } catch (_) {}
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không rút được người chơi';
+  }
 }
 
 async function handleCreateFlight() {
@@ -704,7 +715,10 @@ async function handleCreateFlight() {
       startingTee: 'front',
     });
     await loadTournament();
-  } catch (_) {}
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không tạo được flight';
+  }
 }
 
 async function handleCreateTeeTime() {
@@ -718,7 +732,10 @@ async function handleCreateTeeTime() {
     newTeeTime.value = '';
     showCreateTeeTime.value = false;
     await loadTournament();
-  } catch (_) {}
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không tạo được giờ phát bóng';
+  }
 }
 
 async function handleAssignFlight(teeTimeId: string, flightId: string) {
@@ -726,7 +743,10 @@ async function handleAssignFlight(teeTimeId: string, flightId: string) {
   try {
     await tournamentApi.updateTeeTime(props.authToken, tournamentId, teeTimeId, { flightId });
     await loadTournament();
-  } catch (_) {}
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string };
+    error.value = apiErr?.message ?? 'Không gán được flight vào giờ phát bóng';
+  }
 }
 
 async function handleConfirmFlight(flightId: string) {
@@ -736,7 +756,7 @@ async function handleConfirmFlight(flightId: string) {
     await loadTournament();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to confirm flight scores';
+    error.value = apiErr?.message ?? 'Không xác nhận được điểm của flight';
   } finally {
     confirmLoading.value = false;
   }
@@ -748,7 +768,7 @@ async function handlePublishResults() {
     await loadResults();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
-    error.value = apiErr?.message ?? 'Failed to publish results';
+    error.value = apiErr?.message ?? 'Không công bố được kết quả';
   }
 }
 
@@ -760,11 +780,11 @@ function flightNumber(flightId: string): number | string {
 
 function statusLabel(status?: string): string {
   const labels: Record<string, string> = {
-    DRAFT: 'Draft',
-    REGISTRATION_OPEN: 'Reg. Open',
-    IN_PROGRESS: 'In Progress',
-    COMPLETED: 'Completed',
-    CANCELLED: 'Cancelled',
+    DRAFT: 'Bản nháp',
+    REGISTRATION_OPEN: 'Đang mở đăng ký',
+    IN_PROGRESS: 'Đang diễn ra',
+    COMPLETED: 'Đã kết thúc',
+    CANCELLED: 'Đã huỷ',
   };
   return labels[status ?? ''] ?? status ?? '';
 }
@@ -791,12 +811,12 @@ function formatLabel(format?: string): string {
 
 function formatDate(iso?: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleDateString();
+  return formatDay(iso);
 }
 
 function formatDateTime(iso?: string): string {
   if (!iso) return '—';
-  return new Date(iso).toLocaleString();
+  return formatInstant(iso);
 }
 
 function playerStatusClass(status?: string): string {
