@@ -37,6 +37,7 @@ import '../../../domain/services/lie_detector.dart';
 import '../../../features/bag/data/bag_dto.dart';
 import '../../../features/bag/data/bag_repository.dart';
 import '../../../features/bag/data/bag_service.dart';
+import '../../../features/round/presentation/round_summary_screen.dart';
 import '../../../infrastructure/persistence/sync_queue_repository.dart';
 import '../../sheets/shot_entry_sheet.dart';
 import '../../widgets/score/hole_navigation_bar.dart';
@@ -66,6 +67,39 @@ class ScorecardScreen extends StatelessWidget {
   /// Tournament mode flag.
   final bool isTournamentMode;
 
+  /// Called with the hole number whenever the golfer moves to another hole.
+  ///
+  /// Finishing a hole happens here, so this screen is what knows which hole a
+  /// round is on. The round listens so the map, the satellite basemap and the
+  /// measuring tool follow the golfer instead of staying on the hole the round
+  /// opened at. Optional — the scorecard is still usable on its own.
+  final ValueChanged<int>? onHoleChanged;
+
+  /// Hole the scorecard opens on, or null for the first hole of the round.
+  ///
+  /// A resumed round knows which hole the golfer stopped on; without this the
+  /// scorecard opened on the 1st regardless.
+  final int? initialHoleNumber;
+
+  /// Fires when something outside the scorecard asks to end the round.
+  ///
+  /// The More tab has an "End round" tile, and the round-ending flow lives
+  /// here because this is where the scores, the server call and the guard
+  /// release are. Rather than duplicate it, the tile pokes this and the
+  /// confirmation opens exactly as if the golfer had used the app-bar action.
+  final Listenable? finishRequests;
+
+  /// Hole the round says the golfer is on, when something outside the
+  /// scorecard can move it.
+  ///
+  /// Automatic hole detection is that something: once the round follows the
+  /// golfer across the course, the hole can change while they are looking at
+  /// this screen. Changing this input moves the scorecard; the scorecard
+  /// moving reports back through [onHoleChanged]. The two cannot fight —
+  /// each side only acts when the value actually differs from what it already
+  /// has.
+  final int? holeNumber;
+
   const ScorecardScreen({
     super.key,
     required this.flightId,
@@ -74,6 +108,10 @@ class ScorecardScreen extends StatelessWidget {
     required this.playerNames,
     this.holePars = const {},
     this.isTournamentMode = false,
+    this.onHoleChanged,
+    this.initialHoleNumber,
+    this.holeNumber,
+    this.finishRequests,
   });
 
   @override
@@ -87,14 +125,124 @@ class ScorecardScreen extends StatelessWidget {
         holePars: holePars,
         isTournamentMode: isTournamentMode,
         scoreRepository: ScoreRepositoryImpl(),
+        // indexOf answers -1 for a hole this round does not play, which the
+        // cubit reads as "out of range" and falls back to the first hole.
+        initialHoleIndex: initialHoleNumber == null
+            ? 0
+            : holeIds.indexOf('$initialHoleNumber'),
       )..loadScores(),
-      child: const _ScorecardScreenContent(),
+      child: _ScorecardHoleSync(
+        holeNumber: holeNumber,
+        child: _FinishRequestHandler(
+          requests: finishRequests,
+          child: _ScorecardScreenContent(onHoleChanged: onHoleChanged),
+        ),
+      ),
     );
   }
 }
 
+/// Moves the scorecard when the round moves the golfer.
+///
+/// Only a change in [holeNumber] moves it, so a golfer paging through holes on
+/// this screen is not yanked back by the next rebuild — and detection moving
+/// the round is not undone by the scorecard reporting where it already was.
+class _ScorecardHoleSync extends StatefulWidget {
+  final int? holeNumber;
+  final Widget child;
+
+  const _ScorecardHoleSync({required this.holeNumber, required this.child});
+
+  @override
+  State<_ScorecardHoleSync> createState() => _ScorecardHoleSyncState();
+}
+
+class _ScorecardHoleSyncState extends State<_ScorecardHoleSync> {
+  @override
+  void didUpdateWidget(_ScorecardHoleSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final hole = widget.holeNumber;
+    if (hole == null || hole == oldWidget.holeNumber) return;
+
+    final cubit = context.read<ScorecardCubit>();
+    final index = cubit.state.holeIds.indexOf('$hole');
+    // indexOf answers -1 for a hole this round does not play.
+    if (index >= 0 && index != cubit.state.currentHoleIndex) {
+      cubit.navigateToHoleIndex(index);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+/// Opens the finish-round confirmation when something outside asks for it.
+///
+/// Sits inside the cubit's provider so it can read the scores the dialog
+/// counts. Guards against a second request while a dialog is already open —
+/// two confirmations stacked on one round would each try to complete it.
+class _FinishRequestHandler extends StatefulWidget {
+  final Listenable? requests;
+  final Widget child;
+
+  const _FinishRequestHandler({required this.requests, required this.child});
+
+  @override
+  State<_FinishRequestHandler> createState() => _FinishRequestHandlerState();
+}
+
+class _FinishRequestHandlerState extends State<_FinishRequestHandler> {
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.requests?.addListener(_onRequested);
+  }
+
+  @override
+  void didUpdateWidget(_FinishRequestHandler oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.requests != widget.requests) {
+      oldWidget.requests?.removeListener(_onRequested);
+      widget.requests?.addListener(_onRequested);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.requests?.removeListener(_onRequested);
+    super.dispose();
+  }
+
+  Future<void> _onRequested() async {
+    if (_busy || !mounted) return;
+    _busy = true;
+    try {
+      await finishRound(context, context.read<ScorecardCubit>().state);
+    } finally {
+      if (mounted) _busy = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _ScorecardScreenContent extends StatelessWidget {
-  const _ScorecardScreenContent();
+  final ValueChanged<int>? onHoleChanged;
+
+  const _ScorecardScreenContent({this.onHoleChanged});
+
+  /// The hole number the scorecard is on.
+  ///
+  /// Read from the hole id, not from `currentHoleNumber` — that is the index
+  /// plus one, which is the hole's position in the round rather than its
+  /// number, and on a back-nine round they are nine apart.
+  static int? _holeNumberOf(ScorecardScreenState state) {
+    final id = state.currentHoleId;
+    return id == null ? null : int.tryParse(id);
+  }
 
   // ─── Shot tracking (Story 10.3) ────────────────────────────────────────────
   //
@@ -135,8 +283,11 @@ class _ScorecardScreenContent extends StatelessWidget {
     var shotNumber = 1;
     try {
       final existing = await shotRepository.getShotsForRound(roundId);
-      shotNumber = existing
-              .where((s) => s.holeNumber == holeNumber && s.playerId == playerId)
+      shotNumber =
+          existing
+              .where(
+                (s) => s.holeNumber == holeNumber && s.playerId == playerId,
+              )
               .length +
           1;
     } catch (_) {
@@ -201,119 +352,24 @@ class _ScorecardScreenContent extends StatelessWidget {
     );
   }
 
-  /// Finishes the round: confirms, completes it server-side, closes it locally
-  /// and returns to the home screen.
-  ///
-  /// The scorecard replaces the setup screen in the stack, so without this the
-  /// golfer has no way out of an in-progress round and the active-round guard
-  /// stays locked on the course forever.
-  Future<void> _finishRound(
-    BuildContext context,
-    ScorecardScreenState state,
-  ) async {
-    final roundId = state.flightId;
-    // scores is playerId → holeId → Score; a hole counts as scored once any
-    // player in the flight has a gross score on it.
-    final scoredHoles = state.holeIds
-        .where((id) => state.scores.values.any((byHole) => byHole[id] != null))
-        .length;
-    final remaining = state.holeIds.length - scoredHoles;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(AppLocalizations.of(context).scorecardFinishTitle),
-        content: Text(
-          remaining > 0
-              ? AppLocalizations.of(context).scorecardFinishUnscored(
-                  '$remaining',
-                  '${state.holeIds.length}',
-                )
-              : AppLocalizations.of(context).scorecardFinishAllScored('${state.holeIds.length}'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text(AppLocalizations.of(context).scorecardKeepPlaying),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(AppLocalizations.of(context).scorecardFinish),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !context.mounted) return;
-
-    final navigator = Navigator.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-
-    final syncStore = RoundSyncStore();
-    var syncedToServer = false;
-    try {
-      await RoundApi().completeRound(
-        roundId: roundId,
-        idempotencyKey: syncStore.generateIdempotencyKey(
-          roundId: roundId,
-          operation: RoundSyncOperation.endRound,
-        ),
-      );
-      syncedToServer = true;
-    } catch (_) {
-      // Offline or server error — queue the completion so it can be retried.
-      try {
-        await syncStore.enqueueRoundOp(
-          idempotencyKey: syncStore.generateIdempotencyKey(
-            roundId: roundId,
-            operation: RoundSyncOperation.endRound,
-          ),
-          operation: RoundSyncOperation.endRound,
-          roundId: roundId,
-          payload: jsonEncode({
-            'endedAt': DateTime.now().toUtc().toIso8601String(),
-          }),
-        );
-      } catch (_) {
-        // Queue unavailable — the local round below still records the finish.
-      }
-    }
-
-    // Close the round locally and release the active-round guard so a new
-    // round can be started and package updates can resume.
-    try {
-      final roundRepo = RoundRepository();
-      final round = await roundRepo.getRound(roundId);
-      if (round != null) {
-        final now = DateTime.now();
-        await roundRepo.updateRound(
-          round.copyWith(
-            status: RoundStatus.completed,
-            endedAt: now,
-            updatedAt: now,
-          ),
-        );
-        await ActiveRoundGuard(
-          manifestRepo: PackageManifestRepository(),
-        ).recordRoundEnd(round.courseId);
-      }
-    } catch (_) {
-      // Local store unavailable — the server-side completion still stands.
-    }
-
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          syncedToServer
-              ? AppLocalizations.of(context).scorecardFinished
-              : AppLocalizations.of(context).scorecardFinishedOffline,
-        ),
-      ),
-    );
-    navigator.popUntil((route) => route.isFirst);
-  }
-
   @override
   Widget build(BuildContext context) {
+    final content = _buildContent(context);
+    final report = onHoleChanged;
+    if (report == null) return content;
+
+    return BlocListener<ScorecardCubit, ScorecardScreenState>(
+      listenWhen: (previous, current) =>
+          previous.currentHoleIndex != current.currentHoleIndex,
+      listener: (context, state) {
+        final hole = _holeNumberOf(state);
+        if (hole != null) report(hole);
+      },
+      child: content,
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
     return BlocBuilder<ScorecardCubit, ScorecardScreenState>(
       builder: (context, state) {
         if (state.isLoading) {
@@ -342,7 +398,7 @@ class _ScorecardScreenContent extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.flag_outlined),
                 tooltip: AppLocalizations.of(context).scorecardFinishRound,
-                onPressed: () => _finishRound(context, state),
+                onPressed: () => finishRound(context, state),
               ),
             ],
           ),
@@ -366,7 +422,11 @@ class _ScorecardScreenContent extends StatelessWidget {
               // Score entry card
               Expanded(
                 child: state.currentHoleId == null
-                    ? Center(child: Text(AppLocalizations.of(context).scorecardNoHoleData))
+                    ? Center(
+                        child: Text(
+                          AppLocalizations.of(context).scorecardNoHoleData,
+                        ),
+                      )
                     : _ScorecardBody(state: state),
               ),
 
@@ -779,7 +839,141 @@ class _ErrorBanner extends StatelessWidget {
         Icons.error_outline,
         color: theme.colorScheme.onErrorContainer,
       ),
-      actions: [TextButton(onPressed: onDismiss, child: Text(AppLocalizations.of(context).commonDismiss))],
+      actions: [
+        TextButton(
+          onPressed: onDismiss,
+          child: Text(AppLocalizations.of(context).commonDismiss),
+        ),
+      ],
     );
   }
+}
+
+/// Finishes the round: confirms, completes it server-side, closes it locally
+/// and returns to the home screen.
+///
+/// Top-level because two places end a round — the scorecard's own app-bar
+/// action, and the More tab's "End round" tile. The tile used to switch to
+/// this tab and tell the golfer to finish here, which is an app answering a
+/// direct instruction with directions.
+///
+/// The scorecard replaces the setup screen in the stack, so without this the
+/// golfer has no way out of an in-progress round and the active-round guard
+/// stays locked on the course forever.
+Future<void> finishRound(
+  BuildContext context,
+  ScorecardScreenState state,
+) async {
+  final roundId = state.flightId;
+  // scores is playerId → holeId → Score; a hole counts as scored once any
+  // player in the flight has a gross score on it.
+  final scoredHoles = state.holeIds
+      .where((id) => state.scores.values.any((byHole) => byHole[id] != null))
+      .length;
+  final remaining = state.holeIds.length - scoredHoles;
+
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: Text(AppLocalizations.of(context).scorecardFinishTitle),
+      content: Text(
+        remaining > 0
+            ? AppLocalizations.of(
+                context,
+              ).scorecardFinishUnscored('$remaining', '${state.holeIds.length}')
+            : AppLocalizations.of(
+                context,
+              ).scorecardFinishAllScored('${state.holeIds.length}'),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: Text(AppLocalizations.of(context).scorecardKeepPlaying),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: Text(AppLocalizations.of(context).scorecardFinish),
+        ),
+      ],
+    ),
+  );
+  if (confirmed != true || !context.mounted) return;
+
+  final navigator = Navigator.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+
+  final syncStore = RoundSyncStore();
+  var syncedToServer = false;
+  try {
+    await RoundApi().completeRound(
+      roundId: roundId,
+      idempotencyKey: syncStore.generateIdempotencyKey(
+        roundId: roundId,
+        operation: RoundSyncOperation.endRound,
+      ),
+    );
+    syncedToServer = true;
+  } catch (_) {
+    // Offline or server error — queue the completion so it can be retried.
+    try {
+      await syncStore.enqueueRoundOp(
+        idempotencyKey: syncStore.generateIdempotencyKey(
+          roundId: roundId,
+          operation: RoundSyncOperation.endRound,
+        ),
+        operation: RoundSyncOperation.endRound,
+        roundId: roundId,
+        payload: jsonEncode({
+          'endedAt': DateTime.now().toUtc().toIso8601String(),
+        }),
+      );
+    } catch (_) {
+      // Queue unavailable — the local round below still records the finish.
+    }
+  }
+
+  // Close the round locally and release the active-round guard so a new
+  // round can be started and package updates can resume.
+  try {
+    final roundRepo = RoundRepository();
+    final round = await roundRepo.getRound(roundId);
+    if (round != null) {
+      final now = DateTime.now();
+      await roundRepo.updateRound(
+        round.copyWith(
+          status: RoundStatus.completed,
+          endedAt: now,
+          updatedAt: now,
+        ),
+      );
+      await ActiveRoundGuard(
+        manifestRepo: PackageManifestRepository(),
+      ).recordRoundEnd(round.courseId);
+    }
+  } catch (_) {
+    // Local store unavailable — the server-side completion still stands.
+  }
+
+  messenger.showSnackBar(
+    SnackBar(
+      content: Text(
+        syncedToServer
+            ? AppLocalizations.of(context).scorecardFinished
+            : AppLocalizations.of(context).scorecardFinishedOffline,
+      ),
+    ),
+  );
+
+  // Eighteen holes used to end here, on `popUntil((route) => route.isFirst)`
+  // — a toast and the home screen. The summary, its bloc and four widgets
+  // were all built and reachable from nothing.
+  //
+  // pushAndRemoveUntil, not push: the round behind this is over, and a back
+  // gesture must not walk into a finished round's scorecard. Back from the
+  // summary lands on home, which is where popUntil used to dump the golfer
+  // immediately.
+  navigator.pushAndRemoveUntil(
+    MaterialPageRoute(builder: (_) => RoundSummaryScreen(roundId: roundId)),
+    (route) => route.isFirst,
+  );
 }

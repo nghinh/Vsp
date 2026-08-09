@@ -24,11 +24,7 @@ class ImageryAttribution extends StatelessWidget {
   /// Opens a URL. Injectable so tests do not hit the platform channel.
   final Future<bool> Function(Uri url)? onOpenUrl;
 
-  const ImageryAttribution({
-    super.key,
-    required this.config,
-    this.onOpenUrl,
-  });
+  const ImageryAttribution({super.key, required this.config, this.onOpenUrl});
 
   /// Where "© Mapbox" links, per Mapbox's attribution guidance.
   static final Uri mapboxUrl = Uri.parse('https://www.mapbox.com/about/maps/');

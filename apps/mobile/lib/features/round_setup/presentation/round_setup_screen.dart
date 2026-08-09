@@ -8,13 +8,16 @@
 //
 // Story 5.1 — Slice B: Round Setup UI Screen
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'package:vsp_mobile/core/l10n/relative_time.dart';
+import 'package:vsp_mobile/core/text/vietnamese_search.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
-import '../../../domain/models/course_search_result.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/nearby_course_service.dart';
@@ -34,6 +37,38 @@ import 'widgets/package_status_banner.dart';
 import 'widgets/player_card.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/domain/models/course_selection.dart';
+
+/// Which configured round the setup form should draw, for any bloc state.
+///
+/// Split out and made visible to tests because the expression it replaces was
+/// `(state as RoundSetupError).lastState!` — an assumption that anything not
+/// Ready was an Error. Three states are neither, two of them are the ones that
+/// mean the round started, and the cast threw on every successful start:
+///
+///     type 'RoundSetupRoundStarted' is not a subtype of type
+///     'RoundSetupError' in type cast
+///
+/// One frame of a full red error page, then the push to the round screen
+/// replaced it. On the happy path. Nothing caught it because this screen had
+/// no tests at all.
+///
+/// Returns null only when no form has ever been built, which the caller draws
+/// as a spinner.
+@visibleForTesting
+RoundSetupReady? resolveFormState(
+  RoundSetupState state,
+  RoundSetupReady? lastReady,
+) {
+  return switch (state) {
+    final RoundSetupReady ready => ready,
+    RoundSetupError(lastState: final last?) => last,
+    // RoundSetupRoundStarted, RoundSetupLocalRoundSaved, an Error with no
+    // previous form, Initial, Loading: keep showing what the golfer was just
+    // looking at while the navigation runs.
+    _ => lastReady,
+  };
+}
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -119,8 +154,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
     // Real par per hole from the course detail; par 4 only where the course
     // data does not cover that hole.
     final pars = {
-      for (final id in holeIds)
-        id: ready.holePars[int.tryParse(id) ?? 0] ?? 4,
+      for (final id in holeIds) id: ready.holePars[int.tryParse(id) ?? 0] ?? 4,
     };
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
@@ -173,7 +207,11 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
         if (state is RoundSetupRoundStarted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).roundSetupRoundStartedAt(state.courseName)),
+              content: Text(
+                AppLocalizations.of(
+                  context,
+                ).roundSetupRoundStartedAt(state.courseName),
+              ),
               backgroundColor: colorScheme.primary,
               duration: const Duration(seconds: 1),
             ),
@@ -182,7 +220,9 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
         } else if (state is RoundSetupLocalRoundSaved) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).roundSetupRoundSavedLocally),
+              content: Text(
+                AppLocalizations.of(context).roundSetupRoundSavedLocally,
+              ),
               backgroundColor: colorScheme.tertiary,
               duration: const Duration(seconds: 1),
             ),
@@ -200,14 +240,18 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
       builder: (context, state) {
         if (state is RoundSetupLoading || state is RoundSetupInitial) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).roundSetupTitle)),
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context).roundSetupTitle),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is RoundSetupError && state.lastState == null) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).roundSetupTitle)),
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context).roundSetupTitle),
+            ),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -230,9 +274,31 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
           );
         }
 
-        final readyState = state is RoundSetupReady
-            ? state
-            : (state as RoundSetupError).lastState!;
+        // Four states are handled above; three reach here. Two of those are
+        // the ones that mean success — RoundSetupRoundStarted and
+        // RoundSetupLocalRoundSaved — and the cast that used to be on this
+        // line assumed anything not Ready was an Error, so starting a round
+        // threw `type 'RoundSetupRoundStarted' is not a subtype of type
+        // 'RoundSetupError' in type cast` on the frame between the tap and the
+        // push to the round screen. The golfer saw a full red error page flash
+        // and vanish, on the happy path, every single time.
+        //
+        // The form the golfer was just looking at is the right thing to keep
+        // showing while the navigation runs, and the listener has already put
+        // it in _lastReady.
+        final readyState = resolveFormState(state, _lastReady);
+
+        if (readyState == null) {
+          // No form has ever been built — a terminal state arrived before a
+          // ready one, which should not happen. A spinner is a better answer
+          // than a crash.
+          return Scaffold(
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context).roundSetupTitle),
+            ),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
 
         return _RoundSetupScaffold(state: readyState);
       },
@@ -416,7 +482,9 @@ class _CourseSelector extends StatelessWidget {
 
     return Semantics(
       label: state.hasCourse
-          ? AppLocalizations.of(context).roundSetupCourseTapToChange(state.courseName!)
+          ? AppLocalizations.of(
+              context,
+            ).roundSetupCourseTapToChange(state.courseName!)
           : AppLocalizations.of(context).roundSetupNoCourseSelected,
       button: true,
       child: InkWell(
@@ -443,7 +511,9 @@ class _CourseSelector extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  state.hasCourse ? state.courseName! : AppLocalizations.of(context).roundSetupSelectCourse,
+                  state.hasCourse
+                      ? state.courseName!
+                      : AppLocalizations.of(context).roundSetupSelectCourse,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: state.hasCourse
                         ? colorScheme.onSurface
@@ -466,7 +536,7 @@ class _CourseSelector extends StatelessWidget {
   /// the nearby/recent lists are empty and the sheet alone would dead-end.
   Future<void> _searchForCourse(BuildContext context) async {
     final bloc = context.read<RoundSetupBloc>();
-    final picked = await Navigator.of(context).push<CourseSearchResult>(
+    final picked = await Navigator.of(context).push<CourseSelection>(
       MaterialPageRoute(
         builder: (_) => const CourseSearchScreen(selectionMode: true),
       ),
@@ -475,115 +545,252 @@ class _CourseSelector extends StatelessWidget {
     // packageId is resolved from the local manifest by the bloc — the search
     // result only tells us whether a package exists at all.
     bloc.add(
-      CourseSelected(
-        courseId: picked.courseId,
-        courseName: picked.displayName,
-      ),
+      CourseSelected(courseId: picked.courseId, courseName: picked.displayName),
     );
   }
 
   void _showCoursePicker(BuildContext context) {
+    final bloc = context.read<RoundSetupBloc>();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (ctx) => SafeArea(
+      builder: (ctx) => _CoursePickerSheet(
+        state: state,
+        onSelected: (selection) {
+          bloc.add(selection);
+          Navigator.pop(ctx);
+        },
+        onSearchAll: () {
+          Navigator.pop(ctx);
+          _searchForCourse(context);
+        },
+      ),
+    );
+  }
+}
+
+/// The course picker, with a filter over what is already on the device.
+///
+/// The sheet used to be a flat list of every nearby course with the full
+/// search screen as its last row. That is fine with three courses and useless
+/// with thirty: the golfer scrolls a list they cannot narrow, and the one
+/// control that would narrow it is below the fold. Filtering here answers the
+/// common case — "I know which course, I just have to find it in this list" —
+/// without a round trip to the search screen, which the last row still offers
+/// for everything not on the device.
+class _CoursePickerSheet extends StatefulWidget {
+  final RoundSetupReady state;
+
+  /// Applies the golfer's choice. The sheet does not know how to close itself
+  /// and select in one step; the caller owns both.
+  final ValueChanged<CourseSelected> onSelected;
+
+  /// Escape hatch to the full search, for courses this device has never seen.
+  final VoidCallback onSearchAll;
+
+  const _CoursePickerSheet({
+    required this.state,
+    required this.onSelected,
+    required this.onSearchAll,
+  });
+
+  /// Below this the list fits on screen and a search box is just another row
+  /// between the golfer and the course they can already see.
+  static const int _searchableFrom = 6;
+
+  @override
+  State<_CoursePickerSheet> createState() => _CoursePickerSheetState();
+}
+
+class _CoursePickerSheetState extends State<_CoursePickerSheet> {
+  final TextEditingController _query = TextEditingController();
+
+  @override
+  void dispose() {
+    _query.dispose();
+    super.dispose();
+  }
+
+  bool get _searchable {
+    final total =
+        widget.state.nearbyCourses.length + widget.state.recentCourses.length;
+    return total >= _CoursePickerSheet._searchableFrom;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final text = _query.text;
+
+    final nearby = widget.state.nearbyCourses
+        .where((c) => VietnameseSearch.matches(c.courseName, text))
+        .toList();
+    final recent = widget.state.recentCourses
+        .where((c) => VietnameseSearch.matches(c.courseName, text))
+        .toList();
+    final filteredOut =
+        _query.text.trim().isNotEmpty && nearby.isEmpty && recent.isEmpty;
+
+    // The keyboard is part of this sheet's layout now that it has a field in
+    // it. Left alone, the sheet stays pinned to the bottom of the window and
+    // the keyboard covers everything below the title — so typing a query hid
+    // the results the query was narrowing.
+    final media = MediaQuery.of(context);
+    final keyboard = media.viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboard),
+      child: SafeArea(
         child: ConstrainedBox(
+          // Of what is left above the keyboard, not of the whole window.
           constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(ctx).size.height * 0.75,
+            maxHeight: (media.size.height - keyboard) * 0.85,
           ),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    AppLocalizations.of(context).roundSetupSelectCourseTitle,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-              const SizedBox(height: 16),
-              if (state.nearbyCourses.isNotEmpty) ...[
-                Text(AppLocalizations.of(context).roundSetupCourses, style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 8),
-                ...state.nearbyCourses.map(
-                  (c) => ListTile(
-                    leading: const Icon(Icons.location_on),
-                    title: Text(c.courseName),
-                    subtitle: c.distanceKm != null
-                        ? Text('${c.distanceKm!.toStringAsFixed(1)} km away')
-                        : null,
-                    onTap: () {
-                      context.read<RoundSetupBloc>().add(
-                        CourseSelected(
-                          courseId: c.courseId,
-                          courseName: c.courseName,
-                          packageId: c.packageId,
-                        ),
-                      );
-                      Navigator.pop(ctx);
-                    },
-                  ),
+          // Column, not a scroll view around everything: the title, the search
+          // field and the "search all" row stay put while the list scrolls
+          // under them. A search box that scrolls off the top is a search box
+          // the golfer has to go looking for.
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Text(
+                  l10n.roundSetupSelectCourseTitle,
+                  style: theme.textTheme.titleMedium,
                 ),
-              ],
-              if (state.recentCourses.isNotEmpty) ...[
-                const SizedBox(height: 16),
-                Text(AppLocalizations.of(context).roundSetupRecent, style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(height: 8),
-                ...state.recentCourses.map(
-                  (c) => ListTile(
-                    leading: const Icon(Icons.history),
-                    title: Text(c.courseName),
-                    subtitle: Text(
-                      AppLocalizations.of(context).roundSetupLastPlayed(_formatDate(c.lastPlayedAt)),
-                    ),
-                    onTap: () {
-                      context.read<RoundSetupBloc>().add(
-                        CourseSelected(
-                          courseId: c.courseId,
-                          courseName: c.courseName,
-                          packageId: c.packageId,
-                        ),
-                      );
-                      Navigator.pop(ctx);
-                    },
-                  ),
-                ),
-              ],
-              if (state.nearbyCourses.isEmpty && state.recentCourses.isEmpty)
+              ),
+              if (_searchable)
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 24),
-                  child: Center(
-                    child: Text(
-                      AppLocalizations.of(context).roundSetupNoCoursesYet,
-                      textAlign: TextAlign.center,
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  child: TextField(
+                    controller: _query,
+                    // No autofocus: opening the keyboard would cover the list
+                    // the golfer opened the sheet to read, and most of the time
+                    // the course they want is already visible.
+                    textInputAction: TextInputAction.search,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      isDense: true,
+                      hintText: l10n.courseSearchHint,
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: text.isEmpty
+                          ? null
+                          : IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () => setState(_query.clear),
+                            ),
+                      border: const OutlineInputBorder(),
                     ),
                   ),
                 ),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (nearby.isNotEmpty) ...[
+                          Text(
+                            l10n.roundSetupCourses,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          ...nearby.map(
+                            (c) => ListTile(
+                              leading: const Icon(Icons.location_on),
+                              title: Text(c.courseName),
+                              subtitle: c.distanceKm != null
+                                  ? Text(
+                                      '${c.distanceKm!.toStringAsFixed(1)} km away',
+                                    )
+                                  : null,
+                              onTap: () => widget.onSelected(
+                                CourseSelected(
+                                  courseId: c.courseId,
+                                  courseName: c.courseName,
+                                  packageId: c.packageId,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (recent.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            l10n.roundSetupRecent,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          ...recent.map(
+                            (c) => ListTile(
+                              leading: const Icon(Icons.history),
+                              title: Text(c.courseName),
+                              subtitle: Text(
+                                l10n.roundSetupLastPlayed(
+                                  _formatDate(context, c.lastPlayedAt),
+                                ),
+                              ),
+                              onTap: () => widget.onSelected(
+                                CourseSelected(
+                                  courseId: c.courseId,
+                                  courseName: c.courseName,
+                                  packageId: c.packageId,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        // "Nothing matched what you typed" and "this device has
+                        // no courses yet" are different problems with different
+                        // answers, and telling a searching golfer they have
+                        // never played anywhere would be the wrong one.
+                        // No subtitle: the next step is the pinned row
+                        // directly below, and printing its own label above it
+                        // as advice reads as a duplicate, not a suggestion.
+                        if (filteredOut)
+                          _PickerNotice(title: l10n.courseSearchNoResults)
+                        else if (widget.state.nearbyCourses.isEmpty &&
+                            widget.state.recentCourses.isEmpty)
+                          _PickerNotice(title: l10n.roundSetupNoCoursesYet),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.search),
-                title: Text(AppLocalizations.of(context).roundSetupSearchAll),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _searchForCourse(context);
-                },
+                title: Text(l10n.roundSetupSearchAll),
+                onTap: widget.onSearchAll,
               ),
-                ],
-              ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
-    final diff = DateTime.now().difference(date);
-    if (diff.inDays == 0) return 'today';
-    if (diff.inDays == 1) return 'yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    return '${date.month}/${date.day}';
+  String _formatDate(BuildContext context, DateTime date) =>
+      RelativeTime.format(AppLocalizations.of(context), date);
+}
+
+/// Centred message where the list would be.
+class _PickerNotice extends StatelessWidget {
+  final String title;
+
+  const _PickerNotice({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 24),
+      child: Center(child: Text(title, textAlign: TextAlign.center)),
+    );
   }
 }
 
@@ -802,7 +1009,7 @@ class _BagSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Active Bag',
+          AppLocalizations.of(context).roundSetupActiveBag,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurface,
             fontWeight: FontWeight.w600,
@@ -811,9 +1018,9 @@ class _BagSection extends StatelessWidget {
         const SizedBox(height: 8),
         InkWell(
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const BagScreen()),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const BagScreen()));
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
@@ -887,13 +1094,14 @@ class _StartRoundButton extends StatelessWidget {
         !state.packageReadiness!.isReady &&
         !state.warningAcknowledged;
 
+    final l10n = AppLocalizations.of(context);
     String disabledReason = '';
     if (!state.hasCourse) {
-      disabledReason = 'Select a course first';
+      disabledReason = l10n.roundSetupSelectCourseFirst;
     } else if (state.players.isEmpty) {
-      disabledReason = 'Add at least one player';
+      disabledReason = l10n.roundSetupAddPlayer;
     } else if (needsPackageAck) {
-      disabledReason = 'Acknowledge package warning to continue';
+      disabledReason = l10n.roundSetupAcknowledgeWarning;
     }
 
     return Semantics(
@@ -924,7 +1132,7 @@ class _StartRoundButton extends StatelessWidget {
                   ),
                 )
               : Text(
-                  isEnabled ? 'Start Round' : disabledReason,
+                  isEnabled ? l10n.roundSetupStartRound : disabledReason,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),

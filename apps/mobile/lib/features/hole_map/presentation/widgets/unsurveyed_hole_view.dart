@@ -12,9 +12,13 @@
 // not. So the hole opens straight into satellite + measuring, labelled as
 // unsurveyed and golfer-measured.
 //
-// When the build has no imagery provider configured there is no honest picture
-// to draw either, and the view says that plainly rather than showing a blank
-// map the golfer would read as a blank hole.
+// When the build has no imagery provider configured there is no picture to
+// draw, but there is still a ruler: the measuring tool works off GPS and
+// geodesy, and the golfer's own position and the hole's green are drawn on the
+// plain canvas. This used to be a dead-end explanation screen instead, which —
+// once every hole in the database was relabelled unverified — became what the
+// Map tab showed every golfer on a default build. The banner says which of the
+// two they are looking at.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +31,6 @@ import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_ban
 import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
-import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Satellite basemap + measuring tool for a hole with no geometry at all.
 class UnsurveyedHoleView extends StatelessWidget {
@@ -49,10 +52,6 @@ class UnsurveyedHoleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (!config.isAvailable) {
-      return const UnsurveyedNoImageryView();
-    }
-
     return BlocProvider<MeasureCubit>(
       create: (_) => MeasureCubit(
         locationService: locationService,
@@ -67,58 +66,14 @@ class UnsurveyedHoleView extends StatelessWidget {
         context: context,
         onUnit: (measureContext, unit) =>
             measureContext.read<MeasureCubit>().setUnit(unit),
-        child: Column(
-          children: [
-            const NoGeometryBanner(),
-            Expanded(child: SatelliteMeasureView(config: config)),
-          ],
+        // The banner floats on the imagery rather than sitting in a band above
+        // it: on a hole with nothing digitised, the picture is the entire
+        // product, and a permanent strip of explanation was taking a slice out
+        // of the only thing worth looking at.
+        child: SatelliteMeasureView(
+          config: config,
+          mapOverlay: NoGeometryBanner(imageryAvailable: config.isAvailable),
         ),
-      ),
-    );
-  }
-}
-
-/// Shown when a hole is unsurveyed *and* the build has no imagery provider.
-///
-/// Both halves of the honest answer at once: we never mapped this hole, and
-/// this build cannot show you a photograph of it either.
-class UnsurveyedNoImageryView extends StatelessWidget {
-  const UnsurveyedNoImageryView({super.key});
-
-  static const Color _background = Color(0xFF0F172A);
-  static const Color _icon = Color(0xFF64748B);
-  static const Color _text = Color(0xFFF8FAFC);
-  static const Color _muted = Color(0xFF94A3B8);
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      color: _background,
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.map_outlined, size: 48, color: _icon),
-          const SizedBox(height: 12),
-          Text(
-            l10n.holeNoGeometryNoImageryTitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: _text,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            l10n.holeNoGeometryNoImageryBody,
-            textAlign: TextAlign.center,
-            style: const TextStyle(color: _muted, fontSize: 13, height: 1.4),
-          ),
-        ],
       ),
     );
   }

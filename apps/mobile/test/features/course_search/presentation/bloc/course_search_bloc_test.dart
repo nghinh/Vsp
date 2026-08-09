@@ -51,8 +51,11 @@ void main() {
       },
       act: (bloc) => bloc.add(const LoadFavorites()),
       expect: () => [
-        isA<CourseSearchFavoritesLoaded>()
-            .having((s) => s.isLoading, 'isLoading', true),
+        isA<CourseSearchFavoritesLoaded>().having(
+          (s) => s.isLoading,
+          'isLoading',
+          true,
+        ),
         isA<CourseSearchFavoritesLoaded>()
             .having((s) => s.favorites.length, 'favorites.length', 1)
             .having((s) => s.isLoading, 'isLoading', false),
@@ -68,8 +71,11 @@ void main() {
       act: (bloc) => bloc.add(const LoadFavorites()),
       expect: () => [
         isA<CourseSearchFavoritesLoaded>(),
-        isA<CourseSearchError>()
-            .having((s) => s.message, 'message', contains('Failed')),
+        isA<CourseSearchError>().having(
+          (s) => s.message,
+          'message',
+          contains('Failed'),
+        ),
       ],
     );
 
@@ -89,8 +95,11 @@ void main() {
       },
       act: (bloc) => bloc.add(const LoadRecent()),
       expect: () => [
-        isA<CourseSearchRecentLoaded>()
-            .having((s) => s.isLoading, 'isLoading', true),
+        isA<CourseSearchRecentLoaded>().having(
+          (s) => s.isLoading,
+          'isLoading',
+          true,
+        ),
         isA<CourseSearchRecentLoaded>()
             .having((s) => s.recentCourses.length, 'recentCourses.length', 1)
             .having((s) => s.isLoading, 'isLoading', false),
@@ -127,8 +136,11 @@ void main() {
       act: (bloc) => bloc.add(const ToggleFavorite(1)),
       expect: () => [
         // Optimistic removal
-        isA<CourseSearchFavoritesLoaded>()
-            .having((s) => s.favorites.length, 'favorites.length', 0),
+        isA<CourseSearchFavoritesLoaded>().having(
+          (s) => s.favorites.length,
+          'favorites.length',
+          0,
+        ),
       ],
     );
 
@@ -157,14 +169,19 @@ void main() {
         );
         return CourseSearchBloc(repository: mockRepository);
       },
-      act: (bloc) => bloc.add(const NearbyLocationUpdated(
-        latitude: 21.0285,
-        longitude: 105.8542,
-        radiusMeters: 50000,
-      )),
+      act: (bloc) => bloc.add(
+        const NearbyLocationUpdated(
+          latitude: 21.0285,
+          longitude: 105.8542,
+          radiusMeters: 50000,
+        ),
+      ),
       expect: () => [
         isA<CourseSearchLoading>().having(
-            (s) => s.activeTab, 'activeTab', SearchTab.nearby),
+          (s) => s.activeTab,
+          'activeTab',
+          SearchTab.nearby,
+        ),
         isA<CourseSearchLoaded>()
             .having((s) => s.results.length, 'results.length', 1)
             .having((s) => s.activeTab, 'activeTab', SearchTab.nearby),

@@ -9,6 +9,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:vsp_mobile/l10n/app_localizations.dart';
+
 import '../../../domain/value_objects/distance_measurement.dart';
 
 /// GPS accuracy display chip.
@@ -41,7 +43,10 @@ class GpsAccuracyChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveLevel = level ?? GpsAccuracyLevel.poor;
-    final (label, color, icon) = _buildParts(effectiveLevel);
+    final (label, color, icon) = _buildParts(
+      AppLocalizations.of(context),
+      effectiveLevel,
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -79,16 +84,19 @@ class GpsAccuracyChip extends StatelessWidget {
     );
   }
 
-  (String label, Color color, IconData icon) _buildParts(GpsAccuracyLevel lvl) {
+  (String label, Color color, IconData icon) _buildParts(
+    AppLocalizations l10n,
+    GpsAccuracyLevel lvl,
+  ) {
     switch (lvl) {
       case GpsAccuracyLevel.excellent:
-        return ('GPS Ready', _greenColor, Icons.gps_fixed);
+        return (l10n.gpsReady, _greenColor, Icons.gps_fixed);
       case GpsAccuracyLevel.good:
-        return ('GPS Good', _greenColor, Icons.gps_fixed);
+        return (l10n.gpsGood, _greenColor, Icons.gps_fixed);
       case GpsAccuracyLevel.moderate:
-        return ('GPS Fair', _amberColor, Icons.gps_not_fixed);
+        return (l10n.gpsFair, _amberColor, Icons.gps_not_fixed);
       case GpsAccuracyLevel.poor:
-        return ('GPS Poor', _redColor, Icons.gps_off);
+        return (l10n.gpsPoor, _redColor, Icons.gps_off);
     }
   }
 

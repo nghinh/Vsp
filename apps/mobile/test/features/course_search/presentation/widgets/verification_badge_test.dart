@@ -16,15 +16,12 @@ void main() {
     Widget buildBadge(VerificationStatus status, {bool compact = false}) {
       return MaterialApp(
         locale: const Locale('en'),
-      supportedLocales: kSupportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: kSupportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: VspTheme.light(),
         home: Scaffold(
           body: Center(
-            child: VerificationBadge(
-              status: status,
-              compact: compact,
-            ),
+            child: VerificationBadge(status: status, compact: compact),
           ),
         ),
       );
@@ -56,7 +53,9 @@ void main() {
     });
 
     testWidgets('compact mode renders smaller', (tester) async {
-      await tester.pumpWidget(buildBadge(VerificationStatus.verified, compact: true));
+      await tester.pumpWidget(
+        buildBadge(VerificationStatus.verified, compact: true),
+      );
       final container = tester.widget<Container>(find.byType(Container).first);
       final padding = container.padding as EdgeInsets;
       expect(padding.horizontal, lessThan(16)); // compact has smaller padding

@@ -20,6 +20,11 @@ class MeasurePoint extends Equatable {
   double get latitude => position.latitude;
   double get longitude => position.longitude;
 
+  /// Same point, somewhere else. Keeps [id], which is what keeps the point in
+  /// its place in the measured chain when a golfer drags it.
+  MeasurePoint copyWith({LatLng? position}) =>
+      MeasurePoint(id: id, position: position ?? this.position);
+
   @override
   List<Object?> get props => [id, position];
 }

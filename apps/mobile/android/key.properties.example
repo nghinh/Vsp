@@ -1,0 +1,20 @@
+# Release signing for the Android app.
+#
+# Copy to android/key.properties and fill in. That file is gitignored and must
+# stay that way — it holds the keystore password. See SECRETS_POLICY.md.
+#
+# Generate a keystore once, and keep it somewhere it cannot be lost: Play
+# identifies an app by its signing key forever, and losing it means never
+# publishing an update to that listing again.
+#
+#   keytool -genkey -v -keystore ~/vsp-release.jks \
+#     -keyalg RSA -keysize 2048 -validity 10000 -alias vsp
+#
+# Without this file a release build is left unsigned rather than signed with
+# the debug keys, so the missing keystore surfaces at build time instead of at
+# upload time.
+
+storeFile=/absolute/path/to/vsp-release.jks
+storePassword=
+keyAlias=vsp
+keyPassword=

@@ -125,6 +125,35 @@ abstract final class HoleGeometryCoverage {
     return MeasureAnchor(position: centroid, isSurveyed: false);
   }
 
+  /// Centre of everything this hole actually draws.
+  ///
+  /// The mean of every coordinate in the strategic layers — tee, fairway,
+  /// green, bunkers, water — so the camera frames the hole rather than one end
+  /// of it.
+  ///
+  /// Returns null only when the hole has no strategic geometry at all, which
+  /// is the case the satellite path handles.
+  static LatLng? holeCenter(HoleMapEntity holeMap) {
+    final points = <LatLng>[];
+    for (final type in strategicLayers) {
+      final layer = holeMap.layers[type];
+      if (layer == null) continue;
+      points.addAll(_coordinates(layer.geoJson));
+    }
+    if (points.isEmpty) return null;
+
+    var latSum = 0.0;
+    var lngSum = 0.0;
+    for (final point in points) {
+      latSum += point.latitude;
+      lngSum += point.longitude;
+    }
+    return LatLng(
+      latitude: latSum / points.length,
+      longitude: lngSum / points.length,
+    );
+  }
+
   static bool _hasCoordinates(Object? feature) {
     if (feature is! Map) return false;
     if (feature['coordinates'] != null) return true;

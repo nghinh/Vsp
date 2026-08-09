@@ -126,6 +126,23 @@ class MeasureCubit extends Cubit<MeasureState> {
     _recompute();
   }
 
+  /// Moves the point with [id] to [position].
+  ///
+  /// A tap that lands a metre off used to mean deleting the point and dropping
+  /// a new one, which loses its place in the chain: a mis-tapped second point
+  /// came back as the last, and the legs the golfer had measured re-ordered
+  /// themselves. Moving keeps the order.
+  void movePoint(String id, LatLng position) {
+    if (isClosed) return;
+    if (!state.points.any((p) => p.id == id)) return;
+    final points = [
+      for (final point in state.points)
+        if (point.id == id) point.copyWith(position: position) else point,
+    ];
+    emit(state.copyWith(points: List.unmodifiable(points)));
+    _recompute();
+  }
+
   /// Removes the point with [id].
   void removePoint(String id) {
     if (isClosed) return;

@@ -134,29 +134,76 @@ abstract final class CourseMapStyleBuilder {
       );
 
   /// Each course layer gets a fill, a line and a circle layer on the shared
-  /// source. MapLibre draws only the geometry a layer type can render, so a
-  /// polygons-only layer costs two no-ops and the map does not care whether
-  /// the package stored a green as a polygon or a landmark as a point.
+  /// source, and each is restricted to the geometry it is actually for.
+  ///
+  /// <strong>Why the geometry-type guard.</strong> The three layers used to
+  /// share one filter, on the reasoning that "MapLibre draws only the geometry
+  /// a layer type can render, so a polygons-only layer costs two no-ops". Two
+  /// of the three are no-ops — a fill over a Point draws nothing, a line over a
+  /// Point draws nothing. A **circle layer over a Polygon is not**: it draws a
+  /// circle at every vertex. So a bunker traced with twenty points came out as
+  /// twenty overlapping orange discs, a green as a cluster of green ones, and
+  /// the tee boxes as a string of white beads. The hole was rendering its own
+  /// vertices instead of its shapes, and it looked like abstract art rather
+  /// than a golf hole.
   static List<Map<String, dynamic>> _courseLayers(MapLayerType type) {
     final style = _paletteFor(type);
-    final filter = ['==', ['get', 'layerType'], type.name];
+    final ofType = ['==', ['get', 'layerType'], type.name];
+
+    List<Object> withGeometry(List<String> kinds) => [
+      'all',
+      ofType,
+      ['match', ['geometry-type'], kinds, true, false],
+    ];
+
+    /// Same, plus whether the shape itself has been confirmed.
+    ///
+    /// Provenance is per shape, not per hole. Long Thành's greens and bunkers
+    /// were confirmed by a reviewer looking at imagery; its water hazards are
+    /// 10 m Sentinel-2 pixels a script thresholded, and its fairway is a
+    /// rectangle derived from the tee–green line. All four were drawn
+    /// identically on a hole badged verified, so a golfer planning a lay-up
+    /// could not tell the bunker that is really there from the pond that might
+    /// not be. Anything unconfirmed is drawn faint and dashed — present, and
+    /// visibly not a promise.
+    List<Object> withGeometryAnd(List<String> kinds, {required bool verified}) => [
+      'all',
+      ofType,
+      ['match', ['geometry-type'], kinds, true, false],
+      // Absent reads as unverified, the same way the reader treats a package
+      // with no provenance.
+      [verified ? '==' : '!=', ['coalesce', ['get', 'verified'], false], true],
+    ];
 
     return [
       {
         'id': _fillId(type),
         'type': 'fill',
         'source': courseSourceId,
-        'filter': filter,
+        'filter': withGeometry(const ['Polygon', 'MultiPolygon']),
         'paint': {
           'fill-color': style.fill,
-          'fill-opacity': style.fillOpacity,
+          // Half strength for a shape nobody has confirmed.
+          'fill-opacity': [
+            'case',
+            ['==', ['coalesce', ['get', 'verified'], false], true],
+            style.fillOpacity,
+            style.fillOpacity * 0.45,
+          ],
         },
       },
       {
         'id': _lineId(type),
         'type': 'line',
         'source': courseSourceId,
-        'filter': filter,
+        // Polygons too: the outline is what gives a bunker or a green its edge
+        // against the fill underneath.
+        'filter': withGeometryAnd(const [
+          'LineString',
+          'MultiLineString',
+          'Polygon',
+          'MultiPolygon',
+        ], verified: true),
         'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {
           'line-color': style.line,
@@ -166,10 +213,34 @@ abstract final class CourseMapStyleBuilder {
         },
       },
       {
+        // Unconfirmed shapes get a dashed edge. `line-dasharray` cannot be
+        // driven by a property in MapLibre, so this is a second layer rather
+        // than an expression.
+        'id': '${_lineId(type)}-unverified',
+        'type': 'line',
+        'source': courseSourceId,
+        'filter': withGeometryAnd(const [
+          'LineString',
+          'MultiLineString',
+          'Polygon',
+          'MultiPolygon',
+        ], verified: false),
+        'layout': {'line-cap': 'round', 'line-join': 'round'},
+        'paint': {
+          'line-color': style.line,
+          'line-width': style.lineWidth,
+          'line-opacity': style.lineOpacity * 0.8,
+          'line-dasharray': const [2.0, 2.0],
+        },
+      },
+      {
         'id': _pointId(type),
         'type': 'circle',
         'source': courseSourceId,
-        'filter': filter,
+        // Points only. A hole carries a few real ones — the tee and green
+        // reference points the package writes — and they are worth a marker.
+        // Every polygon vertex is not.
+        'filter': withGeometry(const ['Point', 'MultiPoint']),
         'paint': {
           'circle-color': style.fill,
           'circle-radius': 5.0,

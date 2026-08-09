@@ -58,10 +58,5 @@ class HoleSummary extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    holeNumber,
-    par,
-    playingLengthMeters,
-    provenance,
-  ];
+  List<Object?> get props => [holeNumber, par, playingLengthMeters, provenance];
 }

@@ -103,7 +103,9 @@ class PrimaryDistancePanel extends StatelessWidget {
 
         // Unit toggle button — minimum 44pt touch target
         Semantics(
-          label: AppLocalizations.of(context).distanceToggleUnit(state.selectedUnit.value),
+          label: AppLocalizations.of(
+            context,
+          ).distanceToggleUnit(state.selectedUnit.value),
           button: true,
           child: GestureDetector(
             onTap: onUnitToggle,
@@ -140,45 +142,56 @@ class PrimaryDistancePanel extends StatelessWidget {
 
     // If GPS is unavailable, show last known or placeholder
     if (!state.hasGps) {
-      return _NoDataRow(message: AppLocalizations.of(context).distanceWaitingGps);
+      return _NoDataRow(
+        message: AppLocalizations.of(context).distanceWaitingGps,
+      );
     }
 
     if (state.status == DistanceStatus.noHoleGeometry) {
-      return _NoDataRow(message: AppLocalizations.of(context).distanceNoHoleData);
+      return _NoDataRow(
+        message: AppLocalizations.of(context).distanceNoHoleData,
+      );
+    }
+
+    // A distance the app does not have is shown as unknown, not as a number.
+    //
+    // All three used to fall back to `_placeholderMeasurement`, which was zero
+    // metres carrying `DistanceSource.official` — so a hole with no green
+    // geometry rendered "0 m" under an Official badge. On the one screen a
+    // golfer reads before choosing a club, that is the worst possible way to
+    // be wrong: it is not a missing answer, it is a confident false one.
+    if (front == null && center == null && back == null) {
+      return _NoDataRow(
+        message: AppLocalizations.of(context).distanceNoHoleData,
+      );
     }
 
     return Row(
       children: [
         Expanded(
-          child: DistanceValueDisplay(
-            key: const ValueKey('front'),
-            measurement:
-                front ?? _placeholderMeasurement(DistanceType.frontGreen),
+          child: _DistanceCell(
+            cellKey: const ValueKey('front'),
+            measurement: front,
             useYards: useYards,
             label: AppLocalizations.of(context).distanceFront,
-            excludeFromSemantics: false,
           ),
         ),
         _VerticalDivider(color: Theme.of(context).colorScheme.outlineVariant),
         Expanded(
-          child: DistanceValueDisplay(
-            key: const ValueKey('center'),
-            measurement:
-                center ?? _placeholderMeasurement(DistanceType.centerGreen),
+          child: _DistanceCell(
+            cellKey: const ValueKey('center'),
+            measurement: center,
             useYards: useYards,
             label: AppLocalizations.of(context).distanceCenter,
-            excludeFromSemantics: false,
           ),
         ),
         _VerticalDivider(color: Theme.of(context).colorScheme.outlineVariant),
         Expanded(
-          child: DistanceValueDisplay(
-            key: const ValueKey('back'),
-            measurement:
-                back ?? _placeholderMeasurement(DistanceType.backGreen),
+          child: _DistanceCell(
+            cellKey: const ValueKey('back'),
+            measurement: back,
             useYards: useYards,
             label: AppLocalizations.of(context).distanceBack,
-            excludeFromSemantics: false,
           ),
         ),
       ],
@@ -222,15 +235,60 @@ class PrimaryDistancePanel extends StatelessWidget {
     if (m == null) return '--';
     return m.format(useYards: useYards);
   }
+}
 
-  static DistanceMeasurement _placeholderMeasurement(DistanceType type) {
-    return DistanceMeasurement(
-      valueMeters: 0,
-      type: type,
-      source: DistanceSource.official,
-      timestamp: DateTime.now(),
-      gpsAccuracyMeters: 999,
-      confidence: 0,
+/// One of the three green distances, or an em dash where there is no distance.
+class _DistanceCell extends StatelessWidget {
+  final Key cellKey;
+  final DistanceMeasurement? measurement;
+  final bool useYards;
+  final String label;
+
+  const _DistanceCell({
+    required this.cellKey,
+    required this.measurement,
+    required this.useYards,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final value = measurement;
+    if (value != null) {
+      return DistanceValueDisplay(
+        key: cellKey,
+        measurement: value,
+        useYards: useYards,
+        label: label,
+        excludeFromSemantics: false,
+      );
+    }
+
+    final colorScheme = Theme.of(context).colorScheme;
+    return Semantics(
+      key: cellKey,
+      label: AppLocalizations.of(context).distanceUnavailableSemantics(label),
+      excludeSemantics: true,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            '—',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface.withOpacity(0.4),
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

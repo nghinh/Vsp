@@ -7,6 +7,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
+
 import '../../core/network/api_client.dart';
 import '../../domain/models/performance/club_performance_stats.dart';
 import '../../domain/models/performance/dispersion_overlay.dart';
@@ -42,10 +44,7 @@ class DispersionOverlayApiResponse {
 /// - GET /bags/{bagId}/clubs/{clubId}/dispersion?holeId={holeId}&layoutId={layoutId}
 class PerformanceApi {
   // Must match ApiClient._baseUrl
-  static const String _baseUrl = String.fromEnvironment(
-    'VSP_API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
-  );
+  static String get _baseUrl => VspEndpoints.apiBaseUrl;
 
   final http.Client _httpClient;
   String? _accessToken;

@@ -7,11 +7,45 @@ import 'package:flutter/material.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Which basemap the hole map is showing.
+/// Which basemap the golfer last chose, for as long as the app is running.
+///
+/// The hole map is rebuilt from scratch on every hole — a hole change is a new
+/// camera, a new basemap decision and a new measuring session — so a golfer who
+/// switched to satellite on the 1st was handed the vector map again on the 2nd,
+/// and on every hole after that. Remembering the choice is what makes satellite
+/// a mode rather than something to re-select eighteen times.
+///
+/// Deliberately not persisted to disk: it is a preference for this round, not a
+/// setting, and a golfer who closes the app should reopen on the map their
+/// course data supports.
+abstract final class BasemapPreference {
+  /// Satellite first.
+  ///
+  /// The vector map draws what the package holds: on most holes a derived
+  /// rectangle for the fairway and nothing at all for water. The photograph
+  /// underneath is the actual course, and it is the same picture the golfer is
+  /// standing in. The strategic map is the deliberate second look, not the
+  /// thing that greets them.
+  static BasemapMode _chosen = BasemapMode.satellite;
+
+  /// What the golfer last picked.
+  static BasemapMode get chosen => _chosen;
+
+  /// Records a deliberate choice. Not called for the automatic switch to
+  /// satellite on a hole with no geometry — that is the app deciding, not the
+  /// golfer, and it must not overwrite what they asked for.
+  static void choose(BasemapMode mode) => _chosen = mode;
+
+  /// Test seam.
+  static void resetForTesting() => _chosen = BasemapMode.satellite;
+}
+
 enum BasemapMode {
   /// Vector course geometry from the downloaded course package.
   courseMap,
 
-  /// Satellite imagery plus the manual measuring tool.
+  /// The manual measuring tool, over satellite imagery where the build has a
+  /// provider configured and over a plain canvas where it does not.
   satellite,
 }
 
@@ -23,9 +57,14 @@ class BasemapToggle extends StatelessWidget {
   /// Called with the newly selected mode.
   final ValueChanged<BasemapMode> onChanged;
 
-  /// False when this build has no imagery provider configured; the satellite
-  /// option is then shown disabled rather than hidden, so the golfer can see
-  /// the feature exists and support can explain why it is off.
+  /// False when this build has no imagery provider configured.
+  ///
+  /// The option stays enabled either way — what is behind it is the measuring
+  /// tool, which works from GPS and needs no pictures. Only the wording
+  /// changes, from "Satellite" to "Measure", so the button never promises
+  /// imagery this build cannot fetch. It used to be disabled here, which on a
+  /// database where every hole is unverified locked the golfer out of the only
+  /// distance tool they had.
   final bool satelliteAvailable;
 
   const BasemapToggle({
@@ -63,13 +102,17 @@ class BasemapToggle extends StatelessWidget {
             onTap: () => onChanged(BasemapMode.courseMap),
           ),
           _Option(
-            icon: Icons.satellite_alt_outlined,
-            label: l10n.basemapSatellite,
+            icon: satelliteAvailable
+                ? Icons.satellite_alt_outlined
+                : Icons.straighten,
+            label: satelliteAvailable
+                ? l10n.basemapSatellite
+                : l10n.basemapMeasure,
             semanticLabel: satelliteAvailable
                 ? l10n.basemapSwitchToSatellite
-                : l10n.basemapSatelliteUnavailableTitle,
+                : l10n.basemapSwitchToMeasure,
             selected: mode == BasemapMode.satellite,
-            enabled: satelliteAvailable,
+            enabled: true,
             onTap: () => onChanged(BasemapMode.satellite),
           ),
         ],

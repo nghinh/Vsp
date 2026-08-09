@@ -90,6 +90,10 @@ class _EmptyHoleMapRepository implements HoleMapRepository {
 
   @override
   Future<List<CoursePackageManifest>> listPackages() async => const [];
+
+  @override
+  // No package on this fake device unless a test says otherwise.
+  Future<String?> findPackageIdForCourse(String courseId) async => null;
 }
 
 // ─── Harness ────────────────────────────────────────────────────────────────
@@ -163,23 +167,25 @@ void _expectRendered(String text) {
 
 void main() {
   group('a started round', () {
-    testWidgets('opens on the scorecard, with the round it was configured for',
-        (tester) async {
-      await _pump(tester, const Locale('en'));
+    testWidgets(
+      'opens on the scorecard, with the round it was configured for',
+      (tester) async {
+        await _pump(tester, const Locale('en'));
 
-      final scorecard = tester.widget<ScorecardScreen>(
-        find.byType(ScorecardScreen, skipOffstage: false),
-      );
-      expect(scorecard.flightId, 'round-1');
-      expect(scorecard.holeIds, ['7', '8', '9']);
-      expect(scorecard.playerIds, ['me']);
-      expect(scorecard.playerNames, {'me': 'Nghi'});
-      expect(scorecard.holePars, {'7': 3, '8': 4, '9': 5});
+        final scorecard = tester.widget<ScorecardScreen>(
+          find.byType(ScorecardScreen, skipOffstage: false),
+        );
+        expect(scorecard.flightId, 'round-1');
+        expect(scorecard.holeIds, ['7', '8', '9']);
+        expect(scorecard.playerIds, ['me']);
+        expect(scorecard.playerNames, {'me': 'Nghi'});
+        expect(scorecard.holePars, {'7': 3, '8': 4, '9': 5});
 
-      // And it is the tab the golfer is actually looking at.
-      final stack = tester.widget<IndexedStack>(find.byType(IndexedStack));
-      expect(stack.index, ActiveRoundTab.score.index);
-    });
+        // And it is the tab the golfer is actually looking at.
+        final stack = tester.widget<IndexedStack>(find.byType(IndexedStack));
+        expect(stack.index, ActiveRoundTab.score.index);
+      },
+    );
 
     testWidgets('reaches the hole map — the tab that had no way in', (
       tester,
@@ -230,20 +236,36 @@ void main() {
       _expectRendered(l10n.activeRoundReportCorrection);
     });
 
-    testWidgets('sends End Round to the scorecard, which owns finishing', (
+    testWidgets('End Round ends the round instead of giving directions to it', (
       tester,
     ) async {
+      // The tile used to switch to the Score tab and post a hint telling the
+      // golfer to finish there — an app answering "end my round" by pointing
+      // at a button. It now opens the same confirmation the scorecard's own
+      // action does.
       final l10n = await _pump(tester, const Locale('en'));
 
       await _openTab(tester, ActiveRoundTab.more);
       await tester.tap(find.text(l10n.activeRoundEndRound));
       await tester.pump();
 
+      // Still switches: tabs are lazy, and the scorecard has to exist before
+      // it can be asked to do anything.
       expect(
         tester.widget<IndexedStack>(find.byType(IndexedStack)).index,
         ActiveRoundTab.score.index,
       );
-      _expectRendered(l10n.activeRoundEndRoundHint);
+
+      // The request goes out after that frame, once the scorecard is built.
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        find.text(l10n.scorecardFinishTitle),
+        findsOneWidget,
+        reason: 'the confirmation should open, not a hint to go find it',
+      );
+      expect(find.text(l10n.scorecardKeepPlaying), findsOneWidget);
     });
   });
 
@@ -279,21 +301,31 @@ void main() {
     );
 
     testWidgets(
-      'no downloaded package and no imagery provider says exactly that',
+      'no downloaded package and no imagery provider still hands over a ruler',
       (tester) async {
         final l10n = await _pump(tester, const Locale('en'), packageId: null);
 
         await _openTab(tester, ActiveRoundTab.map);
 
-        // Satellite is deliberately disabled in a build with no token, so
-        // there is no honest picture to draw either. Say so rather than
-        // showing a blank map the golfer would read as a blank hole.
+        // Satellite tiles are deliberately off in a build with no token — we
+        // pull nothing from a provider we have no licence for. The measuring
+        // tool is a separate thing that runs on GPS, so it is still there,
+        // and the banner says which of the two the golfer is looking at.
         expect(
           find.byType(SatelliteMeasureView, skipOffstage: false),
+          findsOneWidget,
+        );
+        expect(
+          find.byType(NoGeometryBanner, skipOffstage: false),
+          findsOneWidget,
+        );
+        _expectRendered(l10n.holeNoGeometryBadge);
+        _expectRendered(l10n.holeNoGeometryBodyNoImagery);
+        // And it does not go on promising imagery it cannot fetch.
+        expect(
+          find.text(l10n.holeNoGeometryBody, skipOffstage: false),
           findsNothing,
         );
-        _expectRendered(l10n.holeNoGeometryNoImageryTitle);
-        _expectRendered(l10n.holeNoGeometryNoImageryBody);
       },
     );
 
@@ -342,16 +374,18 @@ void main() {
 
   for (final locale in const [Locale('en'), Locale('vi')]) {
     group('ActiveRoundScreen in ${locale.languageCode}', () {
-      testWidgets('the target tab takes its heading, body and length from l10n',
-          (tester) async {
-        final l10n = await _pump(tester, locale);
+      testWidgets(
+        'the target tab takes its heading, body and length from l10n',
+        (tester) async {
+          final l10n = await _pump(tester, locale);
 
-        await _openTab(tester, ActiveRoundTab.target);
+          await _openTab(tester, ActiveRoundTab.target);
 
-        _expectRendered(l10n.activeRoundTargetUnsurveyedHeading);
-        _expectRendered(l10n.activeRoundTargetUnsurveyedMessage);
-        _expectRendered(l10n.activeRoundLengthMeters(_yardage));
-      });
+          _expectRendered(l10n.activeRoundTargetUnsurveyedHeading);
+          _expectRendered(l10n.activeRoundTargetUnsurveyedMessage);
+          _expectRendered(l10n.activeRoundLengthMeters(_yardage));
+        },
+      );
 
       testWidgets('the conditions tab takes its empty state from l10n', (
         tester,
@@ -388,8 +422,8 @@ void main() {
 
         await _openTab(tester, ActiveRoundTab.map);
 
-        _expectRendered(l10n.holeNoGeometryNoImageryTitle);
-        _expectRendered(l10n.holeNoGeometryNoImageryBody);
+        _expectRendered(l10n.holeNoGeometryTitle);
+        _expectRendered(l10n.holeNoGeometryBodyNoImagery);
       });
 
       testWidgets('the more tab takes its title and menu labels from l10n', (
@@ -415,15 +449,19 @@ void main() {
         // the visible label.
         expect(
           find.bySemanticsLabel(
-            RegExp(RegExp.escape(
-                l10n.activeRoundTabSemanticsSelected(l10n.activeRoundScore))),
+            RegExp(
+              RegExp.escape(
+                l10n.activeRoundTabSemanticsSelected(l10n.activeRoundScore),
+              ),
+            ),
           ),
           findsOneWidget,
         );
         expect(
           find.bySemanticsLabel(
-            RegExp(RegExp.escape(
-                l10n.activeRoundTabSemantics(l10n.activeRoundMap))),
+            RegExp(
+              RegExp.escape(l10n.activeRoundTabSemantics(l10n.activeRoundMap)),
+            ),
           ),
           findsOneWidget,
         );
@@ -433,43 +471,42 @@ void main() {
     });
   }
 
-  testWidgets('the two locales really differ — nothing is baked into the widgets', (
-    tester,
-  ) async {
-    final en = await AppLocalizations.delegate.load(const Locale('en'));
-    final vi = await AppLocalizations.delegate.load(const Locale('vi'));
+  testWidgets(
+    'the two locales really differ — nothing is baked into the widgets',
+    (tester) async {
+      final en = await AppLocalizations.delegate.load(const Locale('en'));
+      final vi = await AppLocalizations.delegate.load(const Locale('vi'));
 
-    expect(en.activeRoundTargetHeading, isNot(vi.activeRoundTargetHeading));
-    expect(en.activeRoundTargetMessage, isNot(vi.activeRoundTargetMessage));
-    expect(
-      en.activeRoundTargetUnsurveyedHeading,
-      isNot(vi.activeRoundTargetUnsurveyedHeading),
-    );
-    expect(
-      en.activeRoundTargetUnsurveyedMessage,
-      isNot(vi.activeRoundTargetUnsurveyedMessage),
-    );
-    expect(
-      en.holeNoGeometryNoImageryTitle,
-      isNot(vi.holeNoGeometryNoImageryTitle),
-    );
-    expect(
-      en.holeNoGeometryNoImageryBody,
-      isNot(vi.holeNoGeometryNoImageryBody),
-    );
-    expect(
-      en.activeRoundConditionsNoLocationHeading,
-      isNot(vi.activeRoundConditionsNoLocationHeading),
-    );
-    expect(
-      en.activeRoundConditionsNoLocationMessage,
-      isNot(vi.activeRoundConditionsNoLocationMessage),
-    );
-    expect(en.activeRoundEndRoundHint, isNot(vi.activeRoundEndRoundHint));
-    expect(en.activeRoundOptions, isNot(vi.activeRoundOptions));
-    expect(
-      en.activeRoundTabSemanticsSelected('Map'),
-      isNot(vi.activeRoundTabSemanticsSelected('Map')),
-    );
-  });
+      expect(en.activeRoundTargetHeading, isNot(vi.activeRoundTargetHeading));
+      expect(en.activeRoundTargetMessage, isNot(vi.activeRoundTargetMessage));
+      expect(
+        en.activeRoundTargetUnsurveyedHeading,
+        isNot(vi.activeRoundTargetUnsurveyedHeading),
+      );
+      expect(
+        en.activeRoundTargetUnsurveyedMessage,
+        isNot(vi.activeRoundTargetUnsurveyedMessage),
+      );
+      expect(
+        en.holeNoGeometryBodyNoImagery,
+        isNot(vi.holeNoGeometryBodyNoImagery),
+      );
+      expect(en.basemapMeasure, isNot(vi.basemapMeasure));
+      expect(en.measureYouToGreen, isNot(vi.measureYouToGreen));
+      expect(
+        en.activeRoundConditionsNoLocationHeading,
+        isNot(vi.activeRoundConditionsNoLocationHeading),
+      );
+      expect(
+        en.activeRoundConditionsNoLocationMessage,
+        isNot(vi.activeRoundConditionsNoLocationMessage),
+      );
+      expect(en.activeRoundEndRound, isNot(vi.activeRoundEndRound));
+      expect(en.activeRoundOptions, isNot(vi.activeRoundOptions));
+      expect(
+        en.activeRoundTabSemanticsSelected('Map'),
+        isNot(vi.activeRoundTabSemanticsSelected('Map')),
+      );
+    },
+  );
 }

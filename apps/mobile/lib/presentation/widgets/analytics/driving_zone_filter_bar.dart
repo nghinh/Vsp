@@ -44,6 +44,12 @@ class DrivingZoneFilterBar extends StatelessWidget {
   /// Called when all filters should be cleared.
   final VoidCallback onClearFilters;
 
+  /// The golfer's clubs (clubId → name), from their active bag.
+  ///
+  /// Passed through rather than defaulted: the chips used to invent a
+  /// fourteen-club list when nobody supplied one, and nobody ever did.
+  final Map<String, String> clubs;
+
   const DrivingZoneFilterBar({
     super.key,
     required this.filter,
@@ -52,6 +58,7 @@ class DrivingZoneFilterBar extends StatelessWidget {
     required this.onTeeSetChanged,
     required this.onWindConditionChanged,
     required this.onClearFilters,
+    this.clubs = const {},
   });
 
   @override
@@ -81,6 +88,7 @@ class DrivingZoneFilterBar extends StatelessWidget {
           ClubFilterChips(
             selectedClubIds: filter.clubIds,
             onChanged: onClubsChanged,
+            clubs: clubs,
           ),
           const SizedBox(height: 12),
           // Tee and wind row

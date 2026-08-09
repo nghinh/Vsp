@@ -26,6 +26,7 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
     Map<String, int>? holePars,
     bool isTournamentMode = false,
     ScoreRepository? scoreRepository,
+    int initialHoleIndex = 0,
   }) : _scoreRepository = scoreRepository ?? ScoreRepositoryImpl(),
        super(
          ScorecardScreenState(
@@ -35,6 +36,14 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
            playerNames: playerNames ?? {},
            holePars: holePars ?? {},
            isTournamentMode: isTournamentMode,
+           // Resuming a round works out which hole the golfer stopped on, and
+           // the scorecard used to ignore it and open on the 1st tee anyway —
+           // so a golfer who came back on the 7th had to tap forward six times
+           // before they could enter the score they came back to enter.
+           currentHoleIndex:
+               initialHoleIndex >= 0 && initialHoleIndex < holeIds.length
+               ? initialHoleIndex
+               : 0,
          ),
        );
 

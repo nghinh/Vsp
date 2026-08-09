@@ -112,7 +112,10 @@ class _ScoreEntryCardState extends State<ScoreEntryCard> {
                     ),
                     const Spacer(),
                     Text(
-                      '${widget.enteredFlags.values.where((e) => e).length}/${widget.playerIds.length} entered',
+                      AppLocalizations.of(context).scoreEnteredCount(
+                        widget.enteredFlags.values.where((e) => e).length,
+                        widget.playerIds.length,
+                      ),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurface.withOpacity(0.5),
                       ),

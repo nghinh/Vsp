@@ -5,6 +5,7 @@
 /// Errors that can occur when fetching or caching weather data.
 
 import 'package:vsp_mobile/l10n/app_messages.dart';
+
 enum WeatherErrorCode {
   /// Network unavailable and no cached data.
   networkUnavailable,

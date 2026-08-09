@@ -17,8 +17,15 @@ class CourseSearchResult extends Equatable {
   final String facilityName;
   final String? courseName;
   final String? address;
-  final double latitude;
-  final double longitude;
+  /// Where the facility is, or null when nobody has established that yet.
+  ///
+  /// Nullable on purpose. These used to default to 0.0 when the field was
+  /// absent, which is not "unknown" — it is a point in the Gulf of Guinea,
+  /// 10,000 km from Vietnam, and it is indistinguishable from a real answer.
+  /// The database now holds courses whose location genuinely is not known, so
+  /// the type has to be able to say so.
+  final double? latitude;
+  final double? longitude;
   final int holesCount;
   final int? parTotal;
   final double? rating;
@@ -40,8 +47,8 @@ class CourseSearchResult extends Equatable {
     required this.facilityName,
     this.courseName,
     this.address,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     required this.holesCount,
     this.parTotal,
     this.rating,
@@ -60,9 +67,10 @@ class CourseSearchResult extends Equatable {
       facilityName: json['facilityName'] as String,
       courseName: json['courseName'] as String?,
       address: json['address'] as String?,
-      // Coordinates may be absent for text-search results — tolerate null.
-      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      // Absent for a text-search hit, and for a facility nobody has located.
+      // Carried through as null rather than coerced to a coordinate.
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
       holesCount: (json['holesCount'] as num).toInt(),
       parTotal: (json['parTotal'] as num?)?.toInt(),
       rating: (json['rating'] as num?)?.toDouble(),
@@ -85,8 +93,8 @@ class CourseSearchResult extends Equatable {
     'facilityName': facilityName,
     if (courseName != null) 'courseName': courseName,
     if (address != null) 'address': address,
-    'latitude': latitude,
-    'longitude': longitude,
+    if (latitude != null) 'latitude': latitude,
+    if (longitude != null) 'longitude': longitude,
     'holesCount': holesCount,
     if (parTotal != null) 'parTotal': parTotal,
     if (rating != null) 'rating': rating,

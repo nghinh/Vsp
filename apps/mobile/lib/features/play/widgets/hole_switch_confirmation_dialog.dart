@@ -91,7 +91,9 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
             _confidenceIcon(confidenceLevel),
             color: _confidenceColor(confidenceLevel, theme),
             size: 28,
-            semanticLabel: AppLocalizations.of(context).holeSwitchConfidence(confidenceLevel.displayLabel),
+            semanticLabel: AppLocalizations.of(
+              context,
+            ).holeSwitchConfidence(confidenceLevel.displayLabel),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -152,7 +154,9 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
                   Icons.arrow_forward,
                   color: theme.colorScheme.outline,
                   size: 24,
-                  semanticLabel: AppLocalizations.of(context).holeSwitchSwitchingTo,
+                  semanticLabel: AppLocalizations.of(
+                    context,
+                  ).holeSwitchSwitchingTo,
                 ),
               ),
               _HoleIndicator(
@@ -184,7 +188,10 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
               onCancel();
             },
             child: Text(
-              'Cancel',
+              // Hardcoded English until this dialog became reachable: nothing
+              // in the app dispatched hole detection, so nobody had ever seen
+              // these two buttons.
+              AppLocalizations.of(context).commonCancel,
               style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w600,
@@ -206,9 +213,9 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
               backgroundColor: theme.colorScheme.primary,
               foregroundColor: theme.colorScheme.onPrimary,
             ),
-            child: const Text(
-              'Confirm',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+            child: Text(
+              AppLocalizations.of(context).commonConfirm,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
           ),
         ),

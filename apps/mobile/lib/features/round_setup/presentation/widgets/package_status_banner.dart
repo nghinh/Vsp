@@ -10,6 +10,8 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:vsp_mobile/core/l10n/relative_time.dart';
+
 import '../round_setup_state.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
@@ -68,10 +70,16 @@ class PackageStatusBanner extends StatelessWidget {
           // offline package (scoring only needs holes/par); Download is for
           // offline GPS use.
           secondaryAction: onWarningAcknowledged != null
-              ? _Action(label: AppLocalizations.of(context).packagePlayNow, onPressed: onWarningAcknowledged!)
+              ? _Action(
+                  label: AppLocalizations.of(context).packagePlayNow,
+                  onPressed: onWarningAcknowledged!,
+                )
               : null,
           action: onDownloadPressed != null
-              ? _Action(label: AppLocalizations.of(context).packageDownload, onPressed: onDownloadPressed!)
+              ? _Action(
+                  label: AppLocalizations.of(context).packageDownload,
+                  onPressed: onDownloadPressed!,
+                )
               : null,
         );
 
@@ -82,12 +90,17 @@ class PackageStatusBanner extends StatelessWidget {
           iconColor: const Color(0xFFF97316), // semantic amber
           label: AppLocalizations.of(context).packageOutdated,
           subtitle: packageReadiness!.expiresAt != null
-              ? AppLocalizations.of(context).packageExpiredOn(_formatDate(packageReadiness!.expiresAt!))
+              ? AppLocalizations.of(context).packageExpiredOn(
+                  _formatDate(context, packageReadiness!.expiresAt!),
+                )
               : AppLocalizations.of(context).packageExpired,
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),
           action: onWarningAcknowledged != null
-              ? _Action(label: AppLocalizations.of(context).packagePlayAnyway, onPressed: onWarningAcknowledged!)
+              ? _Action(
+                  label: AppLocalizations.of(context).packagePlayAnyway,
+                  onPressed: onWarningAcknowledged!,
+                )
               : null,
         );
 
@@ -101,7 +114,10 @@ class PackageStatusBanner extends StatelessWidget {
           backgroundColor: const Color(0xFFDC2626).withOpacity(0.12),
           textColor: const Color(0xFFDC2626),
           action: onDownloadPressed != null
-              ? _Action(label: AppLocalizations.of(context).packageRedownload, onPressed: onDownloadPressed!)
+              ? _Action(
+                  label: AppLocalizations.of(context).packageRedownload,
+                  onPressed: onDownloadPressed!,
+                )
               : null,
         );
 
@@ -203,15 +219,8 @@ class PackageStatusBanner extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inDays == 0) return 'today';
-    if (diff.inDays == 1) return 'yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    return '${date.month}/${date.day}/${date.year}';
-  }
+  String _formatDate(BuildContext context, DateTime date) =>
+      RelativeTime.format(AppLocalizations.of(context), date);
 }
 
 class _Action {

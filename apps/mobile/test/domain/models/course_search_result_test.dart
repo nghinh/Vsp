@@ -99,6 +99,38 @@ void main() {
         expect(dto.hasPackage, isFalse);
         expect(dto.updateAvailable, isFalse);
       });
+    test('an absent coordinate stays absent instead of becoming 0, 0', () {
+      // A facility the roster knows by name but nobody has located yet comes
+      // back without latitude/longitude. These used to default to 0.0, which
+      // is not "unknown": it is a point in the Gulf of Guinea, 10,000 km from
+      // any Vietnamese course, and nothing downstream could tell it from a
+      // real answer.
+      final dto = CourseSearchResult.fromJson(const {
+        'courseId': 1,
+        'facilityId': 2,
+        'facilityName': 'Sân golf chưa có toạ độ',
+        'holesCount': 18,
+      });
+
+      expect(dto.latitude, isNull);
+      expect(dto.longitude, isNull);
+    });
+
+    test('a course with no coordinate does not serialise one', () {
+      const dto = CourseSearchResult(
+        courseId: 1,
+        facilityId: 2,
+        facilityName: 'Sân golf chưa có toạ độ',
+        holesCount: 18,
+        hasPackage: false,
+        updateAvailable: false,
+      );
+
+      final json = dto.toJson();
+
+      expect(json.containsKey('latitude'), isFalse);
+      expect(json.containsKey('longitude'), isFalse);
+    });
     });
 
     group('toJson — serialization round-trip', () {

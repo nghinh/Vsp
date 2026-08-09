@@ -11,6 +11,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../features/correction/domain/course_correction.dart';
 import '../local/daos/correction_dao.dart';
+import '../../infrastructure/persistence/sync_queue_repository.dart';
 import '../../domain/models/sync_event.dart';
 import '../../domain/models/sync_status.dart';
 
@@ -21,12 +22,17 @@ import '../../domain/models/sync_status.dart';
 abstract class CourseCorrectionRepository {
   /// Submit a new correction.
   ///
-  /// Writes to SQLite immediately (offline-first) and returns a pending
-  /// [SyncEvent] that will be picked up by the sync worker.
+  /// Writes to SQLite and appends the sync event to the offline queue, so the
+  /// report reaches the server as soon as there is signal.
   ///
-  /// The [correction] must have [CorrectionSyncState.pending].
-  /// After calling this, the caller should dispatch the returned SyncEvent
-  /// to the sync queue.
+  /// The returned [SyncEvent] is the one that was queued, kept in the signature
+  /// for callers that want to inspect it.
+  ///
+  /// It used to be the caller's job to queue it — "the UI layer dispatches it",
+  /// said the comment — and neither caller ever did. Every correction a golfer
+  /// filed was written to the phone, confirmed on screen, and never sent; the
+  /// server's corrections table has been empty since the feature shipped.
+  /// A repository that half-saves is a trap, so it now finishes the job.
   Future<({CourseCorrection correction, SyncEvent syncEvent})> submitCorrection(
     CourseCorrection correction,
   );
@@ -60,11 +66,16 @@ abstract class CourseCorrectionRepository {
 /// SQLite-backed implementation of [CourseCorrectionRepository].
 class CourseCorrectionRepositoryImpl implements CourseCorrectionRepository {
   final CorrectionDao _dao;
+  final SyncQueueRepository _syncQueue;
   final Uuid _uuid;
 
-  CourseCorrectionRepositoryImpl({CorrectionDao? dao, Uuid? uuid})
-    : _dao = dao ?? CorrectionDao(),
-      _uuid = uuid ?? const Uuid();
+  CourseCorrectionRepositoryImpl({
+    CorrectionDao? dao,
+    SyncQueueRepository? syncQueue,
+    Uuid? uuid,
+  }) : _dao = dao ?? CorrectionDao(),
+       _syncQueue = syncQueue ?? SyncQueueRepository(),
+       _uuid = uuid ?? const Uuid();
 
   @override
   Future<({CourseCorrection correction, SyncEvent syncEvent})> submitCorrection(
@@ -83,11 +94,13 @@ class CourseCorrectionRepositoryImpl implements CourseCorrectionRepository {
     // Write to SQLite (offline-first).
     await _dao.upsert(pendingCorrection);
 
-    // Build the sync event.
+    // Build the sync event and queue it. Both writes, or the correction is a
+    // note to self.
     final syncEvent = SyncEvent.forCorrection(
       correctionId: pendingCorrection.id,
       correctionPayload: pendingCorrection.toJson(),
     );
+    await _syncQueue.append(syncEvent);
 
     return (correction: pendingCorrection, syncEvent: syncEvent);
   }

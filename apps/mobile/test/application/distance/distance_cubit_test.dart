@@ -455,7 +455,8 @@ LatLng _offsetMeters(
     math.sin(lat1) * math.cos(dR) +
         math.cos(lat1) * math.sin(dR) * math.cos(bearingRad),
   );
-  final lon2 = lon1 +
+  final lon2 =
+      lon1 +
       math.atan2(
         math.sin(bearingRad) * math.sin(dR) * math.cos(lat1),
         math.cos(dR) - math.sin(lat1) * math.sin(lat2),

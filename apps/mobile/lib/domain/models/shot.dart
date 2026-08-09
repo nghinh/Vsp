@@ -178,7 +178,7 @@ enum ShotSource {
   static ShotSource fromString(String? value) {
     if (value == null) return ShotSource.manual;
     return ShotSource.values.firstWhere(
-      (e) => e.name == (value ?? '').toLowerCase(),
+      (e) => e.name == value.toLowerCase(),
       orElse: () => ShotSource.manual,
     );
   }

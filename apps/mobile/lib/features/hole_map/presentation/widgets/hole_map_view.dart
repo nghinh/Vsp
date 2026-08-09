@@ -22,17 +22,19 @@ import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as vsp;
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
+import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
 import 'package:vsp_mobile/features/basemap/presentation/widgets/basemap_toggle.dart';
+import 'package:vsp_mobile/features/basemap/presentation/widgets/map_data_attribution.dart';
 import 'package:vsp_mobile/features/hole_map/domain/course_map_style_builder.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_geojson.dart';
+import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/features/measure/presentation/measure_cubit.dart';
 import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_banner.dart';
 import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
-import 'unsurveyed_hole_view.dart' show UnsurveyedNoImageryView;
 
 /// Main MapLibre-based hole map view widget.
 ///
@@ -69,21 +71,46 @@ class _HoleMapViewState extends State<HoleMapView> {
   bool _isInitialized = false;
 
   /// Imagery configuration in force for this view.
-  late final SatelliteImageryConfig _imagery =
-      widget.imageryConfig ?? SatelliteImageryConfig.fromEnvironment();
+  /// Imagery provider for this view.
+  ///
+  /// Read on every build, not captured once. The config arrives from the server
+  /// after sign-in, so a `late final` here meant a golfer already looking at the
+  /// map kept the "no imagery" answer for as long as the screen lived — and an
+  /// operator who pasted a token saw nothing until the app restarted.
+  SatelliteImageryConfig get _imagery =>
+      widget.imageryConfig ?? SatelliteImagery.current;
 
   /// Which basemap is showing. Holes with no surveyed geometry open straight
   /// into satellite + measuring — an empty vector map helps nobody.
-  BasemapMode _basemapMode = BasemapMode.courseMap;
+  late BasemapMode _basemapMode = BasemapPreference.chosen;
 
   @override
   void dispose() {
-    _mapController?.dispose();
+    _releaseVectorMap();
     super.dispose();
   }
 
   void _onMapCreated(MapLibreMapController controller) {
     _mapController = controller;
+  }
+
+  /// Drops the controller for a vector map that is no longer on screen.
+  ///
+  /// Switching to the measuring surface removes the vector MapLibreMap from
+  /// the tree and destroys its platform view, but this State survives — so the
+  /// controller stayed, `_isInitialized` stayed true, and every GPS fix after
+  /// that pushed an overlay into a map that no longer existed:
+  ///
+  ///     MissingPluginException(No implementation found for method
+  ///     source#setGeoJson on channel plugins.flutter.io/maplibre_gl_0)
+  ///
+  /// Unhandled, once every few seconds, for as long as the golfer stayed on
+  /// the measuring tool — which on an unverified hole is the whole round. The
+  /// controller was also never disposed, so its channel handler leaked with it.
+  void _releaseVectorMap() {
+    _isInitialized = false;
+    _mapController?.dispose();
+    _mapController = null;
   }
 
   /// The style is only queryable once it has loaded — pushing sources or layer
@@ -185,7 +212,13 @@ class _HoleMapViewState extends State<HoleMapView> {
     _drawVectorHole = !HoleGeometryCoverage.shouldDefaultToSatellite(
       widget.state.holeMap,
     );
-    if (!_drawVectorHole && _imagery.isAvailable) {
+    // Imagery is no longer a condition of opening here. Every hole in the
+    // database is unverified, so gating this on a build-time token made the
+    // measuring tool unreachable for every golfer on a default build.
+    if (!_drawVectorHole) {
+      // The app deciding, not the golfer: a hole with no vector geometry has
+      // nothing to draw. Deliberately does not overwrite their remembered
+      // choice, so stepping back onto a surveyed hole restores it.
       _basemapMode = BasemapMode.satellite;
     }
     // Sources are filled from _onStyleLoaded — before the style is up there is
@@ -202,17 +235,15 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   @override
   Widget build(BuildContext context) {
-    // Nothing surveyed and no imagery provider in this build: the vector map
-    // would be an empty green rectangle, which reads as an empty hole. Say
-    // what is actually going on instead.
-    if (!_drawVectorHole && !_imagery.isAvailable) {
-      return const RepaintBoundary(child: UnsurveyedNoImageryView());
-    }
-
-    return RepaintBoundary(
-      child: _basemapMode == BasemapMode.satellite
-          ? _buildSatelliteMode(context)
-          : _buildCourseMapMode(context),
+    // Rebuilds when the imagery provider resolves, which happens after this
+    // screen may already be open.
+    return ValueListenableBuilder<SatelliteImageryConfig>(
+      valueListenable: SatelliteImagery.listenable,
+      builder: (context, _, __) => RepaintBoundary(
+        child: _basemapMode == BasemapMode.satellite
+            ? _buildSatelliteMode(context)
+            : _buildCourseMapMode(context),
+      ),
     );
   }
 
@@ -240,25 +271,25 @@ class _HoleMapViewState extends State<HoleMapView> {
         context: context,
         onUnit: (measureContext, unit) =>
             measureContext.read<MeasureCubit>().setUnit(unit),
-        child: Column(
-          children: [
-            if (!_drawVectorHole)
-              NoGeometryBanner(trailing: toggle)
-            else
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-                color: const Color(0xFF1E293B),
-                alignment: Alignment.centerRight,
-                child: toggle,
-              ),
-            Expanded(
-              child: SatelliteMeasureView(
-                config: _imagery,
-                fallbackCenter: _fallbackCenter(),
-              ),
-            ),
-          ],
+        // Both of these used to be a full-width bar above the map — the banner
+        // on an unsurveyed hole, and on every other hole a strip of empty
+        // slate holding nothing but the two-state basemap switch. The vector
+        // map has always floated its own controls over the picture; the
+        // satellite view now does the same, and gets that band back.
+        child: SatelliteMeasureView(
+          config: _imagery,
+          fallbackCenter: _fallbackCenter(),
+          courseId: widget.state.holeMap.courseId,
+          // The package's own row id. Null on a package built before the field
+          // existed, which hides the report action rather than filing it
+          // against the hole with that number on another course.
+          holeId: widget.state.holeMap.holeId,
+          mapOverlay: _drawVectorHole
+              ? Align(alignment: Alignment.topRight, child: toggle)
+              : NoGeometryBanner(
+                  trailing: toggle,
+                  imageryAvailable: _imagery.isAvailable,
+                ),
         ),
       ),
     );
@@ -292,6 +323,13 @@ class _HoleMapViewState extends State<HoleMapView> {
       satelliteAvailable: _imagery.isAvailable,
       onChanged: (mode) {
         if (mode == _basemapMode) return;
+        // Leaving the vector map takes its platform view out of the tree, so
+        // the controller pointing at it has to go with it — see
+        // [_releaseVectorMap].
+        if (_basemapMode == BasemapMode.courseMap) {
+          _releaseVectorMap();
+        }
+        BasemapPreference.choose(mode);
         setState(() => _basemapMode = mode);
       },
     );
@@ -363,8 +401,34 @@ class _HoleMapViewState extends State<HoleMapView> {
             bottom: 72,
             child: Center(child: _buildBasemapToggle()),
           ),
+
+          // Credit for the geometry on screen. ODbL requires the notice
+          // wherever the derived database is publicly used, and this map — not
+          // the satellite view — is where OSM-derived greens, bunkers, water
+          // and fairways are actually drawn. It carried no attribution at all.
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 48,
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: MapDataAttribution(
+                includesCopernicus: _drawsCopernicusData,
+              ),
+            ),
+          ),
       ],
     );
+  }
+
+  /// True when this hole draws a layer derived from Copernicus imagery.
+  ///
+  /// Water hazards are the only one: 40 of the 45 in the database come from
+  /// Sentinel-2 NDWI, and the notice their licence requires appeared nowhere in
+  /// the app.
+  bool get _drawsCopernicusData {
+    final water = widget.state.holeMap.layers[MapLayerType.water];
+    return water != null && HoleGeometryCoverage.featureCount(water) > 0;
   }
 
   Widget _buildMap() {

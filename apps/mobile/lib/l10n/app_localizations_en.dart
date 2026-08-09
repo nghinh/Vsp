@@ -2111,10 +2111,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRoundEndRound => 'End Round';
 
   @override
-  String get activeRoundEndRoundHint =>
-      'Finish the round from the flag button on the Score tab.';
-
-  @override
   String get activeRoundOptions => 'Round Options';
 
   @override
@@ -2769,6 +2765,137 @@ class AppLocalizationsEn extends AppLocalizations {
   String get measureGreenUnknown => 'No green position for this hole';
 
   @override
+  String get roundSetupActiveBag => 'Active Bag';
+
+  @override
+  String get roundSetupSelectCourseFirst => 'Select a course first';
+
+  @override
+  String get roundSetupAcknowledgeWarning =>
+      'Acknowledge the course data warning to continue';
+
+  @override
+  String get roundSetupStartRound => 'Start Round';
+
+  @override
+  String get packageOfflineReadyBody =>
+      'You can play this course without an internet connection.';
+
+  @override
+  String get packageNotAvailable =>
+      'This course is not yet available for offline download.';
+
+  @override
+  String get packageUpdateAvailable => 'Update available';
+
+  @override
+  String packageDaysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String get wifiOnlyTitle => 'Download on Wi-Fi only';
+
+  @override
+  String get wifiConnected => 'Wi-Fi connected';
+
+  @override
+  String get wifiNotConnected => 'No Wi-Fi — downloads paused';
+
+  @override
+  String get mapDistanceRingsTitle => 'RINGS';
+
+  @override
+  String scoreEnteredCount(int entered, int total) {
+    return '$entered/$total entered';
+  }
+
+  @override
+  String get gpsGood => 'GPS Good';
+
+  @override
+  String get gpsFair => 'GPS Fair';
+
+  @override
+  String get gpsPoor => 'GPS Poor';
+
+  @override
+  String get roundFormatCasual => 'Casual';
+
+  @override
+  String get roundFormatPractice => 'Practice';
+
+  @override
+  String get roundFormatTournament => 'Tournament';
+
+  @override
+  String get scoringStrokePlay => 'Stroke Play';
+
+  @override
+  String get scoringStableford => 'Stableford';
+
+  @override
+  String get relativeJustNow => 'Just now';
+
+  @override
+  String relativeHoursAgo(int hours) {
+    return '${hours}h ago';
+  }
+
+  @override
+  String get relativeToday => 'Today';
+
+  @override
+  String get relativeYesterday => 'Yesterday';
+
+  @override
+  String relativeDaysAgo(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String relativeMonthsAgo(int months) {
+    return '$months months ago';
+  }
+
+  @override
+  String relativeYearsAgo(int years) {
+    return '$years years ago';
+  }
+
+  @override
+  String scoreRowEntered(String player, String score) {
+    return '$player, score $score';
+  }
+
+  @override
+  String scoreRowNotEntered(String player) {
+    return '$player, score not entered';
+  }
+
+  @override
+  String scoreRowNotPlayed(String player) {
+    return '$player, hole not played';
+  }
+
+  @override
+  String get measureGreenReportAction => 'The green is right here — report it';
+
+  @override
+  String get measureGreenReportSent => 'Sent, waiting for an admin to review';
+
+  @override
+  String get measureGreenReportQueued =>
+      'Recorded. An admin reviews it before the map changes.';
+
+  @override
+  String get measureGreenReportNoFix =>
+      'The GPS fix is not good enough to submit. Try again in the open.';
+
+  @override
+  String get measureGreenReportFailed => 'Could not send. Try again.';
+
+  @override
   String get measureGreenEstimated =>
       'Green position is estimated, not surveyed';
 
@@ -2781,6 +2908,17 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get measureEmptyBody =>
       'Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.';
+
+  @override
+  String get measureEmptyBodyNoImagery =>
+      'There is no imagery to aim at in this build, but your position and the green are drawn on the map. Tap anywhere to measure to it.';
+
+  @override
+  String get measureYouToGreen => 'From you to the green';
+
+  @override
+  String get measureWithoutImagery =>
+      'No satellite imagery in this build — the ruler still works.';
 
   @override
   String get measureQualityGood => 'Good';
@@ -2816,7 +2954,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get basemapCourseMap => 'Course map';
 
   @override
+  String get basemapMeasure => 'Measure';
+
+  @override
   String get basemapSwitchToSatellite => 'Switch to satellite imagery';
+
+  @override
+  String get basemapSwitchToMeasure => 'Switch to the measuring tool';
 
   @override
   String get basemapSwitchToCourseMap => 'Switch to course map';
@@ -2852,16 +2996,155 @@ class AppLocalizationsEn extends AppLocalizations {
   String get holeNoGeometryBadge => 'Not surveyed';
 
   @override
-  String get holeNoGeometryNoImageryTitle =>
-      'Nothing real to show for this hole';
-
-  @override
-  String get holeNoGeometryNoImageryBody =>
-      'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.';
+  String get holeNoGeometryBodyNoImagery =>
+      'We haven\'t digitised this hole, and this build has no satellite imagery. The ruler still works: your position and the green are on the map, and every distance says how far it could be out.';
 
   @override
   String get distanceNotSurveyedTooltip =>
       'This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.';
+
+  @override
+  String distanceUnavailableSemantics(String label) {
+    return '$label distance unavailable';
+  }
+
+  @override
+  String get analyticsNoClubsInBag =>
+      'No clubs in your bag yet. Add clubs to filter by club.';
+
+  @override
+  String get downloadOfflineCoursesSubtitle =>
+      'Manage courses saved for playing without a signal';
+
+  @override
+  String get correctionListTitle => 'My data reports';
+
+  @override
+  String get correctionListSubtitle =>
+      'Course data you reported, and what happened to it';
+
+  @override
+  String get smartTargetExampleBadge => 'EXAMPLE';
+
+  @override
+  String get smartTargetExampleBody =>
+      'This is a worked example on an invented hole, not your data. During a round the same panel runs on your GPS position, your clubs and the real hole.';
+
+  @override
+  String get holeSwitchLowConfidence =>
+      'GPS is not certain enough to move you automatically.';
+
+  @override
+  String get telemetryExportTitle => 'Pilot telemetry export';
+
+  @override
+  String get telemetryExportBody =>
+      'Exports one round\'s GPS quality, map latency and battery telemetry as a JSON file you can hand to the analysis workspace. Written on the device — no network needed, which matters on a course.';
+
+  @override
+  String get telemetryExportRoundId => 'Round ID';
+
+  @override
+  String get telemetryExportInspect => 'Check what this round recorded';
+
+  @override
+  String get telemetryExportShare => 'Export and share';
+
+  @override
+  String telemetryExportSamples(String gps, String battery, String map) {
+    return '$gps GPS samples · $battery battery readings · $map map loads';
+  }
+
+  @override
+  String telemetryExportBatteryUsed(String percent) {
+    return 'Battery used over the recorded period: $percent%';
+  }
+
+  @override
+  String telemetryExportSlowestMap(String ms) {
+    return 'Slowest map load: $ms ms (target: under 2000 ms)';
+  }
+
+  @override
+  String telemetryExportWorstAccuracy(String meters) {
+    return 'Worst GPS accuracy: $meters m (warns above 10 m)';
+  }
+
+  @override
+  String get telemetryExportEmpty =>
+      'This round recorded nothing. Telemetry is written from fixes the round already receives, so a round played entirely on the Score tab produces no GPS samples — open the Map tab during the round.';
+
+  @override
+  String telemetryExportWritten(String path) {
+    return 'Written to $path';
+  }
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get creditsTitle => 'Credits and licences';
+
+  @override
+  String get creditsSubtitle =>
+      'Course data sources, imagery, and open-source licences';
+
+  @override
+  String get creditsCourseDataTitle => 'Course data';
+
+  @override
+  String get creditsOpenStreetMapBody =>
+      'Greens, bunkers, water and fairway shapes are derived from OpenStreetMap and are used under the Open Database Licence.';
+
+  @override
+  String get creditsCopernicusBody =>
+      'Some water hazards were detected from Copernicus Sentinel-2 imagery.';
+
+  @override
+  String get creditsImageryTitle => 'Satellite imagery';
+
+  @override
+  String get creditsMapboxBody =>
+      'Satellite imagery is provided by Mapbox and OpenStreetMap, and is shown only while you are online.';
+
+  @override
+  String get creditsImageryProviderBody =>
+      'Satellite imagery is supplied by the operator named above, under their own terms, and is shown only while you are online.';
+
+  @override
+  String get creditsImageryNoneTitle => 'No imagery provider configured';
+
+  @override
+  String get creditsImageryNoneBody =>
+      'This build has no satellite imagery. The measuring tool still works — it uses GPS and geometry, not pictures.';
+
+  @override
+  String get creditsSoftwareTitle => 'Software';
+
+  @override
+  String get creditsOpenSourceLicences => 'Open-source licences';
+
+  @override
+  String get creditsOpenSourceLicencesBody =>
+      'Licences of the packages this app is built with';
+
+  @override
+  String get creditsDataQualityNote =>
+      'Course geometry is honestly labelled: where a hole has not been surveyed, the app says so and offers satellite imagery with a measuring tool instead of drawing a map it cannot stand behind.';
+
+  @override
+  String get downloadPreferencesUnavailable =>
+      'Download settings are unavailable on this device, so downloads cannot be managed here.';
+
+  @override
+  String get summaryUnavailable =>
+      'Your round is saved. The summary could not be opened on this device — you can review the round from Rounds.';
+
+  @override
+  String get holeMapPreviousHole => 'Previous hole';
+
+  @override
+  String get holeMapNextHole => 'Next hole';
 
   @override
   String holeListUnverifiedNotice(int count) {

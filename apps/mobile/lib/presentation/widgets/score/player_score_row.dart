@@ -65,7 +65,7 @@ class PlayerScoreRow extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Semantics(
-      label: _semanticLabel,
+      label: _semanticLabel(AppLocalizations.of(context)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
@@ -99,7 +99,9 @@ class PlayerScoreRow extends StatelessWidget {
               _buildScoreButton(
                 icon: Icons.remove,
                 onPressed: onDecrement,
-                semanticLabel: AppLocalizations.of(context).scoreDecreaseFor(playerName),
+                semanticLabel: AppLocalizations.of(
+                  context,
+                ).scoreDecreaseFor(playerName),
                 theme: theme,
               ),
 
@@ -110,7 +112,9 @@ class PlayerScoreRow extends StatelessWidget {
               _buildScoreButton(
                 icon: Icons.add,
                 onPressed: onIncrement,
-                semanticLabel: AppLocalizations.of(context).scoreIncreaseFor(playerName),
+                semanticLabel: AppLocalizations.of(
+                  context,
+                ).scoreIncreaseFor(playerName),
                 theme: theme,
               ),
             ] else
@@ -129,9 +133,18 @@ class PlayerScoreRow extends StatelessWidget {
 
   Widget _buildScoreIndicator(BuildContext context, ThemeData theme) {
     final (icon, label) = switch (status) {
-      PlayerScoreStatus.entered => ('●', AppLocalizations.of(context).scoreEnteredValue('${grossScore ?? ""}')),
-      PlayerScoreStatus.notEntered => ('○', AppLocalizations.of(context).scorecardScoreNotEntered),
-      PlayerScoreStatus.notPlayed => ('—', AppLocalizations.of(context).scorecardHoleNotPlayed),
+      PlayerScoreStatus.entered => (
+        '●',
+        AppLocalizations.of(context).scoreEnteredValue('${grossScore ?? ""}'),
+      ),
+      PlayerScoreStatus.notEntered => (
+        '○',
+        AppLocalizations.of(context).scorecardScoreNotEntered,
+      ),
+      PlayerScoreStatus.notPlayed => (
+        '—',
+        AppLocalizations.of(context).scorecardHoleNotPlayed,
+      ),
     };
 
     return Semantics(
@@ -207,11 +220,18 @@ class PlayerScoreRow extends StatelessWidget {
     );
   }
 
-  String get _semanticLabel {
+  /// What a screen reader announces for this row.
+  ///
+  /// Localised like everything else: a golfer using TalkBack in Vietnamese was
+  /// hearing "score not entered" between two Vietnamese sentences.
+  String _semanticLabel(AppLocalizations l10n) {
     return switch (status) {
-      PlayerScoreStatus.entered => '$playerName, score ${grossScore ?? ""}',
-      PlayerScoreStatus.notEntered => '$playerName, score not entered',
-      PlayerScoreStatus.notPlayed => '$playerName, hole not played',
+      PlayerScoreStatus.entered => l10n.scoreRowEntered(
+        playerName,
+        '${grossScore ?? ""}',
+      ),
+      PlayerScoreStatus.notEntered => l10n.scoreRowNotEntered(playerName),
+      PlayerScoreStatus.notPlayed => l10n.scoreRowNotPlayed(playerName),
     };
   }
 }

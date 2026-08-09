@@ -224,7 +224,27 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
   }
 
   Future<void> _confirmDelete(_DownloadedPackage pkg) async {
-    final connectivity = ConnectivityService(prefs: _getPrefs());
+    // Was `_getPrefs()`, which threw UnimplementedError — so the only way to
+    // delete a downloaded course crashed the screen. The preferences are read
+    // here rather than injected: they are what ConnectivityService answers the
+    // Wi-Fi-only question from.
+    final SharedPreferences prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).downloadPreferencesUnavailable,
+          ),
+        ),
+      );
+      return;
+    }
+    if (!mounted) return;
+
+    final connectivity = ConnectivityService(prefs: prefs);
     final downloader = PackageFileDownloader();
     final downloadService = CoursePackageDownloadService(
       manifestRepo: widget.manifestRepo,
@@ -244,10 +264,6 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
 
     downloadService.dispose();
     connectivity.dispose();
-  }
-
-  SharedPreferences _getPrefs() {
-    throw UnimplementedError('Inject SharedPreferences via provider');
   }
 
   String _formatBytes(int bytes) {

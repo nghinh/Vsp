@@ -81,8 +81,8 @@ void main() {
     }) {
       return MaterialApp(
         locale: const Locale('en'),
-      supportedLocales: kSupportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: kSupportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
         theme: VspTheme.light(),
         home: Scaffold(
           body: CourseCard(
@@ -146,7 +146,11 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        buildCard(course: verifiedCourse, isFavorite: true, onFavoriteToggle: () {}),
+        buildCard(
+          course: verifiedCourse,
+          isFavorite: true,
+          onFavoriteToggle: () {},
+        ),
       );
       expect(find.byIcon(Icons.favorite), findsOneWidget);
     });
@@ -155,7 +159,11 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        buildCard(course: verifiedCourse, isFavorite: false, onFavoriteToggle: () {}),
+        buildCard(
+          course: verifiedCourse,
+          isFavorite: false,
+          onFavoriteToggle: () {},
+        ),
       );
       expect(find.byIcon(Icons.favorite_border), findsOneWidget);
     });

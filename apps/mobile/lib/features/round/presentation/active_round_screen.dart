@@ -25,6 +25,8 @@
 // inside HoleMapScreen, below it, so the target a golfer dropped on the map
 // was invisible to the Target tab standing next to it.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
@@ -37,7 +39,19 @@ import '../../../core/network/api_client.dart';
 import '../../../data/api/weather_api.dart';
 import '../../../data/repositories/course_correction_repository.dart';
 import '../../../data/repositories/weather_repository_impl.dart';
+import '../../../application/detection/detection_cubit.dart';
+import '../../../application/detection/detection_state.dart';
+import '../../../application/location/location_cubit.dart';
+import '../../../data/repositories/course_repository_impl.dart';
+import '../../../data/repositories/facility_repository_impl.dart';
+import '../../../data/repositories/hole_repository_impl.dart';
+import '../../../application/sync/offline_sync_runner.dart';
+import '../../../data/services/round_telemetry_recorder.dart';
+import '../../../domain/models/course_hole_detection.dart';
 import '../../../domain/models/qualified_location.dart';
+import '../../../domain/services/course_hole_detection_service.dart';
+import '../../play/services/course_hole_detection_service_impl.dart';
+import '../../play/widgets/hole_switch_confirmation_dialog.dart';
 import '../../../domain/repositories/weather_repository.dart';
 import '../../../domain/services/location_service.dart';
 import '../../../presentation/screens/score/scorecard_screen.dart';
@@ -126,6 +140,37 @@ class ActiveRoundScreen extends StatefulWidget {
   /// with — which is "none" unless a token was supplied at build time.
   final SatelliteImageryConfig? imageryConfig;
 
+  /// Injectable for tests. Falls back to a recorder writing to the on-device
+  /// telemetry store.
+  final RoundTelemetryRecorder? telemetryRecorder;
+
+  /// Injectable for tests.
+  final OfflineSyncRunner? syncRunner;
+
+  /// Whether the round drains the offline queue. False in widget tests, which
+  /// have neither SharedPreferences nor SQLite.
+  final bool syncOfflineQueue;
+
+  /// Whether this round records telemetry at all.
+  ///
+  /// False in widget tests: the recorder reaches a battery platform channel
+  /// and a SQLite DAO, neither of which exists in a test binding, and Story
+  /// 6.6's records are about real rounds on real devices.
+  final bool recordTelemetry;
+
+  /// Whether the round follows the golfer across the course.
+  ///
+  /// False in widget tests, which have no GPS and no course package: detection
+  /// would run, find nothing, and add noise to every round test.
+  final bool detectHoles;
+
+  /// Injectable for tests. Falls back to a cubit over the on-device package.
+  final DetectionCubit? detectionCubit;
+
+  /// Injectable for tests, when a test wants the real cubit over a fake
+  /// package.
+  final CourseHoleDetectionService? detectionService;
+
   const ActiveRoundScreen({
     super.key,
     required this.roundId,
@@ -145,6 +190,13 @@ class ActiveRoundScreen extends StatefulWidget {
     this.holeMapRepository,
     this.weatherRepository,
     this.imageryConfig,
+    this.telemetryRecorder,
+    this.recordTelemetry = true,
+    this.syncRunner,
+    this.syncOfflineQueue = true,
+    this.detectHoles = true,
+    this.detectionCubit,
+    this.detectionService,
   });
 
   @override
@@ -162,6 +214,203 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
   /// for.
   late final Set<ActiveRoundTab> _visited = {widget.initialTab};
 
+  /// Bumped to ask the scorecard to run its finish-round flow. A counter
+  /// rather than a flag so a second request after a cancelled confirmation
+  /// still notifies.
+  final ValueNotifier<int> _finishRequests = ValueNotifier<int>(0);
+
+  /// The hole the golfer is playing.
+  ///
+  /// The scorecard is where a hole is finished, so it is what moves this; the
+  /// map follows. Before this existed the map was loaded once with the round's
+  /// starting hole and never told about another, which left the strategic map,
+  /// the satellite basemap and the measuring tool stuck on the 1st for the
+  /// whole round — on a database where nearly every hole falls back to
+  /// measuring, that is the round's only distance tool, on one hole out of 18.
+  late int _currentHoleNumber = widget.holeNumber;
+
+  /// Hole numbers in play order, taken from the round's own hole ids.
+  ///
+  /// A back-nine round carries '10'…'18', so stepping through the map follows
+  /// the round rather than counting from 1.
+  late final List<int> _holeNumbers = [
+    for (final id in widget.holeIds)
+      if (int.tryParse(id) case final n?) n,
+  ];
+
+  /// Records GPS quality, map latency and battery for this round.
+  ///
+  /// Owned here because a round is what these records belong to — the hole map
+  /// bloc supplies the fixes and the load times, but it is built lazily and
+  /// torn down with the map, and battery over 18 holes is not a map question.
+  ///
+  /// Null when the caller injected no recorder and told us not to build one,
+  /// which is how the widget tests keep platform channels out of the tree.
+  late final RoundTelemetryRecorder? _telemetry = _createTelemetry();
+
+  /// Drains the offline queue for as long as the round lasts.
+  late final OfflineSyncRunner? _syncRunner = widget.syncOfflineQueue
+      ? (widget.syncRunner ?? OfflineSyncRunner())
+      : null;
+
+  RoundTelemetryRecorder? _createTelemetry() {
+    if (!widget.recordTelemetry) return null;
+    final injected = widget.telemetryRecorder;
+    if (injected != null) return injected;
+    return RoundTelemetryRecorder(
+      roundId: widget.roundId,
+      totalHoles: widget.holeIds.isEmpty ? 18 : widget.holeIds.length,
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _telemetry?.setHole(widget.holeNumber, holesCompleted: _holesBehind());
+    // Unawaited: the first battery reading is a platform round-trip and the
+    // round opens on the scorecard, which does not wait for it.
+    unawaited(_telemetry?.start() ?? Future<void>.value());
+    unawaited(_startDetection());
+    // Four hours of writes while the phone drifts in and out of signal. The
+    // queue has to drain the moment a bar comes back, not when the golfer next
+    // opens the app — which, before this, is what nothing did.
+    unawaited(_syncRunner?.start() ?? Future<void>.value());
+    unawaited(_loadHoleIds());
+  }
+
+  /// Real database ids for this course's holes, keyed by hole number.
+  ///
+  /// A correction filed from this round used to carry the hole *number* as its
+  /// hole id — so a report about hole 1 of Long Thành (row 127) arrived
+  /// attached to row 1, which is hole 1 of a course in Hà Nội. Every
+  /// correction a golfer has ever filed named the wrong hole, and the report
+  /// looked perfectly well-formed on the way in.
+  Map<int, String> _holeIdsByNumber = const {};
+
+  Future<void> _loadHoleIds() async {
+    try {
+      final holes = await HoleRepositoryImpl().findByCourseWithGeometry(
+        widget.courseId,
+      );
+      if (!mounted || holes.isEmpty) return;
+      setState(() {
+        _holeIdsByNumber = {for (final h in holes) h.holeNumber: h.id};
+      });
+    } catch (_) {
+      // No package, or an unreadable one. The correction form then reports
+      // against the course with no hole named, which is recoverable; a wrong
+      // hole id is not.
+    }
+  }
+
+  Future<void> _startDetection() async {
+    final location = _locationCubit;
+    final detection = _detectionCubit;
+    if (location == null || detection == null) return;
+    await location.start();
+    await detection.startDetection(widget.roundId, location.stream);
+  }
+
+  @override
+  void dispose() {
+    _finishRequests.dispose();
+    _telemetry?.dispose();
+    // Flush before stopping: a round ending with a bar of signal should not
+    // wait for the next launch to send its last few holes.
+    unawaited(_syncRunner?.flush().then((_) => _syncRunner?.dispose()));
+    _detectionCubit?.close();
+    _locationCubit
+      ?..stop()
+      ..close();
+    super.dispose();
+  }
+
+  /// Holes of this round already behind the golfer.
+  int _holesBehind() {
+    final index = _holeNumbers.indexOf(_currentHoleNumber);
+    return index < 0 ? 0 : index;
+  }
+
+  /// Follows the golfer across the course.
+  ///
+  /// Story 6.2's detection service and its cubit were both complete and
+  /// constructed only inside their own files, so the app never worked out which
+  /// hole the golfer had walked to — on an eighteen-hole round they moved the
+  /// map by hand, every hole. Product principle 6.6 is "automatic by default";
+  /// this is the part that was missing.
+  ///
+  /// Started with the round rather than with a tab, because the golfer is on
+  /// the Score tab for most of a round and the round still has to follow them.
+  /// The location service samples adaptively (30 s stationary, 5 s moving), so
+  /// this is the sampling a golf round is for, not an extra cost.
+  late final LocationCubit? _locationCubit = widget.detectHoles
+      ? LocationCubit(locationService: widget.locationService)
+      : null;
+
+  late final DetectionCubit? _detectionCubit = _createDetectionCubit();
+
+  DetectionCubit? _createDetectionCubit() {
+    if (!widget.detectHoles) return null;
+    return widget.detectionCubit ??
+        DetectionCubit(
+          detectionService:
+              widget.detectionService ??
+              CourseHoleDetectionServiceImpl(
+                facilityRepository: FacilityRepositoryImpl(),
+                courseRepository: CourseRepositoryImpl(),
+                holeRepository: HoleRepositoryImpl(),
+              ),
+        );
+  }
+
+  /// True while a hole-switch confirmation is on screen, so a stream of fixes
+  /// cannot stack a second dialog on the first.
+  bool _switchPromptOpen = false;
+
+  /// Records the hole the golfer moved to, whoever moved them.
+  void _onHoleChanged(int holeNumber) {
+    if (holeNumber == _currentHoleNumber) return;
+    setState(() => _currentHoleNumber = holeNumber);
+    // Battery telemetry answers "how far did one charge get us", which is a
+    // question about holes, not minutes — so the count has to move with them.
+    _telemetry?.setHole(holeNumber, holesCompleted: _holesBehind());
+  }
+
+  /// Reacts to a detection result.
+  ///
+  /// Above the confidence threshold the round simply moves. Below it — and only
+  /// when the detector still has a hole in mind — the golfer is asked, because
+  /// moving someone to the wrong hole mid-round costs them a scorecard.
+  Future<void> _onDetection(DetectionState detection) async {
+    final detected = detection.currentDetection?.holeNumber;
+    if (detected == null || detected == _currentHoleNumber) return;
+    if (!_holeNumbers.contains(detected)) return;
+
+    if (detection.canAutoSwitch) {
+      _onHoleChanged(detected);
+      return;
+    }
+
+    if (!detection.pendingSwitch || _switchPromptOpen) return;
+    _switchPromptOpen = true;
+    try {
+      final l10n = AppLocalizations.of(context);
+      final accepted = await HoleSwitchConfirmationDialog.show(
+        context: context,
+        currentHoleNumber: _currentHoleNumber,
+        suggestedHoleNumber: detected,
+        confidenceLevel:
+            detection.currentDetection?.level ?? ConfidenceLevel.low,
+        blockedReason: l10n.holeSwitchLowConfidence,
+        onConfirm: () {},
+        onCancel: () {},
+      );
+      if (accepted && mounted) _onHoleChanged(detected);
+    } finally {
+      _switchPromptOpen = false;
+    }
+  }
+
   // -------------------------------------------------------------------
   // Tab navigation
   // -------------------------------------------------------------------
@@ -173,15 +422,23 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
     });
   }
 
-  /// The More tab's End Round tile. Finishing is owned by the scorecard (it
-  /// completes the round server-side and releases the active-round guard), so
-  /// this hands the golfer to it rather than duplicating that logic.
+  /// The More tab's End Round tile.
+  ///
+  /// Finishing is owned by the scorecard — it counts the unscored holes,
+  /// completes the round server-side and releases the active-round guard — so
+  /// this asks it to run that flow instead of duplicating it. It used to
+  /// switch to the Score tab and post a hint telling the golfer to finish
+  /// there, which answers "end my round" with directions to a button.
+  ///
+  /// The tab switch stays, for a reason that is not cosmetic: tabs are built
+  /// lazily, and on a round opened straight onto the map the scorecard is not
+  /// in the tree at all, so there is nothing listening. Switching builds it.
+  /// The request goes out after that frame, when it exists.
   void _endRound() {
-    final l10n = AppLocalizations.of(context);
     _onTabChanged(ActiveRoundTab.score);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.activeRoundEndRoundHint)),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _finishRequests.value++;
+    });
   }
 
   // -------------------------------------------------------------------
@@ -195,7 +452,26 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
     // it even as tabs are swapped in the IndexedStack.
     return _holeMapRepositoryScope(
       context,
-      ProfileScope(child: _holeMapBlocScope(_buildScaffold(context))),
+      ProfileScope(
+        child: _holeMapBlocScope(_detectionScope(_buildScaffold(context))),
+      ),
+    );
+  }
+
+  /// Listens for the golfer walking to another hole.
+  ///
+  /// Returns [child] untouched when detection is off, so a test tree without
+  /// GPS stays exactly as it was.
+  Widget _detectionScope(Widget child) {
+    final detection = _detectionCubit;
+    if (detection == null) return child;
+    return BlocListener<DetectionCubit, DetectionState>(
+      bloc: detection,
+      listenWhen: (previous, current) =>
+          previous.currentDetection != current.currentDetection ||
+          previous.pendingSwitch != current.pendingSwitch,
+      listener: (_, state) => _onDetection(state),
+      child: child,
     );
   }
 
@@ -208,17 +484,22 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
   /// GPS for a tab nobody looked at.
   Widget _holeMapBlocScope(Widget child) {
     return BlocProvider<HoleMapBloc>(
-      create: (context) => HoleMapBloc(
-        repository: context.read<HoleMapRepository>(),
-        locationService: widget.locationService,
-      )..add(
-        LoadHoleMap(
-          packageId: widget.packageId,
-          courseId: widget.courseId,
-          courseName: widget.courseName,
-          holeNumber: widget.holeNumber,
-        ),
-      ),
+      create: (context) =>
+          HoleMapBloc(
+            repository: context.read<HoleMapRepository>(),
+            locationService: widget.locationService,
+            telemetry: _telemetry,
+          )..add(
+            LoadHoleMap(
+              packageId: widget.packageId,
+              courseId: widget.courseId,
+              courseName: widget.courseName,
+              // Created lazily on the first read, which may be several holes into
+              // the round — so it opens on the hole being played, not the one the
+              // round started on.
+              holeNumber: _currentHoleNumber,
+            ),
+          ),
       child: child,
     );
   }
@@ -268,9 +549,11 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
               packageId: widget.packageId,
               courseId: widget.courseId,
               courseName: widget.courseName,
-              holeNumber: widget.holeNumber,
+              holeNumber: _currentHoleNumber,
+              holeNumbers: _holeNumbers,
               locationService: widget.locationService,
               imageryConfig: widget.imageryConfig,
+              onHoleChanged: _onHoleChanged,
             ),
           ),
 
@@ -283,6 +566,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             playerNames: widget.playerNames,
             holePars: widget.holePars,
             isTournamentMode: widget.isTournamentMode,
+            onHoleChanged: _onHoleChanged,
+            initialHoleNumber: widget.holeNumber,
+            holeNumber: _currentHoleNumber,
+            finishRequests: _finishRequests,
           ),
 
           // Target tab — live distances for the target placed on the map.
@@ -308,7 +595,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
           // More tab — with correction submission entry point
           _MoreTab(
             courseId: widget.courseId,
-            holeId: widget.holeNumber.toString(),
+            // Null rather than the hole number when the package cannot tell us
+            // the real id: a correction with no hole attached can still be
+            // placed by its coordinates, one attached to the wrong hole cannot.
+            holeId: _holeIdsByNumber[_currentHoleNumber],
             locationService: widget.locationService,
             onEndRound: _endRound,
           ),
@@ -336,18 +626,26 @@ class _MapTab extends StatelessWidget {
   final String courseName;
   final int holeNumber;
 
+  /// Holes in play order, so the map header can step through the round.
+  final List<int> holeNumbers;
+
   /// GPS source, forwarded to the satellite measuring tool.
   final LocationService locationService;
 
   /// Imagery configuration, injectable for tests.
   final SatelliteImageryConfig? imageryConfig;
 
+  /// Moves the round when the golfer steps the map to another hole.
+  final ValueChanged<int> onHoleChanged;
+
   const _MapTab({
     required this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
+    required this.holeNumbers,
     required this.locationService,
+    required this.onHoleChanged,
     this.imageryConfig,
   });
 
@@ -358,8 +656,10 @@ class _MapTab extends StatelessWidget {
       courseId: courseId,
       courseName: courseName,
       holeNumber: holeNumber,
+      holeNumbers: holeNumbers,
       locationService: locationService,
       imageryConfig: imageryConfig,
+      onHoleChanged: onHoleChanged,
     );
   }
 }
@@ -380,13 +680,32 @@ class _ScoreTab extends StatelessWidget {
   final Map<String, int> holePars;
   final bool isTournamentMode;
 
+  /// Reports the hole the golfer moved to, so the map can follow them.
+  final ValueChanged<int> onHoleChanged;
+
+  /// Hole the round opens on — the starting hole, or the hole a resumed round
+  /// stopped at.
+  final int initialHoleNumber;
+
+  /// Hole the round currently says the golfer is on, so detection can move the
+  /// scorecard as well as the map.
+  final int holeNumber;
+
+  /// Bumped by the More tab's End Round tile, which has no scores of its own
+  /// to count and so asks the scorecard to run the flow.
+  final Listenable finishRequests;
+
   const _ScoreTab({
+    required this.finishRequests,
     required this.roundId,
     required this.holeIds,
     required this.playerIds,
     required this.playerNames,
     required this.holePars,
     required this.isTournamentMode,
+    required this.onHoleChanged,
+    required this.initialHoleNumber,
+    required this.holeNumber,
   });
 
   @override
@@ -398,6 +717,10 @@ class _ScoreTab extends StatelessWidget {
       playerNames: playerNames,
       holePars: holePars,
       isTournamentMode: isTournamentMode,
+      onHoleChanged: onHoleChanged,
+      initialHoleNumber: initialHoleNumber,
+      finishRequests: finishRequests,
+      holeNumber: holeNumber,
     );
   }
 }
@@ -638,14 +961,21 @@ class _MoreTab extends StatelessWidget {
       backgroundColor: VspColorDark.background,
       appBar: AppBar(
         backgroundColor: VspColorDark.surface,
-        title: Text(l10n.navMore, style: const TextStyle(color: VspColorDark.textPrimary)),
+        title: Text(
+          l10n.navMore,
+          style: const TextStyle(color: VspColorDark.textPrimary),
+        ),
         iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
       ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.more_horiz, size: 64, color: VspColorDark.textTertiary),
+            const Icon(
+              Icons.more_horiz,
+              size: 64,
+              color: VspColorDark.textTertiary,
+            ),
             const SizedBox(height: 16),
             Text(
               l10n.activeRoundOptions,
@@ -810,7 +1140,6 @@ class _NavItem extends StatelessWidget {
     required this.isSelected,
     required this.onTap,
   });
-
 
   @override
   Widget build(BuildContext context) {

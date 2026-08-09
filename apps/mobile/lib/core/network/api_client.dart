@@ -8,6 +8,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+
+import 'vsp_endpoints.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// VSP API error with structured code, message, and optional field context.
@@ -59,6 +61,13 @@ class VspApiException implements Exception {
   /// Returns true if this is a 304 Not Modified response.
   bool get isNotModified => statusCode == 304;
 
+  /// True when the server was never reached — no status code came back.
+  ///
+  /// The distinction is the difference between "your session is over" and "you
+  /// are on the 4th fairway": the first should sign a golfer out, the second
+  /// must not.
+  bool get isNetworkError => code == 'NETWORK_ERROR' || statusCode == null;
+
   @override
   String toString() => 'VspApiException($code): $message';
 }
@@ -73,13 +82,8 @@ enum HttpMethod { get, post, put, patch, delete }
 
 /// API client for VSP backend.
 class ApiClient {
-  /// Base URL of the VSP API.
-  /// In development, point to local backend.
-  /// In production, point to deployed API endpoint.
-  static const String _baseUrl = String.fromEnvironment(
-    'VSP_API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
-  );
+  /// Base URL of the VSP API — see [VspEndpoints].
+  static String get _baseUrl => VspEndpoints.apiBaseUrl;
 
   final http.Client _httpClient;
 
@@ -102,6 +106,44 @@ class ApiClient {
   /// The shared bearer token, so other API clients (e.g. PerformanceApi) can
   /// authenticate with the same session instead of holding their own token.
   static String? get sharedAccessToken => _accessToken;
+
+  /// Exchanges the stored refresh token for a fresh access token.
+  ///
+  /// Set once by the auth layer at start-up. Null in tests and before sign-in,
+  /// which simply means a 401 stays a 401.
+  ///
+  /// <strong>Why this exists.</strong> An access token lives one hour and was
+  /// refreshed in exactly one place: session restore, at app launch. A round of
+  /// golf lasts four. So from the second hour onward every authenticated
+  /// request failed with 401 — and the sync queue classifies 401 as retryable,
+  /// tries five times, then marks the event permanently failed. A golfer's
+  /// scores, shots and corrections from holes 5 through 18 were being written
+  /// to the phone, rejected by the server, and given up on, with nothing on
+  /// screen saying so.
+  static Future<bool> Function()? refreshAccessToken;
+
+  /// True while a refresh is in flight, so a burst of queued requests all
+  /// hitting 401 at once produces one refresh rather than a dozen.
+  static Future<bool>? _refreshInFlight;
+
+  /// Refreshes the access token at most once per burst.
+  ///
+  /// Returns false when there is no refresh hook, no refresh token, or the
+  /// server refused — in which case the caller should let the 401 stand rather
+  /// than retrying into a loop.
+  static Future<bool> _refreshOnce() {
+    final refresh = refreshAccessToken;
+    if (refresh == null) return Future.value(false);
+    return _refreshInFlight ??= refresh().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  /// Whether a 401 from [path] is worth refreshing for.
+  ///
+  /// Never for the auth endpoints themselves: a refused login is a refused
+  /// login, and refreshing on the refresh call is how a loop starts.
+  static bool _isRefreshable(String path) => !path.startsWith('/auth/');
 
   /// Build request headers including auth token, idempotency key, and custom headers.
   Map<String, String> _headers({
@@ -132,6 +174,9 @@ class ApiClient {
     Map<String, String>? queryParams,
     String? idempotencyKey,
     Map<String, String>? headers,
+    /// False on the retry that follows a token refresh, so one lapsed token
+    /// cannot turn into an endless chain of refreshes.
+    bool retryOnUnauthorized = true,
   }) async {
     final uri = Uri.parse(
       '$_baseUrl$path',
@@ -207,6 +252,25 @@ class ApiClient {
     } catch (ex) {
       debugPrint('[ApiClient] Unexpected error: $ex');
       throw VspApiException.network('An unexpected error occurred. Try again.');
+    }
+
+    // The token lapsed mid-session. Refresh once and repeat the request, with
+    // the same idempotency key so a write the server already accepted replays
+    // instead of duplicating. Guarded by `retryOnUnauthorized` so the retry
+    // itself cannot recurse.
+    if (response.statusCode == 401 &&
+        retryOnUnauthorized &&
+        _isRefreshable(path) &&
+        await _refreshOnce()) {
+      return request(
+        path: path,
+        method: method,
+        body: body,
+        queryParams: queryParams,
+        idempotencyKey: idempotencyKey,
+        headers: headers,
+        retryOnUnauthorized: false,
+      );
     }
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
@@ -308,6 +372,35 @@ class ApiClient {
     required String idempotencyKey,
     Map<String, dynamic>? body,
   }) async {
+    final response = await _sendOnce(
+      method: method,
+      path: path,
+      idempotencyKey: idempotencyKey,
+      body: body,
+    );
+
+    // One retry behind a fresh token. The request carries the same
+    // Idempotency-Key, so a server that did process the first attempt before
+    // the token lapsed replays rather than duplicating.
+    if (response.statusCode == 401 && _isRefreshable(path)) {
+      if (await _refreshOnce()) {
+        return _sendOnce(
+          method: method,
+          path: path,
+          idempotencyKey: idempotencyKey,
+          body: body,
+        );
+      }
+    }
+    return response;
+  }
+
+  Future<http.Response> _sendOnce({
+    required String method,
+    required String path,
+    required String idempotencyKey,
+    Map<String, dynamic>? body,
+  }) {
     final uri = Uri.parse('$_baseUrl$path');
     final headers = _headers(idempotencyKey: idempotencyKey);
     final encoded = body == null ? null : jsonEncode(body);

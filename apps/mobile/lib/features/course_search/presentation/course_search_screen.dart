@@ -32,6 +32,7 @@ import 'widgets/course_card.dart';
 import 'widgets/empty_search_state.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/domain/models/course_selection.dart';
 
 class CourseSearchScreen extends StatelessWidget {
   /// When true the screen acts as a picker: tapping a course pops the route
@@ -113,7 +114,11 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.selectionMode ? AppLocalizations.of(context).courseSearchSelectTitle : AppLocalizations.of(context).courseSearchTitle),
+        title: Text(
+          widget.selectionMode
+              ? AppLocalizations.of(context).courseSearchSelectTitle
+              : AppLocalizations.of(context).courseSearchTitle,
+        ),
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(108),
           child: Column(
@@ -179,10 +184,10 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
           ),
 
           // Tab 2: Favorites
-          const _FavoritesTab(),
+          _FavoritesTab(selectionMode: widget.selectionMode),
 
           // Tab 3: Recent
-          const _RecentTab(),
+          _RecentTab(selectionMode: widget.selectionMode),
         ],
       ),
     );
@@ -432,7 +437,10 @@ class _NearbyTab extends StatelessWidget {
 // ─── Favorites Tab ────────────────────────────────────────────────────────────
 
 class _FavoritesTab extends StatelessWidget {
-  const _FavoritesTab();
+  /// True when this screen was opened to pick a course for a round.
+  final bool selectionMode;
+
+  const _FavoritesTab({this.selectionMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -474,11 +482,25 @@ class _FavoritesTab extends StatelessWidget {
                 final fav = state.favorites[index];
                 return _FavoriteCourseTile(
                   favorite: fav,
+                  // Was a placeholder comment: tapping a favourite recorded the
+                  // view and went nowhere, so the tab a golfer keeps their home
+                  // course in was the one tab they could not open it from.
                   onTap: () {
                     context.read<CourseSearchBloc>().add(
                       RecordCourseView(fav.courseId),
                     );
-                    // Navigate to course detail (placeholder)
+                    if (selectionMode) {
+                      Navigator.of(
+                        context,
+                      ).pop(CourseSelection.fromFavorite(fav));
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            CourseDetailScreen(courseId: fav.courseId),
+                      ),
+                    );
                   },
                   onRemove: () {
                     context.read<CourseSearchBloc>().add(
@@ -500,7 +522,10 @@ class _FavoritesTab extends StatelessWidget {
 // ─── Recent Tab ───────────────────────────────────────────────────────────────
 
 class _RecentTab extends StatelessWidget {
-  const _RecentTab();
+  /// True when this screen was opened to pick a course for a round.
+  final bool selectionMode;
+
+  const _RecentTab({this.selectionMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -545,7 +570,18 @@ class _RecentTab extends StatelessWidget {
                     context.read<CourseSearchBloc>().add(
                       RecordCourseView(recent.courseId),
                     );
-                    // Navigate to course detail (placeholder)
+                    if (selectionMode) {
+                      Navigator.of(
+                        context,
+                      ).pop(CourseSelection.fromRecent(recent));
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            CourseDetailScreen(courseId: recent.courseId),
+                      ),
+                    );
                   },
                 );
               },
@@ -607,13 +643,14 @@ class _ResultsList extends StatelessWidget {
                 RecordCourseView(course.courseId),
               );
               if (selectionMode) {
-                Navigator.of(context).pop(course);
+                Navigator.of(
+                  context,
+                ).pop(CourseSelection.fromSearchResult(course));
                 return;
               }
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) =>
-                      CourseDetailScreen(courseId: course.courseId),
+                  builder: (_) => CourseDetailScreen(courseId: course.courseId),
                 ),
               );
             },

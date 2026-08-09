@@ -5,6 +5,8 @@
 //
 // Story 5.4: Synchronize Round Idempotently — Slice 3
 
+import 'dart:async';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,6 +18,24 @@ import '../../domain/models/sync_status.dart';
 /// Uses its own SQLite database (`vsp_sync.db`) to keep the sync queue
 /// independent from the round data store.
 class SyncQueueRepository {
+  /// Fires whenever anything is appended to the queue, on any instance.
+  ///
+  /// [SyncWorker] only drained on start-up and on a connectivity *change*, so
+  /// anything queued while the app was open and already online sat there until
+  /// the golfer walked into a dead spot and out again, or restarted the app. A
+  /// correction filed on the 3rd green reached the server after the round, if
+  /// at all — and the same was true of every score and shot behind it.
+  ///
+  /// Static because producers (repositories) and the consumer (the worker) are
+  /// built independently all over the app and hold different instances of this
+  /// class; threading a callback between them is what nobody did for the sync
+  /// event this queue was built for.
+  static final StreamController<void> _appended =
+      StreamController<void>.broadcast();
+
+  /// Subscribed to by the sync worker so a new event is sent, not stored.
+  static Stream<void> get onAppended => _appended.stream;
+
   static const String _tableName = 'sync_events';
   static const String _dbName = 'vsp_sync.db';
   static const int _dbVersion = 1;
@@ -100,6 +120,12 @@ class SyncQueueRepository {
         null,
       ],
     );
+
+    // Durable first, then wake the worker. Announcing before the write would
+    // let a drain read a queue the event is not in yet.
+    if (_appended.hasListener) {
+      _appended.add(null);
+    }
   }
 
   /// Mark an event as currently syncing.

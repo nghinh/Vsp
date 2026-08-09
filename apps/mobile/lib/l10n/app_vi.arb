@@ -636,7 +636,6 @@
   "activeRoundLength": "Chiều dài",
   "activeRoundReportCorrection": "Báo lỗi dữ liệu",
   "activeRoundEndRound": "Kết thúc vòng đấu",
-  "activeRoundEndRoundHint": "Kết thúc vòng đấu bằng nút cờ ở tab Điểm.",
   "activeRoundOptions": "Tùy chọn vòng đấu",
   "activeRoundTargetHeading": "Khoảng cách mục tiêu",
   "activeRoundTargetMessage": "Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.",
@@ -876,10 +875,194 @@
   "measureAccuracy": "GPS ±{meters} m",
   "measureTolerance": "sai số {value}",
   "measureGreenUnknown": "Hố này chưa có vị trí green",
+  "roundSetupActiveBag": "Túi gậy đang dùng",
+  "@roundSetupActiveBag": {
+    "description": "Section heading above the golfer's selected club bag on the round setup screen."
+  },
+  "roundSetupSelectCourseFirst": "Hãy chọn sân trước",
+  "@roundSetupSelectCourseFirst": {
+    "description": "Why the Start Round button is disabled: no course chosen yet."
+  },
+  "roundSetupAcknowledgeWarning": "Hãy xác nhận cảnh báo dữ liệu sân để tiếp tục",
+  "@roundSetupAcknowledgeWarning": {
+    "description": "Why the Start Round button is disabled: the package warning has not been acknowledged."
+  },
+  "roundSetupStartRound": "Bắt đầu vòng đấu",
+  "@roundSetupStartRound": {
+    "description": "Primary action that starts the round."
+  },
+  "packageOfflineReady": "Sẵn sàng ngoại tuyến",
+  "@packageOfflineReady": {
+    "description": "Course package is fully downloaded."
+  },
+  "packageOfflineReadyBody": "Bạn có thể chơi sân này khi không có mạng.",
+  "@packageOfflineReadyBody": {
+    "description": "Explains what Offline Ready means."
+  },
+  "packageNotAvailable": "Sân này chưa có gói dữ liệu để tải ngoại tuyến.",
+  "@packageNotAvailable": {
+    "description": "Shown when a course has no downloadable package."
+  },
+  "packageUpdateAvailable": "Có bản cập nhật",
+  "@packageUpdateAvailable": {
+    "description": "A newer course package version exists on the server."
+  },
+  "packageDaysAgo": "{days} ngày trước",
+  "@packageDaysAgo": {
+    "description": "How long ago the package was updated.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "wifiOnlyTitle": "Chỉ tải qua Wi-Fi",
+  "@wifiOnlyTitle": {
+    "description": "Toggle that restricts package downloads to Wi-Fi."
+  },
+  "wifiConnected": "Đã kết nối Wi-Fi",
+  "@wifiConnected": {
+    "description": "Current connectivity state under the Wi-Fi-only toggle."
+  },
+  "wifiNotConnected": "Không có Wi-Fi — tạm dừng tải",
+  "@wifiNotConnected": {
+    "description": "Current connectivity state under the Wi-Fi-only toggle."
+  },
+  "mapDistanceRingsTitle": "VÒNG CỰ LY",
+  "@mapDistanceRingsTitle": {
+    "description": "Heading of the distance-ring legend on the hole map."
+  },
+  "scoreEnteredCount": "{entered}/{total} đã nhập",
+  "@scoreEnteredCount": {
+    "description": "How many players in the group have a score for this hole.",
+    "placeholders": {
+      "entered": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "gpsReady": "GPS sẵn sàng",
+  "@gpsReady": {
+    "description": "GPS accuracy chip: waiting for first fix."
+  },
+  "gpsGood": "GPS tốt",
+  "@gpsGood": {
+    "description": "GPS accuracy chip: accuracy under 5 m."
+  },
+  "gpsFair": "GPS khá",
+  "@gpsFair": {
+    "description": "GPS accuracy chip: accuracy 5-10 m."
+  },
+  "gpsPoor": "GPS yếu",
+  "@gpsPoor": {
+    "description": "GPS accuracy chip: accuracy worse than 10 m."
+  },
+  "roundFormatCasual": "Thường",
+  "@roundFormatCasual": {
+    "description": "Round format: a social round."
+  },
+  "roundFormatPractice": "Tập luyện",
+  "@roundFormatPractice": {
+    "description": "Round format: practice, not for handicap."
+  },
+  "roundFormatTournament": "Giải đấu",
+  "@roundFormatTournament": {
+    "description": "Round format: tournament play."
+  },
+  "scoringStrokePlay": "Đếm gậy",
+  "@scoringStrokePlay": {
+    "description": "Scoring mode: total strokes."
+  },
+  "scoringStableford": "Stableford",
+  "@scoringStableford": {
+    "description": "Scoring mode: Stableford points. Kept in English — the term is used as-is in Vietnamese golf."
+  },
+  "relativeJustNow": "Vừa xong",
+  "@relativeJustNow": {
+    "description": "Timestamp under an hour old."
+  },
+  "relativeHoursAgo": "{hours} giờ trước",
+  "@relativeHoursAgo": {
+    "description": "Timestamp in hours.",
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "relativeToday": "Hôm nay",
+  "@relativeToday": {
+    "description": "Timestamp earlier today."
+  },
+  "relativeYesterday": "Hôm qua",
+  "@relativeYesterday": {
+    "description": "Timestamp yesterday."
+  },
+  "relativeDaysAgo": "{days} ngày trước",
+  "@relativeDaysAgo": {
+    "description": "Timestamp in days.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "relativeMonthsAgo": "{months} tháng trước",
+  "@relativeMonthsAgo": {
+    "description": "Timestamp in months.",
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "relativeYearsAgo": "{years} năm trước",
+  "@relativeYearsAgo": {
+    "description": "Timestamp in years.",
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "scoreRowEntered": "{player}, điểm {score}",
+  "@scoreRowEntered": {
+    "description": "Screen-reader label for a player row with a score.",
+    "placeholders": {
+      "player": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "scoreRowNotEntered": "{player}, chưa nhập điểm",
+  "@scoreRowNotEntered": {
+    "description": "Screen-reader label for a player row with no score yet.",
+    "placeholders": {
+      "player": {"type": "String"}
+    }
+  },
+  "scoreRowNotPlayed": "{player}, chưa chơi hố này",
+  "@scoreRowNotPlayed": {
+    "description": "Screen-reader label for a player who did not play this hole.",
+    "placeholders": {
+      "player": {"type": "String"}
+    }
+  },
+  "measureGreenReportAction": "Green ở ngay đây — báo vị trí",
+  "@measureGreenReportAction": {
+    "description": "Offers the golfer's own position as the green position, shown only where the app has just said it does not know where the green is."
+  },
+  "measureGreenReportSent": "Đã gửi, chờ quản trị viên duyệt",
+  "@measureGreenReportSent": {
+    "description": "Shown after a green-position report is queued. Deliberately does not claim the map has changed."
+  },
+  "measureGreenReportQueued": "Đã ghi nhận. Quản trị viên sẽ duyệt trước khi bản đồ thay đổi.",
+  "@measureGreenReportQueued": {
+    "description": "Confirms a green-position report was saved and queued. Says explicitly that the map has not changed."
+  },
+  "measureGreenReportNoFix": "Tín hiệu GPS chưa đủ tốt để gửi vị trí. Hãy thử lại ở chỗ thoáng.",
+  "@measureGreenReportNoFix": {
+    "description": "Shown when the GPS fix is too coarse to file a green-position report."
+  },
+  "measureGreenReportFailed": "Chưa gửi được. Hãy thử lại.",
+  "@measureGreenReportFailed": {
+    "description": "Shown when saving a green-position report failed. Never claims it was sent."
+  },
   "measureGreenEstimated": "Vị trí green là ước lượng, chưa được khảo sát",
   "measureGreenSurveyed": "Vị trí green đã được khảo sát",
   "measureEmptyTitle": "Đo mọi khoảng cách",
   "measureEmptyBody": "Chạm vào cờ, mép bunker hoặc điểm layup trên ảnh vệ tinh để đo.",
+  "measureEmptyBodyNoImagery": "Bản dựng này không có ảnh vệ tinh để ngắm, nhưng vị trí của bạn và green vẫn được vẽ trên bản đồ. Chạm vào bất kỳ đâu để đo tới đó.",
+  "measureYouToGreen": "Từ bạn tới green",
+  "measureWithoutImagery": "Bản dựng này không có ảnh vệ tinh — thước đo vẫn hoạt động.",
   "measureQualityGood": "Tốt",
   "measureQualityFair": "Khá",
   "measureQualityPoor": "Tương đối",
@@ -889,7 +1072,9 @@
   "measureSemanticsLeg": "{label}: {distance}, sai số {tolerance}",
   "basemapSatellite": "Vệ tinh",
   "basemapCourseMap": "Bản đồ sân",
+  "basemapMeasure": "Thước đo",
   "basemapSwitchToSatellite": "Chuyển sang ảnh vệ tinh",
+  "basemapSwitchToMeasure": "Chuyển sang công cụ đo khoảng cách",
   "basemapSwitchToCourseMap": "Chuyển sang bản đồ sân",
   "basemapSatelliteUnavailableTitle": "Không có ảnh vệ tinh",
   "basemapSatelliteUnavailableBody": "Bản dựng này chưa cấu hình nguồn ảnh vệ tinh nên chế độ vệ tinh đã tắt.",
@@ -899,8 +1084,45 @@
   "holeNoGeometryTitle": "Hố này chưa có bản đồ khảo sát",
   "holeNoGeometryBody": "Chúng tôi chưa số hoá hố này. Ảnh vệ tinh là ảnh thật — hãy tự đo khoảng cách bạn cần.",
   "holeNoGeometryBadge": "Chưa khảo sát",
-  "holeNoGeometryNoImageryTitle": "Không có dữ liệu thật cho hố này",
-  "holeNoGeometryNoImageryBody": "Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân.",
+  "holeNoGeometryBodyNoImagery": "Chúng tôi chưa số hoá hố này, và bản dựng này cũng không có ảnh vệ tinh. Thước đo vẫn dùng được: vị trí của bạn và green đều nằm trên bản đồ, và mỗi khoảng cách đều ghi rõ sai số.",
   "distanceNotSurveyedTooltip": "Chiều dài này được tính từ toạ độ chưa ai xác minh. Hãy coi đây là số gần đúng và kiểm tra lại các cột mốc trên sân.",
-  "holeListUnverifiedNotice": "{count, plural, =1{1 hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.} other{{count} hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.}}"
+  "holeListUnverifiedNotice": "{count, plural, =1{1 hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.} other{{count} hố trong danh sách này có toạ độ chưa ai xác minh, nên chiều dài chỉ là gần đúng.}}",
+  "distanceUnavailableSemantics": "Chưa có khoảng cách {label}",
+  "analyticsNoClubsInBag": "Túi gậy của bạn chưa có gậy nào. Thêm gậy để lọc theo gậy.",
+  "downloadOfflineCoursesSubtitle": "Quản lý các sân đã lưu để chơi khi không có sóng",
+  "correctionListTitle": "Báo lỗi dữ liệu của tôi",
+  "correctionListSubtitle": "Những dữ liệu sân bạn đã báo và kết quả xử lý",
+  "smartTargetExampleBadge": "VÍ DỤ",
+  "smartTargetExampleBody": "Đây là ví dụ minh hoạ trên một hố giả định, không phải dữ liệu của bạn. Khi vào vòng đấu, chính panel này chạy trên vị trí GPS, túi gậy và hố thật của bạn.",
+  "holeSwitchLowConfidence": "GPS chưa đủ chắc chắn để tự chuyển hố cho bạn.",
+  "telemetryExportTitle": "Xuất telemetry chạy thử",
+  "telemetryExportBody": "Xuất chất lượng GPS, độ trễ bản đồ và pin của một vòng đấu ra tệp JSON để bàn giao cho bên phân tích. Ghi ngay trên máy — không cần mạng, điều rất quan trọng khi ở ngoài sân.",
+  "telemetryExportRoundId": "Mã vòng đấu",
+  "telemetryExportInspect": "Xem vòng này đã ghi được gì",
+  "telemetryExportShare": "Xuất và chia sẻ",
+  "telemetryExportSamples": "{gps} mẫu GPS · {battery} lần đo pin · {map} lần nạp bản đồ",
+  "telemetryExportBatteryUsed": "Pin đã dùng trong khoảng ghi nhận: {percent}%",
+  "telemetryExportSlowestMap": "Lần nạp bản đồ chậm nhất: {ms} ms (mục tiêu: dưới 2000 ms)",
+  "telemetryExportWorstAccuracy": "Sai số GPS tệ nhất: {meters} m (cảnh báo khi trên 10 m)",
+  "telemetryExportEmpty": "Vòng này chưa ghi được gì. Telemetry chỉ ghi từ các fix mà vòng đấu vốn đã nhận, nên một vòng chơi hoàn toàn ở tab Ghi điểm sẽ không có mẫu GPS nào — hãy mở tab Bản đồ trong lúc chơi.",
+  "telemetryExportWritten": "Đã ghi vào {path}",
+  "settingsAbout": "Giới thiệu",
+  "creditsTitle": "Ghi công và giấy phép",
+  "creditsSubtitle": "Nguồn dữ liệu sân, ảnh vệ tinh và giấy phép nguồn mở",
+  "creditsCourseDataTitle": "Dữ liệu sân golf",
+  "creditsOpenStreetMapBody": "Hình dạng green, bẫy cát, mặt nước và fairway được suy ra từ OpenStreetMap, sử dụng theo giấy phép Open Database Licence.",
+  "creditsCopernicusBody": "Một số chướng ngại nước được nhận diện từ ảnh Copernicus Sentinel-2.",
+  "creditsImageryTitle": "Ảnh vệ tinh",
+  "creditsMapboxBody": "Ảnh vệ tinh do Mapbox và OpenStreetMap cung cấp, chỉ hiển thị khi bạn có kết nối mạng.",
+  "creditsImageryProviderBody": "Ảnh vệ tinh do đơn vị nêu trên cung cấp theo điều khoản của họ, và chỉ hiển thị khi bạn có kết nối mạng.",
+  "creditsImageryNoneTitle": "Chưa cấu hình nguồn ảnh vệ tinh",
+  "creditsImageryNoneBody": "Bản dựng này không có ảnh vệ tinh. Công cụ đo vẫn hoạt động — nó dùng GPS và hình học, không cần ảnh.",
+  "creditsSoftwareTitle": "Phần mềm",
+  "creditsOpenSourceLicences": "Giấy phép nguồn mở",
+  "creditsOpenSourceLicencesBody": "Giấy phép của các thư viện dùng để xây dựng ứng dụng này",
+  "creditsDataQualityNote": "Dữ liệu hình học của sân được gắn nhãn trung thực: hố nào chưa được khảo sát thì ứng dụng nói rõ và đưa ảnh vệ tinh kèm thước đo, thay vì vẽ một bản đồ mà chúng tôi không dám bảo đảm.",
+  "downloadPreferencesUnavailable": "Không đọc được cài đặt tải xuống trên thiết bị này nên chưa quản lý được phần tải sân ở đây.",
+  "summaryUnavailable": "Vòng đấu của bạn đã được lưu. Không mở được bản tổng kết trên thiết bị này — bạn có thể xem lại vòng đấu ở mục Vòng đấu.",
+  "holeMapPreviousHole": "Hố trước",
+  "holeMapNextHole": "Hố sau"
 }

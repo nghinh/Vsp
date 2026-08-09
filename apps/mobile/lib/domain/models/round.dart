@@ -144,7 +144,8 @@ class Round extends Equatable {
       packageVersion: map['package_version'] as String,
       tournamentPolicyId: map['tournament_policy_id'] as String?,
       tournamentId: map['tournament_id'] as String?,
-      tournamentPolicyVersion: (map['tournament_policy_version'] as num?)?.toInt(),
+      tournamentPolicyVersion: (map['tournament_policy_version'] as num?)
+          ?.toInt(),
       tournamentPolicy: policy,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),

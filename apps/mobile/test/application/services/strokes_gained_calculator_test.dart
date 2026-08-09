@@ -89,20 +89,22 @@ void main() {
           break;
       }
 
-      shots.add(Shot(
-        id: 'shot-$category-$i',
-        roundId: roundId,
-        flightId: 'flight-1',
-        playerId: playerId,
-        holeNumber: 1,
-        shotNumber: shotNumber,
-        lie: lie,
-        distanceYards: distance,
-        startedAt: now,
-        endedAt: now.add(const Duration(seconds: 10)),
-        createdAt: now,
-        updatedAt: now,
-      ));
+      shots.add(
+        Shot(
+          id: 'shot-$category-$i',
+          roundId: roundId,
+          flightId: 'flight-1',
+          playerId: playerId,
+          holeNumber: 1,
+          shotNumber: shotNumber,
+          lie: lie,
+          distanceYards: distance,
+          startedAt: now,
+          endedAt: now.add(const Duration(seconds: 10)),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
     }
 
     return shots;
@@ -117,12 +119,14 @@ void main() {
 
       final allShots = <Shot>[];
       for (final category in SGCategory.values) {
-        allShots.addAll(makeShotsInCategory(
-          playerId: playerId,
-          roundId: roundId,
-          category: category,
-          count: 25,
-        ));
+        allShots.addAll(
+          makeShotsInCategory(
+            playerId: playerId,
+            roundId: roundId,
+            category: category,
+            count: 25,
+          ),
+        );
       }
 
       final summary = calculator.calculateForRound(
@@ -134,7 +138,10 @@ void main() {
 
       expect(summary.playerId, playerId);
       expect(summary.roundId, roundId);
-      expect(summary.categoryBreakdown, hasLength(4)); // 4 categories × 1 benchmark
+      expect(
+        summary.categoryBreakdown,
+        hasLength(4),
+      ); // 4 categories × 1 benchmark
       expect(summary.limitations, isEmpty);
 
       // All results should have confidence > 0
@@ -146,7 +153,9 @@ void main() {
 
       // Overall SG should be sum of category SGs
       final sumSG = summary.categoryBreakdown.fold<double>(
-        0.0, (sum, r) => sum + r.strokesGained);
+        0.0,
+        (sum, r) => sum + r.strokesGained,
+      );
       expect(summary.overallStrokesGained, sumSG);
     });
 
@@ -156,12 +165,14 @@ void main() {
 
       final allShots = <Shot>[];
       for (final category in SGCategory.values) {
-        allShots.addAll(makeShotsInCategory(
-          playerId: playerId,
-          roundId: roundId,
-          category: category,
-          count: 25,
-        ));
+        allShots.addAll(
+          makeShotsInCategory(
+            playerId: playerId,
+            roundId: roundId,
+            category: category,
+            count: 25,
+          ),
+        );
       }
 
       final summary = calculator.calculateForRound(
@@ -355,30 +366,38 @@ void main() {
 
       // Mix of categories with insufficient samples
       final allShots = <Shot>[];
-      allShots.addAll(makeShotsInCategory(
-        playerId: playerId,
-        roundId: roundId,
-        category: SGCategory.offTheTee,
-        count: 5, // insufficient
-      ));
-      allShots.addAll(makeShotsInCategory(
-        playerId: playerId,
-        roundId: roundId,
-        category: SGCategory.approach,
-        count: 25, // OK
-      ));
-      allShots.addAll(makeShotsInCategory(
-        playerId: playerId,
-        roundId: roundId,
-        category: SGCategory.aroundTheGreen,
-        count: 3, // insufficient
-      ));
-      allShots.addAll(makeShotsInCategory(
-        playerId: playerId,
-        roundId: roundId,
-        category: SGCategory.putting,
-        count: 30, // OK
-      ));
+      allShots.addAll(
+        makeShotsInCategory(
+          playerId: playerId,
+          roundId: roundId,
+          category: SGCategory.offTheTee,
+          count: 5, // insufficient
+        ),
+      );
+      allShots.addAll(
+        makeShotsInCategory(
+          playerId: playerId,
+          roundId: roundId,
+          category: SGCategory.approach,
+          count: 25, // OK
+        ),
+      );
+      allShots.addAll(
+        makeShotsInCategory(
+          playerId: playerId,
+          roundId: roundId,
+          category: SGCategory.aroundTheGreen,
+          count: 3, // insufficient
+        ),
+      );
+      allShots.addAll(
+        makeShotsInCategory(
+          playerId: playerId,
+          roundId: roundId,
+          category: SGCategory.putting,
+          count: 30, // OK
+        ),
+      );
 
       final summary = calculator.calculateForRound(
         playerId: playerId,
@@ -411,7 +430,10 @@ void main() {
 
       expect(summary.playerId, 'player-1');
       expect(summary.roundId, 'round-1');
-      expect(summary.categoryBreakdown, hasLength(16)); // 4 categories × 4 benchmarks
+      expect(
+        summary.categoryBreakdown,
+        hasLength(16),
+      ); // 4 categories × 4 benchmarks
 
       // All results should be insufficientSample with 0 count
       for (final result in summary.categoryBreakdown) {
@@ -607,36 +629,39 @@ void main() {
       expect(summary.dateRange, dateRange);
     });
 
-    test('date range with no matching shots returns all insufficientSample', () {
-      final playerId = 'player-1';
+    test(
+      'date range with no matching shots returns all insufficientSample',
+      () {
+        final playerId = 'player-1';
 
-      final dateRange = SGDateRange(
-        start: DateTime(2026, 3, 1),
-        end: DateTime(2026, 3, 31),
-      );
+        final dateRange = SGDateRange(
+          start: DateTime(2026, 3, 1),
+          end: DateTime(2026, 3, 31),
+        );
 
-      final shotOutsideRange = makeShot(
-        id: 'outside-range',
-        playerId: playerId,
-        roundId: 'round-1',
-        holeNumber: 1,
-        shotNumber: 1,
-        lie: ShotLie.teebox,
-        distanceYards: 250,
-        startedAt: DateTime(2026, 5, 1), // outside range
-      );
+        final shotOutsideRange = makeShot(
+          id: 'outside-range',
+          playerId: playerId,
+          roundId: 'round-1',
+          holeNumber: 1,
+          shotNumber: 1,
+          lie: ShotLie.teebox,
+          distanceYards: 250,
+          startedAt: DateTime(2026, 5, 1), // outside range
+        );
 
-      final summary = calculator.calculateForDateRange(
-        playerId: playerId,
-        dateRange: dateRange,
-        shots: [shotOutsideRange],
-        benchmarkTypes: {SGBenchmarkType.professional},
-      );
+        final summary = calculator.calculateForDateRange(
+          playerId: playerId,
+          dateRange: dateRange,
+          shots: [shotOutsideRange],
+          benchmarkTypes: {SGBenchmarkType.professional},
+        );
 
-      final offTeeResult = summary.categoryBreakdown.first;
-      expect(offTeeResult.sampleCount, 0);
-      expect(offTeeResult.limitation, SGLimitation.insufficientSample);
-    });
+        final offTeeResult = summary.categoryBreakdown.first;
+        expect(offTeeResult.sampleCount, 0);
+        expect(offTeeResult.limitation, SGLimitation.insufficientSample);
+      },
+    );
   });
 
   // ─── Confidence Computation Tests ─────────────────────────────────────────
@@ -676,7 +701,8 @@ void main() {
         expect(
           sortedEntries[i].value,
           greaterThanOrEqualTo(sortedEntries[i - 1].value),
-          reason: 'Confidence at n=${sortedEntries[i].key} (${sortedEntries[i].value}) '
+          reason:
+              'Confidence at n=${sortedEntries[i].key} (${sortedEntries[i].value}) '
               'should be >= confidence at n=${sortedEntries[i - 1].key} (${sortedEntries[i - 1].value})',
         );
       }
@@ -732,8 +758,9 @@ void main() {
       );
 
       // Should only count player-1's shots
-      final offTeeResult = summary.categoryBreakdown
-          .firstWhere((r) => r.category == SGCategory.offTheTee);
+      final offTeeResult = summary.categoryBreakdown.firstWhere(
+        (r) => r.category == SGCategory.offTheTee,
+      );
       expect(offTeeResult.sampleCount, 25);
     });
   });
@@ -742,33 +769,18 @@ void main() {
 
   group('benchmark accessors', () {
     test('getProfessionalBaseline returns correct values', () {
-      expect(
-        calculator.getProfessionalBaseline(SGCategory.offTheTee),
-        3.00,
-      );
-      expect(
-        calculator.getProfessionalBaseline(SGCategory.approach),
-        3.50,
-      );
+      expect(calculator.getProfessionalBaseline(SGCategory.offTheTee), 3.00);
+      expect(calculator.getProfessionalBaseline(SGCategory.approach), 3.50);
       expect(
         calculator.getProfessionalBaseline(SGCategory.aroundTheGreen),
         3.20,
       );
-      expect(
-        calculator.getProfessionalBaseline(SGCategory.putting),
-        1.90,
-      );
+      expect(calculator.getProfessionalBaseline(SGCategory.putting), 1.90);
     });
 
     test('getSimilarHandicapBaseline returns correct values', () {
-      expect(
-        calculator.getSimilarHandicapBaseline(SGCategory.offTheTee),
-        3.10,
-      );
-      expect(
-        calculator.getSimilarHandicapBaseline(SGCategory.approach),
-        3.70,
-      );
+      expect(calculator.getSimilarHandicapBaseline(SGCategory.offTheTee), 3.10);
+      expect(calculator.getSimilarHandicapBaseline(SGCategory.approach), 3.70);
     });
 
     test('getAvailableBenchmarks returns all 4 types', () {

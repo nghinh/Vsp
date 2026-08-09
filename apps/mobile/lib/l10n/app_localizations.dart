@@ -1142,7 +1142,7 @@ abstract class AppLocalizations {
   /// **'Checking package…'**
   String get packageChecking;
 
-  /// No description provided for @packageOfflineReady.
+  /// Course package is fully downloaded.
   ///
   /// In en, this message translates to:
   /// **'Offline Ready'**
@@ -3914,12 +3914,6 @@ abstract class AppLocalizations {
   /// **'End Round'**
   String get activeRoundEndRound;
 
-  /// No description provided for @activeRoundEndRoundHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Finish the round from the flag button on the Score tab.'**
-  String get activeRoundEndRoundHint;
-
   /// No description provided for @activeRoundOptions.
   ///
   /// In en, this message translates to:
@@ -4604,7 +4598,7 @@ abstract class AppLocalizations {
   /// **'Low GPS Accuracy'**
   String get gpsLowAccuracy;
 
-  /// No description provided for @gpsReady.
+  /// GPS accuracy chip: waiting for first fix.
   ///
   /// In en, this message translates to:
   /// **'GPS Ready'**
@@ -5060,6 +5054,222 @@ abstract class AppLocalizations {
   /// **'No green position for this hole'**
   String get measureGreenUnknown;
 
+  /// Section heading above the golfer's selected club bag on the round setup screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Bag'**
+  String get roundSetupActiveBag;
+
+  /// Why the Start Round button is disabled: no course chosen yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a course first'**
+  String get roundSetupSelectCourseFirst;
+
+  /// Why the Start Round button is disabled: the package warning has not been acknowledged.
+  ///
+  /// In en, this message translates to:
+  /// **'Acknowledge the course data warning to continue'**
+  String get roundSetupAcknowledgeWarning;
+
+  /// Primary action that starts the round.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Round'**
+  String get roundSetupStartRound;
+
+  /// Explains what Offline Ready means.
+  ///
+  /// In en, this message translates to:
+  /// **'You can play this course without an internet connection.'**
+  String get packageOfflineReadyBody;
+
+  /// Shown when a course has no downloadable package.
+  ///
+  /// In en, this message translates to:
+  /// **'This course is not yet available for offline download.'**
+  String get packageNotAvailable;
+
+  /// A newer course package version exists on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get packageUpdateAvailable;
+
+  /// How long ago the package was updated.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days ago'**
+  String packageDaysAgo(int days);
+
+  /// Toggle that restricts package downloads to Wi-Fi.
+  ///
+  /// In en, this message translates to:
+  /// **'Download on Wi-Fi only'**
+  String get wifiOnlyTitle;
+
+  /// Current connectivity state under the Wi-Fi-only toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi connected'**
+  String get wifiConnected;
+
+  /// Current connectivity state under the Wi-Fi-only toggle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Wi-Fi — downloads paused'**
+  String get wifiNotConnected;
+
+  /// Heading of the distance-ring legend on the hole map.
+  ///
+  /// In en, this message translates to:
+  /// **'RINGS'**
+  String get mapDistanceRingsTitle;
+
+  /// How many players in the group have a score for this hole.
+  ///
+  /// In en, this message translates to:
+  /// **'{entered}/{total} entered'**
+  String scoreEnteredCount(int entered, int total);
+
+  /// GPS accuracy chip: accuracy under 5 m.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Good'**
+  String get gpsGood;
+
+  /// GPS accuracy chip: accuracy 5-10 m.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Fair'**
+  String get gpsFair;
+
+  /// GPS accuracy chip: accuracy worse than 10 m.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS Poor'**
+  String get gpsPoor;
+
+  /// Round format: a social round.
+  ///
+  /// In en, this message translates to:
+  /// **'Casual'**
+  String get roundFormatCasual;
+
+  /// Round format: practice, not for handicap.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice'**
+  String get roundFormatPractice;
+
+  /// Round format: tournament play.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament'**
+  String get roundFormatTournament;
+
+  /// Scoring mode: total strokes.
+  ///
+  /// In en, this message translates to:
+  /// **'Stroke Play'**
+  String get scoringStrokePlay;
+
+  /// Scoring mode: Stableford points. Kept in English — the term is used as-is in Vietnamese golf.
+  ///
+  /// In en, this message translates to:
+  /// **'Stableford'**
+  String get scoringStableford;
+
+  /// Timestamp under an hour old.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get relativeJustNow;
+
+  /// Timestamp in hours.
+  ///
+  /// In en, this message translates to:
+  /// **'{hours}h ago'**
+  String relativeHoursAgo(int hours);
+
+  /// Timestamp earlier today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get relativeToday;
+
+  /// Timestamp yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get relativeYesterday;
+
+  /// Timestamp in days.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days ago'**
+  String relativeDaysAgo(int days);
+
+  /// Timestamp in months.
+  ///
+  /// In en, this message translates to:
+  /// **'{months} months ago'**
+  String relativeMonthsAgo(int months);
+
+  /// Timestamp in years.
+  ///
+  /// In en, this message translates to:
+  /// **'{years} years ago'**
+  String relativeYearsAgo(int years);
+
+  /// Screen-reader label for a player row with a score.
+  ///
+  /// In en, this message translates to:
+  /// **'{player}, score {score}'**
+  String scoreRowEntered(String player, String score);
+
+  /// Screen-reader label for a player row with no score yet.
+  ///
+  /// In en, this message translates to:
+  /// **'{player}, score not entered'**
+  String scoreRowNotEntered(String player);
+
+  /// Screen-reader label for a player who did not play this hole.
+  ///
+  /// In en, this message translates to:
+  /// **'{player}, hole not played'**
+  String scoreRowNotPlayed(String player);
+
+  /// Offers the golfer's own position as the green position, shown only where the app has just said it does not know where the green is.
+  ///
+  /// In en, this message translates to:
+  /// **'The green is right here — report it'**
+  String get measureGreenReportAction;
+
+  /// Shown after a green-position report is queued. Deliberately does not claim the map has changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent, waiting for an admin to review'**
+  String get measureGreenReportSent;
+
+  /// Confirms a green-position report was saved and queued. Says explicitly that the map has not changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded. An admin reviews it before the map changes.'**
+  String get measureGreenReportQueued;
+
+  /// Shown when the GPS fix is too coarse to file a green-position report.
+  ///
+  /// In en, this message translates to:
+  /// **'The GPS fix is not good enough to submit. Try again in the open.'**
+  String get measureGreenReportNoFix;
+
+  /// Shown when saving a green-position report failed. Never claims it was sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not send. Try again.'**
+  String get measureGreenReportFailed;
+
   /// No description provided for @measureGreenEstimated.
   ///
   /// In en, this message translates to:
@@ -5083,6 +5293,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.'**
   String get measureEmptyBody;
+
+  /// Empty-state hint for the measuring tool when the build has no imagery, so 'tap the bunker lip on the satellite image' would be nonsense.
+  ///
+  /// In en, this message translates to:
+  /// **'There is no imagery to aim at in this build, but your position and the green are drawn on the map. Tap anywhere to measure to it.'**
+  String get measureEmptyBodyNoImagery;
+
+  /// Label for the direct golfer-to-green distance shown before any point has been dropped.
+  ///
+  /// In en, this message translates to:
+  /// **'From you to the green'**
+  String get measureYouToGreen;
+
+  /// Notice shown over the plain measuring canvas when no imagery provider is configured.
+  ///
+  /// In en, this message translates to:
+  /// **'No satellite imagery in this build — the ruler still works.'**
+  String get measureWithoutImagery;
 
   /// No description provided for @measureQualityGood.
   ///
@@ -5138,11 +5366,23 @@ abstract class AppLocalizations {
   /// **'Course map'**
   String get basemapCourseMap;
 
+  /// Label for the measuring basemap when this build has no satellite imagery, so calling the mode 'Satellite' would be a lie.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure'**
+  String get basemapMeasure;
+
   /// No description provided for @basemapSwitchToSatellite.
   ///
   /// In en, this message translates to:
   /// **'Switch to satellite imagery'**
   String get basemapSwitchToSatellite;
+
+  /// No description provided for @basemapSwitchToMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to the measuring tool'**
+  String get basemapSwitchToMeasure;
 
   /// No description provided for @basemapSwitchToCourseMap.
   ///
@@ -5198,23 +5438,245 @@ abstract class AppLocalizations {
   /// **'Not surveyed'**
   String get holeNoGeometryBadge;
 
-  /// No description provided for @holeNoGeometryNoImageryTitle.
+  /// Banner body on an unsurveyed hole in a build compiled without an imagery provider. The measuring tool is still offered — it needs GPS, not pictures.
   ///
   /// In en, this message translates to:
-  /// **'Nothing real to show for this hole'**
-  String get holeNoGeometryNoImageryTitle;
-
-  /// No description provided for @holeNoGeometryNoImageryBody.
-  ///
-  /// In en, this message translates to:
-  /// **'This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.'**
-  String get holeNoGeometryNoImageryBody;
+  /// **'We haven\'t digitised this hole, and this build has no satellite imagery. The ruler still works: your position and the green are on the map, and every distance says how far it could be out.'**
+  String get holeNoGeometryBodyNoImagery;
 
   /// Explains the amber 'Not surveyed' marker shown next to a hole length derived from unverified tee/green coordinates.
   ///
   /// In en, this message translates to:
   /// **'This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.'**
   String get distanceNotSurveyedTooltip;
+
+  /// Screen-reader label for a green distance the app does not have. Replaces a placeholder that rendered 0 m badged as official data.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} distance unavailable'**
+  String distanceUnavailableSemantics(String label);
+
+  /// No description provided for @analyticsNoClubsInBag.
+  ///
+  /// In en, this message translates to:
+  /// **'No clubs in your bag yet. Add clubs to filter by club.'**
+  String get analyticsNoClubsInBag;
+
+  /// No description provided for @downloadOfflineCoursesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage courses saved for playing without a signal'**
+  String get downloadOfflineCoursesSubtitle;
+
+  /// No description provided for @correctionListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My data reports'**
+  String get correctionListTitle;
+
+  /// No description provided for @correctionListSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data you reported, and what happened to it'**
+  String get correctionListSubtitle;
+
+  /// No description provided for @smartTargetExampleBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'EXAMPLE'**
+  String get smartTargetExampleBadge;
+
+  /// Notice above the Smart Target preview. The screen runs on in-memory stub repositories and a hole placed at a coordinate in the sea; the previous wording called that on-device data, which reads as the golfer's own.
+  ///
+  /// In en, this message translates to:
+  /// **'This is a worked example on an invented hole, not your data. During a round the same panel runs on your GPS position, your clubs and the real hole.'**
+  String get smartTargetExampleBody;
+
+  /// No description provided for @holeSwitchLowConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'GPS is not certain enough to move you automatically.'**
+  String get holeSwitchLowConfidence;
+
+  /// No description provided for @telemetryExportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pilot telemetry export'**
+  String get telemetryExportTitle;
+
+  /// No description provided for @telemetryExportBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Exports one round\'s GPS quality, map latency and battery telemetry as a JSON file you can hand to the analysis workspace. Written on the device — no network needed, which matters on a course.'**
+  String get telemetryExportBody;
+
+  /// No description provided for @telemetryExportRoundId.
+  ///
+  /// In en, this message translates to:
+  /// **'Round ID'**
+  String get telemetryExportRoundId;
+
+  /// No description provided for @telemetryExportInspect.
+  ///
+  /// In en, this message translates to:
+  /// **'Check what this round recorded'**
+  String get telemetryExportInspect;
+
+  /// No description provided for @telemetryExportShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and share'**
+  String get telemetryExportShare;
+
+  /// No description provided for @telemetryExportSamples.
+  ///
+  /// In en, this message translates to:
+  /// **'{gps} GPS samples · {battery} battery readings · {map} map loads'**
+  String telemetryExportSamples(String gps, String battery, String map);
+
+  /// No description provided for @telemetryExportBatteryUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Battery used over the recorded period: {percent}%'**
+  String telemetryExportBatteryUsed(String percent);
+
+  /// No description provided for @telemetryExportSlowestMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Slowest map load: {ms} ms (target: under 2000 ms)'**
+  String telemetryExportSlowestMap(String ms);
+
+  /// No description provided for @telemetryExportWorstAccuracy.
+  ///
+  /// In en, this message translates to:
+  /// **'Worst GPS accuracy: {meters} m (warns above 10 m)'**
+  String telemetryExportWorstAccuracy(String meters);
+
+  /// The failure a field tester most needs to catch before leaving the course.
+  ///
+  /// In en, this message translates to:
+  /// **'This round recorded nothing. Telemetry is written from fixes the round already receives, so a round played entirely on the Score tab produces no GPS samples — open the Map tab during the round.'**
+  String get telemetryExportEmpty;
+
+  /// No description provided for @telemetryExportWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'Written to {path}'**
+  String telemetryExportWritten(String path);
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @creditsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Credits and licences'**
+  String get creditsTitle;
+
+  /// No description provided for @creditsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data sources, imagery, and open-source licences'**
+  String get creditsSubtitle;
+
+  /// No description provided for @creditsCourseDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data'**
+  String get creditsCourseDataTitle;
+
+  /// No description provided for @creditsOpenStreetMapBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Greens, bunkers, water and fairway shapes are derived from OpenStreetMap and are used under the Open Database Licence.'**
+  String get creditsOpenStreetMapBody;
+
+  /// No description provided for @creditsCopernicusBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some water hazards were detected from Copernicus Sentinel-2 imagery.'**
+  String get creditsCopernicusBody;
+
+  /// No description provided for @creditsImageryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite imagery'**
+  String get creditsImageryTitle;
+
+  /// No description provided for @creditsMapboxBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite imagery is provided by Mapbox and OpenStreetMap, and is shown only while you are online.'**
+  String get creditsMapboxBody;
+
+  /// No description provided for @creditsImageryProviderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Satellite imagery is supplied by the operator named above, under their own terms, and is shown only while you are online.'**
+  String get creditsImageryProviderBody;
+
+  /// No description provided for @creditsImageryNoneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No imagery provider configured'**
+  String get creditsImageryNoneTitle;
+
+  /// No description provided for @creditsImageryNoneBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This build has no satellite imagery. The measuring tool still works — it uses GPS and geometry, not pictures.'**
+  String get creditsImageryNoneBody;
+
+  /// No description provided for @creditsSoftwareTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Software'**
+  String get creditsSoftwareTitle;
+
+  /// No description provided for @creditsOpenSourceLicences.
+  ///
+  /// In en, this message translates to:
+  /// **'Open-source licences'**
+  String get creditsOpenSourceLicences;
+
+  /// No description provided for @creditsOpenSourceLicencesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Licences of the packages this app is built with'**
+  String get creditsOpenSourceLicencesBody;
+
+  /// Closing note on the credits screen. Ties the licence page to the data-quality promise, which is the same subject from the golfer's point of view.
+  ///
+  /// In en, this message translates to:
+  /// **'Course geometry is honestly labelled: where a hole has not been surveyed, the app says so and offers satellite imagery with a measuring tool instead of drawing a map it cannot stand behind.'**
+  String get creditsDataQualityNote;
+
+  /// Shown when SharedPreferences cannot be read, which is what the Wi-Fi-only download setting is stored in. Previously this path threw UnimplementedError and produced a red screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Download settings are unavailable on this device, so downloads cannot be managed here.'**
+  String get downloadPreferencesUnavailable;
+
+  /// Shown when the round summary screen cannot build its on-device dependencies. The round itself is already completed and stored, so the message must not read as data loss.
+  ///
+  /// In en, this message translates to:
+  /// **'Your round is saved. The summary could not be opened on this device — you can review the round from Rounds.'**
+  String get summaryUnavailable;
+
+  /// Tooltip and screen-reader label for the map header's back-a-hole control.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous hole'**
+  String get holeMapPreviousHole;
+
+  /// Tooltip and screen-reader label for the map header's forward-a-hole control.
+  ///
+  /// In en, this message translates to:
+  /// **'Next hole'**
+  String get holeMapNextHole;
 
   /// Notice above the course detail hole list when some holes are not surveyed.
   ///

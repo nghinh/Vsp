@@ -114,6 +114,15 @@ class SatelliteImageryConfig extends Equatable {
   /// True when tiles can actually be requested.
   bool get isAvailable => provider != SatelliteImageryProvider.none;
 
+  /// Identifies the rendered style without exposing the token.
+  ///
+  /// Used as a widget key so a map rebuilds when the provider changes. It must
+  /// not be the tile template: that carries the access token, and a key ends up
+  /// in widget diagnostics and error output.
+  String get styleKey =>
+      '${provider.name}:${tileSize.round()}:${maxZoom.round()}:'
+      '${tileUrlTemplate.hashCode}';
+
   // ─── Build-time values ──────────────────────────────────────────────────────
 
   /// Mapbox public access token, supplied with `--dart-define`.
@@ -132,6 +141,12 @@ class SatelliteImageryConfig extends Equatable {
     'VSP_SATELLITE_ATTRIBUTION',
   );
 
+  /// Deepest zoom the operator's endpoint actually serves.
+  static const int _customMaxZoom = int.fromEnvironment(
+    'VSP_SATELLITE_MAX_ZOOM',
+    defaultValue: 22,
+  );
+
   /// Mapbox tileset used for satellite imagery.
   static const String mapboxTilesetId = 'mapbox.satellite';
 
@@ -143,6 +158,7 @@ class SatelliteImageryConfig extends Equatable {
     mapboxAccessToken: _mapboxAccessToken,
     customTileUrl: _customTileUrl,
     customAttribution: _customAttribution,
+    customMaxZoom: _customMaxZoom,
   );
 
   /// Resolves a configuration from explicit values.
@@ -155,6 +171,7 @@ class SatelliteImageryConfig extends Equatable {
     String mapboxAccessToken = '',
     String customTileUrl = '',
     String customAttribution = '',
+    int? customMaxZoom,
   }) {
     final customUrl = customTileUrl.trim();
     final customCredit = customAttribution.trim();
@@ -165,7 +182,12 @@ class SatelliteImageryConfig extends Equatable {
         attributionText: customCredit,
         requiresMapboxLogo: false,
         tileSize: 256,
-        maxZoom: 22,
+        // Most imagery services stop well short of 22 — Esri's World Imagery
+        // tops out around 19, and asking for 20 gets a 404. MapLibre reads
+        // maxzoom as "stop requesting past here and stretch the last level",
+        // so an accurate value keeps a deep zoom looking soft; an inflated one
+        // makes the map go blank exactly when a golfer zooms in on a green.
+        maxZoom: (customMaxZoom ?? 22).clamp(1, 24).toDouble(),
       );
     }
 

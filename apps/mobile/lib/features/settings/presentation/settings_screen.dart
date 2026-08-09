@@ -8,6 +8,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/locale/locale_cubit.dart';
 import '../../../l10n/app_localizations.dart';
+import 'credits_screen.dart';
+import 'telemetry_export_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -23,6 +25,29 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _SectionHeader(title: l10n.settingsLanguage),
             const _LanguageOptions(),
+            // Reachable rather than hidden behind a build flag: a field tester
+            // on a course needs it, and it exposes nothing a golfer could not
+            // already see about their own rounds.
+            _SectionHeader(title: l10n.telemetryExportTitle),
+            ListTile(
+              leading: const Icon(Icons.science_outlined),
+              title: Text(l10n.telemetryExportTitle),
+              subtitle: Text(l10n.telemetryExportInspect),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const TelemetryExportScreen(),
+                ),
+              ),
+            ),
+            _SectionHeader(title: l10n.settingsAbout),
+            ListTile(
+              leading: const Icon(Icons.copyright_outlined),
+              title: Text(l10n.creditsTitle),
+              subtitle: Text(l10n.creditsSubtitle),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const CreditsScreen()),
+              ),
+            ),
           ],
         ),
       ),

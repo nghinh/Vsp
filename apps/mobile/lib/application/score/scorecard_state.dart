@@ -68,7 +68,17 @@ class ScorecardScreenState extends Equatable {
       ? holeIds[currentHoleIndex]
       : null;
 
-  int get currentHoleNumber => currentHoleIndex + 1;
+  /// The number of the hole being played.
+  ///
+  /// Read from the hole's own id, not from its position in the round. A
+  /// back-nine round carries holeIds ['10'…'18'], so index + 1 answered "hole
+  /// 1" while the golfer stood on the 10th — and this getter feeds the hole
+  /// number stamped on every shot recorded from the scorecard.
+  ///
+  /// Falls back to the position for a round whose ids are not hole numbers,
+  /// which is what the value has always meant to those callers.
+  int get currentHoleNumber =>
+      int.tryParse(currentHoleId ?? '') ?? currentHoleIndex + 1;
 
   bool get canGoBack => currentHoleIndex > 0;
   bool get canGoForward => currentHoleIndex < holeIds.length - 1;

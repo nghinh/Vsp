@@ -47,7 +47,7 @@ class OfflineReadyBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Offline Ready',
+              AppLocalizations.of(context).packageOfflineReady,
               style: TextStyle(
                 fontSize: compact ? 10 : 11,
                 fontWeight: FontWeight.w600,

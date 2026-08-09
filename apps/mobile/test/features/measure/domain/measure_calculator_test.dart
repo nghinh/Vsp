@@ -311,13 +311,47 @@ void main() {
       expect(result.greenIsEstimated, isFalse);
     });
 
-    test('a green with no dropped points produces nothing to run on from', () {
+    test('a green with no dropped points measures straight from the golfer', () {
+      // "How far to the green from here" needs no taps, and on an unsurveyed
+      // hole in a build with no imagery it is the only reading the golfer can
+      // get. It used to be withheld until they had dropped a point.
       final result = calculator.compute(
         points: const [],
         origin: fix(),
         green: green,
       );
+
+      expect(result.greenLeg, isNotNull);
+      expect(result.greenLeg!.kind, MeasureLegKind.toGreen);
+      expect(result.greenLeg!.from.latitude, base.latitude);
+      expect(result.greenLeg!.from.longitude, base.longitude);
+      expect(result.greenLeg!.to, green.position);
+      expect(result.legs, isEmpty);
+      // The panel labels this one differently — it is "you are 333 m out",
+      // not "from that layup it is 333 m in".
+      expect(result.greenLegIsFromGolfer, isTrue);
+    });
+
+    test('a green with no points and no fix has nothing to measure from', () {
+      final result = calculator.compute(
+        points: const [],
+        origin: null,
+        green: green,
+      );
+
       expect(result.greenLeg, isNull);
+      expect(result.greenLegIsFromGolfer, isFalse);
+    });
+
+    test('a dropped point takes over as the run-on origin', () {
+      final result = calculator.compute(
+        points: [pointAt(base.latitude + 0.001, base.longitude)],
+        origin: fix(),
+        green: green,
+      );
+
+      expect(result.greenLeg!.from.latitude, closeTo(base.latitude + 0.001, 1e-9));
+      expect(result.greenLegIsFromGolfer, isFalse);
     });
   });
 

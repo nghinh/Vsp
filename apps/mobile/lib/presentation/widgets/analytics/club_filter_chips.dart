@@ -17,7 +17,12 @@ class ClubFilterChips extends StatelessWidget {
   /// Called when club selection changes.
   final ValueChanged<List<String>> onChanged;
 
-  /// Available clubs to display (clubId → clubName).
+  /// The golfer's clubs to filter by (clubId → clubName).
+  ///
+  /// Empty means the bag has not loaded or has no clubs, and the chips say so.
+  /// This used to fall back to a canned fourteen-club list — Driver through
+  /// Putter, the same for every golfer — so the filter offered clubs the
+  /// golfer does not carry and hid the ones they do.
   final Map<String, String> clubs;
 
   const ClubFilterChips({
@@ -29,8 +34,7 @@ class ClubFilterChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Default clubs for demo; in production these come from golf bag (Epic 2)
-    final displayClubs = clubs.isEmpty ? _defaultClubs : clubs;
+    final displayClubs = clubs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -39,7 +43,10 @@ class ClubFilterChips extends StatelessWidget {
           children: [
             const Icon(Icons.golf_course, size: 18),
             const SizedBox(width: 8),
-            Text(AppLocalizations.of(context).analyticsClubsLabel, style: TextStyle(fontWeight: FontWeight.w500)),
+            Text(
+              AppLocalizations.of(context).analyticsClubsLabel,
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             const Spacer(),
             if (selectedClubIds.isNotEmpty)
               Text(
@@ -52,26 +59,39 @@ class ClubFilterChips extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: displayClubs.entries.map((entry) {
-              final isSelected = selectedClubIds.contains(entry.key);
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: FilterChip(
-                  label: Text(entry.value),
-                  selected: isSelected,
-                  onSelected: (_) => _toggleClub(entry.key),
-                  // Accessibility: 44dp minimum touch target
-                  visualDensity: VisualDensity.standard,
-                  avatar: isSelected ? const Icon(Icons.check, size: 16) : null,
-                  tooltip: AppLocalizations.of(context).analyticsFilterByClub(entry.value),
-                ),
-              );
-            }).toList(),
+        if (displayClubs.isEmpty)
+          Text(
+            AppLocalizations.of(context).analyticsNoClubsInBag,
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.outline,
+            ),
+          )
+        else
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: displayClubs.entries.map((entry) {
+                final isSelected = selectedClubIds.contains(entry.key);
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(entry.value),
+                    selected: isSelected,
+                    onSelected: (_) => _toggleClub(entry.key),
+                    // Accessibility: 44dp minimum touch target
+                    visualDensity: VisualDensity.standard,
+                    avatar: isSelected
+                        ? const Icon(Icons.check, size: 16)
+                        : null,
+                    tooltip: AppLocalizations.of(
+                      context,
+                    ).analyticsFilterByClub(entry.value),
+                  ),
+                );
+              }).toList(),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -87,21 +107,4 @@ class ClubFilterChips extends StatelessWidget {
   }
 
   /// Default club list used when no clubs are provided from golf bag.
-  static const Map<String, String> _defaultClubs = {
-    'driver': 'Driver',
-    '3wood': '3 Wood',
-    '5wood': '5 Wood',
-    'hybrid': 'Hybrid',
-    '3iron': '3 Iron',
-    '4iron': '4 Iron',
-    '5iron': '5 Iron',
-    '6iron': '6 Iron',
-    '7iron': '7 Iron',
-    '8iron': '8 Iron',
-    '9iron': '9 Iron',
-    'pw': 'PW',
-    'gw': 'GW',
-    'sw': 'SW',
-    'lw': 'LW',
-  };
 }

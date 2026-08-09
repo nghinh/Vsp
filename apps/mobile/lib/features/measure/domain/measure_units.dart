@@ -24,9 +24,38 @@ abstract final class MeasureUnits {
   static int displayValue(double meters, DistanceUnit unit) =>
       convert(meters, unit).round();
 
+  /// Beyond this, a "distance to the green" is not a golf distance.
+  ///
+  /// The longest hole ever played is under 1 km, so anything past a few
+  /// kilometres means the golfer is not on the course — checking tomorrow's
+  /// round from home, most likely. Worth naming, because the alternative is
+  /// what this app used to print.
+  static const double offCourseThresholdMeters = 3000;
+
+  /// True when [meters] is too far to be a distance on a golf hole.
+  static bool isOffCourse(double meters) =>
+      meters.abs() >= offCourseThresholdMeters;
+
   /// Formats canonical metres for display, e.g. `152 m` / `166 yd`.
-  static String format(double meters, DistanceUnit unit) =>
-      '${displayValue(meters, unit)} ${suffix(unit)}';
+  ///
+  /// Distances past [offCourseThresholdMeters] switch to kilometres. Opening
+  /// the app in Hà Nội with a round set at Long Thành rendered the distance to
+  /// the green as `1135481 m` — seven digits, unreadable at a glance, and
+  /// indistinguishable from a broken calculation. It was in fact exactly right,
+  /// which is the problem: a correct number nobody can read teaches the golfer
+  /// to distrust the ones they can.
+  static String format(double meters, DistanceUnit unit) {
+    if (isOffCourse(meters)) {
+      // Stay in the golfer's own system of units — a yards user reading
+      // kilometres has to convert twice to picture the distance.
+      final large = unit == DistanceUnit.yards
+          ? convert(meters, unit) / 1760
+          : meters / 1000;
+      final label = unit == DistanceUnit.yards ? 'mi' : 'km';
+      return '${large < 10 ? large.toStringAsFixed(1) : large.round()} $label';
+    }
+    return '${displayValue(meters, unit)} ${suffix(unit)}';
+  }
 
   /// Formats an uncertainty as a signed tolerance, e.g. `±12 m`.
   ///

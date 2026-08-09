@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Vsp Mobile</string>
+	<string>Vietnam Smart Golf</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>vsp_mobile</string>
+	<string>Vietnam Smart Golf</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -26,6 +26,27 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<!--
+	  Location usage description.
+
+	  This file had no permission usage descriptions at all while
+	  location_service_impl.dart:108 calls requestPermission(). On iOS a missing
+	  usage description is not a denial — the system terminates the process. The
+	  app crashed on the first GPS use, which for a golf GPS app is the first
+	  useful thing it does.
+
+	  Only "when in use" is declared: LocationSettings in
+	  location_service_impl.dart requests foreground updates and nothing in the
+	  app asks for background location, so NSLocationAlwaysAndWhenInUse would be
+	  claiming an entitlement this app does not use and cannot justify to review.
+
+	  TODO(ios): these strings are shown to the golfer and should be localized
+	  into Vietnamese via InfoPlist.strings in en.lproj/vi.lproj. That needs the
+	  files registered in the Xcode project, which is not editable safely from
+	  here.
+	-->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Vietnam Smart Golf uses your location while you play to show distances to the green and hazards, and to follow you from hole to hole.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

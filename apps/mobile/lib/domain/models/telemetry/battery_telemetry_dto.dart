@@ -93,11 +93,12 @@ class BatteryTelemetryDto {
         json['batteryState'] as String? ?? 'unknown',
       ),
       temperatureCelsius: (json['temperatureCelsius'] as num?)?.toDouble(),
-      estimatedRemainingSeconds: (json['estimatedRemainingSeconds'] as num?)?.toInt(),
+      estimatedRemainingSeconds: (json['estimatedRemainingSeconds'] as num?)
+          ?.toInt(),
       holesCompleted: (json['holesCompleted'] as num?)?.toInt() ?? 0,
       holesRemaining: (json['holesRemaining'] as num?)?.toInt() ?? 18,
-      gpsPollingFrequencyHz:
-          (json['gpsPollingFrequencyHz'] as num?)?.toDouble(),
+      gpsPollingFrequencyHz: (json['gpsPollingFrequencyHz'] as num?)
+          ?.toDouble(),
       batterySaverActive: json['batterySaverActive'] as bool? ?? false,
       screenState: json['screenState'] as String?,
       appInForeground: json['appInForeground'] as bool? ?? true,
@@ -105,18 +106,18 @@ class BatteryTelemetryDto {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'roundId': roundId,
-        'recordedAt': recordedAt.toIso8601String(),
-        'batteryLevel': batteryLevel,
-        'batteryState': batteryState.name,
-        'temperatureCelsius': temperatureCelsius,
-        'estimatedRemainingSeconds': estimatedRemainingSeconds,
-        'holesCompleted': holesCompleted,
-        'holesRemaining': holesRemaining,
-        'gpsPollingFrequencyHz': gpsPollingFrequencyHz,
-        'batterySaverActive': batterySaverActive,
-        'screenState': screenState,
-        'appInForeground': appInForeground,
-      };
+    'id': id,
+    'roundId': roundId,
+    'recordedAt': recordedAt.toIso8601String(),
+    'batteryLevel': batteryLevel,
+    'batteryState': batteryState.name,
+    'temperatureCelsius': temperatureCelsius,
+    'estimatedRemainingSeconds': estimatedRemainingSeconds,
+    'holesCompleted': holesCompleted,
+    'holesRemaining': holesRemaining,
+    'gpsPollingFrequencyHz': gpsPollingFrequencyHz,
+    'batterySaverActive': batterySaverActive,
+    'screenState': screenState,
+    'appInForeground': appInForeground,
+  };
 }

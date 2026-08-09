@@ -10,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/hole_map_repository.dart';
+import 'package:vsp_mobile/data/services/round_telemetry_recorder.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
@@ -28,6 +29,18 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   final Uuid _uuid = const Uuid();
   final WindRelativeCalculator _windCalculator = WindRelativeCalculator();
 
+  /// Records GPS quality and map load latency for the round, when there is a
+  /// round to record against. Null outside one — opening a hole map from the
+  /// course browser is not a round and has nothing to attribute records to.
+  final RoundTelemetryRecorder? _telemetry;
+
+  /// When the hole currently loading was asked for.
+  ///
+  /// Story 6.6 measures how long a hole takes to become usable, and this bloc
+  /// is the only place that sees both ends of that: the request, and the state
+  /// the screen can finally draw.
+  DateTime? _loadStartedAt;
+
   StreamSubscription<QualifiedLocation>? _locationSubscription;
 
   String? _currentPackageId;
@@ -45,11 +58,21 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   /// The golfer's last usable GPS fix, or null when there is none.
   QualifiedLocation? get lastFix => _lastFix;
 
+  /// Hole this bloc has loaded, or null before the first load.
+  ///
+  /// The round owns one bloc for the whole round and creates it lazily, so a
+  /// golfer who reaches the 5th before opening the map finds a bloc that was
+  /// never told about holes 2 to 5. Whatever puts a hole on screen compares
+  /// against this to know whether it has to say so.
+  int? get loadedHoleNumber => _currentHoleNumber;
+
   HoleMapBloc({
     required HoleMapRepository repository,
     LocationService? locationService,
+    RoundTelemetryRecorder? telemetry,
   }) : _repository = repository,
        _locationService = locationService,
+       _telemetry = telemetry,
        super(const HoleMapInitial()) {
     on<LoadHoleMap>(_onLoadHoleMap);
     on<UpdateGolferPosition>(_onUpdateGolferPosition);
@@ -88,6 +111,11 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     // put the golfer 10,000 km from the hole and quote a distance for it.
     if (location.source == LocationSource.unavailable) return;
     _lastFix = location;
+    // Recorded, not requested: this bloc subscribes to a stream the round is
+    // already running, so telemetry costs no extra GPS. Throttled inside the
+    // recorder, and awaited by nobody — a slow insert must not delay the
+    // position the map is about to draw.
+    _telemetry?.recordFix(location);
     add(
       UpdateGolferPosition(
         latitude: location.latitude,
@@ -101,6 +129,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     LoadHoleMap event,
     Emitter<HoleMapState> emit,
   ) async {
+    _loadStartedAt = DateTime.now().toUtc();
     emit(
       HoleMapLoading(
         courseName: event.courseName,
@@ -108,15 +137,29 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       ),
     );
 
+    _telemetry?.setHole(event.holeNumber);
     _currentPackageId = event.packageId;
     _currentCourseId = event.courseId;
     _currentCourseName = event.courseName;
     _currentHoleNumber = event.holeNumber;
 
-    final packageId = event.packageId;
+    // Whoever opened this screen may not know which package covers the course
+    // — the course picker never did, and passed null unconditionally. Ask the
+    // device before concluding there is nothing to draw.
+    final packageId =
+        event.packageId ??
+        await _repository.findPackageIdForCourse(event.courseId);
+    if (packageId != null) {
+      _currentPackageId = packageId;
+    }
+
     if (packageId == null) {
       // No package on the device. There is nothing to ask the repository for,
       // and no geometry is not a failure — it is most of our 900 holes.
+      //
+      // Not recorded as a map load: nothing was loaded. Timing a branch that
+      // reads one null would fill the dataset with sub-millisecond rows and
+      // flatter the average the 2 s target is measured against.
       emit(
         HoleMapUnsurveyed(
           courseName: event.courseName,
@@ -137,6 +180,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       if (holeMap == null) {
         // A package that carries nothing for this hole is the same answer as
         // no package: unsurveyed, so satellite + measuring is what helps.
+        _recordMapLoad(event.holeNumber);
         emit(
           HoleMapUnsurveyed(
             courseName: event.courseName,
@@ -152,9 +196,15 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         layerVisibility[layer.name] = true;
       }
 
+      _recordMapLoad(event.holeNumber);
       // Build initial state — windRelative will be computed after position/target
       emit(HoleMapReady(holeMap: holeMap, layerVisibility: layerVisibility));
     } catch (e) {
+      // A load that failed is not a load time. Recording it would put the
+      // duration of an error next to the durations of successes and drag the
+      // 2 s target's evidence around for reasons that have nothing to do with
+      // rendering.
+      _loadStartedAt = null;
       emit(
         HoleMapError(
           message: AppMessages.mapLoadFailed,
@@ -163,6 +213,25 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         ),
       );
     }
+  }
+
+  /// Records how long this hole took to reach a state the screen can draw.
+  ///
+  /// This is the data half of map latency — the package read, not the frames
+  /// MapLibre spends afterwards, which the bloc cannot see. Both are served
+  /// from the on-device package, so `servedFromCache` is true: PRD §10.2's
+  /// under-two-seconds target is a target for exactly this path.
+  void _recordMapLoad(int holeNumber) {
+    final recorder = _telemetry;
+    final startedAt = _loadStartedAt;
+    _loadStartedAt = null;
+    if (recorder == null || startedAt == null) return;
+    recorder.recordMapLoad(
+      holeNumber: holeNumber,
+      startedAt: startedAt,
+      completedAt: DateTime.now().toUtc(),
+      servedFromCache: true,
+    );
   }
 
   void _onUpdateGolferPosition(

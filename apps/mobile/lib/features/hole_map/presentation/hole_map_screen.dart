@@ -16,9 +16,13 @@ import 'widgets/map_error_view.dart';
 import 'widgets/unsurveyed_hole_view.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
+import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
 import 'package:vsp_mobile/features/profile/presentation/profile_scope.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/presentation/widgets/distance/not_surveyed_chip.dart';
 
@@ -33,6 +37,13 @@ class HoleMapScreen extends StatelessWidget {
   final String courseName;
   final int holeNumber;
 
+  /// Holes in play order, so the header can offer previous/next.
+  ///
+  /// Empty means no navigation is offered — a caller opening one hole on its
+  /// own has nowhere to go. A round passes its own hole list, which is why a
+  /// back-nine round steps 10→11 rather than 10→2.
+  final List<int> holeNumbers;
+
   /// GPS source for the satellite measuring tool. Optional.
   final LocationService? locationService;
 
@@ -44,15 +55,28 @@ class HoleMapScreen extends StatelessWidget {
   /// paths without a build-time token.
   final SatelliteImageryConfig? imageryConfig;
 
+  /// Tells the caller the golfer stepped to another hole.
+  ///
+  /// The header's previous/next used to move this screen's own bloc and nothing
+  /// else, so a golfer who walked the map forward to the 13th came back to a
+  /// scorecard still on the 1st — two tabs of the same round disagreeing about
+  /// which hole is being played, with the scorecard being the one that records
+  /// the shot.
+  ///
+  /// Null where the screen stands alone and there is nobody to tell.
+  final ValueChanged<int>? onHoleChanged;
+
   const HoleMapScreen({
     super.key,
     this.packageId,
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
+    this.holeNumbers = const [],
     this.locationService,
     this.distanceUnit,
     this.imageryConfig,
+    this.onHoleChanged,
   });
 
   @override
@@ -66,10 +90,17 @@ class HoleMapScreen extends StatelessWidget {
         child: SafeArea(
           child: _blocScope(
             context,
-            _HoleMapBody(
-              locationService: locationService,
-              distanceUnit: distanceUnit,
-              imageryConfig: imageryConfig,
+            _HoleSync(
+              holeNumber: holeNumber,
+              child: _HoleMapBody(
+                courseName: courseName,
+                holeNumber: holeNumber,
+                holeNumbers: holeNumbers,
+                locationService: locationService,
+                distanceUnit: distanceUnit,
+                imageryConfig: imageryConfig,
+                onHoleChanged: onHoleChanged,
+              ),
             ),
           ),
         ),
@@ -92,236 +123,273 @@ class HoleMapScreen extends StatelessWidget {
       // Nothing above owns one — this screen does.
     }
     return BlocProvider(
-      create: (context) => HoleMapBloc(
-        repository: context.read(),
-        locationService: locationService,
-      )..add(
-        LoadHoleMap(
-          packageId: packageId,
-          courseId: courseId,
-          courseName: courseName,
-          holeNumber: holeNumber,
-        ),
-      ),
+      create: (context) =>
+          HoleMapBloc(
+            repository: context.read(),
+            locationService: locationService,
+          )..add(
+            LoadHoleMap(
+              packageId: packageId,
+              courseId: courseId,
+              courseName: courseName,
+              holeNumber: holeNumber,
+            ),
+          ),
       child: child,
     );
   }
 }
 
+/// Keeps the map on the hole the round says the golfer is playing.
+///
+/// The round owns one [HoleMapBloc] for all 18 holes and creates it lazily, so
+/// two things can leave the map behind: the golfer walks to the next hole while
+/// the map is open, and the golfer reaches the 5th before opening the map at
+/// all. Nothing used to dispatch [NavigateToHole] anywhere in the app — the
+/// event was implemented and unreachable — so the map, the satellite basemap
+/// and the measuring tool all stayed on whichever hole the round opened at.
+///
+/// Only a change in [holeNumber] moves the map. Looking ahead with the header's
+/// own previous/next controls changes the bloc but not this input, so a peek at
+/// the 6th is not yanked back the next time anything rebuilds.
+class _HoleSync extends StatefulWidget {
+  final int holeNumber;
+  final Widget child;
+
+  const _HoleSync({required this.holeNumber, required this.child});
+
+  @override
+  State<_HoleSync> createState() => _HoleSyncState();
+}
+
+class _HoleSyncState extends State<_HoleSync> {
+  @override
+  void initState() {
+    super.initState();
+    // A bloc created earlier by another tab is already loaded, and loaded on
+    // the hole that tab asked for. Reading it here is safe: something above has
+    // already put this screen on screen, which is the read that creates it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final bloc = context.read<HoleMapBloc>();
+      final loaded = bloc.loadedHoleNumber;
+      if (loaded != null && loaded != widget.holeNumber) {
+        bloc.add(NavigateToHole(holeNumber: widget.holeNumber));
+      }
+    });
+  }
+
+  @override
+  void didUpdateWidget(_HoleSync oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.holeNumber != widget.holeNumber) {
+      context.read<HoleMapBloc>().add(
+        NavigateToHole(holeNumber: widget.holeNumber),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
 class _HoleMapBody extends StatelessWidget {
+  final String courseName;
+  final int holeNumber;
+  final List<int> holeNumbers;
   final LocationService? locationService;
   final DistanceUnit? distanceUnit;
   final SatelliteImageryConfig? imageryConfig;
 
+  /// Forwarded from [HoleMapScreen] so the round hears about a hole step.
+  final ValueChanged<int>? onHoleChanged;
+
   const _HoleMapBody({
+    required this.courseName,
+    required this.holeNumber,
+    required this.holeNumbers,
     this.locationService,
     this.distanceUnit,
     this.imageryConfig,
+    this.onHoleChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HoleMapBloc, HoleMapState>(
       builder: (context, state) {
-        if (state is HoleMapInitial) {
-          return const _LoadingSkeleton();
-        }
+        // The header is drawn for every state, from the same inputs, so hole
+        // navigation does not disappear exactly when the golfer needs it —
+        // while a hole is loading, or after one failed to.
+        final hole = _holeOf(state) ?? holeNumber;
 
-        if (state is HoleMapLoading) {
-          return _LoadingContent(
-            courseName: state.courseName,
-            holeNumber: state.holeNumber,
-          );
-        }
-
-        // No geometry for this hole. Not an error state and not an empty one:
-        // satellite imagery is real, and the measuring tool works on it.
-        if (state is HoleMapUnsurveyed) {
-          return _UnsurveyedContent(
-            state: state,
-            locationService: locationService,
-            distanceUnit: distanceUnit,
-            imageryConfig: imageryConfig,
-          );
-        }
-
-        if (state is HoleMapError) {
-          return _ErrorContent(
-            message: context.tr(state.message),
-            courseName: state.courseName,
-            holeNumber: state.holeNumber,
-          );
-        }
-
-        if (state is HoleMapReady) {
-          return _ReadyContent(
-            state: state,
-            locationService: locationService,
-            distanceUnit: distanceUnit,
-            imageryConfig: imageryConfig,
-          );
-        }
-
-        return const SizedBox.shrink();
+        return Column(
+          children: [
+            _HoleHeader(
+              courseName: _courseNameOf(state) ?? courseName,
+              holeNumber: hole,
+              par: state is HoleMapReady ? state.holeMap.par : null,
+              lengthMeters: state is HoleMapReady
+                  ? state.holeMap.yardage
+                  : null,
+              lengthIsSurveyed:
+                  state is HoleMapReady && state.holeMap.isSurveyed,
+              // Same fallback the measuring tool uses, so the header and the
+              // panel below it never disagree about metres versus yards.
+              distanceUnit: distanceUnit,
+              onPrevious: _neighbour(context, hole, -1),
+              onNext: _neighbour(context, hole, 1),
+            ),
+            Expanded(child: _content(context, state, hole)),
+          ],
+        );
       },
     );
   }
-}
 
-class _LoadingContent extends StatelessWidget {
-  final String? courseName;
-  final int? holeNumber;
+  Widget _content(BuildContext context, HoleMapState state, int hole) {
+    // Every branch below is keyed on the hole. A hole change is a different
+    // hole: a new camera, a new basemap decision, and — critically — a new
+    // measuring session, so points dropped on the 3rd green do not reappear as
+    // a measurement of the 4th.
+    if (state is HoleMapLoading || state is HoleMapInitial) {
+      // Initial used to render nothing at all, which on the map tab is a black
+      // screen that reads as a crash.
+      return MapLoadingSkeleton(courseName: courseName, holeNumber: hole);
+    }
 
-  const _LoadingContent({this.courseName, this.holeNumber});
+    if (state is HoleMapError) {
+      return MapErrorView(
+        message: context.tr(state.message),
+        onRetry: () {
+          context.read<HoleMapBloc>().add(const RetryLoadHoleMap());
+        },
+      );
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _HoleHeader(courseName: courseName, holeNumber: holeNumber),
-        Expanded(
-          child: MapLoadingSkeleton(
-            courseName: courseName,
-            holeNumber: holeNumber,
-          ),
-        ),
-      ],
-    );
+    // No geometry for this hole. Not an error state and not an empty one:
+    // satellite imagery is real, and the measuring tool works on it.
+    if (state is HoleMapUnsurveyed) {
+      return UnsurveyedHoleView(
+        key: ValueKey('unsurveyed-hole-$hole'),
+        config: imageryConfig ?? SatelliteImagery.current,
+        locationService: locationService,
+        distanceUnit: distanceUnit,
+      );
+    }
+
+    if (state is HoleMapReady) {
+      return HoleMapView(
+        key: ValueKey('hole-map-$hole'),
+        state: state,
+        locationService: locationService,
+        distanceUnit: distanceUnit,
+        imageryConfig: imageryConfig,
+      );
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  /// Moves [step] holes along the round's own hole list, or null at the ends.
+  ///
+  /// Null disables the control rather than hiding it, so the header does not
+  /// change width on the 1st and the 18th.
+  VoidCallback? _neighbour(BuildContext context, int hole, int step) {
+    final index = holeNumbers.indexOf(hole);
+    if (index < 0) return null;
+    final next = index + step;
+    if (next < 0 || next >= holeNumbers.length) return null;
+    final target = holeNumbers[next];
+    return () {
+      context.read<HoleMapBloc>().add(NavigateToHole(holeNumber: target));
+      // The round owns which hole is being played; the map is one view of it.
+      // Moving the map without saying so is how the two tabs drifted apart.
+      onHoleChanged?.call(target);
+    };
+  }
+
+  static int? _holeOf(HoleMapState state) {
+    if (state is HoleMapReady) return state.holeMap.holeNumber;
+    if (state is HoleMapUnsurveyed) return state.holeNumber;
+    if (state is HoleMapLoading) return state.holeNumber;
+    if (state is HoleMapError) return state.holeNumber;
+    return null;
+  }
+
+  static String? _courseNameOf(HoleMapState state) {
+    if (state is HoleMapReady) return state.holeMap.courseName;
+    if (state is HoleMapUnsurveyed) return state.courseName;
+    if (state is HoleMapLoading) return state.courseName;
+    if (state is HoleMapError) return state.courseName;
+    return null;
   }
 }
 
-class _ErrorContent extends StatelessWidget {
-  final String message;
-  final String? courseName;
-  final int? holeNumber;
-
-  const _ErrorContent({
-    required this.message,
-    this.courseName,
-    this.holeNumber,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _HoleHeader(courseName: courseName, holeNumber: holeNumber),
-        Expanded(
-          child: MapErrorView(
-            message: message,
-            onRetry: () {
-              context.read<HoleMapBloc>().add(const RetryLoadHoleMap());
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Satellite + measuring for a hole with no geometry, under the hole header.
-class _UnsurveyedContent extends StatelessWidget {
-  final HoleMapUnsurveyed state;
-  final LocationService? locationService;
-  final DistanceUnit? distanceUnit;
-  final SatelliteImageryConfig? imageryConfig;
-
-  const _UnsurveyedContent({
-    required this.state,
-    this.locationService,
-    this.distanceUnit,
-    this.imageryConfig,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _HoleHeader(
-          courseName: state.courseName,
-          holeNumber: state.holeNumber,
-        ),
-        Expanded(
-          child: UnsurveyedHoleView(
-            config: imageryConfig ?? SatelliteImageryConfig.fromEnvironment(),
-            locationService: locationService,
-            distanceUnit: distanceUnit,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _ReadyContent extends StatelessWidget {
-  final HoleMapReady state;
-  final LocationService? locationService;
-  final DistanceUnit? distanceUnit;
-  final SatelliteImageryConfig? imageryConfig;
-
-  const _ReadyContent({
-    required this.state,
-    this.locationService,
-    this.distanceUnit,
-    this.imageryConfig,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final holeMap = state.holeMap;
-
-    return Column(
-      children: [
-        _HoleHeader(
-          courseName: holeMap.courseName,
-          holeNumber: holeMap.holeNumber,
-          par: holeMap.par,
-          yardage: holeMap.yardage,
-          yardageIsSurveyed: holeMap.isSurveyed,
-        ),
-        Expanded(
-          child: HoleMapView(
-            state: state,
-            locationService: locationService,
-            distanceUnit: distanceUnit,
-            imageryConfig: imageryConfig,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Header bar showing hole number, course name, and hole stats.
+/// Header bar showing hole number, course name, hole stats and hole navigation.
 class _HoleHeader extends StatelessWidget {
   final String? courseName;
   final int? holeNumber;
   final int? par;
-  final int? yardage;
 
-  /// Whether the hole's coordinates — which this yardage is measured between
-  /// — have been verified. False marks the number as approximate.
-  final bool yardageIsSurveyed;
+  /// Hole length in metres.
+  ///
+  /// The field is named `yardage` from the tee-set DTO down, but every layer
+  /// that populates it stores metres — the OpenAPI contract says so, and so
+  /// does the seed that generated most of these numbers. This header used to
+  /// render it as `yd`, which overstated every hole on every course by 9%: a
+  /// 360 m hole read as 360 yd, which a golfer takes for 329 m and clubs down
+  /// for. It is now converted to whatever unit the golfer asked for.
+  final int? lengthMeters;
+
+  /// Whether the hole's coordinates — which this length is measured between —
+  /// have been verified. False marks the number as approximate.
+  final bool lengthIsSurveyed;
+
+  /// Unit to use when no profile preference is in scope yet.
+  final DistanceUnit? distanceUnit;
+
+  /// Moves a hole back, or null at the start of the round.
+  final VoidCallback? onPrevious;
+
+  /// Moves a hole on, or null at the end of the round.
+  final VoidCallback? onNext;
 
   const _HoleHeader({
     this.courseName,
     this.holeNumber,
     this.par,
-    this.yardage,
-    this.yardageIsSurveyed = false,
+    this.lengthMeters,
+    this.lengthIsSurveyed = false,
+    this.distanceUnit,
+    this.onPrevious,
+    this.onNext,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final unit = DistanceUnitScope.resolve(
+      context,
+      fallback: distanceUnit ?? DistanceUnit.meters,
+    );
+    final navigable = onPrevious != null || onNext != null;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.fromLTRB(navigable ? 4 : 16, 8, 16, 8),
       decoration: const BoxDecoration(
         color: Color(0xFF1E293B),
         border: Border(bottom: BorderSide(color: Color(0xFF334155), width: 1)),
       ),
       child: Row(
         children: [
+          if (navigable)
+            _HoleStepButton(
+              icon: Icons.chevron_left,
+              label: l10n.holeMapPreviousHole,
+              onPressed: onPrevious,
+            ),
           if (holeNumber != null) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -330,7 +398,7 @@ class _HoleHeader extends StatelessWidget {
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
-                'Hole $holeNumber',
+                l10n.holeNumberLabel('$holeNumber'),
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
@@ -341,7 +409,7 @@ class _HoleHeader extends StatelessWidget {
             if (par != null) ...[
               const SizedBox(width: 8),
               Text(
-                'Par $par',
+                l10n.holeParLabel('$par'),
                 style: const TextStyle(
                   color: Color(0xFFF8FAFC),
                   fontSize: 14,
@@ -349,18 +417,24 @@ class _HoleHeader extends StatelessWidget {
                 ),
               ),
             ],
-            if (yardage != null) ...[
+            if (lengthMeters != null) ...[
               const SizedBox(width: 8),
-              if (!yardageIsSurveyed) ...[
+              if (!lengthIsSurveyed) ...[
                 const NotSurveyedChip(iconOnly: true),
                 const SizedBox(width: 4),
               ],
               Text(
-                '${yardage}yd',
+                MeasureUnits.format(lengthMeters!.toDouble(), unit),
                 style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
               ),
             ],
           ],
+          if (navigable)
+            _HoleStepButton(
+              icon: Icons.chevron_right,
+              label: l10n.holeMapNextHole,
+              onPressed: onNext,
+            ),
           const Spacer(),
           if (courseName != null)
             Flexible(
@@ -376,12 +450,28 @@ class _HoleHeader extends StatelessWidget {
   }
 }
 
-/// Loading skeleton shown during initial state.
-class _LoadingSkeleton extends StatelessWidget {
-  const _LoadingSkeleton();
+/// A 44dp previous/next control for the hole header.
+class _HoleStepButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onPressed;
+
+  const _HoleStepButton({
+    required this.icon,
+    required this.label,
+    required this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox.shrink();
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 24),
+      color: const Color(0xFFF8FAFC),
+      disabledColor: const Color(0xFF475569),
+      tooltip: label,
+      constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+      padding: EdgeInsets.zero,
+    );
   }
 }

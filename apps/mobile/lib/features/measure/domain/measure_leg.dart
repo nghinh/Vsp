@@ -127,7 +127,10 @@ class MeasureResult extends Equatable {
   /// than two points.
   final List<MeasureLeg> legs;
 
-  /// Leg from the last dropped point to the green, when a green is known.
+  /// Leg on to the green, when a green position is known.
+  ///
+  /// Runs from the last dropped point, or straight from the golfer's GPS fix
+  /// when nothing has been dropped yet — see [greenLegIsFromGolfer].
   final MeasureLeg? greenLeg;
 
   /// True when a GPS fix anchored the first leg.
@@ -156,6 +159,14 @@ class MeasureResult extends Equatable {
 
   /// True when there is nothing to show.
   bool get isEmpty => legs.isEmpty && greenLeg == null;
+
+  /// True when [greenLeg] starts at the golfer rather than at a dropped point.
+  ///
+  /// The two read very differently to a golfer — one is "you are 152 m out",
+  /// the other is "from that layup it is 152 m in" — so the panel labels them
+  /// differently.
+  bool get greenLegIsFromGolfer =>
+      greenLeg != null && legs.isEmpty && hasGolferOrigin;
 
   /// Distance from the golfer to the first dropped point, when both exist.
   MeasureLeg? get firstLeg {

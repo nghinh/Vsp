@@ -37,19 +37,42 @@ abstract class CoursePackageRepository {
 }
 
 /// Loads course packages from the app's documents directory.
-/// Expected directory structure:
-///   <documents>/course_packages/<package_id>/
+///
+/// Directory structure, as [CoursePackageDownloadService] writes it:
+///   <documents>/packages/<course_id>/<version>/
 ///     manifest.json
 ///     geometry/
 ///       hole_<n>.geojson
+///     conditions/
+///       conditions.json
 ///     metadata/
-///       course.json
+///       manifest.json
 ///     tiles/
 ///       (pmtiles / mbtiles files)
+///
+/// This class used to read `<documents>/course_packages/<package_id>/` — a
+/// tree nothing ever wrote to. The downloader has always written the versioned
+/// layout above, so a package could download successfully, verify every
+/// checksum, be promoted to active, and still be invisible to every caller that
+/// asked for its geometry. Both halves of that mismatch reported success, which
+/// is why it survived: the app simply behaved as though no course had ever been
+/// downloaded.
+///
+/// A package is identified here by `<course_id>/<version>`, which is also its
+/// path under the root.
 class LocalCoursePackageRepository implements CoursePackageRepository {
+  /// Where the app keeps its documents. Injectable so this class can be tested
+  /// without a platform channel — it had no tests at all while its directory
+  /// layout disagreed with the downloader's.
+  final Future<Directory> Function() _documentsDirectory;
+
+  LocalCoursePackageRepository({
+    Future<Directory> Function()? documentsDirectory,
+  }) : _documentsDirectory = documentsDirectory ?? getApplicationDocumentsDirectory;
+
   Future<Directory> get _packagesRoot async {
-    final dir = await getApplicationDocumentsDirectory();
-    final root = Directory('${dir.path}/course_packages');
+    final dir = await _documentsDirectory();
+    final root = Directory('${dir.path}/packages');
     if (!await root.exists()) {
       await root.create(recursive: true);
     }
@@ -62,9 +85,14 @@ class LocalCoursePackageRepository implements CoursePackageRepository {
     if (!await root.exists()) return [];
 
     final manifests = <CoursePackageManifest>[];
-    await for (final entity in root.list()) {
-      if (entity is Directory) {
-        final manifest = await _readManifest(entity.path);
+    await for (final courseDir in root.list()) {
+      if (courseDir is! Directory) continue;
+      // One level down from the course: each downloaded version keeps its own
+      // directory so a failed update cannot damage the package already on the
+      // phone.
+      await for (final versionDir in courseDir.list()) {
+        if (versionDir is! Directory) continue;
+        final manifest = await _readManifest(versionDir.path);
         if (manifest != null) manifests.add(manifest);
       }
     }
@@ -148,6 +176,17 @@ class LocalCoursePackageRepository implements CoursePackageRepository {
     try {
       final content = await file.readAsString();
       final json = jsonDecode(content) as Map<String, dynamic>;
+      final root = (await _packagesRoot).path;
+      // The manifest carries the server's package id, but every method here
+      // takes a packageId and turns it back into a path. Reporting the local
+      // path means `getGeometryBundle(pkg.packageId, …)` reaches the directory
+      // the manifest was just read from, rather than a sibling named after a
+      // UUID that no directory on this device uses.
+      if (packagePath.startsWith(root)) {
+        json['packageId'] = packagePath
+            .substring(root.length)
+            .replaceAll(RegExp(r'^/+'), '');
+      }
       return CoursePackageManifest.fromJson(json);
     } catch (_) {
       return null;

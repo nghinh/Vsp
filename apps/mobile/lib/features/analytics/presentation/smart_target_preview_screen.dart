@@ -235,7 +235,33 @@ class _SmartTargetPreviewScreenState extends State<SmartTargetPreviewScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).smartTargetTitle),
+        title: Row(
+          children: [
+            Flexible(
+              child: Text(AppLocalizations.of(context).smartTargetTitle),
+            ),
+            const SizedBox(width: 8),
+            // The panel below runs on invented numbers — a made-up hole at
+            // LatLng(10, 106), which is a point in the sea, and three in-memory
+            // repositories. The old notice called that "on-device data", which
+            // reads as the golfer's own. It is an example, and it says so
+            // where the golfer looks first.
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: colorScheme.tertiaryContainer,
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                AppLocalizations.of(context).smartTargetExampleBadge,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onTertiaryContainer,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -266,8 +292,7 @@ class _SmartTargetPreviewScreenState extends State<SmartTargetPreviewScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Xem trước với dữ liệu trên máy (par 4, còn ~150m). '
-                        'Khi vào vòng đấu, panel dùng vị trí GPS và hình học hố thực tế.',
+                        AppLocalizations.of(context).smartTargetExampleBody,
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),

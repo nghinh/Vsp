@@ -121,19 +121,19 @@ class MapLatencyDto {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'roundId': roundId,
-        'holeId': holeId,
-        'eventStartedAt': eventStartedAt.toIso8601String(),
-        'eventCompletedAt': eventCompletedAt.toIso8601String(),
-        'eventType': eventType.name,
-        'durationMilliseconds': durationMilliseconds,
-        'tilesRendered': tilesRendered,
-        'symbolsRendered': symbolsRendered,
-        'servedFromCache': servedFromCache,
-        'zoomLevel': zoomLevel,
-        'deviceModel': deviceModel,
-        'batteryLevel': batteryLevel,
-        'memoryUsageMb': memoryUsageMb,
-      };
+    'id': id,
+    'roundId': roundId,
+    'holeId': holeId,
+    'eventStartedAt': eventStartedAt.toIso8601String(),
+    'eventCompletedAt': eventCompletedAt.toIso8601String(),
+    'eventType': eventType.name,
+    'durationMilliseconds': durationMilliseconds,
+    'tilesRendered': tilesRendered,
+    'symbolsRendered': symbolsRendered,
+    'servedFromCache': servedFromCache,
+    'zoomLevel': zoomLevel,
+    'deviceModel': deviceModel,
+    'batteryLevel': batteryLevel,
+    'memoryUsageMb': memoryUsageMb,
+  };
 }

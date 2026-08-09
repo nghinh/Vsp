@@ -6,6 +6,8 @@
 // AC-1: shows package size, version, update time.
 
 import 'package:flutter/material.dart';
+
+import 'package:vsp_mobile/core/l10n/relative_time.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../domain/models/course_package_manifest.dart';
@@ -81,7 +83,7 @@ class PackageInfoCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    'Update available',
+                    AppLocalizations.of(context).packageUpdateAvailable,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: VspColorSemantic.of(
                         colorScheme.brightness,
@@ -109,7 +111,10 @@ class PackageInfoCard extends StatelessWidget {
               _MetaItem(
                 icon: Icons.calendar_today,
                 label: AppLocalizations.of(context).packageUpdated,
-                value: _formatRelativeTime(manifest.effectiveDate),
+                value: _formatRelativeTime(
+                  AppLocalizations.of(context),
+                  manifest.effectiveDate,
+                ),
               ),
             ],
           ),
@@ -150,19 +155,8 @@ class PackageInfoCard extends StatelessWidget {
     return mb.toStringAsFixed(1);
   }
 
-  String _formatRelativeTime(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inDays == 0) {
-      if (diff.inHours == 0) return 'Just now';
-      return '${diff.inHours}h ago';
-    }
-    if (diff.inDays == 1) return 'Yesterday';
-    if (diff.inDays < 30) return '${diff.inDays} days ago';
-    if (diff.inDays < 365) return '${(diff.inDays / 30).floor()} months ago';
-    return '${(diff.inDays / 365).floor()} years ago';
-  }
+  String _formatRelativeTime(AppLocalizations l10n, DateTime date) =>
+      RelativeTime.format(l10n, date);
 }
 
 class _MetaItem extends StatelessWidget {
@@ -208,4 +202,3 @@ class _MetaItem extends StatelessWidget {
     );
   }
 }
-

@@ -112,10 +112,10 @@ class GpsTelemetryDto {
       longitude: (json['longitude'] as num).toDouble(),
       latitude: (json['latitude'] as num).toDouble(),
       altitude: (json['altitude'] as num?)?.toDouble(),
-      horizontalAccuracyMeters:
-          (json['horizontalAccuracyMeters'] as num).toDouble(),
-      verticalAccuracyMeters:
-          (json['verticalAccuracyMeters'] as num?)?.toDouble(),
+      horizontalAccuracyMeters: (json['horizontalAccuracyMeters'] as num)
+          .toDouble(),
+      verticalAccuracyMeters: (json['verticalAccuracyMeters'] as num?)
+          ?.toDouble(),
       fixQuality: GpsFixQualityDto.fromString(
         json['fixQuality'] as String? ?? 'unknown',
       ),
@@ -128,20 +128,20 @@ class GpsTelemetryDto {
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'roundId': roundId,
-        'holeId': holeId,
-        'recordedAt': recordedAt.toIso8601String(),
-        'longitude': longitude,
-        'latitude': latitude,
-        'altitude': altitude,
-        'horizontalAccuracyMeters': horizontalAccuracyMeters,
-        'verticalAccuracyMeters': verticalAccuracyMeters,
-        'fixQuality': fixQuality.name,
-        'speedMetersPerSecond': speedMetersPerSecond,
-        'headingDegrees': headingDegrees,
-        'isStale': isStale,
-        'batteryLevel': batteryLevel,
-        'batterySaverActive': batterySaverActive,
-      };
+    'id': id,
+    'roundId': roundId,
+    'holeId': holeId,
+    'recordedAt': recordedAt.toIso8601String(),
+    'longitude': longitude,
+    'latitude': latitude,
+    'altitude': altitude,
+    'horizontalAccuracyMeters': horizontalAccuracyMeters,
+    'verticalAccuracyMeters': verticalAccuracyMeters,
+    'fixQuality': fixQuality.name,
+    'speedMetersPerSecond': speedMetersPerSecond,
+    'headingDegrees': headingDegrees,
+    'isStale': isStale,
+    'batteryLevel': batteryLevel,
+    'batterySaverActive': batterySaverActive,
+  };
 }

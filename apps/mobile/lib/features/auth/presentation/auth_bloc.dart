@@ -680,16 +680,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(const AuthLoading(AppMessages.authCheckingSession));
-    final hasSession = await _authRepository.hasValidSession();
-    if (hasSession) {
-      final refreshed = await _authRepository.tryRefreshToken();
-      if (refreshed) {
+    final outcome = await _authRepository.restoreSession();
+    switch (outcome) {
+      case SessionRestoreOutcome.restored:
+      case SessionRestoreOutcome.offline:
+        // Offline counts as signed in. The golfer's rounds, scorecards and
+        // downloaded courses all live on the device; sending them to a login
+        // screen they cannot complete would lock them out of their own data
+        // exactly where they need it.
         emit(const SessionRestored());
-      } else {
+      case SessionRestoreOutcome.signedOut:
         emit(const SessionNotFound());
-      }
-    } else {
-      emit(const SessionNotFound());
     }
   }
 

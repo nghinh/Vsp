@@ -102,7 +102,8 @@ class Flight extends Equatable {
       id: json['id'] as String,
       roundId: json['roundId'] as String,
       flightIndex: (json['flightIndex'] as num).toInt(),
-      playerIds: (json['playerIds'] as List<dynamic>? ?? const []).cast<String>(),
+      playerIds: (json['playerIds'] as List<dynamic>? ?? const [])
+          .cast<String>(),
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
     );

@@ -350,24 +350,6 @@ class WeatherSnapshot extends Equatable {
     );
   }
 
-  /// Deserialize from SQLite cache row.
-  factory WeatherSnapshot.fromCacheMap(Map<String, dynamic> map) {
-    final json = Map<String, dynamic>.from(
-      // json_data column contains the full WeatherSnapshot JSON
-      map['json_data'] is String
-          ? Map<String, dynamic>.from(
-              (map['json_data'] as String).isNotEmpty
-                  ? (throw UnimplementedError(
-                      'JSON parse from string not needed yet',
-                    ))
-                  : {},
-            )
-          : map['json_data'] as Map<String, dynamic>,
-    );
-    // Override course_id from map
-    return WeatherSnapshot.fromJson(json);
-  }
-
   /// Serialize to JSON for caching.
   Map<String, dynamic> toJson() => {
     'id': id,

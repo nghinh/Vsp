@@ -386,11 +386,26 @@ class TokenRefreshRequest extends Equatable {
 /// Token refresh response.
 class TokenRefreshResponse extends Equatable {
   final String accessToken;
+
+  /// The replacement refresh token.
+  ///
+  /// The server rotates on every refresh: it revokes the token you presented
+  /// and issues this one. Dropping it — which this DTO used to do, by not
+  /// having the field at all — left the device holding a revoked token, so the
+  /// next start-up got `VSP-ERR-AUTH-006 Session not found`, and the app
+  /// treated that as a dead session and signed the golfer out. Every golfer
+  /// was being logged out on the second launch after signing in, for the life
+  /// of the app.
+  ///
+  /// Nullable because a server that stops rotating is not an error here.
+  final String? refreshToken;
+
   final int expiresIn;
   final String tokenType;
 
   const TokenRefreshResponse({
     required this.accessToken,
+    this.refreshToken,
     required this.expiresIn,
     this.tokenType = 'Bearer',
   });
@@ -398,13 +413,14 @@ class TokenRefreshResponse extends Equatable {
   factory TokenRefreshResponse.fromJson(Map<String, dynamic> json) {
     return TokenRefreshResponse(
       accessToken: json['accessToken'] as String,
+      refreshToken: json['refreshToken'] as String?,
       expiresIn: (json['expiresIn'] as num).toInt(),
       tokenType: json['tokenType'] as String? ?? 'Bearer',
     );
   }
 
   @override
-  List<Object?> get props => [accessToken, expiresIn, tokenType];
+  List<Object?> get props => [accessToken, refreshToken, expiresIn, tokenType];
 }
 
 // ─── Session Management ──────────────────────────────────────────────────────

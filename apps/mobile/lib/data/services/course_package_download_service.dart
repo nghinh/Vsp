@@ -10,6 +10,7 @@
 // Also handles: pause, resume, retry, cancel, delete (non-destructive).
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -24,6 +25,7 @@ import '../repositories/package_manifest_repository.dart';
 import 'connectivity_service.dart';
 import 'package_file_downloader.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
 
 /// Result of a download package operation.
 sealed class DownloadPackageResult {}
@@ -270,7 +272,19 @@ class CoursePackageDownloadService {
         ),
       );
 
-      // Step 6: Promote pending → active
+      // Step 6: Write the manifest beside the files it describes, then promote
+      // pending → active.
+      //
+      // The manifest was only ever kept in SQLite, but everything that reads
+      // geometry goes through LocalCoursePackageRepository, which discovers a
+      // package by finding a manifest.json in its directory. Without this file
+      // the package sits complete and checksum-verified on disk and is treated
+      // as absent — the download succeeds and the golfer still gets no map.
+      //
+      // Written before promotion so a failure here fails the download rather
+      // than marking active a package the reader cannot see.
+      await _writePackageManifestFile(packageDir, remoteManifest);
+
       await _manifestRepo.promotePendingToActive(courseId);
 
       _setState(courseId, DownloadServiceState.offlineReady);
@@ -369,14 +383,29 @@ class CoursePackageDownloadService {
     }
   }
 
+  /// Writes `manifest.json` at the package root.
+  ///
+  /// This is the file [LocalCoursePackageRepository] looks for when it scans
+  /// for downloaded packages, so it is what makes the download visible to the
+  /// hole map, hole detection and every other geometry reader.
+  Future<void> _writePackageManifestFile(
+    Directory packageDir,
+    CoursePackageManifest manifest,
+  ) async {
+    final file = File('${packageDir.path}/manifest.json');
+    await file.writeAsString(jsonEncode(manifest.toJson()));
+  }
+
   /// Build CDN URL for a file within a package.
   String _cdnUrl(CoursePackageManifest manifest, String filePath) {
     // CDN URL pattern from Story 4.2: packages/{courseId}/{version}/...
     // manifest.tilesUrl / manifest.geoJsonUrl are the full CDN URLs
     // For individual files, derive from base CDN path
-    final base =
-        'https://cdn.vnptgolf.vn/packages/${manifest.courseId}/${manifest.version}';
-    return '$base/$filePath';
+    return VspEndpoints.packageFileUrl(
+      courseId: manifest.courseId,
+      version: manifest.version,
+      filePath: filePath,
+    );
   }
 
   /// Get the package directory for a course version.

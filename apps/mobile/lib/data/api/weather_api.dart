@@ -13,6 +13,8 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
+
 import '../../core/network/api_client.dart';
 import '../../domain/models/weather_snapshot.dart';
 
@@ -36,10 +38,7 @@ class WeatherApiResponse {
 /// API client for the /weather endpoint.
 class WeatherApi {
   // Must match ApiClient._baseUrl
-  static const String _baseUrl = String.fromEnvironment(
-    'VSP_API_BASE_URL',
-    defaultValue: 'http://localhost:8080',
-  );
+  static String get _baseUrl => VspEndpoints.apiBaseUrl;
 
   final http.Client _httpClient;
   String? _accessToken;

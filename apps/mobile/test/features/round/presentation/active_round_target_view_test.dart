@@ -137,6 +137,10 @@ class _StubHoleMapRepository implements HoleMapRepository {
 
   @override
   Future<List<CoursePackageManifest>> listPackages() async => const [];
+
+  @override
+  // No package on this fake device unless a test says otherwise.
+  Future<String?> findPackageIdForCourse(String courseId) async => null;
 }
 
 // ─── Builders ───────────────────────────────────────────────────────────────

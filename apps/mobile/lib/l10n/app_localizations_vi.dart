@@ -2111,10 +2111,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeRoundEndRound => 'Kết thúc vòng đấu';
 
   @override
-  String get activeRoundEndRoundHint =>
-      'Kết thúc vòng đấu bằng nút cờ ở tab Điểm.';
-
-  @override
   String get activeRoundOptions => 'Tùy chọn vòng đấu';
 
   @override
@@ -2771,6 +2767,137 @@ class AppLocalizationsVi extends AppLocalizations {
   String get measureGreenUnknown => 'Hố này chưa có vị trí green';
 
   @override
+  String get roundSetupActiveBag => 'Túi gậy đang dùng';
+
+  @override
+  String get roundSetupSelectCourseFirst => 'Hãy chọn sân trước';
+
+  @override
+  String get roundSetupAcknowledgeWarning =>
+      'Hãy xác nhận cảnh báo dữ liệu sân để tiếp tục';
+
+  @override
+  String get roundSetupStartRound => 'Bắt đầu vòng đấu';
+
+  @override
+  String get packageOfflineReadyBody =>
+      'Bạn có thể chơi sân này khi không có mạng.';
+
+  @override
+  String get packageNotAvailable =>
+      'Sân này chưa có gói dữ liệu để tải ngoại tuyến.';
+
+  @override
+  String get packageUpdateAvailable => 'Có bản cập nhật';
+
+  @override
+  String packageDaysAgo(int days) {
+    return '$days ngày trước';
+  }
+
+  @override
+  String get wifiOnlyTitle => 'Chỉ tải qua Wi-Fi';
+
+  @override
+  String get wifiConnected => 'Đã kết nối Wi-Fi';
+
+  @override
+  String get wifiNotConnected => 'Không có Wi-Fi — tạm dừng tải';
+
+  @override
+  String get mapDistanceRingsTitle => 'VÒNG CỰ LY';
+
+  @override
+  String scoreEnteredCount(int entered, int total) {
+    return '$entered/$total đã nhập';
+  }
+
+  @override
+  String get gpsGood => 'GPS tốt';
+
+  @override
+  String get gpsFair => 'GPS khá';
+
+  @override
+  String get gpsPoor => 'GPS yếu';
+
+  @override
+  String get roundFormatCasual => 'Thường';
+
+  @override
+  String get roundFormatPractice => 'Tập luyện';
+
+  @override
+  String get roundFormatTournament => 'Giải đấu';
+
+  @override
+  String get scoringStrokePlay => 'Đếm gậy';
+
+  @override
+  String get scoringStableford => 'Stableford';
+
+  @override
+  String get relativeJustNow => 'Vừa xong';
+
+  @override
+  String relativeHoursAgo(int hours) {
+    return '$hours giờ trước';
+  }
+
+  @override
+  String get relativeToday => 'Hôm nay';
+
+  @override
+  String get relativeYesterday => 'Hôm qua';
+
+  @override
+  String relativeDaysAgo(int days) {
+    return '$days ngày trước';
+  }
+
+  @override
+  String relativeMonthsAgo(int months) {
+    return '$months tháng trước';
+  }
+
+  @override
+  String relativeYearsAgo(int years) {
+    return '$years năm trước';
+  }
+
+  @override
+  String scoreRowEntered(String player, String score) {
+    return '$player, điểm $score';
+  }
+
+  @override
+  String scoreRowNotEntered(String player) {
+    return '$player, chưa nhập điểm';
+  }
+
+  @override
+  String scoreRowNotPlayed(String player) {
+    return '$player, chưa chơi hố này';
+  }
+
+  @override
+  String get measureGreenReportAction => 'Green ở ngay đây — báo vị trí';
+
+  @override
+  String get measureGreenReportSent => 'Đã gửi, chờ quản trị viên duyệt';
+
+  @override
+  String get measureGreenReportQueued =>
+      'Đã ghi nhận. Quản trị viên sẽ duyệt trước khi bản đồ thay đổi.';
+
+  @override
+  String get measureGreenReportNoFix =>
+      'Tín hiệu GPS chưa đủ tốt để gửi vị trí. Hãy thử lại ở chỗ thoáng.';
+
+  @override
+  String get measureGreenReportFailed => 'Chưa gửi được. Hãy thử lại.';
+
+  @override
   String get measureGreenEstimated =>
       'Vị trí green là ước lượng, chưa được khảo sát';
 
@@ -2783,6 +2910,17 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get measureEmptyBody =>
       'Chạm vào cờ, mép bunker hoặc điểm layup trên ảnh vệ tinh để đo.';
+
+  @override
+  String get measureEmptyBodyNoImagery =>
+      'Bản dựng này không có ảnh vệ tinh để ngắm, nhưng vị trí của bạn và green vẫn được vẽ trên bản đồ. Chạm vào bất kỳ đâu để đo tới đó.';
+
+  @override
+  String get measureYouToGreen => 'Từ bạn tới green';
+
+  @override
+  String get measureWithoutImagery =>
+      'Bản dựng này không có ảnh vệ tinh — thước đo vẫn hoạt động.';
 
   @override
   String get measureQualityGood => 'Tốt';
@@ -2818,7 +2956,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get basemapCourseMap => 'Bản đồ sân';
 
   @override
+  String get basemapMeasure => 'Thước đo';
+
+  @override
   String get basemapSwitchToSatellite => 'Chuyển sang ảnh vệ tinh';
+
+  @override
+  String get basemapSwitchToMeasure => 'Chuyển sang công cụ đo khoảng cách';
 
   @override
   String get basemapSwitchToCourseMap => 'Chuyển sang bản đồ sân';
@@ -2853,15 +2997,155 @@ class AppLocalizationsVi extends AppLocalizations {
   String get holeNoGeometryBadge => 'Chưa khảo sát';
 
   @override
-  String get holeNoGeometryNoImageryTitle => 'Không có dữ liệu thật cho hố này';
-
-  @override
-  String get holeNoGeometryNoImageryBody =>
-      'Hố này chưa được khảo sát, và bản dựng ứng dụng này không được cấu hình nhà cung cấp ảnh vệ tinh, nên cũng không có ảnh để đo. Khoảng cách ở hố này phải lấy từ các cột mốc trên sân.';
+  String get holeNoGeometryBodyNoImagery =>
+      'Chúng tôi chưa số hoá hố này, và bản dựng này cũng không có ảnh vệ tinh. Thước đo vẫn dùng được: vị trí của bạn và green đều nằm trên bản đồ, và mỗi khoảng cách đều ghi rõ sai số.';
 
   @override
   String get distanceNotSurveyedTooltip =>
       'Chiều dài này được tính từ toạ độ chưa ai xác minh. Hãy coi đây là số gần đúng và kiểm tra lại các cột mốc trên sân.';
+
+  @override
+  String distanceUnavailableSemantics(String label) {
+    return 'Chưa có khoảng cách $label';
+  }
+
+  @override
+  String get analyticsNoClubsInBag =>
+      'Túi gậy của bạn chưa có gậy nào. Thêm gậy để lọc theo gậy.';
+
+  @override
+  String get downloadOfflineCoursesSubtitle =>
+      'Quản lý các sân đã lưu để chơi khi không có sóng';
+
+  @override
+  String get correctionListTitle => 'Báo lỗi dữ liệu của tôi';
+
+  @override
+  String get correctionListSubtitle =>
+      'Những dữ liệu sân bạn đã báo và kết quả xử lý';
+
+  @override
+  String get smartTargetExampleBadge => 'VÍ DỤ';
+
+  @override
+  String get smartTargetExampleBody =>
+      'Đây là ví dụ minh hoạ trên một hố giả định, không phải dữ liệu của bạn. Khi vào vòng đấu, chính panel này chạy trên vị trí GPS, túi gậy và hố thật của bạn.';
+
+  @override
+  String get holeSwitchLowConfidence =>
+      'GPS chưa đủ chắc chắn để tự chuyển hố cho bạn.';
+
+  @override
+  String get telemetryExportTitle => 'Xuất telemetry chạy thử';
+
+  @override
+  String get telemetryExportBody =>
+      'Xuất chất lượng GPS, độ trễ bản đồ và pin của một vòng đấu ra tệp JSON để bàn giao cho bên phân tích. Ghi ngay trên máy — không cần mạng, điều rất quan trọng khi ở ngoài sân.';
+
+  @override
+  String get telemetryExportRoundId => 'Mã vòng đấu';
+
+  @override
+  String get telemetryExportInspect => 'Xem vòng này đã ghi được gì';
+
+  @override
+  String get telemetryExportShare => 'Xuất và chia sẻ';
+
+  @override
+  String telemetryExportSamples(String gps, String battery, String map) {
+    return '$gps mẫu GPS · $battery lần đo pin · $map lần nạp bản đồ';
+  }
+
+  @override
+  String telemetryExportBatteryUsed(String percent) {
+    return 'Pin đã dùng trong khoảng ghi nhận: $percent%';
+  }
+
+  @override
+  String telemetryExportSlowestMap(String ms) {
+    return 'Lần nạp bản đồ chậm nhất: $ms ms (mục tiêu: dưới 2000 ms)';
+  }
+
+  @override
+  String telemetryExportWorstAccuracy(String meters) {
+    return 'Sai số GPS tệ nhất: $meters m (cảnh báo khi trên 10 m)';
+  }
+
+  @override
+  String get telemetryExportEmpty =>
+      'Vòng này chưa ghi được gì. Telemetry chỉ ghi từ các fix mà vòng đấu vốn đã nhận, nên một vòng chơi hoàn toàn ở tab Ghi điểm sẽ không có mẫu GPS nào — hãy mở tab Bản đồ trong lúc chơi.';
+
+  @override
+  String telemetryExportWritten(String path) {
+    return 'Đã ghi vào $path';
+  }
+
+  @override
+  String get settingsAbout => 'Giới thiệu';
+
+  @override
+  String get creditsTitle => 'Ghi công và giấy phép';
+
+  @override
+  String get creditsSubtitle =>
+      'Nguồn dữ liệu sân, ảnh vệ tinh và giấy phép nguồn mở';
+
+  @override
+  String get creditsCourseDataTitle => 'Dữ liệu sân golf';
+
+  @override
+  String get creditsOpenStreetMapBody =>
+      'Hình dạng green, bẫy cát, mặt nước và fairway được suy ra từ OpenStreetMap, sử dụng theo giấy phép Open Database Licence.';
+
+  @override
+  String get creditsCopernicusBody =>
+      'Một số chướng ngại nước được nhận diện từ ảnh Copernicus Sentinel-2.';
+
+  @override
+  String get creditsImageryTitle => 'Ảnh vệ tinh';
+
+  @override
+  String get creditsMapboxBody =>
+      'Ảnh vệ tinh do Mapbox và OpenStreetMap cung cấp, chỉ hiển thị khi bạn có kết nối mạng.';
+
+  @override
+  String get creditsImageryProviderBody =>
+      'Ảnh vệ tinh do đơn vị nêu trên cung cấp theo điều khoản của họ, và chỉ hiển thị khi bạn có kết nối mạng.';
+
+  @override
+  String get creditsImageryNoneTitle => 'Chưa cấu hình nguồn ảnh vệ tinh';
+
+  @override
+  String get creditsImageryNoneBody =>
+      'Bản dựng này không có ảnh vệ tinh. Công cụ đo vẫn hoạt động — nó dùng GPS và hình học, không cần ảnh.';
+
+  @override
+  String get creditsSoftwareTitle => 'Phần mềm';
+
+  @override
+  String get creditsOpenSourceLicences => 'Giấy phép nguồn mở';
+
+  @override
+  String get creditsOpenSourceLicencesBody =>
+      'Giấy phép của các thư viện dùng để xây dựng ứng dụng này';
+
+  @override
+  String get creditsDataQualityNote =>
+      'Dữ liệu hình học của sân được gắn nhãn trung thực: hố nào chưa được khảo sát thì ứng dụng nói rõ và đưa ảnh vệ tinh kèm thước đo, thay vì vẽ một bản đồ mà chúng tôi không dám bảo đảm.';
+
+  @override
+  String get downloadPreferencesUnavailable =>
+      'Không đọc được cài đặt tải xuống trên thiết bị này nên chưa quản lý được phần tải sân ở đây.';
+
+  @override
+  String get summaryUnavailable =>
+      'Vòng đấu của bạn đã được lưu. Không mở được bản tổng kết trên thiết bị này — bạn có thể xem lại vòng đấu ở mục Vòng đấu.';
+
+  @override
+  String get holeMapPreviousHole => 'Hố trước';
+
+  @override
+  String get holeMapNextHole => 'Hố sau';
 
   @override
   String holeListUnverifiedNotice(int count) {

@@ -8,6 +8,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../data/services/connectivity_service.dart';
@@ -76,8 +78,14 @@ class _WifiOnlyToggleState extends State<WifiOnlyToggle> {
               _isWifiConnected ? Icons.wifi : Icons.wifi_off,
               size: VspIconSize.md,
               color: _isWifiConnected
-                  ? VspColorSemantic.of(brightness, VspSemanticColorToken.online)
-                  : VspColorSemantic.of(brightness, VspSemanticColorToken.offline),
+                  ? VspColorSemantic.of(
+                      brightness,
+                      VspSemanticColorToken.online,
+                    )
+                  : VspColorSemantic.of(
+                      brightness,
+                      VspSemanticColorToken.offline,
+                    ),
             ),
             const SizedBox(width: VspSpacing.sm),
             Expanded(
@@ -85,13 +93,13 @@ class _WifiOnlyToggleState extends State<WifiOnlyToggle> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Download on Wi-Fi only',
+                    AppLocalizations.of(context).wifiOnlyTitle,
                     style: theme.textTheme.bodyMedium,
                   ),
                   Text(
                     _isWifiConnected
-                        ? 'Wi-Fi connected'
-                        : 'No Wi-Fi — downloads paused',
+                        ? AppLocalizations.of(context).wifiConnected
+                        : AppLocalizations.of(context).wifiNotConnected,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: _isWifiConnected
                           ? colorScheme.onSurfaceVariant
@@ -116,4 +124,3 @@ class _WifiOnlyToggleState extends State<WifiOnlyToggle> {
     );
   }
 }
-

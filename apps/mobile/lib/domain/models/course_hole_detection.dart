@@ -81,6 +81,16 @@ enum CourseHoleDetectionReason {
   /// Facility and course found but no hole matched.
   noHoleFound,
 
+  /// The course's holes carry coordinates nobody verified, so there is nothing
+  /// worth scoring a position against.
+  ///
+  /// Distinct from [noHoleFound] on purpose. "No hole matched" means the golfer
+  /// is somewhere this course does not cover; this means the course covers them
+  /// and the app does not trust its own map. Most holes in the database are in
+  /// this state — generated arithmetically along a fixed diagonal — and scoring
+  /// against them would not produce a weak answer but a confident wrong one.
+  holeDataUnverified,
+
   /// Detection was overridden by manual user selection.
   manualOverride,
 

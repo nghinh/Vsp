@@ -72,6 +72,9 @@ class SyncWorker {
   /// Stream subscription for connectivity changes.
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
 
+  /// Wakes the worker the moment anything is queued.
+  StreamSubscription<void>? _appendedSub;
+
   /// Timer for the next scheduled sync attempt.
   Timer? _syncTimer;
 
@@ -109,6 +112,13 @@ class SyncWorker {
       _onConnectivityChanged,
     );
 
+    // Anything newly queued is drained now rather than at the next
+    // connectivity change — which, for a phone that stays online through a
+    // whole round, never comes.
+    _appendedSub = SyncQueueRepository.onAppended.listen(
+      (_) => _triggerSyncIfOnline(),
+    );
+
     // Also trigger an immediate sync attempt if we already have connectivity.
     _triggerSyncIfOnline();
   }
@@ -118,6 +128,8 @@ class SyncWorker {
     _isRunning = false;
     _connectivitySub?.cancel();
     _connectivitySub = null;
+    _appendedSub?.cancel();
+    _appendedSub = null;
     _syncTimer?.cancel();
     _syncTimer = null;
   }
@@ -129,6 +141,16 @@ class SyncWorker {
     // If nothing is pending, stop immediately.
     _checkStopCondition();
   }
+
+  /// Drain whatever is queued right now, without waiting for connectivity to
+  /// change.
+  ///
+  /// [start] only reacts to a connectivity *change*, so a device that was
+  /// already online when the worker started, or one whose round has just ended,
+  /// had no way to say "go now". A round finishing on the 18th with a bar of
+  /// signal should not wait for the golfer to walk into a dead spot and out
+  /// again before their scores leave the phone.
+  Future<void> syncNow() => _processQueue();
 
   /// Manually retry a specific failed event by ID.
   Future<void> retry(String eventId) async {

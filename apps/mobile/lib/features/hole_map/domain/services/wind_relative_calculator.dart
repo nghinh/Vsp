@@ -33,15 +33,20 @@ class WindRelativeCalculator {
   /// [shotLineBearingDegrees] — direction from golfer to target/pin, in degrees,
   ///           0 = North, clockwise (0–360).
   ///
-  /// Returns [WindRelativeEntity] with components or a null-result entity if
-  /// the wind is stale or missing. Returns null only when [wind] is null.
-  WindRelativeEntity? calculate({
+  /// Always returns an entity. Stale wind comes back with `isStale` set and
+  /// zero confidence rather than as null — the caller has something to render
+  /// either way, and "we have wind but it is old" is a different thing to say
+  /// than "we have no wind".
+  ///
+  /// This used to be declared nullable and opened with `if (wind == null)
+  /// return null`, on a parameter the signature marks `required` and
+  /// non-nullable. The guard could not fire, so the null could not happen, and
+  /// every caller carried a branch for it anyway.
+  WindRelativeEntity calculate({
     required WindEntity wind,
     required double shotLineBearingDegrees,
     Duration? maxAge,
   }) {
-    if (wind == null) return null;
-
     final effectiveMaxAge = maxAge ?? this.maxAge;
     final stale = isWindStale(wind, maxAge: effectiveMaxAge);
 

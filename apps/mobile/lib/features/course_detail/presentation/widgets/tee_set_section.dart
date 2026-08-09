@@ -7,6 +7,8 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/tee_set_summary.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class TeeSetSection extends StatelessWidget {
@@ -116,7 +118,10 @@ class _TeeSetCard extends StatelessWidget {
           // Par + yardages summary
           Row(
             children: [
-              _MetricChip(label: AppLocalizations.of(context).fieldPar, value: '${teeSet.totalPar}'),
+              _MetricChip(
+                label: AppLocalizations.of(context).fieldPar,
+                value: '${teeSet.totalPar}',
+              ),
               if (teeSet.rating != null) ...[
                 const SizedBox(width: VspSpacing.sm),
                 _MetricChip(
@@ -126,7 +131,10 @@ class _TeeSetCard extends StatelessWidget {
               ],
               if (teeSet.slope != null) ...[
                 const SizedBox(width: VspSpacing.sm),
-                _MetricChip(label: AppLocalizations.of(context).fieldSlope, value: '${teeSet.slope}'),
+                _MetricChip(
+                  label: AppLocalizations.of(context).fieldSlope,
+                  value: '${teeSet.slope}',
+                ),
               ],
             ],
           ),
@@ -187,6 +195,12 @@ class _MetricChip extends StatelessWidget {
 
 class _YardageChip extends StatelessWidget {
   final String teeName;
+
+  /// Hole length in metres.
+  ///
+  /// Named yardage all the way down from `TeeSetSummaryDto`, whose own javadoc
+  /// and the OpenAPI contract both say the value is metres. Rendering it as
+  /// `yd` overstated every tee on every course by 9%.
   final int yardage;
 
   const _YardageChip({required this.teeName, required this.yardage});
@@ -194,6 +208,7 @@ class _YardageChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final unit = DistanceUnitScope.resolve(context);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -204,7 +219,7 @@ class _YardageChip extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          '${yardage}yd',
+          MeasureUnits.format(yardage.toDouble(), unit),
           style: const TextStyle(
             fontFamily: 'Fira Code',
             fontSize: 12,

@@ -240,7 +240,7 @@ enum ShotDetectionSuggestionStatus {
   static ShotDetectionSuggestionStatus fromString(String? value) {
     if (value == null) return ShotDetectionSuggestionStatus.pending;
     return ShotDetectionSuggestionStatus.values.firstWhere(
-      (e) => e.name == (value ?? '').toLowerCase(),
+      (e) => e.name == value.toLowerCase(),
       orElse: () => ShotDetectionSuggestionStatus.pending,
     );
   }
@@ -921,7 +921,8 @@ class ShotDetectionWindows extends Equatable {
 
   factory ShotDetectionWindows.fromJson(Map<String, dynamic> json) {
     return ShotDetectionWindows(
-      detectionWindowSeconds: (json['detectionWindowSeconds'] as num?)?.toInt() ?? 30,
+      detectionWindowSeconds:
+          (json['detectionWindowSeconds'] as num?)?.toInt() ?? 30,
       minTimeBetweenShots: (json['minTimeBetweenShots'] as num?)?.toInt() ?? 15,
       maxShortShotDistanceMeters:
           (json['maxShortShotDistanceMeters'] as num?)?.toDouble() ?? 10.0,

@@ -80,12 +80,16 @@ class FreshnessBadge extends StatelessWidget {
     Brightness brightness,
     ThemeData theme,
   ) {
+    final l10n = AppLocalizations.of(context);
     final days = dataFreshness!.daysSincePublished;
+    // "3 days ago" on a card whose every other word is Vietnamese. The badge is
+    // on the main course list, so it was the untranslated string a golfer saw
+    // most often.
     final label = days == 0
-        ? AppLocalizations.of(context).freshnessToday
+        ? l10n.freshnessToday
         : days == 1
-        ? '1 day ago'
-        : '$days days ago';
+        ? l10n.relativeYesterday
+        : l10n.relativeDaysAgo(days);
 
     return Semantics(
       label: AppLocalizations.of(context).freshnessUpdatedLabel(label),

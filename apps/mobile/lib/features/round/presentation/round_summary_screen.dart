@@ -7,6 +7,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../core/storage/round_sync_store.dart';
+import '../../../data/repositories/hole_score_repository.dart';
+import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../data/repositories/player_repository.dart';
+import '../../../data/repositories/round_repository.dart';
+import '../../../data/services/active_round_guard.dart';
+import '../../../data/services/connectivity_service.dart';
+import '../../../data/services/round_state_service.dart';
 import '../domain/round_summary.dart';
 import '../domain/score_entry.dart';
 import '../domain/sync_state.dart';
@@ -19,22 +29,125 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main round summary screen.
-class RoundSummaryScreen extends StatelessWidget {
+///
+/// This screen and its bloc were complete and reachable from nowhere: finishing
+/// a round ended in `popUntil((route) => route.isFirst)`, so eighteen holes of
+/// scoring dropped the golfer on the home screen with a toast. It would also
+/// have thrown if anything had pushed it, because it resolved five
+/// dependencies with `context.read()` and the app provided none of them — the
+/// only RepositoryProviders in the tree are the hole map, corrections and
+/// location.
+///
+/// It now builds its own dependencies, so any caller can push it. They are all
+/// on-device stores; the one asynchronous piece is [SharedPreferences], which
+/// [ConnectivityService] needs to answer the Wi-Fi-only question.
+class RoundSummaryScreen extends StatefulWidget {
   final String roundId;
 
-  const RoundSummaryScreen({super.key, required this.roundId});
+  /// Injectable for tests, which have neither SQLite nor SharedPreferences.
+  final RoundCompletionBloc? bloc;
+
+  const RoundSummaryScreen({super.key, required this.roundId, this.bloc});
+
+  @override
+  State<RoundSummaryScreen> createState() => _RoundSummaryScreenState();
+}
+
+class _RoundSummaryScreenState extends State<RoundSummaryScreen> {
+  /// Built once. A future created in `build` would be recreated on every
+  /// rebuild, reopening the database behind the screen.
+  late final Future<RoundCompletionBloc> _bloc = _createBloc();
+
+  /// The bloc once built, so [dispose] can close what this screen created.
+  ///
+  /// Null while it is still being built, and left null for an injected one —
+  /// whoever injected it owns its lifetime.
+  RoundCompletionBloc? _owned;
+
+  Future<RoundCompletionBloc> _createBloc() async {
+    final injected = widget.bloc;
+    if (injected != null) {
+      injected.add(LoadRoundSummary(roundId: widget.roundId));
+      return injected;
+    }
+
+    final roundRepo = RoundRepository();
+    final syncStore = RoundSyncStore();
+    final activeRoundGuard = ActiveRoundGuard(
+      manifestRepo: PackageManifestRepository(),
+    );
+
+    final bloc = RoundCompletionBloc(
+      roundRepo: roundRepo,
+      roundStateService: RoundStateService(
+        roundRepo: roundRepo,
+        scoreRepo: HoleScoreRepository(),
+        playerRepo: PlayerRepository(),
+        syncStore: syncStore,
+        activeRoundGuard: activeRoundGuard,
+      ),
+      syncStore: syncStore,
+      activeRoundGuard: activeRoundGuard,
+      connectivityService: ConnectivityService(
+        prefs: await SharedPreferences.getInstance(),
+      ),
+    );
+    // The screen may already be gone by the time the preferences resolve.
+    if (!mounted) {
+      await bloc.close();
+      return bloc;
+    }
+    _owned = bloc;
+    bloc.add(LoadRoundSummary(roundId: widget.roundId));
+    return bloc;
+  }
+
+  @override
+  void dispose() {
+    _owned?.close();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => RoundCompletionBloc(
-        roundRepo: context.read(),
-        roundStateService: context.read(),
-        syncStore: context.read(),
-        activeRoundGuard: context.read(),
-        connectivityService: context.read(),
-      )..add(LoadRoundSummary(roundId: roundId)),
-      child: const _RoundSummaryView(),
+    return FutureBuilder<RoundCompletionBloc>(
+      future: _bloc,
+      builder: (context, snapshot) {
+        final l10n = AppLocalizations.of(context);
+
+        if (snapshot.hasError) {
+          // The round is already finished and already recorded by the time
+          // this screen opens, so a summary that cannot be assembled is a
+          // missing view of a saved round — not a lost round. Say that.
+          return Scaffold(
+            appBar: AppBar(title: Text(l10n.summaryTitle)),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  l10n.summaryUnavailable,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final bloc = snapshot.data;
+        if (bloc == null) {
+          return Scaffold(
+            appBar: AppBar(title: Text(l10n.summaryTitle)),
+            body: const Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        // .value, not create: the bloc is built and loaded above, and this
+        // screen closes what it built in dispose.
+        return BlocProvider.value(
+          value: bloc,
+          child: const _RoundSummaryView(),
+        );
+      },
     );
   }
 }
@@ -48,14 +161,18 @@ class _RoundSummaryView extends StatelessWidget {
       builder: (context, state) {
         if (state is RoundSummaryLoading) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context).summaryTitle),
+            ),
             body: const Center(child: CircularProgressIndicator()),
           );
         }
 
         if (state is RoundCompletionError) {
           return Scaffold(
-            appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
+            appBar: AppBar(
+              title: Text(AppLocalizations.of(context).summaryTitle),
+            ),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -82,7 +199,9 @@ class _RoundSummaryView extends StatelessWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(title: Text(AppLocalizations.of(context).summaryTitle)),
+          appBar: AppBar(
+            title: Text(AppLocalizations.of(context).summaryTitle),
+          ),
           body: Center(child: Text(AppLocalizations.of(context).commonLoading)),
         );
       },
@@ -308,7 +427,11 @@ class _SyncStateBanner extends StatelessWidget {
         Icons.cloud_upload,
         AppLocalizations.of(context).summaryOffline,
       ),
-      SyncState.syncing => (Colors.blue, Icons.sync, AppLocalizations.of(context).summarySyncing),
+      SyncState.syncing => (
+        Colors.blue,
+        Icons.sync,
+        AppLocalizations.of(context).summarySyncing,
+      ),
       SyncState.failed => (
         Colors.red,
         Icons.error,

@@ -91,4 +91,33 @@ void main() {
     expect(MeasureUnits.useYards(DistanceUnit.yards), isTrue);
     expect(MeasureUnits.useYards(DistanceUnit.meters), isFalse);
   });
+
+  group('when the golfer is nowhere near the course', () {
+    // Opening a round set at Long Thành while sitting in Hà Nội printed the
+    // distance to the green as "1135481 m". The number was exactly right, which
+    // is what makes it dangerous: seven unreadable digits look like a broken
+    // calculation, and a golfer who learns to distrust one distance distrusts
+    // the 152 m one too.
+    test('a distance no hole could be reads in kilometres', () {
+      expect(MeasureUnits.format(1135481, DistanceUnit.meters), '1135 km');
+    });
+
+    test('a yards golfer gets miles, not kilometres', () {
+      // Making someone who thinks in yards convert twice is its own small
+      // failure.
+      expect(MeasureUnits.format(1135481, DistanceUnit.yards), '706 mi');
+    });
+
+    test('single-digit distances keep one decimal', () {
+      expect(MeasureUnits.format(4200, DistanceUnit.meters), '4.2 km');
+    });
+
+    test('a distance a hole could actually be is untouched', () {
+      // The threshold must not reach anything playable. The longest hole ever
+      // built is under a kilometre.
+      expect(MeasureUnits.format(2999, DistanceUnit.meters), '2999 m');
+      expect(MeasureUnits.format(152, DistanceUnit.meters), '152 m');
+      expect(MeasureUnits.isOffCourse(950), isFalse);
+    });
+  });
 }

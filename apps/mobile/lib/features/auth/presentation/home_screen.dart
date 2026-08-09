@@ -23,6 +23,11 @@ import '../../../l10n/app_localizations.dart';
 import 'auth_bloc.dart';
 import 'login_screen.dart';
 import 'session_management_screen.dart';
+import '../../../core/network/api_client.dart';
+import '../../../data/repositories/course_package_repository.dart';
+import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../features/correction/presentation/correction_list_screen.dart';
+import '../../../presentation/screens/download_management_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +38,25 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  /// Tabs the golfer has actually opened.
+  ///
+  /// IndexedStack builds every child, which is what keeps a tab's scroll
+  /// position and state when you come back to it — and also meant that opening
+  /// the app built all five at once. Profile, Courses and Rounds each fetch on
+  /// construction, so a cold start fired four requests for screens nobody was
+  /// looking at, and the profile fetch raced session restore: it lost, got a
+  /// 401, and posted "Failed to load profile" over the Play tab before the
+  /// golfer had touched anything.
+  ///
+  /// Building on first visit keeps the state-preserving behaviour — once a tab
+  /// is in the stack it stays — and costs nothing at launch. The round screen
+  /// already does exactly this; the home shell did not.
+  late final Set<int> _visited = {_selectedIndex};
+
+  /// Renders [child] only once its tab has been opened.
+  Widget _lazyTab(int index, Widget child) =>
+      _visited.contains(index) ? child : const SizedBox.shrink();
 
   List<_NavItem> _navItems(AppLocalizations l10n) => [
     _NavItem(icon: Icons.golf_course, label: l10n.navPlay),
@@ -51,18 +75,21 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: const [
-          _PlayTab(),
-          CourseSearchScreen(),
-          RoundsHistoryTab(),
-          ProfileScreen(),
-          _MoreTab(),
+        children: [
+          _lazyTab(0, const _PlayTab()),
+          _lazyTab(1, const CourseSearchScreen()),
+          _lazyTab(2, const RoundsHistoryTab()),
+          _lazyTab(3, const ProfileScreen()),
+          _lazyTab(4, const _MoreTab()),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
-          setState(() => _selectedIndex = index);
+          setState(() {
+            _selectedIndex = index;
+            _visited.add(index);
+          });
         },
         destinations: _navItems(l10n)
             .map(
@@ -249,6 +276,32 @@ class _MoreTab extends StatelessWidget {
             onTap: () => Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => const BagScreen())),
+          ),
+          const SizedBox(height: 12),
+          // Both screens below were complete and reachable from nowhere:
+          // DownloadManagementScreen (388 LOC) and CorrectionListScreen
+          // (303 LOC) were each one tile away from a golfer.
+          _SettingsTile(
+            icon: Icons.download_outlined,
+            title: l10n.downloadOfflineCourses,
+            subtitle: l10n.downloadOfflineCoursesSubtitle,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => DownloadManagementScreen(
+                  manifestRepo: PackageManifestRepository(),
+                  packageRepo: CoursePackageRepository(apiClient: ApiClient()),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          _SettingsTile(
+            icon: Icons.report_outlined,
+            title: l10n.correctionListTitle,
+            subtitle: l10n.correctionListSubtitle,
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const CorrectionListScreen()),
+            ),
           ),
           const SizedBox(height: 12),
           _SettingsTile(

@@ -32,13 +32,42 @@ class MeasurePanel extends StatelessWidget {
   /// Switches between metres and yards.
   final VoidCallback onToggleUnit;
 
+  /// Whether the map underneath is showing real imagery.
+  ///
+  /// False changes what the empty state tells the golfer to tap: "the bunker
+  /// lip on the satellite image" is not advice you can follow when there is no
+  /// satellite image.
+  final bool imageryAvailable;
+
+  /// Files the golfer's current position as where the green really is.
+  ///
+  /// Offered only where the panel has just admitted it does not know — an
+  /// unknown or unsurveyed green — and only with a fix worth recording. That
+  /// admission is the one moment the golfer is both standing on the answer and
+  /// looking at the question; a correction form three taps deep in a More menu
+  /// is a different, much rarer, act.
+  ///
+  /// Null hides the action entirely, which is what happens anywhere the caller
+  /// has no course, hole or repository to file against.
+  final VoidCallback? onReportGreenPosition;
+
+  /// Set once a report has been filed for this hole, so the action becomes an
+  /// acknowledgement instead of inviting a second identical report.
+  final bool greenPositionReported;
+
   const MeasurePanel({
     super.key,
     required this.state,
     required this.onUndo,
     required this.onClear,
     required this.onToggleUnit,
+    this.imageryAvailable = true,
+    this.onReportGreenPosition,
+    this.greenPositionReported = false,
   });
+
+  /// Coarsest fix the correction API accepts.
+  static const double _maxReportableAccuracyMeters = 100;
 
   static const Color _surface = Color(0xF2131C2F);
   static const Color _border = Color(0x33FFFFFF);
@@ -56,7 +85,7 @@ class MeasurePanel extends StatelessWidget {
         color: _surface,
         border: Border(top: BorderSide(color: _border)),
       ),
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: SafeArea(
         top: false,
         child: Column(
@@ -64,14 +93,19 @@ class MeasurePanel extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context, l10n),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             _buildGpsRow(context, l10n),
-            if (state.isEmpty) ...[
-              const SizedBox(height: 10),
-              _buildEmpty(l10n),
-            ] else ...[
-              const SizedBox(height: 10),
+            // The green reading exists before the first tap does — when GPS
+            // and a green position are both known, "from you to the green" is
+            // already an answer — so the readout and the "drop a point" hint
+            // are no longer alternatives.
+            if (!state.result.isEmpty) ...[
+              const SizedBox(height: 8),
               _buildLegs(context, l10n),
+            ],
+            if (state.isEmpty) ...[
+              const SizedBox(height: 8),
+              _buildEmpty(l10n),
             ],
           ],
         ),
@@ -145,17 +179,14 @@ class MeasurePanel extends StatelessWidget {
     final origin = state.origin;
     final accuracy = origin?.accuracyMeters;
 
-    if (state.hasNoFix) {
-      return _Notice(
-        icon: Icons.gps_off,
-        color: _danger,
-        message: l10n.measureNoFix,
-      );
-    }
-
+    // The green note used to be a casualty of a missing fix: no fix meant this
+    // returned early, so a golfer who dropped a point without GPS still got an
+    // "On to green" number — measured from that point, so it did not need GPS
+    // at all — with nothing saying the green position was a guess. Losing the
+    // fix is a reason to say more, not less.
     final warnings = <String>[
-      if (origin!.isStale) l10n.measureStaleFix,
-      if (origin.isLowAccuracy) l10n.measureWeakFix,
+      if (!state.hasNoFix && origin!.isStale) l10n.measureStaleFix,
+      if (!state.hasNoFix && origin!.isLowAccuracy) l10n.measureWeakFix,
     ];
 
     return Column(
@@ -163,14 +194,36 @@ class MeasurePanel extends StatelessWidget {
       children: [
         Row(
           children: [
-            GpsAccuracyChip(
-              level: _accuracyLevel(accuracy),
-              accuracyMeters: accuracy,
-            ),
+            if (state.hasNoFix)
+              const Icon(Icons.gps_off, size: 14, color: _danger)
+            else
+              GpsAccuracyChip(
+                level: _accuracyLevel(accuracy),
+                accuracyMeters: accuracy,
+              ),
             const SizedBox(width: 8),
             Expanded(child: _buildGreenNote(l10n)),
           ],
         ),
+        if (_canReportGreen) ...[
+          const SizedBox(height: 6),
+          _GreenReportAction(
+            label: greenPositionReported
+                ? l10n.measureGreenReportSent
+                : l10n.measureGreenReportAction,
+            // A filed report changes nothing on this map until somebody
+            // reviews it, so the button must stop looking like a fix.
+            onTap: greenPositionReported ? null : onReportGreenPosition,
+          ),
+        ],
+        if (state.hasNoFix) ...[
+          const SizedBox(height: 6),
+          _Notice(
+            icon: Icons.gps_off,
+            color: _danger,
+            message: l10n.measureNoFix,
+          ),
+        ],
         for (final warning in warnings) ...[
           const SizedBox(height: 6),
           _Notice(
@@ -181,6 +234,21 @@ class MeasurePanel extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  /// Whether to offer the golfer's position as the green's.
+  ///
+  /// Requires all three: a caller that can file one, a green this panel has
+  /// admitted uncertainty about, and a fix accurate enough to be worth a
+  /// reviewer's time. A report pinned to a 300 m fix is noise that costs an
+  /// admin the same attention as a good one.
+  bool get _canReportGreen {
+    if (onReportGreenPosition == null) return false;
+    final unsure = state.green == null || state.result.greenIsEstimated;
+    if (!unsure) return false;
+    final accuracy = state.origin?.accuracyMeters;
+    if (accuracy == null) return false;
+    return accuracy <= _maxReportableAccuracyMeters;
   }
 
   Widget _buildGreenNote(AppLocalizations l10n) {
@@ -228,7 +296,9 @@ class MeasurePanel extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          l10n.measureEmptyBody,
+          imageryAvailable
+              ? l10n.measureEmptyBody
+              : l10n.measureEmptyBodyNoImagery,
           style: const TextStyle(color: _textMuted, fontSize: 12),
         ),
       ],
@@ -257,7 +327,9 @@ class MeasurePanel extends StatelessWidget {
     if (greenLeg != null) {
       rows.add(
         _LegRow(
-          label: l10n.measureToGreen,
+          label: result.greenLegIsFromGolfer
+              ? l10n.measureYouToGreen
+              : l10n.measureToGreen,
           leg: greenLeg,
           unit: unit,
           emphasised: true,
@@ -270,7 +342,7 @@ class MeasurePanel extends StatelessWidget {
       children: [
         ...rows,
         if (result.legs.length > 1) ...[
-          const Divider(color: _border, height: 16),
+          const Divider(color: _border, height: 12),
           _TotalRow(
             label: l10n.measureTotal,
             meters: result.totalMeters,
@@ -318,7 +390,7 @@ class _LegRow extends StatelessWidget {
       label: l10n.measureSemanticsLeg(label, distance, tolerance),
       excludeSemantics: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 3),
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(
           children: [
             Expanded(
@@ -489,6 +561,61 @@ class _Notice extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// The one-tap "the green is here" action.
+///
+/// Deliberately a quiet outlined row rather than a filled button: it is an
+/// offer to help, next to an admission of ignorance, and it must not compete
+/// with the distances the golfer opened this panel to read.
+class _GreenReportAction extends StatelessWidget {
+  final String label;
+
+  /// Null once a report has been filed — the row stays, greyed, so the golfer
+  /// can see their report was taken without being invited to file it twice.
+  final VoidCallback? onTap;
+
+  const _GreenReportAction({required this.label, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final sent = onTap == null;
+    final color = sent
+        ? MeasurePanel._textMuted
+        : MeasurePanel._textPrimary;
+
+    return Semantics(
+      button: !sent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(6),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          decoration: BoxDecoration(
+            border: Border.all(color: MeasurePanel._border),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                sent ? Icons.check_circle_outline : Icons.add_location_alt_outlined,
+                size: 14,
+                color: color,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(color: color, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

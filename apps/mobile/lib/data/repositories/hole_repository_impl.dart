@@ -9,6 +9,7 @@ import 'dart:math' as math;
 
 import 'package:course_package/course_package.dart' as cp;
 
+import '../../domain/models/hole_data_provenance.dart';
 import '../../domain/repositories/hole_repository.dart';
 
 /// Local course package-backed implementation of HoleRepository.
@@ -126,6 +127,15 @@ class HoleRepositoryImpl implements HoleRepository {
     final bearing = _computeBearing(teeLat, teeLon, greenLat, greenLon);
 
     return HoleGeometry(
+      // Carried through so detection can refuse to score against coordinates
+      // nobody verified. The package already knows this; nothing downstream
+      // used to ask.
+      provenance: HoleDataProvenance.fromJson({
+        if (holeGeom.accuracyClass != null)
+          'accuracyClass': holeGeom.accuracyClass,
+        if (holeGeom.verificationStatus != null)
+          'verificationStatus': holeGeom.verificationStatus,
+      }),
       id: holeGeom.holeId,
       holeNumber: holeGeom.holeNumber,
       par: holeGeom.par,

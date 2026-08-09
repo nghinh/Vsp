@@ -65,11 +65,34 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
   void initState() {
     super.initState();
     _initServices();
-    _loadState();
   }
 
-  void _initServices() {
-    _connectivity = ConnectivityService(prefs: _getPrefs());
+  /// Builds the download services, then loads the current state.
+  ///
+  /// This used to be synchronous and end in
+  /// `throw UnimplementedError('Inject SharedPreferences via provider')`,
+  /// called straight from initState — and this screen is a live navigation
+  /// target from the course list, so tapping a course to download it produced
+  /// a red screen. The preferences are simply read here: they are what
+  /// [ConnectivityService] answers the Wi-Fi-only question from, and reading
+  /// them is a future, not a dependency somebody has to inject.
+  Future<void> _initServices() async {
+    final SharedPreferences prefs;
+    try {
+      prefs = await SharedPreferences.getInstance();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+        _errorMessage = AppLocalizations.of(
+          context,
+        ).downloadPreferencesUnavailable;
+      });
+      return;
+    }
+    if (!mounted) return;
+
+    _connectivity = ConnectivityService(prefs: prefs);
     _downloader = PackageFileDownloader();
     _downloadService = CoursePackageDownloadService(
       manifestRepo: widget.manifestRepo,
@@ -77,13 +100,13 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
       downloader: _downloader,
       connectivity: _connectivity,
     );
+    setState(() => _servicesReady = true);
+    await _loadState();
   }
 
-  SharedPreferences _getPrefs() {
-    // Injected via provider in production; for now use sync access
-    // This will be replaced with proper DI
-    throw UnimplementedError('Inject SharedPreferences via provider');
-  }
+  /// False until the services above exist. Everything that touches them is
+  /// gated on this rather than on `late final` throwing a LateInitializationError.
+  bool _servicesReady = false;
 
   Future<void> _loadState() async {
     setState(() => _isLoading = true);
@@ -139,9 +162,13 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
   @override
   void dispose() {
     _progressSubscription?.cancel();
-    _downloadService.dispose();
-    _connectivity.dispose();
-    _downloader.close();
+    // Nothing to tear down if the preferences never resolved, and touching a
+    // `late final` that was never assigned throws.
+    if (_servicesReady) {
+      _downloadService.dispose();
+      _connectivity.dispose();
+      _downloader.close();
+    }
     super.dispose();
   }
 
@@ -167,8 +194,15 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             ),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
+      body: _isLoading || !_servicesReady
+          ? _errorMessage != null
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(_errorMessage!, textAlign: TextAlign.center),
+                    ),
+                  )
+                : const Center(child: CircularProgressIndicator())
           : _buildBody(context, theme, colorScheme),
     );
   }
@@ -285,7 +319,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Offline Ready',
+                    AppLocalizations.of(context).packageOfflineReady,
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: VspColorSemantic.of(
@@ -295,7 +329,7 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
                     ),
                   ),
                   Text(
-                    'You can play this course without internet connection.',
+                    AppLocalizations.of(context).packageOfflineReadyBody,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -324,9 +358,12 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             color: theme.colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: VspSpacing.sm),
-          Text(AppLocalizations.of(context).downloadNoPackage, style: theme.textTheme.titleMedium),
           Text(
-            'This course is not yet available for offline download.',
+            AppLocalizations.of(context).downloadNoPackage,
+            style: theme.textTheme.titleMedium,
+          ),
+          Text(
+            AppLocalizations.of(context).packageNotAvailable,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -352,7 +389,10 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
             ),
           ),
           const SizedBox(height: VspSpacing.sm),
-          Text(AppLocalizations.of(context).downloadFailed, style: theme.textTheme.titleMedium),
+          Text(
+            AppLocalizations.of(context).downloadFailed,
+            style: theme.textTheme.titleMedium,
+          ),
           const SizedBox(height: VspSpacing.xs),
           Text(
             _errorMessage ?? 'An error occurred.',
@@ -406,4 +446,3 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
     }
   }
 }
-

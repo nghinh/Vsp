@@ -50,7 +50,7 @@ class FormatSelector extends StatelessWidget {
                   right: format != RoundFormat.values.last ? 8 : 0,
                 ),
                 child: _FormatPill(
-                  label: format.label,
+                  label: _formatLabel(context, format),
                   isSelected: isSelected,
                   onTap: () => onFormatChanged(format),
                 ),
@@ -153,7 +153,7 @@ class ModeSelector extends StatelessWidget {
                   right: mode != RoundMode.values.last ? 8 : 0,
                 ),
                 child: _ModePill(
-                  label: mode.label,
+                  label: _modeLabel(context, mode),
                   isSelected: isSelected,
                   isUnlocked: isUnlocked,
                   onTap: isUnlocked ? () => onModeChanged(mode) : null,
@@ -242,4 +242,29 @@ class _ModePill extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Localised names for the round format and scoring chips.
+///
+/// The enums own an English `label` for logs and wire values; a Vietnamese
+/// golfer choosing between "Casual" and "Tournament" on their own app should
+/// not have to read either. Kept here rather than on the enum so the domain
+/// layer stays free of BuildContext.
+String _formatLabel(BuildContext context, RoundFormat format) {
+  final l10n = AppLocalizations.of(context);
+  return switch (format) {
+    RoundFormat.casual => l10n.roundFormatCasual,
+    RoundFormat.practice => l10n.roundFormatPractice,
+    RoundFormat.tournament => l10n.roundFormatTournament,
+  };
+}
+
+String _modeLabel(BuildContext context, RoundMode mode) {
+  final l10n = AppLocalizations.of(context);
+  return switch (mode) {
+    RoundMode.strokePlay => l10n.scoringStrokePlay,
+    // Stableford is the term Vietnamese golfers use; the translation is the
+    // same word, and pretending otherwise would invent a name nobody says.
+    RoundMode.stableford => l10n.scoringStableford,
+  };
 }

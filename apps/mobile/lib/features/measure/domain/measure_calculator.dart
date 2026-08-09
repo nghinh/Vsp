@@ -92,6 +92,10 @@ class MeasureCalculator {
       );
     }
 
+    final greenUncertainty = green != null && green.isSurveyed
+        ? surveyedGreenUncertaintyMeters
+        : estimatedGreenUncertaintyMeters;
+
     MeasureLeg? greenLeg;
     if (green != null && points.isNotEmpty) {
       greenLeg = _leg(
@@ -99,9 +103,23 @@ class MeasureCalculator {
         from: points.last.position,
         to: green.position,
         fromUncertainty: tapUncertaintyMeters,
-        toUncertainty: green.isSurveyed
-            ? surveyedGreenUncertaintyMeters
-            : estimatedGreenUncertaintyMeters,
+        toUncertainty: greenUncertainty,
+      );
+    } else if (green != null && usableOrigin != null) {
+      // Nothing dropped yet. "How far to the green from here" is the question
+      // a golfer walking up to their ball actually has, and it needs no taps —
+      // so answer it the moment the tool opens rather than making them measure
+      // their way to it. It is also the only reading that still works when the
+      // build has no imagery to aim at.
+      greenLeg = _leg(
+        kind: MeasureLegKind.toGreen,
+        from: LatLng(
+          latitude: usableOrigin.latitude,
+          longitude: usableOrigin.longitude,
+        ),
+        to: green.position,
+        fromUncertainty: originUncertainty!,
+        toUncertainty: greenUncertainty,
       );
     }
 

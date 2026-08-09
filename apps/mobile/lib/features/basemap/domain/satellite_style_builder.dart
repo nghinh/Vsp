@@ -93,10 +93,7 @@ abstract final class SatelliteStyleBuilder {
         'type': 'fill',
         'source': measureSourceId,
         'filter': ['==', 'kind', MeasureFeatureKind.accuracy],
-        'paint': {
-          'fill-color': _golferColor,
-          'fill-opacity': 0.15,
-        },
+        'paint': {'fill-color': _golferColor, 'fill-opacity': 0.15},
       },
       {
         'id': 'measure-accuracy-outline',

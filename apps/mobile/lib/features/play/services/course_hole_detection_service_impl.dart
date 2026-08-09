@@ -139,9 +139,32 @@ class CourseHoleDetectionServiceImpl implements CourseHoleDetectionService {
     final course = courses.first;
 
     // Step 3: Get hole geometries for scoring
-    final holeGeometries = await _holeRepository.findByCourseWithGeometry(
-      course.id,
-    );
+    //
+    // Only holes whose coordinates somebody verified are scored. This gate is
+    // the same one the hole map applies, and for the same reason: the tee and
+    // green points on a synthetic hole are a clubhouse pin walked along a fixed
+    // diagonal with the green placed due north of it, so scoring a golfer's
+    // position against them lines every hole up in a neat row near the car park
+    // and hands back a high-confidence answer for the wrong hole. Silently
+    // walking a golfer to the wrong hole mid-round is worse than not walking
+    // them anywhere.
+    final allHoles = await _holeRepository.findByCourseWithGeometry(course.id);
+    final holeGeometries = allHoles.where((h) => h.isSurveyed).toList();
+
+    if (holeGeometries.isEmpty && allHoles.isNotEmpty) {
+      final result = CourseHoleDetectionResult(
+        facilityId: facility.id,
+        courseId: course.id,
+        confidence: 0.0,
+        level: ConfidenceLevel.low,
+        canAutoSwitch: false,
+        reason: CourseHoleDetectionReason.holeDataUnverified,
+        detectedAt: DateTime.now(),
+      );
+      _lastResult = result;
+      _cache.put(roundId, result);
+      return result;
+    }
     if (holeGeometries.isEmpty) {
       final result = CourseHoleDetectionResult(
         facilityId: facility.id,

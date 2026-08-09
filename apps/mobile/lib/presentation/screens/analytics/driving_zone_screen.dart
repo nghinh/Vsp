@@ -9,6 +9,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_client.dart';
+import '../../../core/storage/bag_sync_store.dart';
+import '../../../features/bag/data/bag_dto.dart';
+import '../../../features/bag/data/bag_repository.dart';
+import '../../../features/bag/data/bag_service.dart';
 import '../../../domain/models/driving_zone_filter.dart';
 import '../../../domain/models/driving_zone_statistics.dart';
 import '../../../domain/models/incomplete_data_warning.dart';
@@ -36,12 +41,48 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
   late DrivingZoneCubit _cubit;
   DrivingZoneFilter? _currentFilter;
 
+  /// The golfer's clubs, keyed by id. Empty until the bag loads, and empty
+  /// when the bag is empty — the filter says so rather than inventing clubs.
+  Map<String, String> _clubs = const {};
+
   @override
   void initState() {
     super.initState();
     _cubit = DrivingZoneCubit();
     // Load with default filter
     _loadWithDefaultFilter();
+    _loadClubs();
+  }
+
+  /// Loads the active bag so the club filter offers the golfer's own clubs.
+  ///
+  /// The filter chips used to render a canned Driver-through-Putter list for
+  /// every golfer, so filtering by club filtered by clubs nobody carries.
+  Future<void> _loadClubs() async {
+    try {
+      final apiClient = ApiClient();
+      final repository = BagRepository(
+        bagService: BagService(apiClient: apiClient),
+        syncStore: BagSyncStore(),
+        apiClient: apiClient,
+      );
+      final bag = await repository.getActiveBag();
+      final clubs = bag?.clubs ?? const <ClubDTO>[];
+      if (!mounted) return;
+      setState(() {
+        // Keyed by the club's own id, because two 7-irons in a bag are two
+        // different clubs with two different dispersion patterns.
+        _clubs = {
+          for (final club in clubs)
+            '${club.id}': club.loft == null
+                ? club.clubType.displayName
+                : '${club.clubType.displayName} ${club.loft!.toStringAsFixed(0)}°',
+        };
+      });
+    } catch (_) {
+      // No bag on this device or the API is unreachable. The filter shows its
+      // empty state, which is the honest answer.
+    }
   }
 
   void _loadWithDefaultFilter() {
@@ -169,6 +210,7 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
         onTeeSetChanged: (teeSet) => _cubit.updateTeeSet(teeSet),
         onWindConditionChanged: (wind) => _cubit.updateWindCondition(wind),
         onClearFilters: () => _cubit.clearFilters(),
+        clubs: _clubs,
       ),
     );
   }

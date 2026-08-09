@@ -89,10 +89,14 @@ void main() {
     test('a course layer filters on its own features only', () {
       final greenFill = layers.firstWhere((l) => l['id'] == 'green-fill');
       expect(greenFill['source'], CourseMapStyleBuilder.courseSourceId);
+      // Now an `all` of two clauses: the layer type, and the geometry kind.
+      // The second was added because a circle layer with only the first drew a
+      // circle at every polygon vertex — a bunker came out as twenty
+      // overlapping discs instead of a bunker.
       expect(greenFill['filter'], [
-        '==',
-        ['get', 'layerType'],
-        MapLayerType.green.name,
+        'all',
+        ['==', ['get', 'layerType'], MapLayerType.green.name],
+        ['match', ['geometry-type'], ['Polygon', 'MultiPolygon'], true, false],
       ]);
     });
 

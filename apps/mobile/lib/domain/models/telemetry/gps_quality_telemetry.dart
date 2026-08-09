@@ -205,12 +205,15 @@ class GpsQualityTelemetry extends Equatable {
       longitude: (map['longitude'] as num).toDouble(),
       latitude: (map['latitude'] as num).toDouble(),
       altitude: (map['altitude'] as num?)?.toDouble(),
-      horizontalAccuracyMeters: (map['horizontal_accuracy_meters'] as num).toDouble(),
-      verticalAccuracyMeters: (map['vertical_accuracy_meters'] as num?)?.toDouble(),
+      horizontalAccuracyMeters: (map['horizontal_accuracy_meters'] as num)
+          .toDouble(),
+      verticalAccuracyMeters: (map['vertical_accuracy_meters'] as num?)
+          ?.toDouble(),
       fixQuality: GpsFixQualityDto.fromString(
         map['fix_quality'] as String? ?? 'unknown',
       ),
-      speedMetersPerSecond: (map['speed_meters_per_second'] as num?)?.toDouble(),
+      speedMetersPerSecond: (map['speed_meters_per_second'] as num?)
+          ?.toDouble(),
       headingDegrees: (map['heading_degrees'] as num?)?.toDouble(),
       isStale: (map['is_stale'] as num).toInt() == 1,
       batteryLevel: (map['battery_level'] as num).toDouble(),

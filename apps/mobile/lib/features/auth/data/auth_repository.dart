@@ -38,8 +38,12 @@ class AuthRepository {
     _apiClient.setAccessToken(tokens.accessToken);
   }
 
-  /// Load tokens from storage and set on API client (app startup).
-  Future<bool> restoreSession() async {
+  /// Installs whatever access token is on disk, expired or not.
+  ///
+  /// Used by [restoreSession] when the server cannot be reached: an expired
+  /// token is no worse than none, and the first request that does get through
+  /// refreshes on its 401.
+  Future<bool> loadStoredAccessToken() async {
     final accessToken = await _secureStorage.getAccessToken();
     if (accessToken != null) {
       _apiClient.setAccessToken(accessToken);
@@ -217,8 +221,68 @@ class AuthRepository {
 
   // ─── Token Refresh ───────────────────────────────────────────────────────────
 
+  /// What restoring a saved session concluded.
+  ///
+  /// Three outcomes, not two. Collapsing the middle one into "no session" is
+  /// what put a golfer with a perfectly good seven-day refresh token at a login
+  /// screen because their phone had no signal on the first tee.
+  ///
+  /// See [restoreSession].
+  ///
+  /// Makes this repository the refresher every [ApiClient] falls back to on a
+  /// 401.
+  ///
+  /// Called once, at start-up. Before this, [tryRefreshToken] ran only during
+  /// session restore, so an access token that lapsed an hour into a four-hour
+  /// round was never replaced: every later request 401'd, and the sync queue
+  /// gave up on the golfer's scores after five attempts.
+  void installTokenRefresh() {
+    ApiClient.refreshAccessToken = tryRefreshToken;
+  }
+
+  /// Restores a saved session, distinguishing "refused" from "unreachable".
+  ///
+  /// Returns [SessionRestoreOutcome.offline] when the server could not be
+  /// reached: the stored tokens are kept and the access token is installed as
+  /// it stands. It may already be expired, which costs nothing — the app is
+  /// offline-first, every local screen works without the network, and the
+  /// first request that does reach the server refreshes on its 401.
+  Future<SessionRestoreOutcome> restoreSession() async {
+    if (!await hasValidSession()) {
+      return SessionRestoreOutcome.signedOut;
+    }
+    if (await tryRefreshToken()) {
+      return SessionRestoreOutcome.restored;
+    }
+    // tryRefreshToken clears storage when the server refuses, and leaves it
+    // alone when the server was never reached.
+    if (await hasValidSession()) {
+      await loadStoredAccessToken();
+      return SessionRestoreOutcome.offline;
+    }
+    return SessionRestoreOutcome.signedOut;
+  }
+
+  /// A refresh already in progress, so two callers share one exchange.
+  ///
+  /// The server rotates on refresh: it revokes the token it was given. Two
+  /// refreshes racing therefore poison each other — the second presents a
+  /// token the first has just had revoked, gets "Session not found", and signs
+  /// the golfer out. That race ran on every launch, between session restore
+  /// and the first authenticated request the app fires (which 401s while the
+  /// token is still being fetched and asks for a refresh of its own).
+  Future<bool>? _refreshInFlight;
+
   /// Refresh the access token using the stored refresh token.
-  Future<bool> tryRefreshToken() async {
+  ///
+  /// Single-flight: concurrent callers await the same exchange.
+  Future<bool> tryRefreshToken() {
+    return _refreshInFlight ??= _refreshTokenOnce().whenComplete(() {
+      _refreshInFlight = null;
+    });
+  }
+
+  Future<bool> _refreshTokenOnce() async {
     final refreshToken = await _secureStorage.getRefreshToken();
     if (refreshToken == null) return false;
 
@@ -227,10 +291,30 @@ class AuthRepository {
         TokenRefreshRequest(refreshToken: refreshToken),
       );
       await _secureStorage.setAccessToken(response.accessToken);
+      // The server revoked the token we just presented and issued this one.
+      // Not storing it leaves the device holding a revoked token, and the next
+      // launch is met with "Session not found".
+      final rotated = response.refreshToken;
+      if (rotated != null && rotated.isNotEmpty) {
+        await _secureStorage.setRefreshToken(rotated);
+      }
       _apiClient.setAccessToken(response.accessToken);
       return true;
+    } on VspApiException catch (ex) {
+      if (ex.isNetworkError) {
+        // The server was never reached. That is not a rejected session, and it
+        // is the normal state of a phone on a golf course — signing the golfer
+        // out here destroyed a session the server would still have honoured,
+        // and left them at a login screen they cannot get past without the
+        // signal they just did not have. The stored tokens stay; the next
+        // attempt with a bar of signal picks them up.
+        return false;
+      }
+      // The server answered and refused. The refresh token is spent, revoked
+      // or expired, and there is nothing to keep.
+      await logout();
+      return false;
     } catch (_) {
-      // Refresh failed — clear session
       await logout();
       return false;
     }
@@ -254,4 +338,18 @@ class AuthRepository {
 
   /// Get the current session ID from storage.
   Future<String?> getCurrentSessionId() => _secureStorage.getSessionId();
+}
+
+/// Outcome of restoring a saved session at start-up.
+enum SessionRestoreOutcome {
+  /// Tokens were refreshed against the server.
+  restored,
+
+  /// The server was unreachable, but this device holds a session. The golfer
+  /// stays signed in — an app that cannot be opened without signal is useless
+  /// on a golf course.
+  offline,
+
+  /// There is no session, or the server refused the one there was.
+  signedOut,
 }

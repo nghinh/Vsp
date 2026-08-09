@@ -33,6 +33,7 @@ import 'package_delta_service.dart';
 import 'package_file_downloader.dart';
 import 'package_update_check_service.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
 
 /// Result of an update operation.
 sealed class UpdateResult {}
@@ -373,9 +374,11 @@ class CoursePackageUpdateService {
 
   /// Build CDN URL for a file within a package.
   String _cdnUrl(CoursePackageManifest manifest, String filePath) {
-    final base =
-        'https://cdn.vnptgolf.vn/packages/${manifest.courseId}/${manifest.version}';
-    return '$base/$filePath';
+    return VspEndpoints.packageFileUrl(
+      courseId: manifest.courseId,
+      version: manifest.version,
+      filePath: filePath,
+    );
   }
 
   /// Get the set of file paths in a directory (recursive).

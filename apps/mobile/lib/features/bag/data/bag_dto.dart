@@ -151,9 +151,12 @@ class ClubDTO extends Equatable {
   };
 
   /// AC-3: minimum data threshold check.
-  /// Returns true if this club has enough data to count toward the threshold.
-  /// A club counts when it has a clubType and a carryDistance.
-  bool get hasMinimumData => clubType != null && carryDistance != null;
+  ///
+  /// A club counts once it has a carry distance. It used to also test
+  /// `clubType != null`, which is a required non-nullable field — the test
+  /// could not fail, and reading the line suggested a club without a type was
+  /// a state the app handles.
+  bool get hasMinimumData => carryDistance != null;
 
   /// Format carry distance for display (applies unit conversion if needed).
   /// [displayUnit] should be 'yards' or 'meters'.

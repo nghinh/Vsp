@@ -28,6 +28,16 @@ abstract class HoleMapRepository {
 
   /// Lists all downloaded course packages.
   Future<List<CoursePackageManifest>> listPackages();
+
+  /// Finds the downloaded package covering [courseId], newest first.
+  ///
+  /// Callers used to have to carry a package id from wherever the round was
+  /// started, and one of them — the course picker in round setup — passed a
+  /// hardcoded null. So a golfer who downloaded a course, saw "Offline Ready",
+  /// and then chose that course from the picker got a map that reported the
+  /// hole as unsurveyed, with the package sitting complete on disk. Asking the
+  /// device what it actually has removes the whole class of mistake.
+  Future<String?> findPackageIdForCourse(String courseId);
 }
 
 /// Implementation that reads from locally stored course packages.
@@ -63,6 +73,9 @@ class LocalHoleMapRepository implements HoleMapRepository {
       courseId: dto.courseId,
       courseName: courseName,
       holeNumber: dto.holeNumber,
+      // The database row id, which is what anything reported back to the
+      // server must name — the hole number alone points at a different course.
+      holeId: dto.holeId,
       par: dto.par,
       yardage: dto.yardage,
       layers: domainLayers,
@@ -81,5 +94,18 @@ class LocalHoleMapRepository implements HoleMapRepository {
   @override
   Future<List<CoursePackageManifest>> listPackages() {
     return _packageRepo.listPackages();
+  }
+
+  @override
+  Future<String?> findPackageIdForCourse(String courseId) async {
+    final matching = (await _packageRepo.listPackages())
+        .where((p) => p.courseId == courseId)
+        .toList();
+    if (matching.isEmpty) return null;
+
+    // A course keeps every version it has downloaded so an interrupted update
+    // cannot damage the package already on the phone. Newest effective wins.
+    matching.sort((a, b) => b.effectiveDate.compareTo(a.effectiveDate));
+    return matching.first.packageId;
   }
 }

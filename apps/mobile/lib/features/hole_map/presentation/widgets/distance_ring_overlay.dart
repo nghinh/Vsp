@@ -18,9 +18,9 @@ class DistanceRingOverlay extends StatelessWidget {
     final visibleRings = rings.where((r) => r.visible).toList();
 
     return Semantics(
-      label: AppLocalizations.of(context).mapDistanceRingsLabel(
-        visibleRings.map((r) => r.label).join(', '),
-      ),
+      label: AppLocalizations.of(
+        context,
+      ).mapDistanceRingsLabel(visibleRings.map((r) => r.label).join(', ')),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
@@ -35,9 +35,9 @@ class DistanceRingOverlay extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'RINGS',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).mapDistanceRingsTitle,
+              style: const TextStyle(
                 color: Color(0xFFF8FAFC),
                 fontSize: 10,
                 fontWeight: FontWeight.w700,

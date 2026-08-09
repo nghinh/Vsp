@@ -3,6 +3,8 @@
 // Data quality badge + freshness + last updated.
 
 import 'package:flutter/material.dart';
+
+import 'package:vsp_mobile/core/l10n/relative_time.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/course_detail.dart';
@@ -66,11 +68,14 @@ class DataQualitySection extends StatelessWidget {
             const SizedBox(height: VspSpacing.sm),
             _DetailRow(
               label: AppLocalizations.of(context).fieldLastUpdated,
-              value: _formatDate(dataQuality.publishedAt),
+              value: _formatDate(context, dataQuality.publishedAt),
             ),
             if (dataQuality.publisher != null) ...[
               const SizedBox(height: VspSpacing.sm),
-              _DetailRow(label: AppLocalizations.of(context).fieldPublisher, value: dataQuality.publisher!),
+              _DetailRow(
+                label: AppLocalizations.of(context).fieldPublisher,
+                value: dataQuality.publisher!,
+              ),
             ],
             if (dataQuality.isStale) ...[
               const SizedBox(height: VspSpacing.sm),
@@ -103,15 +108,8 @@ class DataQualitySection extends StatelessWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date).inDays;
-    if (diff == 0) return 'Today';
-    if (diff == 1) return 'Yesterday';
-    if (diff < 7) return '$diff days ago';
-    if (diff < 30) return '${(diff / 7).floor()} weeks ago';
-    return '${date.day}/${date.month}/${date.year}';
-  }
+  String _formatDate(BuildContext context, DateTime date) =>
+      RelativeTime.format(AppLocalizations.of(context), date);
 }
 
 class _DetailRow extends StatelessWidget {
@@ -147,4 +145,3 @@ class _DetailRow extends StatelessWidget {
     );
   }
 }
-

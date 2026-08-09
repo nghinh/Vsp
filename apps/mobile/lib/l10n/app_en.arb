@@ -1216,7 +1216,6 @@
   "activeRoundLength": "Length",
   "activeRoundReportCorrection": "Report Correction",
   "activeRoundEndRound": "End Round",
-  "activeRoundEndRoundHint": "Finish the round from the flag button on the Score tab.",
   "activeRoundOptions": "Round Options",
   "activeRoundTargetHeading": "Target distance",
   "activeRoundTargetMessage": "Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.",
@@ -1563,10 +1562,203 @@
     }
   },
   "measureGreenUnknown": "No green position for this hole",
+  "roundSetupActiveBag": "Active Bag",
+  "@roundSetupActiveBag": {
+    "description": "Section heading above the golfer's selected club bag on the round setup screen."
+  },
+  "roundSetupSelectCourseFirst": "Select a course first",
+  "@roundSetupSelectCourseFirst": {
+    "description": "Why the Start Round button is disabled: no course chosen yet."
+  },
+  "roundSetupAcknowledgeWarning": "Acknowledge the course data warning to continue",
+  "@roundSetupAcknowledgeWarning": {
+    "description": "Why the Start Round button is disabled: the package warning has not been acknowledged."
+  },
+  "roundSetupStartRound": "Start Round",
+  "@roundSetupStartRound": {
+    "description": "Primary action that starts the round."
+  },
+  "packageOfflineReady": "Offline Ready",
+  "@packageOfflineReady": {
+    "description": "Course package is fully downloaded."
+  },
+  "packageOfflineReadyBody": "You can play this course without an internet connection.",
+  "@packageOfflineReadyBody": {
+    "description": "Explains what Offline Ready means."
+  },
+  "packageNotAvailable": "This course is not yet available for offline download.",
+  "@packageNotAvailable": {
+    "description": "Shown when a course has no downloadable package."
+  },
+  "packageUpdateAvailable": "Update available",
+  "@packageUpdateAvailable": {
+    "description": "A newer course package version exists on the server."
+  },
+  "packageDaysAgo": "{days} days ago",
+  "@packageDaysAgo": {
+    "description": "How long ago the package was updated.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "wifiOnlyTitle": "Download on Wi-Fi only",
+  "@wifiOnlyTitle": {
+    "description": "Toggle that restricts package downloads to Wi-Fi."
+  },
+  "wifiConnected": "Wi-Fi connected",
+  "@wifiConnected": {
+    "description": "Current connectivity state under the Wi-Fi-only toggle."
+  },
+  "wifiNotConnected": "No Wi-Fi — downloads paused",
+  "@wifiNotConnected": {
+    "description": "Current connectivity state under the Wi-Fi-only toggle."
+  },
+  "mapDistanceRingsTitle": "RINGS",
+  "@mapDistanceRingsTitle": {
+    "description": "Heading of the distance-ring legend on the hole map."
+  },
+  "scoreEnteredCount": "{entered}/{total} entered",
+  "@scoreEnteredCount": {
+    "description": "How many players in the group have a score for this hole.",
+    "placeholders": {
+      "entered": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "gpsReady": "GPS Ready",
+  "@gpsReady": {
+    "description": "GPS accuracy chip: waiting for first fix."
+  },
+  "gpsGood": "GPS Good",
+  "@gpsGood": {
+    "description": "GPS accuracy chip: accuracy under 5 m."
+  },
+  "gpsFair": "GPS Fair",
+  "@gpsFair": {
+    "description": "GPS accuracy chip: accuracy 5-10 m."
+  },
+  "gpsPoor": "GPS Poor",
+  "@gpsPoor": {
+    "description": "GPS accuracy chip: accuracy worse than 10 m."
+  },
+  "roundFormatCasual": "Casual",
+  "@roundFormatCasual": {
+    "description": "Round format: a social round."
+  },
+  "roundFormatPractice": "Practice",
+  "@roundFormatPractice": {
+    "description": "Round format: practice, not for handicap."
+  },
+  "roundFormatTournament": "Tournament",
+  "@roundFormatTournament": {
+    "description": "Round format: tournament play."
+  },
+  "scoringStrokePlay": "Stroke Play",
+  "@scoringStrokePlay": {
+    "description": "Scoring mode: total strokes."
+  },
+  "scoringStableford": "Stableford",
+  "@scoringStableford": {
+    "description": "Scoring mode: Stableford points. Kept in English — the term is used as-is in Vietnamese golf."
+  },
+  "relativeJustNow": "Just now",
+  "@relativeJustNow": {
+    "description": "Timestamp under an hour old."
+  },
+  "relativeHoursAgo": "{hours}h ago",
+  "@relativeHoursAgo": {
+    "description": "Timestamp in hours.",
+    "placeholders": {
+      "hours": {"type": "int"}
+    }
+  },
+  "relativeToday": "Today",
+  "@relativeToday": {
+    "description": "Timestamp earlier today."
+  },
+  "relativeYesterday": "Yesterday",
+  "@relativeYesterday": {
+    "description": "Timestamp yesterday."
+  },
+  "relativeDaysAgo": "{days} days ago",
+  "@relativeDaysAgo": {
+    "description": "Timestamp in days.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "relativeMonthsAgo": "{months} months ago",
+  "@relativeMonthsAgo": {
+    "description": "Timestamp in months.",
+    "placeholders": {
+      "months": {"type": "int"}
+    }
+  },
+  "relativeYearsAgo": "{years} years ago",
+  "@relativeYearsAgo": {
+    "description": "Timestamp in years.",
+    "placeholders": {
+      "years": {"type": "int"}
+    }
+  },
+  "scoreRowEntered": "{player}, score {score}",
+  "@scoreRowEntered": {
+    "description": "Screen-reader label for a player row with a score.",
+    "placeholders": {
+      "player": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "scoreRowNotEntered": "{player}, score not entered",
+  "@scoreRowNotEntered": {
+    "description": "Screen-reader label for a player row with no score yet.",
+    "placeholders": {
+      "player": {"type": "String"}
+    }
+  },
+  "scoreRowNotPlayed": "{player}, hole not played",
+  "@scoreRowNotPlayed": {
+    "description": "Screen-reader label for a player who did not play this hole.",
+    "placeholders": {
+      "player": {"type": "String"}
+    }
+  },
+  "measureGreenReportAction": "The green is right here — report it",
+  "@measureGreenReportAction": {
+    "description": "Offers the golfer's own position as the green position, shown only where the app has just said it does not know where the green is."
+  },
+  "measureGreenReportSent": "Sent, waiting for an admin to review",
+  "@measureGreenReportSent": {
+    "description": "Shown after a green-position report is queued. Deliberately does not claim the map has changed."
+  },
+  "measureGreenReportQueued": "Recorded. An admin reviews it before the map changes.",
+  "@measureGreenReportQueued": {
+    "description": "Confirms a green-position report was saved and queued. Says explicitly that the map has not changed."
+  },
+  "measureGreenReportNoFix": "The GPS fix is not good enough to submit. Try again in the open.",
+  "@measureGreenReportNoFix": {
+    "description": "Shown when the GPS fix is too coarse to file a green-position report."
+  },
+  "measureGreenReportFailed": "Could not send. Try again.",
+  "@measureGreenReportFailed": {
+    "description": "Shown when saving a green-position report failed. Never claims it was sent."
+  },
   "measureGreenEstimated": "Green position is estimated, not surveyed",
   "measureGreenSurveyed": "Green position is surveyed",
   "measureEmptyTitle": "Measure any distance",
   "measureEmptyBody": "Tap the flag, a bunker lip, or a layup target on the satellite image to measure it.",
+  "measureEmptyBodyNoImagery": "There is no imagery to aim at in this build, but your position and the green are drawn on the map. Tap anywhere to measure to it.",
+  "@measureEmptyBodyNoImagery": {
+    "description": "Empty-state hint for the measuring tool when the build has no imagery, so 'tap the bunker lip on the satellite image' would be nonsense."
+  },
+  "measureYouToGreen": "From you to the green",
+  "@measureYouToGreen": {
+    "description": "Label for the direct golfer-to-green distance shown before any point has been dropped."
+  },
+  "measureWithoutImagery": "No satellite imagery in this build — the ruler still works.",
+  "@measureWithoutImagery": {
+    "description": "Notice shown over the plain measuring canvas when no imagery provider is configured."
+  },
   "measureQualityGood": "Good",
   "measureQualityFair": "Fair",
   "measureQualityPoor": "Rough",
@@ -1603,7 +1795,12 @@
   },
   "basemapSatellite": "Satellite",
   "basemapCourseMap": "Course map",
+  "basemapMeasure": "Measure",
+  "@basemapMeasure": {
+    "description": "Label for the measuring basemap when this build has no satellite imagery, so calling the mode 'Satellite' would be a lie."
+  },
   "basemapSwitchToSatellite": "Switch to satellite imagery",
+  "basemapSwitchToMeasure": "Switch to the measuring tool",
   "basemapSwitchToCourseMap": "Switch to course map",
   "basemapSatelliteUnavailableTitle": "Satellite imagery unavailable",
   "basemapSatelliteUnavailableBody": "This build has no imagery provider configured, so satellite view is turned off.",
@@ -1620,11 +1817,83 @@
   "holeNoGeometryTitle": "No surveyed map for this hole",
   "holeNoGeometryBody": "We haven't digitised this hole yet. The satellite view is real imagery — measure the distances you need.",
   "holeNoGeometryBadge": "Not surveyed",
-  "holeNoGeometryNoImageryTitle": "Nothing real to show for this hole",
-  "holeNoGeometryNoImageryBody": "This hole has not been surveyed, and this build was made without a satellite imagery provider, so there is no imagery to measure on either. Distances on this hole have to come from the course markers.",
+  "holeNoGeometryBodyNoImagery": "We haven't digitised this hole, and this build has no satellite imagery. The ruler still works: your position and the green are on the map, and every distance says how far it could be out.",
+  "@holeNoGeometryBodyNoImagery": {
+    "description": "Banner body on an unsurveyed hole in a build compiled without an imagery provider. The measuring tool is still offered — it needs GPS, not pictures."
+  },
   "distanceNotSurveyedTooltip": "This length comes from coordinates nobody has verified. Treat it as approximate and check the course markers.",
   "@distanceNotSurveyedTooltip": {
     "description": "Explains the amber 'Not surveyed' marker shown next to a hole length derived from unverified tee/green coordinates."
+  },
+  "distanceUnavailableSemantics": "{label} distance unavailable",
+  "@distanceUnavailableSemantics": {
+    "description": "Screen-reader label for a green distance the app does not have. Replaces a placeholder that rendered 0 m badged as official data.",
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "analyticsNoClubsInBag": "No clubs in your bag yet. Add clubs to filter by club.",
+  "downloadOfflineCoursesSubtitle": "Manage courses saved for playing without a signal",
+  "correctionListTitle": "My data reports",
+  "correctionListSubtitle": "Course data you reported, and what happened to it",
+  "smartTargetExampleBadge": "EXAMPLE",
+  "smartTargetExampleBody": "This is a worked example on an invented hole, not your data. During a round the same panel runs on your GPS position, your clubs and the real hole.",
+  "@smartTargetExampleBody": {
+    "description": "Notice above the Smart Target preview. The screen runs on in-memory stub repositories and a hole placed at a coordinate in the sea; the previous wording called that on-device data, which reads as the golfer's own."
+  },
+  "holeSwitchLowConfidence": "GPS is not certain enough to move you automatically.",
+  "telemetryExportTitle": "Pilot telemetry export",
+  "telemetryExportBody": "Exports one round's GPS quality, map latency and battery telemetry as a JSON file you can hand to the analysis workspace. Written on the device — no network needed, which matters on a course.",
+  "telemetryExportRoundId": "Round ID",
+  "telemetryExportInspect": "Check what this round recorded",
+  "telemetryExportShare": "Export and share",
+  "telemetryExportSamples": "{gps} GPS samples · {battery} battery readings · {map} map loads",
+  "@telemetryExportSamples": {
+    "placeholders": { "gps": {"type": "String"}, "battery": {"type": "String"}, "map": {"type": "String"} }
+  },
+  "telemetryExportBatteryUsed": "Battery used over the recorded period: {percent}%",
+  "@telemetryExportBatteryUsed": { "placeholders": { "percent": {"type": "String"} } },
+  "telemetryExportSlowestMap": "Slowest map load: {ms} ms (target: under 2000 ms)",
+  "@telemetryExportSlowestMap": { "placeholders": { "ms": {"type": "String"} } },
+  "telemetryExportWorstAccuracy": "Worst GPS accuracy: {meters} m (warns above 10 m)",
+  "@telemetryExportWorstAccuracy": { "placeholders": { "meters": {"type": "String"} } },
+  "telemetryExportEmpty": "This round recorded nothing. Telemetry is written from fixes the round already receives, so a round played entirely on the Score tab produces no GPS samples — open the Map tab during the round.",
+  "@telemetryExportEmpty": {
+    "description": "The failure a field tester most needs to catch before leaving the course."
+  },
+  "telemetryExportWritten": "Written to {path}",
+  "@telemetryExportWritten": { "placeholders": { "path": {"type": "String"} } },
+  "settingsAbout": "About",
+  "creditsTitle": "Credits and licences",
+  "creditsSubtitle": "Course data sources, imagery, and open-source licences",
+  "creditsCourseDataTitle": "Course data",
+  "creditsOpenStreetMapBody": "Greens, bunkers, water and fairway shapes are derived from OpenStreetMap and are used under the Open Database Licence.",
+  "creditsCopernicusBody": "Some water hazards were detected from Copernicus Sentinel-2 imagery.",
+  "creditsImageryTitle": "Satellite imagery",
+  "creditsMapboxBody": "Satellite imagery is provided by Mapbox and OpenStreetMap, and is shown only while you are online.",
+  "creditsImageryProviderBody": "Satellite imagery is supplied by the operator named above, under their own terms, and is shown only while you are online.",
+  "creditsImageryNoneTitle": "No imagery provider configured",
+  "creditsImageryNoneBody": "This build has no satellite imagery. The measuring tool still works — it uses GPS and geometry, not pictures.",
+  "creditsSoftwareTitle": "Software",
+  "creditsOpenSourceLicences": "Open-source licences",
+  "creditsOpenSourceLicencesBody": "Licences of the packages this app is built with",
+  "creditsDataQualityNote": "Course geometry is honestly labelled: where a hole has not been surveyed, the app says so and offers satellite imagery with a measuring tool instead of drawing a map it cannot stand behind.",
+  "@creditsDataQualityNote": {
+    "description": "Closing note on the credits screen. Ties the licence page to the data-quality promise, which is the same subject from the golfer's point of view."
+  },
+  "downloadPreferencesUnavailable": "Download settings are unavailable on this device, so downloads cannot be managed here.",
+  "@downloadPreferencesUnavailable": {
+    "description": "Shown when SharedPreferences cannot be read, which is what the Wi-Fi-only download setting is stored in. Previously this path threw UnimplementedError and produced a red screen."
+  },
+  "summaryUnavailable": "Your round is saved. The summary could not be opened on this device — you can review the round from Rounds.",
+  "@summaryUnavailable": {
+    "description": "Shown when the round summary screen cannot build its on-device dependencies. The round itself is already completed and stored, so the message must not read as data loss."
+  },
+  "holeMapPreviousHole": "Previous hole",
+  "@holeMapPreviousHole": {
+    "description": "Tooltip and screen-reader label for the map header's back-a-hole control."
+  },
+  "holeMapNextHole": "Next hole",
+  "@holeMapNextHole": {
+    "description": "Tooltip and screen-reader label for the map header's forward-a-hole control."
   },
   "holeListUnverifiedNotice": "{count, plural, =1{1 of these holes has coordinates nobody has verified, so its length is approximate.} other{{count} of these holes have coordinates nobody has verified, so their lengths are approximate.}}",
   "@holeListUnverifiedNotice": {

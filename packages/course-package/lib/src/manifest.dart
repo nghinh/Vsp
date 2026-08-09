@@ -151,7 +151,10 @@ class CoursePackageManifest extends Equatable {
   factory CoursePackageManifest.fromJson(Map<String, dynamic> json) {
     return CoursePackageManifest(
       packageId: json['packageId'] as String,
-      courseId: json['courseId'] as String,
+      // The API writes this as a number and the download service persists it
+      // as one. Reading it strictly as a String threw on every real manifest,
+      // and the caller treats a throw as "no package here".
+      courseId: json['courseId'].toString(),
       version: json['version'] as String,
       effectiveDate: DateTime.parse(json['effectiveDate'] as String),
       expiresAt: json['expiresAt'] != null

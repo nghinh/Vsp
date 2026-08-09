@@ -184,16 +184,20 @@ class LastPlayedCoursesLoaded extends RoundSetupEvent {
 class NearbyCourseSuggestion extends Equatable {
   final int courseId;
   final String courseName;
-  final double latitude;
-  final double longitude;
+
+  /// Null where the facility has no established location. The picker shows
+  /// the course either way — a golfer who knows the name should be able to
+  /// start a round on it — and simply has no distance to offer.
+  final double? latitude;
+  final double? longitude;
   final double? distanceKm;
   final String? packageId;
 
   const NearbyCourseSuggestion({
     required this.courseId,
     required this.courseName,
-    required this.latitude,
-    required this.longitude,
+    this.latitude,
+    this.longitude,
     this.distanceKm,
     this.packageId,
   });

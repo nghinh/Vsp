@@ -6,7 +6,9 @@
 import 'package:equatable/equatable.dart';
 
 import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart';
 
+import 'hole_geometry_coverage.dart';
 import 'map_layer.dart';
 import 'pin_entity.dart';
 import 'target_entity.dart';
@@ -19,6 +21,14 @@ class HoleMapEntity extends Equatable {
   final String courseId;
   final String courseName;
   final int holeNumber;
+
+  /// The hole's identifier in the course database, as the package recorded it.
+  ///
+  /// Distinct from [holeNumber], and the distinction matters: hole 1 of Long
+  /// Thành is row 127, while row 1 is hole 1 of a course in Hà Nội. Anything
+  /// reported back to the server has to carry this, not the number a golfer
+  /// reads on the tee marker. Null when the package predates the field.
+  final String? holeId;
   final int par;
   final int? yardage;
   final Map<MapLayerType, MapLayerEntity> layers;
@@ -40,6 +50,7 @@ class HoleMapEntity extends Equatable {
     required this.courseId,
     required this.courseName,
     required this.holeNumber,
+    this.holeId,
     required this.par,
     this.yardage,
     this.layers = const {},
@@ -56,13 +67,30 @@ class HoleMapEntity extends Equatable {
   bool get isSurveyed => provenance.isSurveyed;
 
   /// Center point for the map camera (midpoint of fairway or pin location).
-  double? get mapCenterLat {
+  /// Where the strategic map should point.
+  ///
+  /// The hole's own geometry first. It used to be the pin, then the golfer —
+  /// and a course package carries no pin positions, so in practice it was
+  /// always the golfer. That framed the hole correctly only while standing on
+  /// it: opening the map from the clubhouse, or stepping to the next hole to
+  /// look at it, pointed the camera at the golfer and left the hole outside
+  /// the frame. The map looked broken because it was aimed at the wrong place.
+  ///
+  /// Pin and golfer remain as fallbacks for a hole with no geometry, which is
+  /// where the satellite path takes over anyway.
+  double? get mapCenterLat => _mapCenter?.latitude ?? _fallbackCenterLat;
+
+  double? get mapCenterLng => _mapCenter?.longitude ?? _fallbackCenterLng;
+
+  LatLng? get _mapCenter => HoleGeometryCoverage.holeCenter(this);
+
+  double? get _fallbackCenterLat {
     if (pin != null) return pin!.latitude;
     if (golferPosition != null) return golferPosition!.latitude;
     return null;
   }
 
-  double? get mapCenterLng {
+  double? get _fallbackCenterLng {
     if (pin != null) return pin!.longitude;
     if (golferPosition != null) return golferPosition!.longitude;
     return null;
@@ -75,6 +103,7 @@ class HoleMapEntity extends Equatable {
     String? courseId,
     String? courseName,
     int? holeNumber,
+    String? holeId,
     int? par,
     int? yardage,
     Map<MapLayerType, MapLayerEntity>? layers,
@@ -89,6 +118,7 @@ class HoleMapEntity extends Equatable {
       courseId: courseId ?? this.courseId,
       courseName: courseName ?? this.courseName,
       holeNumber: holeNumber ?? this.holeNumber,
+      holeId: holeId ?? this.holeId,
       par: par ?? this.par,
       yardage: yardage ?? this.yardage,
       layers: layers ?? this.layers,
@@ -106,6 +136,7 @@ class HoleMapEntity extends Equatable {
     courseId,
     courseName,
     holeNumber,
+    holeId,
     par,
     yardage,
     layers,

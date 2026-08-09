@@ -14,8 +14,13 @@ import 'package:http/http.dart' as http;
 import '../../domain/models/tournament/models.dart';
 import '../../domain/models/tournament_policy.dart';
 import '../../data/repositories/tournament_policy_repository.dart';
+import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
 
-const String _baseUrl = 'https://api.vsp.local';
+/// Tournament endpoints live on the same API as everything else.
+///
+/// This was `https://api.vsp.local` — not a define, a literal, and `.local` is
+/// the mDNS reserved TLD, so no build of this app could ever have reached it.
+String get _baseUrl => VspEndpoints.apiBaseUrl;
 
 /// Handles tournament-related API operations on mobile.
 class TournamentService {

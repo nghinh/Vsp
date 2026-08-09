@@ -216,10 +216,9 @@ class CorrectionSubmissionBloc
 
       final result = await _repository.submitCorrection(correction);
 
-      // NOTE: The sync event is returned to the caller (e.g. the screen or
-      // a sync service) which is responsible for enqueueing it to the sync worker.
-      // This follows the same pattern as ScoreRepositoryImpl — the repository
-      // writes locally and returns the event; the UI layer dispatches it.
+      // The repository queues the sync event itself. It used to return one
+      // for "the UI layer" to dispatch, and this bloc — the only caller —
+      // never did, so every correction ever filed stayed on the phone.
 
       emit(CorrectionSubmissionSuccess(correction: result.correction));
     } catch (e) {

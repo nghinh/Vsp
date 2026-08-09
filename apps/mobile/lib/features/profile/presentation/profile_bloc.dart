@@ -10,6 +10,7 @@
 // AC-3: Offline sync feedback — "Saved offline" / "Synced" indicators.
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/profile_dto.dart';
@@ -52,6 +53,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       final hasPending = await _profileRepository.hasPending();
       emit(ProfileLoaded(profile: profile, hasPendingSync: hasPending));
     } catch (ex) {
+      // The cause used to vanish here. Every failure — the request, the JSON,
+      // the local sync queue — produced the same sentence and the same "Try
+      // again", and nothing anywhere recorded which one had happened.
+      debugPrint('ProfileBloc.load failed: $ex');
       emit(ProfileError(message: AppMessages.profileLoadFailed));
     }
   }

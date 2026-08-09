@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The launcher label. It was the Flutter template's "vsp_mobile", which is what
+  a golfer would have seen under the icon on their home screen.
+-->
+<resources>
+    <string name="app_name">Vietnam Smart Golf</string>
+</resources>
