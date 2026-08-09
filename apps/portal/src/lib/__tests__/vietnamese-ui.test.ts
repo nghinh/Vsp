@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve, relative } from 'node:path';
 import { globSync } from 'node:fs';
+import { parseForESLint } from 'vue-eslint-parser';
+import * as tsParser from '@typescript-eslint/parser';
 
 /**
  * Keeps English out of a Vietnamese-only interface.
@@ -53,6 +55,9 @@ const ALLOWED = new Set([
   // Jargon carrying an interpolated value; § is a blanked {{ expression }}
   'par §', 'Par §', 'HDC §–§', 'Flight §', 'Stimpmeter (§–§)', 'v§ (§)',
   'golfer, § flight.', 'v2.4.1', '(FLY §)', '· par §', '§ golfer', '§ tee box',
+  // Fragments of a Vietnamese sentence, split by an interpolation in the AST
+  '(FLY', 'Stimpmeter (', 'Trang', 'flight.', 'golfer ·', 'golfer,', 'golfer.',
+  'tee box', '· par', '· par 3:', '· par 5:',
   // Not prose: a key name, a sample URL, an attribution glyph, a CSV header
   'Enter', 'https://example.com', 'contributors ©', 'playerId,handicap',
   'VN, TH', 'CURRENCY', 'TIMEZONE', 'Active', 'Valid', 'Website', 'Add',
@@ -84,51 +89,95 @@ function vueFiles(): string[] {
     .sort();
 }
 
-/** Text a user reads, from a template with script, style and comments removed. */
-function userVisibleStrings(source: string): string[] {
-  let tpl = source
-    .replace(/<script[\s\S]*?<\/script>/g, '')
-    .replace(/<style[\s\S]*?<\/style>/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '');
-  // An interpolation is a value, not a label; blank it so surrounding prose
-  // still reads as one string.
-  tpl = tpl.replace(/\{\{[^}]*\}\}/g, '§');
+/**
+ * Every string a template can show, taken from the parsed template rather than
+ * matched out of the text.
+ *
+ * This used to be regular expressions, and the history of this file is the
+ * history of their gaps. Text between tags, then attributes, then labels built
+ * in <script>, then literals inside {{ ternaries }}, then anything beginning
+ * with "+" because a filter demanded a leading letter, then a label written
+ * with a backtick, then "&#8592; Back" written as an HTML entity. Each gap was
+ * found by accident — twice by looking at a screenshot — and each fix was
+ * another pattern that did not anticipate the next form.
+ *
+ * The parser does not have forms it has not anticipated. It reports the text
+ * nodes, the attributes and the expressions because that is what the document
+ * is made of, so the "what did I forget to match" question stops being asked.
+ * What is left is a judgement about the string itself, which is a question
+ * that has an answer.
+ */
+function templateStrings(source: string): string[] {
+  // The script block is TypeScript, so the TS parser has to be handed in. It
+  // was not, at first, and vue-eslint-parser threw on every component — into a
+  // catch that returned an empty list. Sixty files then reported no findings
+  // and the suite went green while checking nothing at all. A guard that
+  // cannot read its input has to say so, so nothing here is caught.
+  const ast = parseForESLint(source, {
+    parser: tsParser,
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+  }).ast;
+
+  const body = (ast as { templateBody?: unknown }).templateBody;
+  if (!body) return [];
 
   const out: string[] = [];
-  for (const m of tpl.matchAll(/>([^<>{}]+)</g)) out.push(m[1]);
-  // Static attributes only. A bound one (:aria-label="mapAriaLabel") holds an
-  // expression, and reporting the variable's name as untranslated English is
-  // how a check earns its reputation for crying wolf.
-  for (const m of tpl.matchAll(/(?<![:@\w-])(?:aria-label|title|placeholder)="([^"{}]+)"/g)) {
-    out.push(m[1]);
-  }
-  // Literals inside interpolations. Blanking {{ … }} above hid an entire
-  // idiom this codebase uses constantly — {{ saving ? 'Đang lưu…' : 'Save' }}
-  // — where half the label is Vietnamese and half was never translated.
-  for (const m of source.matchAll(/\{\{([^}]*)\}\}/g)) {
-    for (const s of m[1].matchAll(/'([^']{2,120})'|"([^"]{2,120})"/g)) {
-      const lit = s[1] ?? s[2];
-      // Same prose test as the script side: an interpolation is an expression,
-      // so a quote-to-quote match can straddle code rather than a label.
-      if (isProse(lit)) out.push(lit);
+  const READ_ATTR = new Set(['aria-label', 'title', 'placeholder', 'alt', 'aria-description']);
+
+  const walk = (node: any): void => {
+    if (!node || typeof node.type !== 'string') return;
+
+    if (node.type === 'VText' && typeof node.value === 'string') out.push(node.value);
+
+    if (node.type === 'VAttribute') {
+      const name = node.key?.name;
+      const plain = typeof name === 'string' ? name : name?.name;
+      // Static attribute: value is a literal. Bound ones hold expressions and
+      // are covered below, where the literals inside them are read.
+      if (READ_ATTR.has(String(plain)) && node.value?.type === 'VLiteral') {
+        out.push(String(node.value.value));
+      }
     }
-  }
+
+    // Any string literal appearing in an expression the template evaluates —
+    // {{ saving ? 'Đang lưu…' : 'Save' }} and :title="cond ? 'A' : 'B'" alike.
+    // Filtered, because an expression also holds routes and class-name pieces:
+    // these are literals in the same position as labels and only the string
+    // itself distinguishes them.
+    if (node.type === 'Literal' && typeof node.value === 'string' && isProse(node.value)) {
+      out.push(node.value);
+    }
+    // A template literal is one label, so join it before judging. Taking the
+    // quasis one at a time splits `Course map showing ${n} features` into
+    // single words, each of which fails the prose test on its own — the label
+    // disappears precisely because it interpolates something.
+    if (node.type === 'TemplateLiteral' && Array.isArray(node.quasis)) {
+      const joined = node.quasis
+        .map((q: any) => (typeof q.value?.cooked === 'string' ? q.value.cooked : ''))
+        .join('§');
+      if (isProse(joined.replace(/§/g, ' '))) out.push(joined);
+    }
+
+    for (const key of Object.keys(node)) {
+      if (key === 'parent') continue;
+      const child = node[key];
+      if (Array.isArray(child)) child.forEach(walk);
+      else if (child && typeof child === 'object') walk(child);
+    }
+  };
+  walk(body);
   return out;
 }
 
 /**
  * Every string literal in the script block.
  *
- * The earlier version of this asked "is the variable name one that sounds
- * user-facing?" — errorMessage, statusLabel, and so on. That question is
- * unanswerable and it kept being answered wrong: 'Failed to create course'
- * hid behind `createError.value = apiErr?.message ?? '…'` because the literal
- * did not sit directly after the `=`, and two validation strings hid behind
- * `validationErrors.name = '…'` because of the property access in between.
- * Each miss produced another pattern, and the next miss produced another.
- *
- * So this collects everything and lets {@link isProse} decide. Judging the
- * string is a question with an answer; guessing its context is not.
+ * Collected wholesale and judged by {@link isProse}, rather than guessed at by
+ * variable name. Asking whether `createError` sounds user-facing missed
+ * 'Failed to create course', which sat behind `?? '…'` rather than directly
+ * after an `=`; each such miss produced another pattern and the next miss
+ * produced another.
  */
 function scriptStrings(source: string): string[] {
   const m = /<script[^>]*>([\s\S]*?)<\/script>/.exec(source);
@@ -142,12 +191,11 @@ function scriptStrings(source: string): string[] {
 }
 
 /**
- * Is this string something a person reads, rather than something a machine does?
+ * Is this a string a person reads, rather than one a machine acts on?
  *
  * Prose has words with spaces between them, or is a single word this app uses
- * as a button. Everything else the codebase keeps in strings — routes, CSS
- * classes, enum values, MIME types, field names, format tokens — fails at
- * least one of those.
+ * as a button. Routes, CSS classes, enum values, MIME types and field names
+ * all fail at least one of those.
  */
 const UI_WORD = new Set([
   'Cancel', 'Confirm', 'Save', 'Delete', 'Edit', 'Close', 'Retry', 'Submit',
@@ -158,12 +206,12 @@ const UI_WORD = new Set([
 ]);
 
 function isProse(t: string): boolean {
-  // Fragments of code, caught when a regex ran from one quote to the next
+  // Fragments of code, caught when a match ran from one quote to the next
   // across an expression: ") + entry.scoreToPar :".
   if (/=>|\$\{|\)\.|\);|^\W*\)/.test(t)) return false;
-  if (/^[/.#]|:\/\//.test(t)) return false;            // route, path, url
-  if (/^[a-z0-9-]+\/[a-z0-9+.-]+$/.test(t)) return false; // mime type
-  if (/^[A-Za-z-]+:\s?[^ ]+$/.test(t)) return false;     // css declaration
+  if (/^[/.#]|:\/\//.test(t)) return false;
+  if (/^[a-z0-9-]+\/[a-z0-9+.-]+$/.test(t)) return false;
+  if (/^[A-Za-z-]+:\s?[^ ]+$/.test(t)) return false;
   const words = t.trim().replace(/^[^\p{L}]+/u, '').split(/\s+/).filter((w) => /\p{L}{2}/u.test(w));
   if (words.length >= 2) return true;
   return UI_WORD.has(words[0]?.replace(/[^A-Za-z]/g, '') ?? '');
@@ -171,7 +219,7 @@ function isProse(t: string): boolean {
 
 function offenders(source: string): string[] {
   const found = new Set<string>();
-  for (const raw of [...userVisibleStrings(source), ...scriptStrings(source).filter(isProse)]) {
+  for (const raw of [...templateStrings(source), ...scriptStrings(source).filter(isProse)]) {
     const t = raw.split(/\s+/).join(' ').trim();
     // Judge the words, not the first character. Requiring a leading letter is
     // what let "+ New Facility" and "+ New Tournament" through every scan in

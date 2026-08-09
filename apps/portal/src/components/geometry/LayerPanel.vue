@@ -38,7 +38,7 @@
         <button
           class="layer-name-btn"
           :aria-current="activeLayer === layerType ? 'true' : undefined"
-          :aria-label="`Select ${layerLabel(layerType)} layer (${featureCount(layerType)} features)`"
+          :aria-label="`Chọn lớp ${layerLabel(layerType)} (${featureCount(layerType)} đối tượng)`"
           @click="emit('layer-select', layerType)"
         >
           <span class="layer-label">{{ layerLabel(layerType) }}</span>

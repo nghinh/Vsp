@@ -1,16 +1,3 @@
-/**
- * ConfirmDialog — Accessible confirmation dialog component.
- *
- * Slice 6: Unsaved-Changes Guard
- *
- * Features:
- * - Focus trap (Tab cycles within dialog)
- * - Esc closes with cancel action
- * - aria-modal, role="alertdialog", aria-labelledby/describedby
- * - Minimum 44x44pt touch targets
- * - Reduced motion support
- */
-
 <template>
   <Teleport to="body">
     <Transition name="dialog-fade">
@@ -78,6 +65,19 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * ConfirmDialog — Accessible confirmation dialog component.
+ *
+ * Slice 6: Unsaved-Changes Guard
+ *
+ * Features:
+ * - Focus trap (Tab cycles within dialog)
+ * - Esc closes with cancel action
+ * - aria-modal, role="alertdialog", aria-labelledby/describedby
+ * - Minimum 44x44pt touch targets
+ * - Reduced motion support
+ */
+
 import { ref, watch, nextTick } from 'vue';
 
 const props = withDefaults(defineProps<{

@@ -11,7 +11,7 @@
       <figure v-else class="photo-figure">
         <img
           :src="detail.reporterEvidenceUrl"
-          :alt="`Photo evidence for correction #${detail.id}`"
+          :alt="`Ảnh minh chứng cho hiệu chỉnh #${detail.id}`"
           class="evidence-img"
           loading="lazy"
         />

@@ -30,7 +30,7 @@
           class="status-badge"
           :class="badgeClass"
           role="status"
-          :aria-label="`Build status: ${currentJob.status}`"
+          :aria-label="`Trạng thái đóng gói: ${currentJob.status}`"
         >
           <span class="badge-icon">{{ statusIcon }}</span>
           <span class="badge-text">{{ statusLabel }}</span>
@@ -56,7 +56,7 @@
           :aria-valuenow="progressPercent"
           aria-valuemin="0"
           aria-valuemax="100"
-          :aria-label="`Build progress: ${progressPercent}%`"
+          :aria-label="`Tiến độ đóng gói: ${progressPercent}%`"
         ></div>
       </div>
 

@@ -1,12 +1,3 @@
-/**
- * UnsavedChangesGuard — Route-guard dialog for unsaved geometry edits.
- *
- * Slice 6: Unsaved-Change Guard
- *
- * Shows a confirmation dialog when the user tries to navigate away
- * with unsaved changes. Options: Save Draft, Discard, Cancel.
- */
-
 <template>
   <ConfirmDialog
     v-model="isDialogOpen"
@@ -23,6 +14,15 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * UnsavedChangesGuard — Route-guard dialog for unsaved geometry edits.
+ *
+ * Slice 6: Unsaved-Change Guard
+ *
+ * Shows a confirmation dialog when the user tries to navigate away
+ * with unsaved changes. Options: Save Draft, Discard, Cancel.
+ */
+
 import { computed } from 'vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 

@@ -1,3 +1,17 @@
+<template>
+  <span
+    class="draft-indicator"
+    :class="variantClass"
+    role="status"
+    :aria-label="`Trạng thái hình học: ${label}`"
+  >
+    <span class="indicator-dot" aria-hidden="true" />
+    <span class="indicator-label">{{ label }}</span>
+    <span v-if="showVersion && version != null" class="indicator-version">v{{ version }}</span>
+  </span>
+</template>
+
+<script setup lang="ts">
 /**
  * DraftIndicator — badge component showing draft vs published geometry state.
  *
@@ -9,20 +23,6 @@
  * - Version number when available
  */
 
-<template>
-  <span
-    class="draft-indicator"
-    :class="variantClass"
-    role="status"
-    :aria-label="`Geometry state: ${label}`"
-  >
-    <span class="indicator-dot" aria-hidden="true" />
-    <span class="indicator-label">{{ label }}</span>
-    <span v-if="showVersion && version != null" class="indicator-version">v{{ version }}</span>
-  </span>
-</template>
-
-<script setup lang="ts">
 import { computed } from 'vue';
 
 const props = defineProps<{

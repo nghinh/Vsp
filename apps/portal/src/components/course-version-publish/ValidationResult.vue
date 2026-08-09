@@ -11,7 +11,7 @@
         class="result-badge"
         :class="badgeClass"
         role="status"
-        :aria-label="`Validation result: ${resultLabel}`"
+        :aria-label="`Kết quả kiểm tra: ${resultLabel}`"
       >
         <span class="badge-icon" aria-hidden="true">{{ resultIcon }}</span>
         <span class="badge-text">{{ resultLabel }}</span>

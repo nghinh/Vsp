@@ -72,7 +72,7 @@
             <button
               class="view-btn"
               @click.stop="$emit('select', correction.id)"
-              :aria-label="`Review correction ${correction.id}`"
+              :aria-label="`Xem xét hiệu chỉnh ${correction.id}`"
             >
               Xem xét →
             </button>

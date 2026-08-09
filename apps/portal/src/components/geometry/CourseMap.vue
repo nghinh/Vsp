@@ -1,25 +1,3 @@
-/**
- * CourseMap — MapLibre GL JS map component for the geometry editor.
- *
- * Slice 2: MapLibre Integration for Portal
- *
- * Features:
- * - Vector layer rendering for each geometry type (tee, fairway, rough, green,
- *   bunker, water, penalty, ob, cart_path, landmark)
- * - Dark high-contrast style for portal readability
- * - Layer visibility toggles driven by layerStates prop
- * - Satellite imagery toggle
- * - Bounding-box fit on feature load
- * - Keyboard pan (arrow keys) and zoom (+/-)
- *
- * Dependencies:
- *   npm install maplibre-gl @types/maplibre-gl
- *
- * Style:
- *   Basemap: CartoDB Dark Matter (free, no API key)
- *   Satellite: ESRI World Imagery (free, no API key)
- */
-
 <template>
   <div class="course-map-wrapper" ref="wrapperRef">
     <!-- Map container -->
@@ -27,7 +5,7 @@
       ref="mapRef"
       class="course-map"
       role="img"
-      :aria-label="`Course map showing ${totalFeatureCount} geometry features`"
+      :aria-label="`Bản đồ sân, đang hiển thị ${totalFeatureCount} đối tượng hình học`"
       tabindex="0"
       @keydown="handleKeydown"
     />
@@ -74,13 +52,13 @@
       <span class="delete-label">Xoá đối tượng</span>
     </button>
 
-    <!-- Attribution (MapLibre requirement) -->
-    <div class="map-attribution">
-      ©
-      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>
-      contributors ©
-      <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>
-    </div>
+    <!-- Credit whatever is actually on screen.
+         This used to name OpenStreetMap and CARTO in fixed markup. CARTO's
+         tiles were removed and the imagery comes from whichever provider the
+         deployment configures, so the credit named a provider we no longer
+         call and omitted the one we do. Attribution is a licence term, not
+         decoration: it now reads from the same config the tiles come from. -->
+    <div class="map-attribution" v-if="activeAttribution">{{ activeAttribution }}</div>
 
     <!-- The basemap did not arrive. Drawing still works over the blank
          canvas, which is worth saying rather than leaving a spinner up. -->
@@ -94,6 +72,29 @@
 </template>
 
 <script setup lang="ts">
+/**
+ * CourseMap — MapLibre GL JS map component for the geometry editor.
+ *
+ * Slice 2: MapLibre Integration for Portal
+ *
+ * Features:
+ * - Vector layer rendering for each geometry type (tee, fairway, rough, green,
+ *   bunker, water, penalty, ob, cart_path, landmark)
+ * - Dark high-contrast style for portal readability
+ * - Layer visibility toggles driven by layerStates prop
+ * - Satellite imagery toggle
+ * - Bounding-box fit on feature load
+ * - Keyboard pan (arrow keys) and zoom (+/-)
+ *
+ * Dependencies:
+ *   npm install maplibre-gl @types/maplibre-gl
+ *
+ * Style:
+ *   Both basemaps come from /config/basemap. Nothing is hardcoded here — the
+ *   CartoDB Dark Matter URL that used to be started answering 404 mid-session
+ *   and could not be changed without a release.
+ */
+
 import { markRaw, ref, watch, onMounted, onUnmounted, computed } from 'vue';
 import {
   baseStyleFrom,
@@ -257,6 +258,13 @@ const baseStyle = ref<Record<string, unknown>>(markRaw(blankDarkStyle()));
  */
 const satStyle = ref<RasterStyle>(null);
 const satelliteAvailable = computed(() => satStyle.value !== null);
+
+/** Attribution for the basemap currently drawn, straight from its config. */
+const satelliteAttribution = ref('');
+const baseAttribution = ref('');
+const activeAttribution = computed(() =>
+  satelliteEnabled.value ? satelliteAttribution.value : baseAttribution.value
+);
 
 // ─── GeoJSON source management ────────────────────────────────────────────────
 
@@ -978,6 +986,8 @@ onMounted(async () => {
   // the editor and immediately hits Satellite gets imagery rather than the
   // 404 the hardcoded CARTO style used to give them.
   const config = await fetchBasemapConfig();
+  satelliteAttribution.value = config?.satelliteAttribution?.trim() ?? '';
+  baseAttribution.value = config?.baseAttribution?.trim() ?? '';
   const satellite = rasterStyleFrom(config);
   satStyle.value = satellite ? markRaw(satellite) : null;
   baseStyle.value = markRaw(baseStyleFrom(config));
