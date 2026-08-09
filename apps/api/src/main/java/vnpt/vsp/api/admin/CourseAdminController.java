@@ -133,10 +133,19 @@ public class CourseAdminController {
      *
      * <p>So a delete written against cascade behaviour fails in dev and works
      * in production, and one written to satisfy dev quietly relies on nothing.
-     * Either way the environment you tested in is not the one that decides.
-     * Delete the children explicitly, in one transaction — see
-     * scripts/dev/cleanup_qa_fixtures.sql, which had to learn this the hard
-     * way and lists the dependent tables as read from pg_constraint.</p>
+     * Either way the environment you tested in is not the one that decides.</p>
+     *
+     * <p>scripts/dev/align_cascade_with_migrations.sql brings a Hibernate-built
+     * database in line without dropping it, and has been applied to the shared
+     * dev database. Run it against any database that predates this note, or
+     * that Hibernate has since rebuilt — the divergence returns whenever the
+     * schema is created from the entities rather than from the migrations.</p>
+     *
+     * <p>Even so, prefer deleting children explicitly in one transaction. A
+     * cascade that silently removes a course's geometry, conditions and
+     * versions is a great deal of destruction for one statement, and
+     * scripts/dev/cleanup_qa_fixtures.sql already lists the dependent tables
+     * as read from pg_constraint.</p>
      */
     @DeleteMapping("/courses/{courseId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
