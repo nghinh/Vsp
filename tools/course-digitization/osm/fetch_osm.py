@@ -12,12 +12,14 @@ Two Overpass queries:
   facilities  leisure=golf_course ways/relations  -> centre point + tags
   features    golf=hole|green|tee|bunker|water_hazard|fairway -> full geometry
 
-A bounding box is used rather than `area["ISO3166-1"="VN"]` because the area
-lookup regularly times out (504) on the public instance. The box overhangs the
-borders; that is harmless, since matching is by name similarity *and* distance.
+Both are restricted to Vietnam's boundary area rather than a bounding box —
+see scope() for why the box that used to be the only option pulled in four
+neighbouring countries, and why the timeout this file used to warn about does
+not apply to an area named by id.
 
 Usage:
   python3 fetch_osm.py                       # -> data/osm-vietnam-golf-<date>.json.gz
+  python3 fetch_osm.py --area ''             # fall back to the old bounding box
   python3 fetch_osm.py --out /tmp/snap.json.gz --endpoint https://overpass.kumi.systems/api/interpreter
 
 Licensing: the result is OpenStreetMap data, (c) OpenStreetMap contributors,
@@ -40,6 +42,10 @@ import urllib.request
 # Mekong border to east of the Trường Sa longitude used by the seed data.
 DEFAULT_BBOX = "8.0,102.0,23.6,110.0"
 
+# Vietnam's boundary relation (OSM 49915) as an Overpass area. Used in place of
+# the box above, which spans five countries — see scope().
+DEFAULT_AREA = "3600049915"
+
 DEFAULT_ENDPOINTS = [
     "https://overpass-api.de/api/interpreter",
     "https://overpass.kumi.systems/api/interpreter",
@@ -50,16 +56,41 @@ FEATURE_KINDS = ["hole", "green", "tee", "bunker", "water_hazard", "fairway"]
 USER_AGENT = "vsp-course-digitization/1.0 (Vietnam Smart Golf Platform; data pipeline)"
 
 
-def facilities_query(bbox: str) -> str:
+def scope(area_id: str | None, bbox: str) -> tuple[str, str]:
+    """How to restrict a query to Vietnam: (preamble, filter).
+
+    Prefer the country area. The bounding box that used to be the only option
+    runs from 102°E to 110°E and 8°N to 23.6°N, which is most of Cambodia, the
+    Lao panhandle, north-east Thailand, Hainan and southern Guangxi as well as
+    Vietnam — and it showed: of the 90 named golf courses in the committed
+    snapshot, 42 were in those four countries. Nothing downstream is *wrong*
+    because of it (a course in Phnom Penh matches no Vietnamese facility name),
+    but every one of them is a course this project will never use, sitting in a
+    file that says Vietnam on the tin.
+
+    The header warns that the area lookup times out. That is true of
+    `area["ISO3166-1"="VN"]`, which makes Overpass scan tags worldwide before it
+    can start. Naming the area directly — 3600049915 is Vietnam's boundary
+    relation 49915, offset by the 3600000000 Overpass uses for relation-derived
+    areas — skips that scan and answers in seconds.
+    """
+    if area_id:
+        return f"area({area_id})->.vn;", "area.vn"
+    return "", bbox
+
+
+def facilities_query(area_id: str | None, bbox: str) -> str:
     # Two `out` statements over the same set: Overpass returns the centre on one
     # pass and the ring on the other (asking for both at once silently drops the
     # geometry). The centre is what matches a course to a seeded facility; the
     # ring is what tells the satellite pipeline where the course ends and the
     # neighbouring fish ponds begin.
+    pre, where = scope(area_id, bbox)
     return (
         "[out:json][timeout:180];"
-        f'(way["leisure"="golf_course"]({bbox});'
-        f'relation["leisure"="golf_course"]({bbox});)->.c;'
+        f"{pre}"
+        f'(way["leisure"="golf_course"]({where});'
+        f'relation["leisure"="golf_course"]({where});)->.c;'
         ".c out center tags;"
         ".c out geom;"
     )
@@ -77,12 +108,14 @@ def merge_facility_elements(elements: list[dict]) -> list[dict]:
     return list(merged.values())
 
 
-def features_query(bbox: str) -> str:
+def features_query(area_id: str | None, bbox: str) -> str:
     kinds = "|".join(FEATURE_KINDS)
+    pre, where = scope(area_id, bbox)
     return (
         "[out:json][timeout:300];"
-        f'(way["golf"~"^({kinds})$"]({bbox});'
-        f'relation["golf"~"^({kinds})$"]({bbox}););'
+        f"{pre}"
+        f'(way["golf"~"^({kinds})$"]({where});'
+        f'relation["golf"~"^({kinds})$"]({where}););'
         "out geom tags;"
     )
 
@@ -122,15 +155,21 @@ def main() -> None:
 
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--bbox", default=DEFAULT_BBOX, help=f"south,west,north,east (default {DEFAULT_BBOX})")
+    ap.add_argument(
+        "--area",
+        default=DEFAULT_AREA,
+        help=f"Overpass area id to restrict to (default {DEFAULT_AREA} = Vietnam). "
+             "Pass --area '' to fall back to --bbox.",
+    )
     ap.add_argument("--endpoint", action="append", dest="endpoints", help="Overpass URL (repeatable)")
     ap.add_argument("--out", type=pathlib.Path, default=here / "data" / f"osm-vietnam-golf-{today}.json.gz")
     args = ap.parse_args()
 
     endpoints = args.endpoints or DEFAULT_ENDPOINTS
 
-    print(f"bbox {args.bbox}")
+    print("scope " + (f"area {args.area}" if args.area else f"bbox {args.bbox}"))
     print("fetching leisure=golf_course …")
-    raw, endpoint, base_a = overpass(facilities_query(args.bbox), endpoints)
+    raw, endpoint, base_a = overpass(facilities_query(args.area, args.bbox), endpoints)
     facilities = merge_facility_elements(raw)
     with_ring = sum(1 for f in facilities if f.get("geometry"))
     print(f"  {len(facilities)} facilities ({with_ring} with a boundary ring)"
@@ -138,7 +177,7 @@ def main() -> None:
 
     # Same server for the second query, so both halves see the same map.
     print(f"fetching golf={'|'.join(FEATURE_KINDS)} …")
-    features, endpoint_b, base_b = overpass(features_query(args.bbox), [endpoint] + endpoints)
+    features, endpoint_b, base_b = overpass(features_query(args.area, args.bbox), [endpoint] + endpoints)
     print(f"  {len(features)} features  [{endpoint_b.split('/')[2]}, OSM base {base_b}]")
 
     if base_a != base_b:
@@ -158,10 +197,11 @@ def main() -> None:
         "osm_base": base_a,          # the map state this snapshot describes
         "endpoint": endpoint,
         "bbox": args.bbox,
+        "area": args.area,
         "endpoints": endpoints,
         "queries": {
-            "facilities": facilities_query(args.bbox),
-            "features": features_query(args.bbox),
+            "facilities": facilities_query(args.area, args.bbox),
+            "features": features_query(args.area, args.bbox),
         },
         "attribution": {
             "source_prefix": "osm:",

@@ -79,10 +79,26 @@ DEFAULT_PSQL = "docker exec -i vsp_postgres psql -U vsp -d vsp"
 NAME_SIMILARITY_MIN = 0.90      # difflib ratio on the normalised names
 FACILITY_MAX_DIST_M = 25_000    # seeded coords are wrong by up to ~10 km
 HOLE_SEARCH_RADIUS_M = 3_000    # OSM hole line centroid to facility point
-HOLE_LENGTH_TOLERANCE = 0.25    # |osm_len - db_len| <= 25% of db_len
+# |osm_len - db_len| <= 25% of db_len — applied ONLY where db_len is worth
+# comparing against. See SQL_HOLE_MATCH: on a seeded hole the stated length is
+# an invention, so using it to reject real OSM geometry rejects the good data
+# for failing to resemble the bad.
+HOLE_LENGTH_TOLERANCE = 0.25
 GREEN_ASSIGN_RADIUS_M = 45      # OSM green -> nearest matched hole line
 BUNKER_ASSIGN_RADIUS_M = 60
 WATER_ASSIGN_RADIUS_M = 60
+# A tee sits on its own hole's line by definition, so this is tighter than the
+# others: adjacent holes often start within 60 m of each other and a tee pulled
+# onto the wrong hole makes every distance on that hole wrong from the first
+# shot.
+TEE_ASSIGN_RADIUS_M = 35
+# An OSM fairway polygon runs the length of the hole, so its distance to the
+# hole line is near zero where it belongs and large where it does not. A tight
+# radius is enough and keeps a neighbouring hole's fairway from being claimed.
+FAIRWAY_ASSIGN_RADIUS_M = 30
+# Slack allowed when testing a hole against its course boundary. Boundaries are
+# hand-traced and sometimes run tight; adjacent clubs are kilometres apart.
+BOUNDARY_SLACK_M = 150
 DERIVED_GREEN_RADIUS_M = 14     # ~615 m2, about right for a real green
 FAIRWAY_WIDTH_FRACTION = 0.09   # of hole length, clamped:
 FAIRWAY_WIDTH_MIN_M = 18
@@ -261,7 +277,7 @@ def boundary_rows(elements: list[dict]) -> list[tuple]:
         if wkt is None or not wkt.startswith("POLYGON"):
             continue
         name = (el.get("tags") or {}).get("name")
-        rows.append((el["id"], f"way/{el['id']}", "course_boundary", name, wkt))
+        rows.append((el["id"], f"way/{el['id']}", "course_boundary", name, None, wkt))
     rows.sort(key=lambda r: r[0])
     return rows
 
@@ -283,9 +299,32 @@ def staging_rows(elements: list[dict]) -> tuple[list[tuple], int]:
         if wkt is None:
             skipped += 1
             continue
-        rows.append((el["id"], f"way/{el['id']}", kind, tags.get("ref"), wkt))
+        rows.append((el["id"], f"way/{el['id']}", kind, tags.get("ref"), par_of(tags), wkt))
     rows.sort(key=lambda r: r[0])
     return rows, skipped
+
+
+def par_of(tags: dict) -> int | None:
+    """OSM's `par` tag, when it is a plausible one.
+
+    217 of Vietnam's 374 mapped holes carry it, and where it exists it agrees
+    with the hole's own measured length far more often than the seeded par it
+    replaces — on Long Thanh it corrects exactly the five holes whose seeded par
+    was impossible for their length.
+
+    It is still community data. Nothing here promotes it: it travels as evidence
+    for a reviewer, alongside the length that either corroborates it or does
+    not.
+    """
+    raw = tags.get("par")
+    if raw is None:
+        return None
+    try:
+        par = int(str(raw).strip())
+    except ValueError:
+        return None
+    # A golf hole is par 3 to 6. Anything else is a typo or a different sport.
+    return par if 3 <= par <= 6 else None
 
 
 # ── SQL generation ───────────────────────────────────────────────────────────
@@ -297,16 +336,21 @@ def sql_staging(rows: list[tuple]) -> str:
     osm_ref  text   NOT NULL,
     kind     text   NOT NULL,
     ref      text,
+    par      integer,
     geom     geometry(Geometry,4326) NOT NULL
 );""",
     ]
     chunk = 400
     for i in range(0, len(rows), chunk):
         values = ",\n".join(
-            f"({osm_id},{q(osm_ref)},{q(kind)},{q(ref)},ST_GeomFromText({q(wkt)},4326))"
-            for osm_id, osm_ref, kind, ref, wkt in rows[i:i + chunk]
+            f"({osm_id},{q(osm_ref)},{q(kind)},{q(ref)},"
+            f"{'NULL' if par is None else par},ST_GeomFromText({q(wkt)},4326))"
+            for osm_id, osm_ref, kind, ref, par, wkt in rows[i:i + chunk]
         )
-        parts.append(f"INSERT INTO osm_golf_staging (osm_id,osm_ref,kind,ref,geom) VALUES\n{values};")
+        parts.append(
+            "INSERT INTO osm_golf_staging (osm_id,osm_ref,kind,ref,par,geom) VALUES\n"
+            f"{values};"
+        )
     parts.append("CREATE INDEX osm_golf_staging_geom_idx ON osm_golf_staging USING gist (geom);")
     parts.append("ANALYZE osm_golf_staging;")
     return "\n".join(parts)
@@ -396,7 +440,12 @@ CREATE TABLE osm_hole_match (
     db_len_m        numeric(7,2),
     len_diff_m      double precision NOT NULL,
     centroid_dist_m double precision NOT NULL,
-    flipped         boolean NOT NULL
+    flipped         boolean NOT NULL,
+    -- OSM's own par for this hole, where it carries one. Evidence for a
+    -- reviewer, never written onto `holes` by this pipeline: it is community
+    -- data, and promoting it silently is the mistake the seeded par already
+    -- made once.
+    osm_par         integer
 );
 COMMENT ON TABLE osm_hole_match IS
   'Pipeline artefact: OSM golf=hole way chosen for each DB hole. Rebuilt by tools/course-digitization/osm/build_from_osm.py.';
@@ -409,6 +458,7 @@ WITH cand AS (
            s.osm_id,
            s.osm_ref,
            s.geom,
+           s.par                                                           AS osm_par,
            ST_Length(s.geom::geography)                                    AS osm_len_m,
            h.playing_length_meters                                         AS db_len_m,
            abs(ST_Length(s.geom::geography) - h.playing_length_meters)     AS len_diff_m,
@@ -420,11 +470,74 @@ WITH cand AS (
                            AND ST_GeometryType(s.geom) = 'ST_LineString'
                            AND s.ref ~ '^[0-9]+$'
                            AND s.ref::int = h.hole_number
-                           AND ST_DWithin(f.location::geography, s.geom::geography, {HOLE_SEARCH_RADIUS_M})
+                           AND (
+                                 -- Inside the OSM course boundary this facility
+                                 -- was matched to, when there is one.
+                                 --
+                                 -- The radius below pulled in the neighbours'
+                                 -- holes: Twin Doves and Harmonie sit 2 km
+                                 -- apart, so a 3 km circle around either
+                                 -- clubhouse contained all 45 holes of both.
+                                 -- Every ref then appeared two or three times,
+                                 -- the one-to-one collapse picked by a length
+                                 -- the seed had invented, and the two courses
+                                 -- ended up with 7 and 2 matched holes instead
+                                 -- of 18 each — several of them pointing at the
+                                 -- wrong club's fairway.
+                                 EXISTS (
+                                     SELECT 1 FROM fac_match fm
+                                     JOIN osm_golf_staging b
+                                       ON b.osm_ref = fm.osm_ref
+                                      AND b.kind = 'course_boundary'
+                                     WHERE fm.facility_id = f.id
+                                       -- The hole's midpoint, against the
+                                       -- boundary with a little slack.
+                                       --
+                                       -- Strict containment of the whole line
+                                       -- dropped two of BRG's eighteen, and the
+                                       -- bare centroid dropped the same two:
+                                       -- they sit 355 m and 540 m from the
+                                       -- clubhouse, plainly on the course, and
+                                       -- outside a boundary somebody traced a
+                                       -- little tight. The slack is drafting
+                                       -- tolerance, not a search radius — the
+                                       -- nearest other club is 2 km away, so it
+                                       -- cannot reach one.
+                                       AND ST_DWithin(
+                                             ST_Centroid(s.geom)::geography,
+                                             b.geom::geography,
+                                             {BOUNDARY_SLACK_M})
+                                 )
+                                 OR (
+                                     NOT EXISTS (
+                                         SELECT 1 FROM fac_match fm2
+                                         JOIN osm_golf_staging b2
+                                           ON b2.osm_ref = fm2.osm_ref
+                                          AND b2.kind = 'course_boundary'
+                                         WHERE fm2.facility_id = f.id
+                                     )
+                                     AND ST_DWithin(f.location::geography, s.geom::geography, {HOLE_SEARCH_RADIUS_M})
+                                 )
+                               )
     WHERE h.playing_length_meters IS NOT NULL
       AND f.location IS NOT NULL
-      AND abs(ST_Length(s.geom::geography) - h.playing_length_meters)
-          <= {HOLE_LENGTH_TOLERANCE} * h.playing_length_meters
+      -- The length test is a filter only when the stated length means
+      -- something. 831 of 900 holes carry a length the seed generated
+      -- arithmetically, and this clause was asking real OSM geometry to
+      -- resemble it before being allowed in — using fabricated data as the
+      -- acceptance test for real data, which is exactly backwards. Worse, the
+      -- step immediately after a match *replaces* that stated length with the
+      -- measured one, so the number doing the rejecting was about to be thrown
+      -- away.
+      --
+      -- On a hole somebody verified, the length is evidence and still gates.
+      -- On a seeded one it only ranks: `best` below orders by len_diff_m, so a
+      -- closer length still wins, it just no longer excludes.
+      AND (
+          h.verification_status <> 'VERIFIED'
+          OR abs(ST_Length(s.geom::geography) - h.playing_length_meters)
+             <= {HOLE_LENGTH_TOLERANCE} * h.playing_length_meters
+      )
 ),
 -- One OSM way per DB hole ...
 best AS (
@@ -451,7 +564,8 @@ SELECT o.db_hole_id, o.course_id, o.hole_number, o.osm_id, o.osm_ref, o.geom,
               FROM osm_golf_staging g
              WHERE g.kind = 'green'
                AND ST_DWithin(ST_EndPoint(o.geom)::geography, g.geom::geography, 250)), 1e9),
-       false) AS flipped
+       false) AS flipped,
+       o.osm_par
 FROM one2one o;
 
 INSERT INTO run_report SELECT '3 hole match', 'OSM hole lines matched to DB holes', count(*) FROM osm_hole_match;
@@ -549,7 +663,8 @@ def sql_features() -> str:
     keep = "coalesce(verification_status,'') <> 'VERIFIED'"
     blocks = []
 
-    for table in ("greens", "bunkers", "water_hazards", "fairway_segments"):
+    for table in ("greens", "bunkers", "water_hazards", "fairway_segments",
+                  "tee_boxes"):
         blocks.append(f"""
 INSERT INTO run_report SELECT '5 features', 'kept: human-VERIFIED {table}', count(*)
 FROM {table} WHERE {owned} AND NOT ({keep});
@@ -578,9 +693,28 @@ WITH assign AS (
 ) INSERT INTO run_report SELECT '5 features', 'OSM {kind} imported', count(*) FROM ins;"""
 
     blocks.append(osm_import("greens", "green", GREEN_ASSIGN_RADIUS_M))
+    # `tee_boxes` was empty, so choosing a tee changed nothing a golfer could
+    # see: the app had one tee point per hole (holes.teeing_ground_location) and
+    # no per-tee geometry at all, which is also why per-tee yardages are absent
+    # — TeeSetSummaryDto derives them from tee-box geometry and there was none.
+    #
+    # tee_set_id is left NULL on purpose. OSM's `golf=tee` areas do not say
+    # which set a tee belongs to, and a hole usually has several. Guessing
+    # championship/back/front would put an invented number in front of a golfer
+    # choosing a club — the whole class of defect this pipeline exists to undo.
+    # Landing the geometry unassigned makes the assignment a review step in the
+    # portal, which is a human judgement with a person's name against it.
+    blocks.append(osm_import("tee_boxes", "tee", TEE_ASSIGN_RADIUS_M))
     blocks.append(osm_import("bunkers", "bunker", BUNKER_ASSIGN_RADIUS_M))
     blocks.append(osm_import("water_hazards", "water_hazard", WATER_ASSIGN_RADIUS_M,
                              ", hazard_type", ", 'WATER'"))
+    # Real fairway shapes. 241 of them sit in the snapshot and none were ever
+    # imported: step 7 derived a rectangular buffer around the tee->green line
+    # for every hole, including the holes whose actual fairway OSM had already
+    # traced. On the map that is a corridor with straight sides and square ends
+    # laid over a dogleg — the shape a golfer cannot place against what is in
+    # front of them. The derive below now only fills the gaps.
+    blocks.append(osm_import("fairway_segments", "fairway", FAIRWAY_ASSIGN_RADIUS_M))
 
     # Derived green: only where no real one landed. Provenance depends on where
     # the underlying point came from — an OSM-derived shape stays ODbL, a shape
@@ -631,6 +765,26 @@ WITH ins AS (
     RETURNING 1
 ) INSERT INTO run_report SELECT '6 derived', 'fairway corridors derived from tee->green', count(*) FROM ins;""")
 
+    # A hole that has a real shape must not also keep the stand-in.
+    #
+    # The clear at the top of this step preserves anything a human marked
+    # VERIFIED, which is right for a shape somebody checked — but a reviewer who
+    # ticked a hole was confirming its coordinates, and the derived rectangle
+    # rode along. Once OSM's real outline lands, keeping both draws two
+    # overlapping polygons, and the wrong one is on top half the time. The
+    # derived stand-in goes; anything a person actually drew in the portal
+    # (source neither osm: nor derived:) is untouched.
+    for table, label in (("fairway_segments", "fairway"), ("greens", "green")):
+        blocks.append(f"""
+WITH del AS (
+    DELETE FROM {table} d
+    WHERE d.source LIKE 'derived:%'
+      AND EXISTS (SELECT 1 FROM {table} r
+                   WHERE r.hole_id = d.hole_id AND r.source LIKE 'osm:%')
+    RETURNING 1
+) INSERT INTO run_report
+  SELECT '6 derived', 'derived {label} dropped (a real one landed)', count(*) FROM del;""")
+
     return "\n".join(blocks)
 
 
@@ -647,6 +801,8 @@ UNION ALL SELECT 'holes total',                       count(*) FROM holes
 UNION ALL SELECT 'greens from OSM',                   count(*) FROM greens WHERE source LIKE 'osm:%'
 UNION ALL SELECT 'greens derived',                    count(*) FROM greens WHERE source LIKE 'derived:%'
 UNION ALL SELECT 'holes with no green at all',        count(*) FROM holes h WHERE NOT EXISTS (SELECT 1 FROM greens g WHERE g.hole_id = h.id)
+UNION ALL SELECT 'tee boxes from OSM',                count(*) FROM tee_boxes WHERE source LIKE 'osm:%'
+UNION ALL SELECT 'tee boxes awaiting a tee-set assignment', count(*) FROM tee_boxes WHERE tee_set_id IS NULL
 UNION ALL SELECT 'bunkers from OSM',                  count(*) FROM bunkers WHERE source LIKE 'osm:%'
 UNION ALL SELECT 'water hazards from OSM',            count(*) FROM water_hazards WHERE source LIKE 'osm:%'
 UNION ALL SELECT 'fairway corridors derived',         count(*) FROM fairway_segments WHERE source LIKE 'derived:%'
