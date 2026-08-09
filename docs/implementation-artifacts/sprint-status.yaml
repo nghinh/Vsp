@@ -67,13 +67,13 @@ development_status:
   5-5-complete-and-review-round: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress                                       # blocked only by 6-6 field validation
+  epic-6: in-progress                                       # code complete; blocked only by 6-6 field validation on real devices
   6-1-acquire-and-qualify-location: done
-  6-2-detect-course-and-hole: done                          # depends on manifest facility fields at runtime; see wave-c-audit gap G3
+  6-2-detect-course-and-hole: done                          # manual hole selection reached the UI 2026-08-06: NavigateToHole existed but nothing dispatched it, so the map was pinned to the hole the round opened at
   6-3-render-strategic-hole-map: done
   6-4-calculate-green-and-hazard-distances: done            # calc engine + distance cubit tests pass
   6-5-place-and-move-a-target: done
-  6-6-validate-pilot-gps-accuracy-and-battery: in-progress  # telemetry infra done; field/pilot validation pending (real devices + RTK checkpoints)
+  6-6-validate-pilot-gps-accuracy-and-battery: in-progress  # telemetry now RECORDS (2026-08-06): RoundTelemetryRecorder wired into HoleMapBloc + ActiveRoundScreen, battery_plus behind a domain port. Previously the stack was built and constructed nowhere. Remaining: field/pilot validation only — RTK checkpoint comparison and an 18-hole battery run on target devices.
   epic-6-retrospective: optional
 
   epic-7: done
