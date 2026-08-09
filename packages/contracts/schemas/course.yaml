@@ -190,32 +190,6 @@ CoursePackage:
       description: Whether the package is active
       example: true
 
-Location:
-  type: object
-  properties:
-    latitude:
-      type: number
-      format: double
-      description: Latitude in SRID 4326
-      example: 10.8231
-    longitude:
-      type: number
-      format: double
-      description: Longitude in SRID 4326
-      example: 106.6292
-    address:
-      type: string
-      description: Human-readable address
-    district:
-      type: string
-      description: District name
-    city:
-      type: string
-      description: City name
-    province:
-      type: string
-      description: Province name
-
 Facility:
   type: object
   properties:
@@ -271,6 +245,12 @@ DataFreshnessDto:
       enum: [VERIFIED, PENDING_REVIEW, UNVERIFIED, REJECTED]
       description: Verification status
       example: "VERIFIED"
+    accuracyClass:
+      type: string
+      description: >-
+        How the geometry was obtained — the client gates its "not surveyed"
+        markers on this, so it travels with every search result.
+      example: "D_UNVERIFIED_COMMUNITY"
     lastVerifiedAt:
       type: string
       format: date-time
@@ -306,12 +286,18 @@ CourseSearchResultDto:
     latitude:
       type: number
       format: double
-      description: Latitude in WGS84
+      nullable: true
+      description: >-
+        Latitude in WGS84, or absent when the facility has no established
+        location. Absent is a real state — the roster carries courses known by
+        name that nobody has located yet — and must not be read as 0.
       example: 10.8231
     longitude:
       type: number
       format: double
-      description: Longitude in WGS84
+      nullable: true
+      description: >-
+        Longitude in WGS84, or absent. See latitude.
       example: 106.6292
     holesCount:
       type: integer
@@ -545,6 +531,8 @@ HoleSummaryDto:
       format: double
       description: Playing length in meters
       example: 382.5
+    dataQuality:
+      $ref: '#/DataQualityDto'
 
 TeeSetSummaryDto:
   type: object
@@ -764,7 +752,7 @@ ImportPreviewResponse:
     errors:
       type: array
       items:
-        $ref: '#/ValidationError'
+        $ref: '#/GeometryImportError'
 
 ImportCommitRequest:
   type: object
@@ -803,9 +791,21 @@ ImportResultResponse:
       description: Status of new DataVersion
       example: "DRAFT"
 
-ValidationError:
+# Named apart from ValidationError on purpose. Both used to be called
+# ValidationError in this file, and in YAML the later definition simply wins,
+# so the import response above resolved to the entity/entityId shape defined
+# further down — a type its endpoint never returns.
+#
+# Nothing broke, and it is worth being exact about why: nothing generates code
+# from these schemas, so the only casualty was the document itself. That is
+# also the whole risk here. A contract nobody compiles is a contract read by
+# people, and this one described one type while naming another. The server has
+# kept the two apart all along (course.imports.ValidationError with
+# featureIndex/geometryType/severity, course.dto.ValidationError with
+# entity/entityId).
+GeometryImportError:
   type: object
-  description: Single validation error for a feature
+  description: Single validation error for a feature in a GeoJSON import
   properties:
     featureIndex:
       type: integer
@@ -1590,6 +1590,20 @@ VersionDiff:
   required:
     - draftVersionId
 
+# ─── Version publish and rollback ─────────────────────────────────────────────
+#
+#   POST /courses/{courseId}/versions/{versionId}/publish
+#   POST /courses/{courseId}/versions/{versionId}/rollback
+#
+# The course id and version id are path segments, not body fields — admin.yaml
+# once said otherwise and also omitted publishNote, which is mandatory and
+# rejected under ten characters, so a client built from that text could not
+# publish at all. These four now live here only, because this is where the
+# endpoints live.
+#
+# Nothing generates code from this file. It stays true only by being kept true:
+# if these endpoints change, change this with them.
+
 PublishRequest:
   type: object
   description: Request body for publishing a course version (Story 8.3 AC-2)
@@ -1616,16 +1630,20 @@ PublishResponse:
       format: int64
       description: The newly published DataVersion ID
       example: 13
+    versionNumber:
+      type: integer
+      description: Human-facing version number of that DataVersion
+      example: 7
     status:
       type: string
       enum: [PUBLISHED]
       description: Resulting status of the new version
       example: PUBLISHED
     auditId:
-      type: string
-      format: uuid
+      type: integer
+      format: int64
       description: Audit entry ID for the publish action
-      example: 7c9e6679-7425-40de-944b-e07fc1f90ae7
+      example: 9182
     buildJobId:
       type: string
       format: uuid
@@ -1640,3 +1658,31 @@ PublishResponse:
     - newVersionId
     - status
     - publishedAt
+
+RollbackRequest:
+  type: object
+  required:
+    - rollbackNote
+  properties:
+    rollbackNote:
+      type: string
+      description: Why the rollback is being performed. Required.
+      example: "Ranh giới green hố 12 sai, quay về bản trước"
+
+RollbackResponse:
+  type: object
+  properties:
+    newJobId:
+      type: string
+      format: uuid
+      description: Package rebuild started for the restored version
+      example: "8c2d4f19-77ab-4c30-9f51-6d0b3a2e4c88"
+    versionId:
+      type: integer
+      format: int64
+      description: DataVersion that is active again
+      example: 41
+    versionNumber:
+      type: integer
+      description: Human-facing version number of that DataVersion
+      example: 6

@@ -410,11 +410,10 @@ CreateShotRequest:
       description: GPS position when shot started
     conditions:
       $ref: '#/Shot/properties/conditions'
-    idempotencyKey:
-      type: string
-      format: uuid
-      description: Client-generated UUID v4 for deduplication
-      example: 880e8400-e29b-41d4-a716-446655440007
+
+  # Idempotency travels in the Idempotency-Key header, not the body — see the
+  # note on this file's write requests. It was listed here as a property for
+  # some time, which is a body field the server has never read.
 
 UpdateShotRequest:
   type: object
@@ -474,10 +473,8 @@ MergeShotsRequest:
       format: uuid
       description: Shot to merge into (surviving record)
       example: 880e8400-e29b-41d4-a716-446655440009
-    idempotencyKey:
-      type: string
-      format: uuid
-      description: Client-generated UUID v4 for deduplication
+
+  # Idempotency-Key header, not a body field. See CreateShotRequest.
 
 ShotResponse:
   type: object

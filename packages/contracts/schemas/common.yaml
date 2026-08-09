@@ -169,3 +169,33 @@ ErrorCode:
     - BUILD_NOT_FOUND
     - COURSE_NOT_PUBLISHED
   description: Stable machine-readable error codes for the VSP API
+
+# Moved here from course.yaml. Four files already pointed at
+# './common.yaml#/Location' — correction, course, weather and openapi — while
+# the only definition sat in course.yaml, so every one of those references
+# resolved to nothing. Shared shapes belong in the shared file.
+Location:
+  type: object
+  properties:
+    latitude:
+      type: number
+      format: double
+      description: Latitude in SRID 4326
+      example: 10.8231
+    longitude:
+      type: number
+      format: double
+      description: Longitude in SRID 4326
+      example: 106.6292
+    address:
+      type: string
+      description: Human-readable address
+    district:
+      type: string
+      description: District name
+    city:
+      type: string
+      description: City name
+    province:
+      type: string
+      description: Province name

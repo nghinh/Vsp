@@ -253,6 +253,12 @@ LeaderboardEntry:
       example: 82.5
 
 # ─── Score Correction Schemas (Story 5.5 Slice 4) ────────────────────────────
+#
+# These three were defined twice, identically apart from wording. YAML keeps
+# the later definition, so the copy anyone happened to read and edit was as
+# likely as not the dead one. Structure was the same either way, so nothing
+# was ever generated wrongly — but an edit to the wrong copy would have gone
+# nowhere with no error to explain it.
 
 ScoreCorrectionRequest:
   type: object
@@ -309,59 +315,3 @@ ScoreCorrectionResponse:
       type: string
       format: uuid
       description: First audit entry ID for this correction batch
-
-ScoreCorrectionRequest:
-  type: object
-  required:
-    - playerId
-    - corrections
-  properties:
-    playerId:
-      type: string
-      format: uuid
-      description: Player identifier whose scores are being corrected
-    corrections:
-      type: array
-      items:
-        $ref: '#/FieldCorrection'
-      description: List of field corrections
-
-FieldCorrection:
-  type: object
-  required:
-    - field
-    - holeNumber
-    - oldValue
-    - newValue
-  properties:
-    field:
-      type: string
-      enum: [strokes, putts, penalties, fairwayHit, gir, bunker, notes]
-      description: Name of the field to correct
-    holeNumber:
-      type: integer
-      minimum: 1
-      maximum: 27
-      description: Hole number
-    oldValue:
-      type: string
-      description: Previous value (for audit trail)
-    newValue:
-      type: string
-      description: New corrected value
-
-ScoreCorrectionResponse:
-  type: object
-  properties:
-    correctionId:
-      type: string
-      format: uuid
-      description: Correction batch identifier
-    appliedAt:
-      type: string
-      format: date-time
-      description: Timestamp when corrections were applied
-    auditId:
-      type: string
-      format: uuid
-      description: Audit entry identifier

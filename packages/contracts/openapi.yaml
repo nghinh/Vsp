@@ -389,7 +389,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GolferProfileResponse'
+                $ref: '#/components/schemas/GolferAccountResponse'
         '401':
           description: Unauthorized
           content:
@@ -5253,7 +5253,12 @@ components:
       $ref: './schemas/auth.yaml#/PasswordRecoverRequest'
     PasswordResetRequest:
       $ref: './schemas/auth.yaml#/PasswordResetRequest'
-    GolferProfileResponse:
+    # Two different types share this simple name on the server —
+    # identity.dto.GolferProfileResponse (the account: phone, email, status)
+    # and profile.dto.GolferProfileResponse (the golfer: handicap, home club,
+    # equipment). Both were aliased to the same key here, so /auth/me was
+    # documented with the profile shape it does not return. Aliased apart.
+    GolferAccountResponse:
       $ref: './schemas/auth.yaml#/GolferProfileResponse'
     GoogleAuthRequest:
       $ref: './schemas/auth.yaml#/GoogleAuthRequest'
@@ -5279,47 +5284,48 @@ components:
       $ref: './schemas/course.yaml#/Facility'
     CourseChange:
       $ref: './schemas/course.yaml#/CourseChange'
+    # Both of these described a course-creation API that was never built:
+    # description, address, a Location object, a facilities array, an isActive
+    # flag. What the endpoints take is four fields. Written back from the DTOs
+    # on 2026-08-09 — note that location is a plain string here, not the
+    # Location object this document defines elsewhere.
     CourseCreateRequest:
       type: object
       required:
         - name
-        - holes
       properties:
         name:
           type: string
-        description:
-          type: string
-        location:
-          $ref: '#/components/schemas/Location'
-        address:
-          type: string
-        holes:
+          example: "Championship"
+        holesCount:
           type: integer
           minimum: 9
           maximum: 27
-        par:
+          example: 18
+        parTotal:
           type: integer
-        facilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/Facility'
+          example: 71
+        location:
+          type: string
+          description: Free-text location as entered by the operator
+          example: "Long Thành, Đồng Nai"
     CourseUpdateRequest:
       type: object
       properties:
         name:
           type: string
-        description:
-          type: string
-        address:
-          type: string
-        par:
+          example: "Championship"
+        holesCount:
           type: integer
-        facilities:
-          type: array
-          items:
-            $ref: '#/components/schemas/Facility'
-        isActive:
-          type: boolean
+          minimum: 9
+          maximum: 27
+          example: 18
+        parTotal:
+          type: integer
+          example: 71
+        location:
+          type: string
+          example: "Long Thành, Đồng Nai"
     CourseListResponse:
       type: object
       properties:
@@ -5381,6 +5387,10 @@ components:
       $ref: './schemas/course.yaml#/PublishRequest'
     PublishResponse:
       $ref: './schemas/course.yaml#/PublishResponse'
+    RollbackRequest:
+      $ref: './schemas/course.yaml#/RollbackRequest'
+    RollbackResponse:
+      $ref: './schemas/course.yaml#/RollbackResponse'
 
     # Course Alert schemas (Story 8.6 SEND-COURSE-ALERTS)
     AlertTargetType:
@@ -5428,16 +5438,27 @@ components:
             $ref: '#/components/schemas/Score'
         pagination:
           $ref: '#/components/schemas/Pagination'
+    # A tournament leaderboard, versioned so a client can tell a stale poll
+    # from a fresh one. There is no `period` — that belonged to a rankings
+    # board this endpoint never became.
     LeaderboardResponse:
       type: object
       properties:
+        tournamentId:
+          type: string
+          format: uuid
+        version:
+          type: integer
+          format: int64
+          description: Increments on every recalculation; use it to discard late responses
+          example: 14
+        updatedAt:
+          type: string
+          format: date-time
         entries:
           type: array
           items:
             $ref: '#/components/schemas/LeaderboardEntry'
-        period:
-          type: string
-          enum: [daily, weekly, monthly, all_time]
 
     # Weather schemas
     WeatherSnapshot:
@@ -5477,14 +5498,10 @@ components:
       $ref: './schemas/privacy.yaml#/ProcessPrivacyRequestRequest'
 
     # Admin schemas
-    PublishRequest:
-      $ref: './schemas/admin.yaml#/PublishRequest'
-    PublishResponse:
-      $ref: './schemas/admin.yaml#/PublishResponse'
-    RollbackRequest:
-      $ref: './schemas/admin.yaml#/RollbackRequest'
-    RollbackResponse:
-      $ref: './schemas/admin.yaml#/RollbackResponse'
+    # Publish/rollback are defined in course.yaml and aliased above, next to the
+    # other version schemas. They were aliased twice — once to course.yaml,
+    # once to admin.yaml — and YAML kept whichever came last, so the definition
+    # a reader reached depended on ordering rather than intent.
     AuditEntry:
       $ref: './schemas/admin.yaml#/AuditEntry'
     AuditLogResponse:

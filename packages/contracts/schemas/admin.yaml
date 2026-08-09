@@ -1,98 +1,10 @@
 # Admin schemas for the Vietnam Smart Golf Platform API
-
-PublishRequest:
-  type: object
-  required:
-    - courseId
-    - version
-  properties:
-    courseId:
-      type: string
-      format: uuid
-      description: Course identifier
-    version:
-      type: string
-      description: Version to publish
-      example: "abc123def456"
-    effectiveFrom:
-      type: string
-      format: date-time
-      description: When the publish becomes effective
-      example: "2026-09-01T00:00:00Z"
-    notes:
-      type: string
-      description: Release notes
-      example: "Updated hole 5 pin positions"
-
-PublishResponse:
-  type: object
-  properties:
-    courseId:
-      type: string
-      format: uuid
-      description: Course identifier
-    previousVersion:
-      type: string
-      description: Previous active version
-      example: "xyz789"
-    newVersion:
-      type: string
-      description: Newly published version
-      example: "abc123def456"
-    publishedAt:
-      type: string
-      format: date-time
-      description: When the version was published
-      example: "2026-08-01T12:00:00Z"
-    effectiveFrom:
-      type: string
-      format: date-time
-      description: When the version becomes active
-      example: "2026-09-01T00:00:00Z"
-    auditEntry:
-      $ref: '#/AuditEntry'
-
-RollbackRequest:
-  type: object
-  required:
-    - courseId
-    - targetVersion
-  properties:
-    courseId:
-      type: string
-      format: uuid
-      description: Course identifier
-    targetVersion:
-      type: string
-      description: Version to rollback to
-      example: "xyz789"
-    reason:
-      type: string
-      description: Reason for rollback
-      example: "Critical error discovered in new version"
-
-RollbackResponse:
-  type: object
-  properties:
-    courseId:
-      type: string
-      format: uuid
-      description: Course identifier
-    rolledBackFrom:
-      type: string
-      description: Version that was active
-      example: "abc123def456"
-    rolledBackTo:
-      type: string
-      description: Version restored
-      example: "xyz789"
-    rolledBackAt:
-      type: string
-      format: date-time
-      description: When the rollback occurred
-      example: "2026-08-01T14:00:00Z"
-    auditEntry:
-      $ref: '#/AuditEntry'
+#
+# Version publish and rollback used to live here as well as in course.yaml, and
+# openapi.yaml aliased the name to both files — so which definition a reader
+# landed on depended on which alias came last. They are defined once now, in
+# course.yaml, next to the endpoints they belong to
+# (/courses/{courseId}/versions/{versionId}/publish and /rollback).
 
 AuditEntry:
   type: object
@@ -208,12 +120,21 @@ PinPositionDto:
       format: int64
       description: Pin position unique identifier
       example: 1
+    courseId:
+      type: integer
+      format: int64
+      description: Course the pin belongs to
+      example: 8
     holeNumber:
       type: integer
       description: Hole number (1-18+)
       example: 5
     position:
       $ref: './common.yaml#/GeoJsonPoint'
+    pinPositionType:
+      type: string
+      description: Which pin of the day this is — the label the greenkeeper sets
+      example: "FRONT"
     effectiveFrom:
       type: string
       format: date-time

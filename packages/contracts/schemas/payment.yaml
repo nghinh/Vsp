@@ -207,12 +207,15 @@ PaymentAuditEntry:
 
 # ─── Request Schemas ───────────────────────────────────────────────────────────
 
+# Every write endpoint here requires an Idempotency-Key HTTP header, unique
+# per intent; without it the request is rejected with 400. It is a header, not
+# a body field. This schema used to list it under properties while its own
+# description called it a header — the server has only ever read the header.
 CreatePaymentIntentRequest:
   type: object
   required:
     - amount
     - currency
-    - idempotencyKey
   properties:
     amount:
       type: integer
@@ -223,13 +226,6 @@ CreatePaymentIntentRequest:
       type: string
       description: ISO 4217 currency code
       example: VND
-    idempotencyKey:
-      type: string
-      description: |
-        Client-supplied idempotency key for this payment intent.
-        Required — requests without this header are rejected with 400.
-        Must be unique per transaction intent.
-      example: pay-intent-001
     paymentMethodTypes:
       type: array
       items:
@@ -260,13 +256,19 @@ ConfirmPaymentRequest:
       type: string
       description: Provider's transaction reference
       example: pi_3NvRqJ4tT9xQz1Z20tGkMG9h
-    state:
-      $ref: '#/PaymentState'
+    success:
+      type: boolean
+      description: >-
+        Whether the provider settled the payment. The endpoint takes this
+        verdict, not a target state — it used to be documented as a
+        PaymentState, which invited a caller to name the state they wanted
+        rather than report what happened.
+      example: true
     failureReason:
       $ref: '#/PaymentFailureReason'
     failureMessage:
       type: string
-      description: Human-readable error detail when state is 'failed'
+      description: Human-readable error detail when success is false
 
 RefundPaymentRequest:
   type: object
@@ -285,6 +287,13 @@ RefundPaymentRequest:
     reasonDetail:
       type: string
       description: Free-text elaboration when reason is 'other'
+    metadata:
+      type: object
+      additionalProperties:
+        type: string
+      description: Free-form key/value pairs carried through to the provider
+      example:
+        refundedBy: "ops@vsp.vn"
 
 # ─── Response Schemas ──────────────────────────────────────────────────────────
 
