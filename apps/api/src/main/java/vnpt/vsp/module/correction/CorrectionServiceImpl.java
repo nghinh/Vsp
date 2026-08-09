@@ -120,6 +120,10 @@ public class CorrectionServiceImpl implements CorrectionService {
         // Build course ID → name map for batch lookup
         Map<Long, String> courseNameMap = buildCourseNameMap(all);
 
+        // Hole row id → the number on the card. Resolved in one query for the
+        // whole page rather than per row.
+        Map<Long, Integer> holeNumberMap = buildHoleNumberMap(all);
+
         // Paginate
         int total = all.size();
         int pageSize = request.getPageSize() > 0 ? request.getPageSize() : 20;
@@ -129,7 +133,9 @@ public class CorrectionServiceImpl implements CorrectionService {
         List<CorrectionQueueResponse.CorrectionSummary> summaries = start < total
                 ? all.subList(start, end).stream()
                         .map(c -> CorrectionQueueResponse.CorrectionSummary.fromEntity(
-                                c, courseNameMap.getOrDefault(c.getCourseId(), "Unknown")))
+                                c,
+                                courseNameMap.getOrDefault(c.getCourseId(), "Unknown"),
+                                c.getHoleId() == null ? null : holeNumberMap.get(c.getHoleId())))
                         .collect(Collectors.toList())
                 : List.of();
 
@@ -325,12 +331,10 @@ public class CorrectionServiceImpl implements CorrectionService {
     private void validateStatusTransition(CourseCorrection correction, CorrectionReviewRequest request) {
         CorrectionStatus current = correction.getStatus();
 
-        // APPROVE/REJECT/REQUEST_INFO/CONVERT_TO_DRAFT require IN_REVIEW
-        if (current == CorrectionStatus.PENDING) {
-            throw new VspApiException(VspErrorCode.CORRECTION_004,
-                    "Correction must be moved to IN_REVIEW before applying a terminal action");
-        }
-
+        // PENDING and IN_REVIEW are both reviewable. PENDING used to be
+        // rejected here, which made every terminal action impossible: nothing
+        // exposes the PENDING → IN_REVIEW transition, so no correction could
+        // ever leave the state this check refused. See requireOpenForReview.
         if (current == CorrectionStatus.APPROVED ||
             current == CorrectionStatus.REJECTED ||
             current == CorrectionStatus.INFO_REQUESTED ||
@@ -382,6 +386,32 @@ public class CorrectionServiceImpl implements CorrectionService {
     }
 
     // ─── Course name map helper ─────────────────────────────────────────────────
+
+    /**
+     * Hole row id → the number a golfer reads on the tee marker.
+     *
+     * The queue used to print the row id in the hole-number column, so a report
+     * about the 1st at Long Thành (row 127) reached a reviewer as "hole 127" of
+     * an eighteen-hole course.
+     */
+    private Map<Long, Integer> buildHoleNumberMap(List<CourseCorrection> corrections) {
+        List<Long> holeIds = corrections.stream()
+                .map(CourseCorrection::getHoleId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (holeIds.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<Long, Integer> byId = new java.util.HashMap<>();
+        for (Hole hole : holeRepository.findAllById(holeIds)) {
+            if (hole.getHoleNumber() != null) {
+                byId.put(hole.getId(), hole.getHoleNumber());
+            }
+        }
+        return byId;
+    }
 
     private Map<Long, String> buildCourseNameMap(List<CourseCorrection> corrections) {
         if (corrections.isEmpty()) {

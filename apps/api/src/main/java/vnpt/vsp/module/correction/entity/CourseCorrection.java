@@ -199,7 +199,7 @@ public class CourseCorrection {
      * @throws IllegalStateException if current status is not IN_REVIEW
      */
     public void approve(String resolution, Long reviewedBy, String reviewNote) {
-        requireInReview();
+        requireOpenForReview();
         this.status = CorrectionStatus.APPROVED;
         this.resolution = resolution;
         this.reviewNote = reviewNote;
@@ -208,7 +208,7 @@ public class CourseCorrection {
     }
 
     public void reject(String reason, Long reviewedBy, String reviewNote) {
-        requireInReview();
+        requireOpenForReview();
         this.status = CorrectionStatus.REJECTED;
         this.resolution = reason;
         this.reviewNote = reviewNote;
@@ -217,7 +217,7 @@ public class CourseCorrection {
     }
 
     public void requestInfo(String message, Long reviewedBy, String reviewNote) {
-        requireInReview();
+        requireOpenForReview();
         this.status = CorrectionStatus.INFO_REQUESTED;
         this.resolution = message;
         this.reviewNote = reviewNote;
@@ -226,7 +226,7 @@ public class CourseCorrection {
     }
 
     public void convertToDraft(String draftReference, Long reviewedBy, String reviewNote) {
-        requireInReview();
+        requireOpenForReview();
         this.status = CorrectionStatus.CONVERTED_TO_DRAFT;
         this.resolution = draftReference;
         this.reviewNote = reviewNote;
@@ -286,10 +286,24 @@ public class CourseCorrection {
         REJECT
     }
 
-    private void requireInReview() {
-        if (this.status != CorrectionStatus.IN_REVIEW) {
+    /**
+     * Accepts a correction that is open for review — PENDING or IN_REVIEW.
+     *
+     * IN_REVIEW is reached through {@link #markInReview()}, which nothing
+     * exposes: there is no endpoint, so no client can perform that transition.
+     * Requiring it here therefore made all four terminal actions unreachable —
+     * the review queue's Approve, Reject, Request Info and Convert to Draft
+     * buttons all came back "Correction not in pending state" against a
+     * correction the same screen showed as Pending.
+     *
+     * {@code resolve} already accepts both states for exactly this reason. This
+     * matches it rather than adding a claim step nobody asked for; IN_REVIEW
+     * still means what it meant for anything that does set it.
+     */
+    private void requireOpenForReview() {
+        if (this.status != CorrectionStatus.PENDING && this.status != CorrectionStatus.IN_REVIEW) {
             throw new IllegalStateException(
-                    "Correction must be IN_REVIEW before terminal transition, current status: " + this.status);
+                    "Correction must be open for review before a terminal transition, current status: " + this.status);
         }
     }
 

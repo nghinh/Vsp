@@ -19,6 +19,7 @@ import vnpt.vsp.module.tournament.repository.TournamentPolicyChangeRepository;
 import vnpt.vsp.module.tournament.repository.TournamentPolicyRepository;
 
 import java.util.HashMap;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -258,5 +259,16 @@ public class TournamentPolicyServiceImpl implements TournamentPolicyService {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TournamentPolicyResponse> listPolicies() {
+        return policyRepository.findAll().stream()
+                .sorted(Comparator.comparing(
+                        TournamentPolicy::getCreatedAt,
+                        Comparator.nullsLast(Comparator.reverseOrder())))
+                .map(TournamentPolicyResponse::fromEntity)
+                .toList();
     }
 }

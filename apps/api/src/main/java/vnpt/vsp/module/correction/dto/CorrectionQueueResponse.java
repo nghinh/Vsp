@@ -51,12 +51,20 @@ public class CorrectionQueueResponse {
          */
         private String verificationStatus;
 
-        public static CorrectionSummary fromEntity(CourseCorrection c, String courseName) {
+        /**
+         * @param holeNumber the hole's number on the card, resolved by the
+         *     caller. Not the row id: this field used to be filled with
+         *     {@code holeId}, so a report about the 1st at Long Thành — row 127
+         *     — arrived in the review queue labelled "hole 127" of an
+         *     eighteen-hole course. A reviewer cannot walk to hole 127.
+         */
+        public static CorrectionSummary fromEntity(
+                CourseCorrection c, String courseName, Integer holeNumber) {
             CorrectionSummary s = new CorrectionSummary();
             s.setId(c.getId());
             s.setCourseId(c.getCourseId());
             s.setCourseName(courseName);
-            s.setHoleNumber(c.getHoleId() != null ? c.getHoleId().intValue() : null);
+            s.setHoleNumber(holeNumber);
             s.setCorrectionType(c.getCorrectionType().name());
             s.setStatus(c.getStatus().name());
             s.setConfidence(c.getConfidence());

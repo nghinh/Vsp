@@ -18,6 +18,19 @@ public class TournamentPlayerResponse {
     private Instant registrationTime;
     private String status;
 
+    // ─── Outing roster (V36) ────────────────────────────────────────────────
+    private String displayName;
+    private String vgaCode;
+    private String divisionCode;
+    private Integer playingHandicap;
+    private Integer flightNumber;
+    private Integer grossTotal;
+    private Integer[] holeScores;
+    private Integer birdieCount;
+    private Integer eagleCount;
+    /** True once anything has been typed for this player — drives the "still out" state. */
+    private boolean hasScore;
+
     public static TournamentPlayerResponse fromEntity(TournamentPlayer entity) {
         TournamentPlayerResponse response = new TournamentPlayerResponse();
         response.setId(entity.getId());
@@ -27,7 +40,25 @@ public class TournamentPlayerResponse {
         response.setFlightId(entity.getFlight() != null ? entity.getFlight().getId() : null);
         response.setRegistrationTime(entity.getRegistrationTime());
         response.setStatus(entity.getStatus().name());
+        response.setDisplayName(entity.getDisplayName());
+        response.setVgaCode(entity.getVgaCode());
+        response.setDivisionCode(entity.getDivisionCode());
+        response.setPlayingHandicap(entity.getPlayingHandicap());
+        response.setFlightNumber(entity.getFlight() != null ? entity.getFlight().getFlightNumber() : null);
+        response.setGrossTotal(entity.getGrossTotal());
+        response.setHoleScores(entity.getHoleScores());
+        response.setBirdieCount(entity.getBirdieCount());
+        response.setEagleCount(entity.getEagleCount());
+        response.setHasScore(entity.getGrossTotal() != null || anyHoleEntered(entity.getHoleScores()));
         return response;
+    }
+
+    private static boolean anyHoleEntered(Integer[] holes) {
+        if (holes == null) return false;
+        for (Integer h : holes) {
+            if (h != null && h > 0) return true;
+        }
+        return false;
     }
 
     // ─── Getters / Setters ──────────────────────────────────────────────────
@@ -52,4 +83,34 @@ public class TournamentPlayerResponse {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public String getVgaCode() { return vgaCode; }
+    public void setVgaCode(String vgaCode) { this.vgaCode = vgaCode; }
+
+    public String getDivisionCode() { return divisionCode; }
+    public void setDivisionCode(String divisionCode) { this.divisionCode = divisionCode; }
+
+    public Integer getPlayingHandicap() { return playingHandicap; }
+    public void setPlayingHandicap(Integer playingHandicap) { this.playingHandicap = playingHandicap; }
+
+    public Integer getFlightNumber() { return flightNumber; }
+    public void setFlightNumber(Integer flightNumber) { this.flightNumber = flightNumber; }
+
+    public Integer getGrossTotal() { return grossTotal; }
+    public void setGrossTotal(Integer grossTotal) { this.grossTotal = grossTotal; }
+
+    public Integer[] getHoleScores() { return holeScores; }
+    public void setHoleScores(Integer[] holeScores) { this.holeScores = holeScores; }
+
+    public boolean isHasScore() { return hasScore; }
+    public void setHasScore(boolean hasScore) { this.hasScore = hasScore; }
+
+    public Integer getBirdieCount() { return birdieCount; }
+    public void setBirdieCount(Integer birdieCount) { this.birdieCount = birdieCount; }
+
+    public Integer getEagleCount() { return eagleCount; }
+    public void setEagleCount(Integer eagleCount) { this.eagleCount = eagleCount; }
 }

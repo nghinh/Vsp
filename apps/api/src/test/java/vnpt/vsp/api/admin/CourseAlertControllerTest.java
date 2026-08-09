@@ -157,15 +157,15 @@ class CourseAlertControllerTest {
     @Test
     void listAlerts_filtersByTargetTypeAndId() {
         // Given
-        UUID targetId = UUID.randomUUID();
+        Long targetId = 42L;
         CourseAlert courseAlert = createAlert(1L, createValidRequest());
         courseAlert.setCourseId(targetId);
-        when(alertService.listAlerts(any(), eq(AlertTargetType.COURSE), eq(targetId), any(), any(), any()))
+        when(alertService.listAlerts(any(), eq(AlertTargetType.COURSE), eq("42"), any(), any(), any()))
                 .thenReturn(List.of(courseAlert));
 
         // When
         ResponseEntity<CourseAlertListResponse> response = controller.listAlerts(
-                authentication, null, AlertTargetType.COURSE, targetId, null, null, null, null, 20);
+                authentication, null, AlertTargetType.COURSE, "42", null, null, null, null, 20);
 
         // Then
         assertEquals(200, response.getStatusCode().value());
@@ -344,7 +344,7 @@ class CourseAlertControllerTest {
 
     private CourseAlertCreateRequest createValidRequest() {
         CourseAlertCreateRequest request = new CourseAlertCreateRequest();
-        request.setCourseId(UUID.randomUUID());
+        request.setCourseId(42L);
         request.setAlertType(AlertType.SAFETY);
         request.setTitle("Lightning Advisory");
         request.setBody("Lightning detected within 10km. Seek shelter immediately.");

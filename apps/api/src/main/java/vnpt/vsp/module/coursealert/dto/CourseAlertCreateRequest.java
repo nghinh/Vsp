@@ -16,9 +16,11 @@ public class CourseAlertCreateRequest {
 
     // ─── Targeting fields (at least one required) ───────────────────────────
 
-    private UUID facilityId;
-    private UUID courseId;
-    private UUID holeId;
+    // facility, course and hole are BIGSERIAL keys; flight and group are UUIDs.
+    // See V35 — these three were UUID and could never match a real row.
+    private Long facilityId;
+    private Long courseId;
+    private Long holeId;
     private UUID flightId;
     private UUID groupId;
 
@@ -52,14 +54,14 @@ public class CourseAlertCreateRequest {
 
     // ─── Getters and Setters ───────────────────────────────────────────────
 
-    public UUID getFacilityId() { return facilityId; }
-    public void setFacilityId(UUID facilityId) { this.facilityId = facilityId; }
+    public Long getFacilityId() { return facilityId; }
+    public void setFacilityId(Long facilityId) { this.facilityId = facilityId; }
 
-    public UUID getCourseId() { return courseId; }
-    public void setCourseId(UUID courseId) { this.courseId = courseId; }
+    public Long getCourseId() { return courseId; }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
 
-    public UUID getHoleId() { return holeId; }
-    public void setHoleId(UUID holeId) { this.holeId = holeId; }
+    public Long getHoleId() { return holeId; }
+    public void setHoleId(Long holeId) { this.holeId = holeId; }
 
     public UUID getFlightId() { return flightId; }
     public void setFlightId(UUID flightId) { this.flightId = flightId; }

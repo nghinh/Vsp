@@ -82,7 +82,7 @@ class FlywaySchemaMatchesEntityModelTest {
      * {@code 001_baseline.sql}) shows up here as a number, not as a log line at
      * INFO that nobody read.
      */
-    private static final int EXPECTED_MIGRATIONS = 35;
+    private static final int EXPECTED_MIGRATIONS = 39;
 
     private static final String SCRATCH_DB = "vsp_flyway_schema_check";
 
@@ -148,6 +148,20 @@ class FlywaySchemaMatchesEntityModelTest {
         // Flyway reporting success over a truncated run.
         assertTrue(tableExists("shots"), "V34 must create the tables no earlier migration does");
         assertTrue(tableExists("course_package_manifest"), "V32 must have run");
+
+        // V35 retyped the alert targets from UUID to the BIGSERIAL keys the
+        // targeted tables actually use. Hibernate's validate would have caught
+        // a mismatch, but say it here so a revert names itself.
+        assertEquals("bigint", columnType("course_alerts", "course_id"),
+                "V35 must leave course_alerts.course_id as courses.id's type");
+        assertEquals("uuid", columnType("course_alerts", "flight_id"),
+                "flights really are UUID-keyed; V35 must not have touched this one");
+
+        // V36 opened the roster to players who are not app accounts. Both of
+        // these are what makes a club outing importable at all.
+        assertEquals("YES", columnNullable("tournament_players", "player_id"),
+                "V36 must let a guest be entered by name alone");
+        assertTrue(tableExists("tournament_technical_entries"), "V36 must have run");
         assertTrue(tableExists("geometry_corrections") || tableExists("course_corrections"),
                 "V33 must have run");
 
@@ -167,6 +181,13 @@ class FlywaySchemaMatchesEntityModelTest {
                         + "WHERE table_schema = 'public' AND table_name = ?",
                 Integer.class, table);
         return n != null && n > 0;
+    }
+
+    private String columnNullable(String table, String column) {
+        return jdbc.queryForObject(
+                "SELECT is_nullable FROM information_schema.columns "
+                        + "WHERE table_schema = 'public' AND table_name = ? AND column_name = ?",
+                String.class, table, column);
     }
 
     private String columnType(String table, String column) {

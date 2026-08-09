@@ -103,15 +103,17 @@ public class CourseAlertServiceImpl implements CourseAlertService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CourseAlert> listAlerts(AlertType alertType, AlertTargetType targetType, UUID targetId,
+    public List<CourseAlert> listAlerts(AlertType alertType, AlertTargetType targetType, String targetId,
                                          DeliveryStatus deliveryStatus, OffsetDateTime from, OffsetDateTime to) {
         // For simplicity, use findAll and filter in-memory.
         // A more optimized implementation would add repository query methods.
+        Object wanted = targetType == null ? null : resolveTargetId(targetType, targetId);
+
         List<CourseAlert> all = alertRepository.findAll();
 
         return all.stream()
                 .filter(a -> alertType == null || a.getAlertType() == alertType)
-                .filter(a -> targetType == null || matchesTarget(a, targetType, targetId))
+                .filter(a -> targetType == null || matchesTarget(a, targetType, wanted))
                 .filter(a -> deliveryStatus == null || a.getDeliveryStatus() == deliveryStatus)
                 .filter(a -> from == null || (a.getEffectiveAt() != null && !a.getEffectiveAt().isBefore(from)))
                 .filter(a -> to == null || (a.getEffectiveAt() != null && !a.getEffectiveAt().isAfter(to)))
@@ -227,34 +229,76 @@ public class CourseAlertServiceImpl implements CourseAlertService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CourseAlert> getActiveAlertsForTarget(AlertTargetType targetType, UUID targetId) {
+    public List<CourseAlert> getActiveAlertsForTarget(AlertTargetType targetType, String targetId) {
         OffsetDateTime now = OffsetDateTime.now();
+
+        // Resolved before the query, not inside a filter: an id that cannot
+        // belong to this scope is a bad request whether or not any rows happen
+        // to exist to compare it against.
+        Object wanted = resolveTargetId(targetType, targetId);
 
         return switch (targetType) {
             case FACILITY -> alertRepository.findActiveAlerts(now).stream()
-                    .filter(a -> targetId.equals(a.getFacilityId()))
+                    .filter(a -> wanted.equals(a.getFacilityId()))
                     .toList();
-            case COURSE -> alertRepository.findActiveAlertsByCourseId(targetId, now);
-            case HOLE -> alertRepository.findActiveAlertsByHoleId(targetId, now);
+            case COURSE -> alertRepository.findActiveAlertsByCourseId((Long) wanted, now);
+            case HOLE -> alertRepository.findActiveAlertsByHoleId((Long) wanted, now);
             case FLIGHT, GROUP -> alertRepository.findActiveAlerts(now).stream()
                     .filter(a -> targetType == AlertTargetType.FLIGHT
-                            ? targetId.equals(a.getFlightId())
-                            : targetId.equals(a.getGroupId()))
+                            ? wanted.equals(a.getFlightId())
+                            : wanted.equals(a.getGroupId()))
                     .toList();
         };
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────
 
-    private boolean matchesTarget(CourseAlert alert, AlertTargetType targetType, UUID targetId) {
-        if (targetId == null) return true;
+    private static boolean matchesTarget(CourseAlert alert, AlertTargetType targetType, Object wanted) {
+        if (wanted == null) return true;
         return switch (targetType) {
-            case FACILITY -> targetId.equals(alert.getFacilityId());
-            case COURSE -> targetId.equals(alert.getCourseId());
-            case HOLE -> targetId.equals(alert.getHoleId());
-            case FLIGHT -> targetId.equals(alert.getFlightId());
-            case GROUP -> targetId.equals(alert.getGroupId());
+            case FACILITY -> wanted.equals(alert.getFacilityId());
+            case COURSE -> wanted.equals(alert.getCourseId());
+            case HOLE -> wanted.equals(alert.getHoleId());
+            case FLIGHT -> wanted.equals(alert.getFlightId());
+            case GROUP -> wanted.equals(alert.getGroupId());
         };
+    }
+
+    /**
+     * A target id, as the type its scope is keyed by.
+     *
+     * Returns a Long for facility, course and hole and a UUID for flight and
+     * group, or null when no id was given. Throws rather than returning
+     * something unmatchable: an id of the wrong shape is a question about a row
+     * that cannot exist, and answering it with an empty list reads as "no
+     * alerts" on a page whose whole job is safety warnings.
+     */
+    private static Object resolveTargetId(AlertTargetType targetType, String targetId) {
+        if (targetId == null || targetId.isBlank()) return null;
+        return switch (targetType) {
+            case FACILITY, COURSE, HOLE -> asRowId(targetId, targetType);
+            case FLIGHT, GROUP -> asUuid(targetId, targetType);
+        };
+    }
+
+    /** A facility, course or hole id — BIGSERIAL keys, see V35. */
+    private static Long asRowId(String targetId, AlertTargetType targetType) {
+        try {
+            return Long.valueOf(targetId.trim());
+        } catch (NumberFormatException e) {
+            throw new VspApiException(VspErrorCode.VALIDATION_001, "targetId",
+                    java.util.Map.of("reason", targetType + " is identified by a numeric id, got: " + targetId));
+        }
+    }
+
+    /** A flight or group id. These really are UUIDs (see V27). */
+    private static UUID asUuid(String targetId, AlertTargetType targetType) {
+        try {
+            return UUID.fromString(targetId.trim());
+        } catch (IllegalArgumentException e) {
+            throw new VspApiException(VspErrorCode.VALIDATION_001, "targetId",
+                    java.util.Map.of("reason", targetType + " is identified by a UUID, got: " + targetId));
+        }
     }
 
     private int parsePriority(String priority) {

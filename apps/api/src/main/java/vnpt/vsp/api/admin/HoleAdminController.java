@@ -122,6 +122,13 @@ public class HoleAdminController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    /**
+     * Not implemented. When it is: delete children explicitly rather than
+     * relying on ON DELETE CASCADE. The migrations declare cascades, but the
+     * dev database is built by Hibernate rather than Flyway and has none — so
+     * cascade behaviour differs between the environment you test in and the
+     * one that ships. See CourseAdminController#deleteCourse for the detail.
+     */
     @DeleteMapping("/holes/{holeId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteHole(
@@ -159,6 +166,13 @@ public class HoleAdminController {
             ));
         }
         r.setTeeBoxesCount(h.getTeeBoxes() != null ? h.getTeeBoxes().size() : 0);
+        // The DTO declared these and nothing filled them, so every hole came
+        // back with a null createdAt and the portal rendered `new Date(null)`
+        // — "Created 1/1/1970" on all eighteen cards.
+        if (h.getMetadata() != null) {
+            r.setCreatedAt(h.getMetadata().getCreatedAt());
+            r.setUpdatedAt(h.getMetadata().getUpdatedAt());
+        }
         return r;
     }
 }

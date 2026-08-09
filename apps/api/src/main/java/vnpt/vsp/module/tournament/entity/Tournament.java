@@ -41,7 +41,19 @@ public class Tournament {
     @Column(name = "end_date", nullable = false)
     private Instant endDate;
 
-    @Column(name = "tournament_policy_id")
+        /**
+     * This outing's rules as JSON — divisions, handicap cap, judging floor,
+     * countback windows, daily-CAP scale, technical prizes.
+     *
+     * Per event, because they change per event: the club's own sheets already
+     * disagree about where nhóm A ends, and the previous outing ran a different
+     * number of flights. Null until an organiser configures them.
+     */
+    @Column(name = "outing_rules", columnDefinition = "jsonb")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    private String outingRules;
+
+@Column(name = "tournament_policy_id")
     private UUID tournamentPolicyId;
 
     @Column(name = "registration_deadline")
@@ -171,4 +183,7 @@ public class Tournament {
     public void incrementLeaderboardVersion() {
         this.leaderboardVersion++;
     }
+
+    public String getOutingRules() { return outingRules; }
+    public void setOutingRules(String outingRules) { this.outingRules = outingRules; }
 }

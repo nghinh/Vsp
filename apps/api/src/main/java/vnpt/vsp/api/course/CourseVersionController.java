@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.course.CourseVersionService;
+import vnpt.vsp.module.course.PublishService;
+import vnpt.vsp.module.course.ValidationService;
+import vnpt.vsp.module.course.VersionDiffService;
 import vnpt.vsp.module.course.dto.*;
 import vnpt.vsp.module.course.entity.DataVersion;
 import vnpt.vsp.module.role.RoleService;
@@ -26,6 +29,9 @@ import java.util.UUID;
  * - GET  /courses/{courseId}/versions/{versionId}           — get version detail
  * - GET  /courses/{courseId}/versions/rollback-impact      — preview rollback impact
  * - POST /courses/{courseId}/versions/{versionId}/rollback — execute rollback
+ * - POST /courses/{courseId}/versions/{versionId}/validate — validate a draft
+ * - GET  /courses/{courseId}/versions/{versionId}/diff     — diff against published
+ * - POST /courses/{courseId}/versions/{versionId}/publish  — publish a draft
  *
  * All endpoints require COURSE_ADMIN or SUPER_ADMIN role.
  */
@@ -37,10 +43,21 @@ public class CourseVersionController {
 
     private final CourseVersionService courseVersionService;
     private final RoleService roleService;
+    private final ValidationService validationService;
+    private final VersionDiffService versionDiffService;
+    private final PublishService publishService;
 
-    public CourseVersionController(CourseVersionService courseVersionService, RoleService roleService) {
+    public CourseVersionController(
+            CourseVersionService courseVersionService,
+            RoleService roleService,
+            ValidationService validationService,
+            VersionDiffService versionDiffService,
+            PublishService publishService) {
         this.courseVersionService = courseVersionService;
         this.roleService = roleService;
+        this.validationService = validationService;
+        this.versionDiffService = versionDiffService;
+        this.publishService = publishService;
     }
 
     /**
@@ -147,6 +164,92 @@ public class CourseVersionController {
         UUID newJobId = courseVersionService.triggerPackageBuild(courseId, result.getId(), actor);
 
         return ResponseEntity.ok(RollbackResponse.fromDataVersion(result, newJobId));
+    }
+
+    /**
+     * Validate a draft version before publishing.
+     *
+     * Story 8.3 AC-1. {@link ValidationService} and its DTOs were written and
+     * this endpoint was not, so the portal's publish page called
+     * {@code POST /admin/courses/{id}/versions/{vid}/validate} — a path with no
+     * handler behind it, under an {@code /admin} prefix this controller has
+     * never had. The whole publish flow was a registered route with live UI and
+     * three 404s underneath.
+     *
+     * @return the validation report, whether or not it blocks publication
+     */
+    @PostMapping("/{versionId}/validate")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<ValidationResponse> validateVersion(
+            Authentication authentication,
+            @PathVariable Long courseId,
+            @PathVariable Long versionId) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        requireAdminRole(accountId);
+
+        log.info("POST /courses/{}/versions/{}/validate - accountId={}",
+                courseId, versionId, accountId);
+
+        return ResponseEntity.ok(validationService.validateForPublish(versionId));
+    }
+
+    /**
+     * Diff a draft version against the latest published one.
+     *
+     * Story 8.3 AC-2 — what the administrator reviews before writing a publish
+     * note.
+     */
+    @GetMapping("/{versionId}/diff")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<VersionDiff> getVersionDiff(
+            Authentication authentication,
+            @PathVariable Long courseId,
+            @PathVariable Long versionId) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        requireAdminRole(accountId);
+
+        log.info("GET /courses/{}/versions/{}/diff - accountId={}",
+                courseId, versionId, accountId);
+
+        return ResponseEntity.ok(versionDiffService.generateDiff(versionId));
+    }
+
+    /**
+     * Publish a draft version.
+     *
+     * Story 8.3 AC-3. Delegates to {@link PublishService}, which validates,
+     * transitions DRAFT → PUBLISHED, writes the audit record and queues the
+     * package build.
+     *
+     * A version that fails validation is refused with 422 and the report that
+     * refused it, so the portal can show the administrator what to fix rather
+     * than a bare failure.
+     */
+    @PostMapping("/{versionId}/publish")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> publishVersion(
+            Authentication authentication,
+            @PathVariable Long courseId,
+            @PathVariable Long versionId,
+            @Valid @RequestBody PublishVersionRequest request) {
+
+        Long accountId = (Long) authentication.getPrincipal();
+        String actor = authentication.getName();
+        requireAdminRole(accountId);
+
+        log.info("POST /courses/{}/versions/{}/publish - accountId={}, actor={}",
+                courseId, versionId, accountId, actor);
+
+        try {
+            return ResponseEntity.ok(
+                    publishService.publishVersion(versionId, request.publishNote(), actor));
+        } catch (PublishService.PublishValidationException e) {
+            // The report is the useful part of this failure: it says which
+            // geometry, metadata or licence check blocked the publish.
+            return ResponseEntity.unprocessableEntity().body(e.getValidationResponse());
+        }
     }
 
     private void requireAdminRole(Long accountId) {

@@ -135,12 +135,16 @@ public interface DataQualityRepository extends JpaRepository<Course, Long> {
      * If courseId is provided, restrict to that course.
      * If facilityId is provided, restrict to courses in that facility.
      */
+    // The table is course_corrections and the timestamp is submitted_at.
+    // These three queries named `corrections` and `reported_at`, neither of
+    // which exists, so every load of the data-quality dashboard 500'd on the
+    // first metric — native SQL, so nothing caught it until it ran.
     @Query(value = """
         SELECT COUNT(corr.id)
-        FROM corrections corr
+        FROM course_corrections corr
         JOIN courses c ON c.id = corr.course_id
-        WHERE corr.reported_at >= :fromInstant
-          AND corr.reported_at <= :toInstant
+        WHERE corr.submitted_at >= :fromInstant
+          AND corr.submitted_at <= :toInstant
           AND (:courseId IS NULL OR corr.course_id = :courseId)
           AND (:facilityId IS NULL OR c.facility_id = :facilityId)
         """, nativeQuery = true)
@@ -157,12 +161,12 @@ public interface DataQualityRepository extends JpaRepository<Course, Long> {
      * (reviewedAt - reportedAt) within the date range.
      */
     @Query(value = """
-        SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (corr.reviewed_at - corr.reported_at))), 0)
-        FROM corrections corr
+        SELECT COALESCE(AVG(EXTRACT(EPOCH FROM (corr.reviewed_at - corr.submitted_at))), 0)
+        FROM course_corrections corr
         JOIN courses c ON c.id = corr.course_id
         WHERE corr.reviewed_at IS NOT NULL
-          AND corr.reported_at >= :fromInstant
-          AND corr.reported_at <= :toInstant
+          AND corr.submitted_at >= :fromInstant
+          AND corr.submitted_at <= :toInstant
           AND (:courseId IS NULL OR corr.course_id = :courseId)
           AND (:facilityId IS NULL OR c.facility_id = :facilityId)
         """, nativeQuery = true)
@@ -177,12 +181,12 @@ public interface DataQualityRepository extends JpaRepository<Course, Long> {
      * (used to compute median).
      */
     @Query(value = """
-        SELECT EXTRACT(EPOCH FROM (corr.reviewed_at - corr.reported_at))
-        FROM corrections corr
+        SELECT EXTRACT(EPOCH FROM (corr.reviewed_at - corr.submitted_at))
+        FROM course_corrections corr
         JOIN courses c ON c.id = corr.course_id
         WHERE corr.reviewed_at IS NOT NULL
-          AND corr.reported_at >= :fromInstant
-          AND corr.reported_at <= :toInstant
+          AND corr.submitted_at >= :fromInstant
+          AND corr.submitted_at <= :toInstant
           AND (:courseId IS NULL OR corr.course_id = :courseId)
           AND (:facilityId IS NULL OR c.facility_id = :facilityId)
         ORDER BY 1

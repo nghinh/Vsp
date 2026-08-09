@@ -38,13 +38,13 @@ public class CourseAlert {
     // ─── Targeting fields (AC-1) ─────────────────────────────────────────────
 
     @Column(name = "facility_id")
-    private UUID facilityId;
+    private Long facilityId;
 
     @Column(name = "course_id")
-    private UUID courseId;
+    private Long courseId;
 
     @Column(name = "hole_id")
-    private UUID holeId;
+    private Long holeId;
 
     @Column(name = "flight_id")
     private UUID flightId;
@@ -151,27 +151,27 @@ public class CourseAlert {
         this.id = id;
     }
 
-    public UUID getFacilityId() {
+    public Long getFacilityId() {
         return facilityId;
     }
 
-    public void setFacilityId(UUID facilityId) {
+    public void setFacilityId(Long facilityId) {
         this.facilityId = facilityId;
     }
 
-    public UUID getCourseId() {
+    public Long getCourseId() {
         return courseId;
     }
 
-    public void setCourseId(UUID courseId) {
+    public void setCourseId(Long courseId) {
         this.courseId = courseId;
     }
 
-    public UUID getHoleId() {
+    public Long getHoleId() {
         return holeId;
     }
 
-    public void setHoleId(UUID holeId) {
+    public void setHoleId(Long holeId) {
         this.holeId = holeId;
     }
 

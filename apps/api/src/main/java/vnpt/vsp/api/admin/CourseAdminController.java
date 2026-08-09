@@ -120,6 +120,24 @@ public class CourseAdminController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    /**
+     * Not implemented — and when it is, do not lean on the database to do it.
+     *
+     * <p>The migrations declare {@code ON DELETE CASCADE} from courses down
+     * through holes and their geometry. A database built by Flyway therefore
+     * removes the whole tree from one statement. The dev database does not:
+     * the dev profile disables Flyway and lets Hibernate build the schema from
+     * the entities, and Hibernate emits plain foreign keys — every one of the
+     * twenty-two constraints pointing at courses, holes and golf_facilities is
+     * NO ACTION there.</p>
+     *
+     * <p>So a delete written against cascade behaviour fails in dev and works
+     * in production, and one written to satisfy dev quietly relies on nothing.
+     * Either way the environment you tested in is not the one that decides.
+     * Delete the children explicitly, in one transaction — see
+     * scripts/dev/cleanup_qa_fixtures.sql, which had to learn this the hard
+     * way and lists the dependent tables as read from pg_constraint.</p>
+     */
     @DeleteMapping("/courses/{courseId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteCourse(

@@ -139,6 +139,31 @@ class AdminEndpointAuthorizationTest {
                 // course rollback.
                 new Endpoint("CourseVersionController", HttpMethod.GET, "/courses/1/versions", RoleName.COURSE_ADMIN),
 
+                // Geometry review. This is the one action that flips a hole to
+                // VERIFIED, which is what the mobile app's provenance gate reads
+                // before it will draw a strategic map or walk a golfer to a
+                // hole — so a golfer must not be able to reach it about their
+                // own course data.
+                new Endpoint("GeometryReviewController", HttpMethod.GET, "/admin/courses/1/geometry/review", RoleName.COURSE_ADMIN),
+                // A valid body on purpose: @Valid binding runs before method
+                // security, so an empty one answers 400 and this row would
+                // prove nothing about who is allowed in.
+                new Endpoint("GeometryReviewController", HttpMethod.POST, "/admin/courses/1/geometry/verify", RoleName.COURSE_ADMIN,
+                        "{\"holeNumbers\":[1],\"note\":\"Checked against imagery\"}"),
+                // Par decides what every golfer's over/under-par figure is
+                // measured against, so it is gated exactly like verification.
+                new Endpoint("GeometryReviewController", HttpMethod.POST, "/admin/courses/1/geometry/par", RoleName.COURSE_ADMIN,
+                        "{\"holes\":[{\"holeNumber\":1,\"par\":4}],\"note\":\"From the printed scorecard\"}"),
+
+                // Package builds. The controller's own comment claimed
+                // COURSE_ADMIN was required and no annotation enforced it, so a
+                // freshly registered golfer could trigger one and get a job id.
+                // A build republishes the course package, which tells every
+                // device holding that course to download it again.
+                new Endpoint("PackageBuildController", HttpMethod.POST, "/courses/1/packages/build", RoleName.COURSE_ADMIN,
+                        "{\"dataVersionId\":1,\"triggeredBy\":\"test\"}"),
+                new Endpoint("PackageBuildController", HttpMethod.GET, "/courses/1/packages/build/jobs", RoleName.COURSE_ADMIN),
+
                 // The tournament surface and the loyalty surface, likewise
                 // outside /admin/**, likewise annotation-only. Every one of
                 // these rows was reachable by any signed-in golfer until the
@@ -163,8 +188,30 @@ class AdminEndpointAuthorizationTest {
                 new Endpoint("TournamentResultController", HttpMethod.POST,
                         "/tournaments/" + SOME_TOURNAMENT + "/results/publish", RoleName.TOURNAMENT_DIRECTOR),
 
+                // Running a club outing. The score endpoint is the one that
+                // matters here: a golfer who could reach it could type their
+                // own card, and the prizes are decided off exactly these
+                // numbers minutes later.
+                new Endpoint("OutingController", HttpMethod.POST,
+                        "/tournaments/" + SOME_TOURNAMENT + "/outing/scores",
+                        RoleName.TOURNAMENT_DIRECTOR, "[]"),
+                new Endpoint("OutingController", HttpMethod.PUT,
+                        "/tournaments/" + SOME_TOURNAMENT + "/outing/roster",
+                        RoleName.TOURNAMENT_DIRECTOR, "[]"),
+                new Endpoint("OutingController", HttpMethod.GET,
+                        "/tournaments/" + SOME_TOURNAMENT + "/outing/results",
+                        RoleName.TOURNAMENT_DIRECTOR),
+                new Endpoint("OutingController", HttpMethod.POST,
+                        "/tournaments/" + SOME_TOURNAMENT + "/outing/technical",
+                        RoleName.TOURNAMENT_DIRECTOR, "[]"),
+
                 // Reading a loyalty account by id reads somebody else's balance
                 // and, next door, their whole transaction history.
+                // Listing every policy exposes each club's tie-break and
+                // handicap rules; it is a read a golfer must not have.
+                new Endpoint("TournamentPolicyController", HttpMethod.GET,
+                        "/tournament-policies", RoleName.TOURNAMENT_DIRECTOR),
+
                 new Endpoint("LoyaltyController", HttpMethod.GET,
                         "/loyalty/accounts/some-account", RoleName.SUPER_ADMIN)
         );
@@ -297,7 +344,12 @@ class AdminEndpointAuthorizationTest {
             if (token != null) {
                 builder.header("Authorization", "Bearer " + token);
             }
-            if (method == HttpMethod.POST) {
+            // PUT and PATCH bind a body exactly as POST does. Sending it only
+            // for POST meant a PUT row was answered 400 for the missing body
+            // and never reached the authorization decision it was written to
+            // check — the row passed the anonymous case and quietly proved
+            // nothing about the other two.
+            if (method == HttpMethod.POST || method == HttpMethod.PUT || method == HttpMethod.PATCH) {
                 builder.contentType(MediaType.APPLICATION_JSON).content(body);
             }
             return builder;
@@ -528,9 +580,11 @@ class AdminEndpointAuthorizationTest {
             // payment.
             "PaymentController.createPaymentIntent",
             "PaymentController.confirmPayment",
-            "PaymentController.refundPayment",
-            // Starts a course package build for any course id.
-            "PackageBuildController.triggerBuild"
+            "PaymentController.refundPayment"
+            // PackageBuildController.triggerBuild used to be here. It is now
+            // annotated: a freshly registered golfer could trigger a build and
+            // got a job id back, and a build republishes the course package,
+            // which tells every device holding that course to download it again.
     );
 
     /**

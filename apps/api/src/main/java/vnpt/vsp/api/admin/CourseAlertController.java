@@ -81,7 +81,9 @@ public class CourseAlertController {
             Authentication authentication,
             @RequestParam(required = false) AlertType alertType,
             @RequestParam(required = false) AlertTargetType targetType,
-            @RequestParam(required = false) UUID targetId,
+            // A string: facility, course and hole are numeric ids, flight and
+            // group are UUIDs. The service parses it against the scope.
+            @RequestParam(required = false) String targetId,
             @RequestParam(required = false) DeliveryStatus deliveryStatus,
             @RequestParam(required = false) OffsetDateTime from,
             @RequestParam(required = false) OffsetDateTime to,

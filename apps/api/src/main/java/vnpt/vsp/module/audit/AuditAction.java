@@ -94,5 +94,21 @@ public enum AuditAction {
     GEOMETRY_VALIDATED,
 
     // Data quality (Story 9.4)
-    DATA_QUALITY_METRICS_EXPORT
+    DATA_QUALITY_METRICS_EXPORT,
+
+    /// A person confirmed that a hole's imported coordinates are right.
+    ///
+    /// This is the action that lets the app draw a strategic map for that hole
+    /// and let detection score a position against it, so the audit trail has to
+    /// be able to name who made the claim and when.
+    GEOMETRY_VERIFIED,
+
+    /// A person corrected a hole's par from the course's scorecard.
+    ///
+    /// Separate from GEOMETRY_VERIFIED because it is a different claim from a
+    /// different source: coordinates are checked against a map, par against a
+    /// scorecard. Every over/under-par figure a golfer sees is arithmetic
+    /// against this number, so who changed it, to what, and on what authority
+    /// all have to be answerable.
+    HOLE_PAR_CORRECTED
 }

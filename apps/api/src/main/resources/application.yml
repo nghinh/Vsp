@@ -111,6 +111,32 @@ resilience4j:
 
 # Admin MFA
 vsp:
+  # Satellite imagery for the hole map, served to the app at /config/basemap.
+  #
+  # Unset by default, and an unset deployment is a working one: the app says it
+  # has no imagery and the measuring tool keeps working over a plain canvas.
+  # Setting it here rather than at app build time means imagery can be switched
+  # on for a pilot, or off after a billing surprise, without shipping a release
+  # — a --dart-define cannot be changed on a phone that already has the app.
+  #
+  # mapbox-access-token MUST be a PUBLIC token (pk.). Public tokens are meant
+  # for client distribution and are restricted by URL at Mapbox's end; a secret
+  # token (sk.) is account credentials and is refused rather than served.
+  #
+  # satellite-tile-url is for an operator with their own licensed imagery — a
+  # club's orthophotos, a national imagery service. It wins over Mapbox, and it
+  # is ignored unless satellite-attribution is also set: imagery we cannot
+  # credit is imagery we do not display.
+  basemap:
+    mapbox-access-token: "${MAPBOX_ACCESS_TOKEN:}"
+    satellite-tile-url: "${VSP_SATELLITE_TILE_URL:}"
+    satellite-attribution: "${VSP_SATELLITE_ATTRIBUTION:}"
+    # Deepest zoom that endpoint actually serves. 0 leaves it to the client.
+    # Setting it accurately matters: a client that keeps requesting past the
+    # last level gets 404s and shows nothing at exactly the zoom a golfer uses
+    # to look at a green.
+    satellite-max-zoom: ${VSP_SATELLITE_MAX_ZOOM:0}
+
   mfa:
     # How often one account may fail a TOTP check. A six-digit code with RFC 6238's
     # ±1 step tolerance leaves ~3 live codes in a million, so five attempts per

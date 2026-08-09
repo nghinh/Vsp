@@ -49,7 +49,7 @@ class CourseAlertServiceImplTest {
     private CourseAlertServiceImpl alertService;
 
     private static final String CREATED_BY = "admin@vsp.com";
-    private static final UUID COURSE_ID = UUID.randomUUID();
+    private static final Long COURSE_ID = 42L;
 
     @BeforeEach
     void setUp() {
@@ -86,7 +86,7 @@ class CourseAlertServiceImplTest {
     void sendAlert_withFacilityTarget_succeeds() {
         // Given
         CourseAlertCreateRequest request = createValidRequest();
-        request.setFacilityId(UUID.randomUUID());
+        request.setFacilityId(7L);
         request.setAlertType(AlertType.PROMOTION);
 
         CourseAlert savedAlert = createAlert(2L, request);
@@ -105,7 +105,7 @@ class CourseAlertServiceImplTest {
     void sendAlert_withHoleTarget_succeeds() {
         // Given
         CourseAlertCreateRequest request = createValidRequest();
-        request.setHoleId(UUID.randomUUID());
+        request.setHoleId(310L);
         request.setAlertType(AlertType.SAFETY);
 
         CourseAlert savedAlert = createAlert(3L, request);
@@ -324,13 +324,13 @@ class CourseAlertServiceImplTest {
         courseAlert.setCourseId(COURSE_ID);
         CourseAlert facilityAlert = createAlert(2L, createValidRequest());
         facilityAlert.setCourseId(null); // clear courseId so only courseAlert matches
-        facilityAlert.setFacilityId(UUID.randomUUID());
+        facilityAlert.setFacilityId(7L);
 
         when(alertRepository.findAll()).thenReturn(List.of(courseAlert, facilityAlert));
 
         // When
         List<CourseAlert> results = alertService.listAlerts(
-                null, AlertTargetType.COURSE, COURSE_ID, null, null, null);
+                null, AlertTargetType.COURSE, String.valueOf(COURSE_ID), null, null, null);
 
         // Then
         assertEquals(1, results.size());
@@ -344,7 +344,7 @@ class CourseAlertServiceImplTest {
     @Test
     void getActiveAlertsForTarget_returnsOnlyActiveAlerts() {
         // Given
-        UUID targetId = UUID.randomUUID();
+        Long targetId = 42L;
         CourseAlert activeAlert = createAlert(1L, createValidRequest());
         activeAlert.setCourseId(targetId);
         activeAlert.setEffectiveAt(OffsetDateTime.now().minusHours(1));
@@ -356,11 +356,43 @@ class CourseAlertServiceImplTest {
 
         // When
         List<CourseAlert> results = alertService.getActiveAlertsForTarget(
-                AlertTargetType.COURSE, targetId);
+                AlertTargetType.COURSE, String.valueOf(targetId));
 
         // Then
         assertEquals(1, results.size());
         assertEquals(targetId, results.get(0).getCourseId());
+    }
+
+    @Test
+    void getActiveAlertsForTarget_rejectsAUuidForACourse() {
+        // Courses are BIGSERIAL (V16); the alert columns were UUID until V35,
+        // which is why this had to be sayable at all. A caller that still sends
+        // a UUID is asking about a row that cannot exist — that must be an
+        // error, not an empty list, because an empty list reads as "no alerts"
+        // and this is the safety-warning path.
+        VspApiException e = assertThrows(VspApiException.class, () ->
+                alertService.getActiveAlertsForTarget(
+                        AlertTargetType.COURSE, "3f1d5c8e-0000-4000-8000-000000000000"));
+
+        assertEquals(VspErrorCode.VALIDATION_001, e.getErrorCode());
+        verifyNoInteractions(alertRepository);
+    }
+
+    @Test
+    void getActiveAlertsForTarget_rejectsANumberForAFlight() {
+        // The converse: flights really are UUIDs (V27).
+        VspApiException e = assertThrows(VspApiException.class, () ->
+                alertService.getActiveAlertsForTarget(AlertTargetType.FLIGHT, "42"));
+
+        assertEquals(VspErrorCode.VALIDATION_001, e.getErrorCode());
+    }
+
+    @Test
+    void listAlerts_rejectsAnIdThatCannotBelongToTheScope() {
+        // Same rule on the filter path, where a silently-empty result would
+        // look like "this course has never had an alert".
+        assertThrows(VspApiException.class, () -> alertService.listAlerts(
+                null, AlertTargetType.COURSE, "not-an-id", null, null, null));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

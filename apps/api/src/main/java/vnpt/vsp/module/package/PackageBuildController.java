@@ -1,6 +1,7 @@
 package vnpt.vsp.module.pkg;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.module.pkg.entity.PackageBuildJob;
@@ -16,6 +17,17 @@ import java.util.UUID;
  * - GET  /courses/{courseId}/packages/build/jobs/{jobId} — get specific job status
  *
  * All endpoints require COURSE_ADMIN or higher RBAC.
+ *
+ * <p>That sentence was in this comment from the first commit and was not true:
+ * there were no {@code @PreAuthorize} annotations, and this controller sits
+ * outside {@code /admin/**}, which is the only path the security chain gates by
+ * URL. Any signed-in golfer could trigger a build — verified against a freshly
+ * registered account, which got HTTP 200 and a job id. Each build runs the whole
+ * pipeline and publishes a new manifest version, so every device holding that
+ * course is then told an update is available and re-downloads it. A comment
+ * describing a control nobody implemented is worse than no comment: it is what
+ * stops the next reader from checking.</p>
+ *
  * Per Story 4.2 PKG-PUBLISH-3 AC-1 (API to trigger build), AC-2 (API for portal polling).
  */
 @RestController
@@ -33,9 +45,10 @@ public class PackageBuildController {
      * Idempotent — returns existing job ID if a non-terminal job is already in progress.
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<TriggerBuildResponse> triggerBuild(
             @PathVariable Long courseId,
-            @RequestBody TriggerBuildRequest request) {
+            @jakarta.validation.Valid @RequestBody TriggerBuildRequest request) {
 
         UUID jobId = packageService.triggerPackageBuild(
                 courseId,
@@ -50,6 +63,7 @@ public class PackageBuildController {
      * List all build jobs for a course (newest first).
      */
     @GetMapping("/jobs")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN', 'AUDITOR')")
     public ResponseEntity<PackageBuildJobListResponse> listBuildJobs(
             @PathVariable Long courseId,
             @RequestParam(defaultValue = "0") int page,
@@ -76,6 +90,7 @@ public class PackageBuildController {
      * Get a specific build job by ID.
      */
     @GetMapping("/jobs/{jobId}")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN', 'AUDITOR')")
     public ResponseEntity<PackageBuildJobDto> getBuildJob(
             @PathVariable Long courseId,
             @PathVariable UUID jobId) {
@@ -107,7 +122,19 @@ public class PackageBuildController {
     // ─── Request/Response DTOs (inner static classes) ────────────────────────
 
     public static class TriggerBuildRequest {
+        /**
+         * Which published version to package. Required.
+         *
+         * package_build_job.data_version_id is NOT NULL, so omitting this used
+         * to reach the insert and come back as a 500 "contact support with the
+         * correlation ID" — for a request that was simply missing a field. The
+         * caller can act on "dataVersionId is required"; they can do nothing
+         * with a correlation ID.
+         */
+        @jakarta.validation.constraints.NotNull(message = "dataVersionId is required")
         private Long dataVersionId;
+
+        @jakarta.validation.constraints.NotBlank(message = "triggeredBy is required")
         private String triggeredBy;
 
         public Long getDataVersionId() { return dataVersionId; }

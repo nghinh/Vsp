@@ -19,4 +19,44 @@ public interface HoleRepository extends JpaRepository<Hole, Long> {
     @org.springframework.data.jpa.repository.Query(
         "SELECT COALESCE(SUM(h.par), 0) FROM Hole h WHERE h.course.id = :courseId")
     int sumParByCourseId(@org.springframework.data.repository.query.Param("courseId") Long courseId);
+
+    /**
+     * How many of a course's holes the app will actually treat as surveyed.
+     *
+     * <p>Uses the mobile provenance gate verbatim — VERIFIED and not class D.
+     * A course listing badged itself from the course's {@code data_version}
+     * metadata instead, which geometry review never touches, so Long Thành
+     * showed "Chưa xác minh" to every golfer while all eighteen of its holes
+     * were verified and its strategic map was drawing. The badge has to answer
+     * the same question the map does.</p>
+     */
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT COUNT(h) FROM Hole h
+        WHERE h.course.id = :courseId
+          AND h.metadata.verificationStatus = vnpt.vsp.module.course.entity.VerificationStatus.VERIFIED
+          AND h.metadata.accuracyClass <> vnpt.vsp.module.course.entity.AccuracyClass.D_UNVERIFIED_COMMUNITY
+        """)
+    long countSurveyedHoles(
+            @org.springframework.data.repository.query.Param("courseId") Long courseId);
+
+    long countByCourseId(Long courseId);
+
+    /**
+     * The weakest accuracy class among a course's holes.
+     *
+     * <p>The client's badge needs the class as well as the status — it treats
+     * "verified" plus class D as unverified, exactly as the hole map does. So
+     * deriving one from the holes and leaving the other on the course's stale
+     * {@code data_version} left the two disagreeing, and the badge kept showing
+     * the old answer.</p>
+     *
+     * <p>Weakest rather than best, because a course badge describes what a
+     * golfer can rely on across the whole course. Enum names sort A, B, C, D
+     * from best to worst, so the maximum name is the weakest class.</p>
+     */
+    @org.springframework.data.jpa.repository.Query("""
+        SELECT MAX(h.metadata.accuracyClass) FROM Hole h WHERE h.course.id = :courseId
+        """)
+    vnpt.vsp.module.course.entity.AccuracyClass weakestAccuracyClass(
+            @org.springframework.data.repository.query.Param("courseId") Long courseId);
 }

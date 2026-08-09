@@ -20,8 +20,46 @@ public class TournamentResult {
     @JoinColumn(name = "tournament_id", nullable = false)
     private Tournament tournament;
 
-    @Column(name = "player_id", nullable = false)
+    /** The golfer account, when the player has one. Null for a guest — see V36. */
+    @Column(name = "player_id")
     private Long playerId;
+
+    /** The roster entry this result belongs to. The reliable key for a guest. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "tournament_player_id")
+    private TournamentPlayer tournamentPlayer;
+
+    @Column(name = "division_code", length = 8)
+    private String divisionCode;
+
+    /** The prize won, in the division's own words, or null for no prize. */
+    @Column(name = "prize_title", length = 120)
+    private String prizeTitle;
+
+    @Column(name = "playing_handicap")
+    private Integer playingHandicap;
+
+    @Column(name = "net_score")
+    private Integer netScore;
+
+    /**
+     * Net against par after the outing's floor — the number the prize was
+     * actually decided on. Frozen here so a published result can be re-read
+     * without re-running the rules that produced it, which may since have
+     * changed.
+     */
+    @Column(name = "judging_score")
+    private Integer judgingScore;
+
+    @Column(name = "daily_cap_adjustment")
+    private Integer dailyCapAdjustment;
+
+    @Column(name = "eagle_count")
+    private Integer eagleCount;
+
+    /** Every configured tie-break came out level; the organisers had to choose. */
+    @Column(name = "tied_unresolved", nullable = false)
+    private boolean tiedUnresolved = false;
 
     @Column(name = "rank", nullable = false)
     private int rank;
@@ -102,4 +140,31 @@ public class TournamentResult {
 
     public Instant getPublishedAt() { return publishedAt; }
     public void setPublishedAt(Instant publishedAt) { this.publishedAt = publishedAt; }
+
+    public TournamentPlayer getTournamentPlayer() { return tournamentPlayer; }
+    public void setTournamentPlayer(TournamentPlayer tournamentPlayer) { this.tournamentPlayer = tournamentPlayer; }
+
+    public String getDivisionCode() { return divisionCode; }
+    public void setDivisionCode(String divisionCode) { this.divisionCode = divisionCode; }
+
+    public String getPrizeTitle() { return prizeTitle; }
+    public void setPrizeTitle(String prizeTitle) { this.prizeTitle = prizeTitle; }
+
+    public Integer getPlayingHandicap() { return playingHandicap; }
+    public void setPlayingHandicap(Integer playingHandicap) { this.playingHandicap = playingHandicap; }
+
+    public Integer getNetScore() { return netScore; }
+    public void setNetScore(Integer netScore) { this.netScore = netScore; }
+
+    public Integer getJudgingScore() { return judgingScore; }
+    public void setJudgingScore(Integer judgingScore) { this.judgingScore = judgingScore; }
+
+    public Integer getDailyCapAdjustment() { return dailyCapAdjustment; }
+    public void setDailyCapAdjustment(Integer dailyCapAdjustment) { this.dailyCapAdjustment = dailyCapAdjustment; }
+
+    public Integer getEagleCount() { return eagleCount; }
+    public void setEagleCount(Integer eagleCount) { this.eagleCount = eagleCount; }
+
+    public boolean isTiedUnresolved() { return tiedUnresolved; }
+    public void setTiedUnresolved(boolean tiedUnresolved) { this.tiedUnresolved = tiedUnresolved; }
 }

@@ -37,6 +37,16 @@ public class Flight {
     private StartingTee startingTee;
 
     /**
+     * The hole this flight tees off from in a shotgun start.
+     *
+     * The club's outings are shotguns — eleven flights away at 06h30 from
+     * eleven tees — and {@link StartingTee}'s FRONT/BACK cannot say which. Null
+     * for a conventional two-wave start, where the tee is the whole answer.
+     */
+    @Column(name = "starting_hole")
+    private Integer startingHole;
+
+    /**
      * Score confirmation fields — set when tournament director confirms flight scores.
      */
     @Column(name = "confirmed_at")
@@ -74,4 +84,7 @@ public class Flight {
     public boolean isConfirmed() {
         return confirmedAt != null;
     }
+
+    public Integer getStartingHole() { return startingHole; }
+    public void setStartingHole(Integer startingHole) { this.startingHole = startingHole; }
 }

@@ -71,6 +71,7 @@ public class PackageGenerationService {
     private final ObjectStorageService storageService;
     private final OperationsService operationsService;
     private final CourseRepository courseRepository;
+    private final HoleGeometryAssembler holeGeometryAssembler;
     private final ObjectMapper objectMapper;
 
     // Temporary storage for assembled files (populated in assemblePackageFiles,
@@ -83,12 +84,14 @@ public class PackageGenerationService {
             ObjectStorageService storageService,
             OperationsService operationsService,
             CourseRepository courseRepository,
+            HoleGeometryAssembler holeGeometryAssembler,
             @Value("${vsp.packages.base-url:http://localhost:8080/packages}") String packageBaseUrl) {
         this.jobRepository = jobRepository;
         this.manifestRepository = manifestRepository;
         this.storageService = storageService;
         this.operationsService = operationsService;
         this.courseRepository = courseRepository;
+        this.holeGeometryAssembler = holeGeometryAssembler;
         this.packageBaseUrl = packageBaseUrl.endsWith("/")
                 ? packageBaseUrl.substring(0, packageBaseUrl.length() - 1)
                 : packageBaseUrl;
@@ -175,6 +178,12 @@ public class PackageGenerationService {
 
         } catch (ValidationException e) {
             failJob(job, "VALIDATION_ERROR", e.getMessage(), e.getDetail());
+        } catch (VspApiException e) {
+            // validateInputs rejects a missing course this way. Letting it fall
+            // to the catch-all below labelled a plainly diagnosable input error
+            // "Unexpected error during package build", which sends whoever reads
+            // the job list looking for a bug instead of a course id.
+            failJob(job, "VALIDATION_ERROR", "Package build inputs are not valid", e.getMessage());
         } catch (GeometryIncompleteException e) {
             failJob(job, "GEOMETRY_INCOMPLETE", e.getMessage(), e.getDetail());
         } catch (TileGenerationException e) {
@@ -230,6 +239,12 @@ public class PackageGenerationService {
         log.debug("assemblePackageFiles for job {}", job.getId());
         List<AssembledFile> files = new ArrayList<>();
 
+        // The course itself. Without this the package is a wrapper around
+        // nothing: the manifest advertised a geoJsonUrl that no stage produced,
+        // so every build shipped a course with no holes in it and the app fell
+        // through to its unsurveyed path for all of them.
+        files.addAll(assembleHoleGeometry(job));
+
         // Assemble conditions.json with pin positions, green conditions, and course conditions
         try {
             AssembledFile conditionsFile = assembleConditionsJson(job, manifestVersion);
@@ -257,6 +272,50 @@ public class PackageGenerationService {
     }
 
     /**
+     * Serialises one {@code geometry/hole_<n>.geojson} per hole that has both a
+     * tee and a green.
+     *
+     * <p>A course that yields none fails the build. That is the point of this
+     * method: the previous pipeline reported {@code COMPLETED} on a package
+     * containing no course, so nothing downstream — not the job list, not the
+     * manifest row, not the app — had any way to tell an empty package from a
+     * real one. A build that produced no geometry has not built a course
+     * package, and it should say so where someone is looking.</p>
+     */
+    private List<AssembledFile> assembleHoleGeometry(PackageBuildJob job) {
+        List<HoleGeometryAssembler.HoleGeometryDocument> documents;
+        try {
+            documents = holeGeometryAssembler.assemble(job.getCourseId());
+        } catch (Exception e) {
+            throw new AssemblyException("Failed to assemble hole geometry", e.getMessage());
+        }
+
+        if (documents.isEmpty()) {
+            throw new GeometryIncompleteException(
+                    "Course has no hole geometry to package",
+                    "No hole of course " + job.getCourseId() + " has both a tee and a green position. "
+                            + "A package without geometry cannot render a hole map.");
+        }
+
+        List<AssembledFile> files = new ArrayList<>();
+        for (var document : documents) {
+            try {
+                files.add(new AssembledFile(
+                        document.filename(),
+                        objectMapper.writeValueAsBytes(document.content()),
+                        ObjectStorageService.ContentType.GEOMETRY,
+                        null));
+            } catch (Exception e) {
+                throw new AssemblyException(
+                        "Failed to serialize " + document.filename(), e.getMessage());
+            }
+        }
+
+        log.info("Assembled geometry for {} holes of course {}", files.size(), job.getCourseId());
+        return files;
+    }
+
+    /**
      * Assemble manifest.json — a self-describing descriptor of the package
      * (course/version identifiers, generation metadata, CDN URLs, and the file
      * inventory known so far). This is the file the mobile client persists as
@@ -276,13 +335,13 @@ public class PackageGenerationService {
         manifest.put("minimumClientVersion", DEFAULT_MINIMUM_CLIENT_VERSION);
         manifest.put("tilesFormat", CoursePackageManifest.TilesFormat.PMTILES.name());
         manifest.put("tilesUrl", cdnUrl(courseId, manifestVersion, "tiles", "tiles.pmtiles"));
-        manifest.put("geoJsonUrl", cdnUrl(courseId, manifestVersion, "geometry", "geometry.geojson"));
+        manifest.put("geoJsonUrl", geometryUrl(courseId, manifestVersion));
         manifest.put("conditionsUrl", cdnUrl(courseId, manifestVersion, "conditions", "conditions.json"));
 
         List<Map<String, Object>> fileList = new ArrayList<>();
         for (AssembledFile f : priorFiles) {
             Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("path", f.path);
+            entry.put("path", storagePath(f));
             entry.put("checksum", sha256Hex(f.data));
             entry.put("sizeBytes", (long) f.data.length);
             entry.put("contentType", f.contentType.name());
@@ -410,7 +469,7 @@ public class PackageGenerationService {
         }
 
         String tilesUrl = cdnUrl(courseId, manifestVersion, "tiles", "tiles.pmtiles");
-        String geoJsonUrl = cdnUrl(courseId, manifestVersion, "geometry", "geometry.geojson");
+        String geoJsonUrl = geometryUrl(courseId, manifestVersion);
         String manifestChecksum = sha256Hex((courseId + ":" + manifestVersion + ":" + totalSize)
                 .getBytes(StandardCharsets.UTF_8));
 
@@ -436,7 +495,12 @@ public class PackageGenerationService {
                     manifest.setConditionsUrl(cdnUrl(courseId, manifestVersion, "conditions", f.path));
                 }
                 manifest.addFile(new PackageFileEntry(
-                        f.path,
+                        // Storage-relative, including the content-type folder
+                        // that uploadFile puts the file in. The client fetches
+                        // {base}/packages/{course}/{version}/{path} verbatim, so
+                        // a bare filename here resolves to a URL one directory
+                        // above the file and 404s on every download.
+                        storagePath(f),
                         sha256Hex(f.data),
                         (long) f.data.length,
                         entryType));
@@ -448,8 +512,34 @@ public class PackageGenerationService {
                 courseId, manifestVersion, manifest.getFiles().size(), totalSize);
     }
 
+    /**
+     * Where {@link ObjectStorageService#uploadFile} actually puts a file,
+     * relative to the package root — {@code geometry/hole_7.geojson}, not
+     * {@code hole_7.geojson}. Storage derives the folder from the content type;
+     * this mirrors that derivation so the manifest describes the layout on disk
+     * instead of a flatter one that never existed.
+     */
+    private String storagePath(AssembledFile file) {
+        return file.contentType.name().toLowerCase() + "/" + file.path;
+    }
+
     private String cdnUrl(Long courseId, String manifestVersion, String contentType, String filename) {
         return packageBaseUrl + "/" + courseId + "/" + manifestVersion + "/" + contentType + "/" + filename;
+    }
+
+    /**
+     * Where this package's geometry lives.
+     *
+     * <p>A directory rather than a file, because the geometry is one document
+     * per hole — {@code geometry/hole_1.geojson} … — which is what the client
+     * reads and what lets it load a single hole without parsing the course.
+     * The field previously named a {@code geometry.geojson} that no stage has
+     * ever produced; pointing at the folder that does exist is less use to a
+     * caller than a real file would be, but it is not a promise this package
+     * cannot keep. The exact file list is in the manifest's {@code files}.</p>
+     */
+    private String geometryUrl(Long courseId, String manifestVersion) {
+        return packageBaseUrl + "/" + courseId + "/" + manifestVersion + "/geometry";
     }
 
     private String sha256Hex(byte[] data) {
@@ -462,11 +552,34 @@ public class PackageGenerationService {
         }
     }
 
+    /**
+     * Picks a version no manifest of this course already holds.
+     *
+     * <p><strong>Why not {@code 1.0.{dataVersionId}}.</strong> That was a pure
+     * function of the data version, so every build of a given course produced
+     * the same string forever — and {@link #persistManifest} returns early when
+     * the version already exists. The first manifest a course ever received,
+     * including a seeded placeholder with zero bytes behind it, could therefore
+     * never be replaced. Rebuilds ran the whole pipeline, wrote their files,
+     * reported {@code COMPLETED}, and changed nothing. The job history showed a
+     * healthy pipeline; the app saw a package that had been empty since the day
+     * it was seeded.</p>
+     *
+     * <p>The build number now counts this course's manifests, so a rebuild
+     * always lands on a fresh version and {@link PackageManifestRepository#findActiveManifest}
+     * — which orders by {@code effectiveFrom} — starts serving it immediately.
+     * Old versions stay addressable, which is what makes package URLs
+     * immutable.</p>
+     */
     String computeManifestVersion(PackageBuildJob job) {
-        // Format: {dataVersionMajor}.{dataVersionMinor}.{buildNumber}
-        // For MVP: uses dataVersionId as buildNumber until real data version schema exists
-        // Returns e.g. "1.0.{dataVersionId}"
-        return "1.0." + job.getDataVersionId();
+        // Format: 1.{dataVersionId}.{buildNumber}
+        int build = manifestRepository.findByCourseIdOrderByVersionDesc(job.getCourseId()).size() + 1;
+        String candidate = "1." + job.getDataVersionId() + "." + build;
+        while (manifestRepository.findByCourseIdAndVersion(job.getCourseId(), candidate).isPresent()) {
+            build++;
+            candidate = "1." + job.getDataVersionId() + "." + build;
+        }
+        return candidate;
     }
 
     // ─── Error types ────────────────────────────────────────────────────────────

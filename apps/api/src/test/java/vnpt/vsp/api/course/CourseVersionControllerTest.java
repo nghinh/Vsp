@@ -5,11 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.course.CourseVersionService;
+import vnpt.vsp.module.course.PublishService;
+import vnpt.vsp.module.course.ValidationService;
+import vnpt.vsp.module.course.VersionDiffService;
 import vnpt.vsp.module.course.dto.*;
 import vnpt.vsp.module.course.entity.DataVersion;
 import vnpt.vsp.module.course.entity.DataVersionStatus;
@@ -20,6 +24,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.lenient;
@@ -34,20 +39,103 @@ class CourseVersionControllerTest {
 
     @Mock private CourseVersionService courseVersionService;
     @Mock private RoleService roleService;
+    @Mock private ValidationService validationService;
+    @Mock private VersionDiffService versionDiffService;
+    @Mock private PublishService publishService;
     @Mock private Authentication authentication;
 
     private CourseVersionController controller;
 
     private static final Long COURSE_ID = 1L;
     private static final Long ACCOUNT_ID = 100L;
+    private static final Long VERSION_ID = 42L;
     private static final String ACTOR_NAME = "admin@vsp.com";
 
     @BeforeEach
     void setUp() {
-        controller = new CourseVersionController(courseVersionService, roleService);
+        controller = new CourseVersionController(
+                courseVersionService,
+                roleService,
+                validationService,
+                versionDiffService,
+                publishService);
         lenient().when(authentication.getPrincipal()).thenReturn(ACCOUNT_ID);
         lenient().when(authentication.getName()).thenReturn(ACTOR_NAME);
         lenient().when(roleService.hasRole(ACCOUNT_ID, RoleName.COURSE_ADMIN)).thenReturn(true);
+    }
+
+    // ─── Story 8.3: validate / diff / publish ──────────────────────────────
+    //
+    // These three had live UI in the portal and no handler on the server: the
+    // client called /admin/courses/{id}/versions/{vid}/validate|diff|publish,
+    // an /admin prefix this controller has never carried, and the handlers did
+    // not exist under any prefix. ValidationService, VersionDiffService and
+    // PublishService were all written and reachable from nothing.
+
+    @Test
+    void validateReturnsTheReportEvenWhenItBlocksPublication() {
+        ValidationResponse report = new ValidationResponse(
+                VERSION_ID, ValidationResponse.Result.GEOMETRY_INVALID);
+        when(validationService.validateForPublish(VERSION_ID)).thenReturn(report);
+
+        ResponseEntity<ValidationResponse> response =
+                controller.validateVersion(authentication, COURSE_ID, VERSION_ID);
+
+        // A failing validation is a 200 carrying the reasons — the portal shows
+        // the administrator what to fix. Only publishing is refused.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(report);
+    }
+
+    @Test
+    void diffComesFromTheDiffService() {
+        VersionDiff diff = new VersionDiff();
+        when(versionDiffService.generateDiff(VERSION_ID)).thenReturn(diff);
+
+        ResponseEntity<VersionDiff> response =
+                controller.getVersionDiff(authentication, COURSE_ID, VERSION_ID);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(diff);
+    }
+
+    @Test
+    void publishDelegatesToThePublishServiceWithTheActor() {
+        PublishResponse published = new PublishResponse(
+                2L, 2, "PUBLISHED", 9L, UUID.randomUUID(), Instant.now());
+        when(publishService.publishVersion(eq(VERSION_ID), anyString(), eq(ACTOR_NAME)))
+                .thenReturn(published);
+
+        ResponseEntity<?> response = controller.publishVersion(
+                authentication,
+                COURSE_ID,
+                VERSION_ID,
+                new PublishVersionRequest("Surveyed the 7th green again", false));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isSameAs(published);
+        // The audit trail has to name a person, not the application.
+        verify(publishService).publishVersion(
+                VERSION_ID, "Surveyed the 7th green again", ACTOR_NAME);
+    }
+
+    @Test
+    void publishRefusedByValidationAnswers422WithTheReasons() {
+        ValidationResponse report = new ValidationResponse(
+                VERSION_ID, ValidationResponse.Result.LICENSE_MISSING);
+        when(publishService.publishVersion(eq(VERSION_ID), anyString(), eq(ACTOR_NAME)))
+                .thenThrow(new PublishService.PublishValidationException(report));
+
+        ResponseEntity<?> response = controller.publishVersion(
+                authentication,
+                COURSE_ID,
+                VERSION_ID,
+                new PublishVersionRequest("Publishing the new bunker line", false));
+
+        // 422 rather than 500: the request was well-formed and the data was
+        // not publishable, which is a different thing and a fixable one.
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).isSameAs(report);
     }
 
     // ─── GET /courses/{courseId}/versions ──────────────────────────────────

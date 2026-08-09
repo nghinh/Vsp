@@ -62,6 +62,15 @@ public interface TournamentPolicyService {
     List<?> getPolicyChanges(UUID policyId);
 
     /**
+     * Every policy, newest first.
+     *
+     * The portal has a page listing these and there was no endpoint behind it,
+     * so it rendered "No tournament policies yet" permanently — including
+     * straight after an operator created one on the same screen.
+     */
+    List<TournamentPolicyResponse> listPolicies();
+
+    /**
      * Checks if a feature is enabled for a given policy.
      *
      * @param policyId the policy UUID (nullable)

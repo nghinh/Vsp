@@ -206,8 +206,17 @@ public class PublishServiceImpl implements PublishService {
                     publishedBy);
             buildJobId = buildJob.getId();
         } catch (Exception e) {
-            log.warn("Failed to queue PackageBuildJob for DataVersion {}: {}",
-                    versionId, e.getMessage());
+            // Deliberately not rethrown: the version is published and audited
+            // by this point, and unpublishing it because a downstream job could
+            // not be queued would be worse than publishing without a package.
+            //
+            // But it is an error, not a warning. A published version with no
+            // package is a course that shows a Download button and has nothing
+            // behind it — and the response below carries a null buildJobId
+            // precisely so the caller can say so instead of reporting success.
+            log.error("Failed to queue PackageBuildJob for DataVersion {} — "
+                    + "the version is published but no package will be built",
+                    versionId, e);
         }
 
         return new PublishResponse(

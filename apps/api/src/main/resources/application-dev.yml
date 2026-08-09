@@ -93,3 +93,39 @@ security:
 vsp:
   dev:
     master-otp: ${VSP_DEV_MASTER_OTP:000000}
+
+  # Satellite imagery for the hole map and the portal's pin picker.
+  #
+  # Set here rather than in a shell so it survives an API restart. It did not:
+  # the running dev process had these as environment variables, a restart lost
+  # them, and both the phone's satellite view and the portal's pin map fell
+  # back to a blank canvas — the honest degrade, and useless for placing a pin
+  # on a green.
+  #
+  # Nested under the existing `vsp:` rather than as a second one. A duplicate
+  # top-level key is not a merge: SnakeYAML refuses the file and the whole
+  # application fails to start, which is how this was found.
+  #
+  # Esri World Imagery, display only. Same tier the app uses; it permits
+  # showing the tiles, not deriving a dataset from them. See
+  # docs/course-geometry-autogen-architecture.md §3.
+  basemap:
+    satellite-tile-url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    satellite-attribution: "Powered by Esri — Nguồn: Esri, Maxar, Earthstar Geographics"
+    # Esri's World Imagery stops near 19. Asking past the last level returns
+    # 404s and a blank map at exactly the zoom used to look at a green.
+    satellite-max-zoom: 19
+
+    # The plain basemap the geometry editor falls back to.
+    #
+    # Empty on purpose. The editor used to hardcode CARTO's dark-matter style,
+    # CARTO stopped serving it mid-session, and the editor was left with no
+    # basemap and no way to change that without a release. Left blank the client
+    # draws its own flat dark canvas and calls nobody.
+    #
+    # Point it at a tile URL — {z}/{y}/{x} or {z}/{x}/{y} as the provider wants
+    # — to get a street basemap back, and set the attribution the licence
+    # requires. Imagery that arrives without attribution is refused, deliberately.
+    base-tile-url: ""
+    base-attribution: ""
+    base-max-zoom: 0

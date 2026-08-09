@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import vnpt.vsp.api.error.VspApiException;
@@ -74,6 +75,18 @@ public class TournamentPolicyController {
      * @param policyId the policy UUID
      * @return 200 with the policy
      */
+    /**
+     * Every policy.
+     *
+     * The portal lists these; without it the list page said "no policies yet"
+     * forever, including to the operator who had just created one.
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('TOURNAMENT_DIRECTOR', 'COURSE_ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<List<TournamentPolicyResponse>> listPolicies() {
+        return ResponseEntity.ok(policyService.listPolicies());
+    }
+
     @GetMapping("/{policyId}")
     public ResponseEntity<TournamentPolicyResponse> getPolicy(@PathVariable UUID policyId) {
         log.info("GET /tournament-policies/{}", policyId);

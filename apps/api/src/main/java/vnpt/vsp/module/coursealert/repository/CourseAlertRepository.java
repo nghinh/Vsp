@@ -23,7 +23,7 @@ public interface CourseAlertRepository extends JpaRepository<CourseAlert, Long> 
      * Per Slice 1 spec: supports facility-level alert queries.
      */
     List<CourseAlert> findByFacilityIdAndAlertTypeAndEffectiveAtBefore(
-            UUID facilityId, AlertType alertType, OffsetDateTime effectiveAt);
+            Long facilityId, AlertType alertType, OffsetDateTime effectiveAt);
 
     /**
      * Find active (non-expired, effective) alerts for a target scope.
@@ -44,7 +44,7 @@ public interface CourseAlertRepository extends JpaRepository<CourseAlert, Long> 
            "AND (a.expiresAt IS NULL OR a.expiresAt > :now) " +
            "AND a.deliveryStatus != vnpt.vsp.module.coursealert.entity.DeliveryStatus.EXPIRED " +
            "ORDER BY a.priority DESC, a.effectiveAt DESC")
-    List<CourseAlert> findActiveAlertsByCourseId(@Param("courseId") UUID courseId,
+    List<CourseAlert> findActiveAlertsByCourseId(@Param("courseId") Long courseId,
                                                  @Param("now") OffsetDateTime now);
 
     /**
@@ -55,7 +55,7 @@ public interface CourseAlertRepository extends JpaRepository<CourseAlert, Long> 
            "AND (a.expiresAt IS NULL OR a.expiresAt > :now) " +
            "AND a.deliveryStatus != vnpt.vsp.module.coursealert.entity.DeliveryStatus.EXPIRED " +
            "ORDER BY a.priority DESC, a.effectiveAt DESC")
-    List<CourseAlert> findActiveAlertsByHoleId(@Param("holeId") UUID holeId,
+    List<CourseAlert> findActiveAlertsByHoleId(@Param("holeId") Long holeId,
                                                @Param("now") OffsetDateTime now);
 
     /**
@@ -71,7 +71,7 @@ public interface CourseAlertRepository extends JpaRepository<CourseAlert, Long> 
     /**
      * Find all alerts by courseId (not restricted to active window).
      */
-    List<CourseAlert> findByCourseIdOrderByEffectiveAtDesc(UUID courseId);
+    List<CourseAlert> findByCourseIdOrderByEffectiveAtDesc(Long courseId);
 
     /**
      * Find alerts by delivery status.

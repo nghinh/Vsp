@@ -81,6 +81,23 @@ class GeospatialServicePostgisTest {
         geospatialService = new GeospatialServiceImpl(entityManager);
     }
 
+    /// A probe sitting exactly on some real green's centroid.
+    ///
+    /// Read from the database rather than pasted in, because the greens table
+    /// is rebuilt whenever the OSM pipeline runs and the primary keys move with
+    /// it. What these tests are about is the geometry, not which row happens to
+    /// hold it today.
+    private Point probeOnAGreenCentroid() {
+        Object[] row = (Object[]) entityManager
+                .createNativeQuery(
+                        "SELECT ST_X(ST_Centroid(location)), ST_Y(ST_Centroid(location)) "
+                                + "FROM greens ORDER BY id LIMIT 1")
+                .getSingleResult();
+        return point(
+                ((Number) row[0]).doubleValue(),
+                ((Number) row[1]).doubleValue());
+    }
+
     private static Point point(double lon, double lat) {
         Point p = GF.createPoint(new Coordinate(lon, lat));
         p.setSRID(SRID);
@@ -156,44 +173,61 @@ class GeospatialServicePostgisTest {
     // ─── Site 3: findFeaturesWithinRadius ────────────────────────────────────
 
     /**
-     * Probe point is the centroid of green 13116. psql, independently:
-     * <pre>
-     * SELECT g.id, ST_Distance(g.location::geography, p::geography)
-     * FROM greens g, (SELECT ST_Centroid(location) p FROM greens ORDER BY id LIMIT 1) probe
-     * WHERE ST_DWithin(g.location::geography, p::geography, 500) ORDER BY 2;
-     * </pre>
-     * → 13116 @ 0.0000, 13185 @ 293.6381, 13169 @ 351.5702,
-     *   13130 @ 400.1812, 13170 @ 446.2849, 13135 @ 462.3340
+     * The probe sits on the centroid of a real green, chosen from the database
+     * rather than named.
+     *
+     * <p>These assertions used to hard-code the ids the query came back with —
+     * 13116, 13185, 13169 and so on — read out of the live database once and
+     * pasted in. The greens table is rebuilt every time the OSM pipeline runs
+     * (it deletes the rows it owns and re-imports them), so those ids rotate,
+     * and the test failed the first time anyone refreshed the course data. It
+     * was asserting a snapshot of primary keys, not the behaviour it is named
+     * for.</p>
+     *
+     * <p>What the behaviour actually is: a radius query returns the features
+     * inside the radius, nearest first, with real distances. That is asserted
+     * below against whatever greens the database currently holds.</p>
      */
     @Test
-    void findFeaturesWithinRadius_returnsTheKnownGreensInDistanceOrder() {
-        Point probe = point(106.995419868671, 10.968387746101241);
+    void findFeaturesWithinRadius_returnsTheNearbyGreensInDistanceOrder() {
+        Point probe = probeOnAGreenCentroid();
 
         List<vnpt.vsp.module.geospatial.dto.FeatureDistanceResult> found =
                 geospatialService.findFeaturesWithinRadius(probe, 500, "greens", "location");
 
         // An empty list is the broken shape, and the one that lies loudest: it
         // reads as "nothing is near this point" rather than "the query failed".
-        assertEquals(List.of(13116L, 13185L, 13169L, 13130L, 13170L, 13135L),
-                found.stream().map(vnpt.vsp.module.geospatial.dto.FeatureDistanceResult::getFeatureId).toList());
+        assertFalse(found.isEmpty(), "931 greens exist and the probe sits on one");
 
-        double[] expected = {0.0, 293.6381, 351.5702, 400.1812, 446.2849, 462.3340};
-        for (int i = 0; i < expected.length; i++) {
-            assertEquals(expected[i], found.get(i).getDistanceMeters().doubleValue(), 0.001,
-                    "distance to feature " + found.get(i).getFeatureId());
+        // The probe is the centroid of a green, so that green is first at ~0 m.
+        assertEquals(0.0, found.get(0).getDistanceMeters().doubleValue(), 1.0);
+
+        // Nearest first, and every distance inside the radius asked for.
+        for (int i = 0; i < found.size(); i++) {
+            double d = found.get(i).getDistanceMeters().doubleValue();
+            assertTrue(d <= 500.0, "feature " + found.get(i).getFeatureId() + " is outside the radius");
+            if (i > 0) {
+                assertTrue(d >= found.get(i - 1).getDistanceMeters().doubleValue(),
+                        "results are not in distance order at index " + i);
+            }
         }
     }
 
     @Test
     void findFeaturesWithinRadius_withATightRadius_excludesTheNeighbours() {
-        Point probe = point(106.995419868671, 10.968387746101241);
+        Point probe = probeOnAGreenCentroid();
 
-        // 100 m reaches only the green the probe sits on — the nearest other is 293.6 m.
-        List<vnpt.vsp.module.geospatial.dto.FeatureDistanceResult> found =
-                geospatialService.findFeaturesWithinRadius(probe, 100, "greens", "location");
+        List<vnpt.vsp.module.geospatial.dto.FeatureDistanceResult> wide =
+                geospatialService.findFeaturesWithinRadius(probe, 500, "greens", "location");
+        List<vnpt.vsp.module.geospatial.dto.FeatureDistanceResult> tight =
+                geospatialService.findFeaturesWithinRadius(probe, 5, "greens", "location");
 
-        assertEquals(1, found.size());
-        assertEquals(13116L, found.get(0).getFeatureId());
+        // A tighter radius reaches the green the probe sits on and no more —
+        // the point of ST_DWithin is that it excludes, not that it answers.
+        assertFalse(tight.isEmpty());
+        assertTrue(tight.size() < wide.size(),
+                "a 5 m radius returned as much as a 500 m one");
+        assertEquals(0.0, tight.get(0).getDistanceMeters().doubleValue(), 1.0);
     }
 
     @Test
@@ -210,13 +244,14 @@ class GeospatialServicePostgisTest {
 
     @Test
     void findNearestFeature_findsTheGreenTheProbeSitsOn() {
-        Point probe = point(106.995419868671, 10.968387746101241);
+        Point probe = probeOnAGreenCentroid();
 
         var nearest = geospatialService.findNearestFeature(probe, "greens", "location");
 
         assertNotNull(nearest, "null here is the broken shape: 931 greens exist");
-        assertEquals(13116L, nearest.getFeatureId());
-        assertEquals(0.0, nearest.getDistanceMeters().doubleValue(), 0.001);
+        // Named by position rather than by id: which green carries which
+        // primary key changes every time the course data is re-imported.
+        assertEquals(0.0, nearest.getDistanceMeters().doubleValue(), 1.0);
     }
 
     @Test

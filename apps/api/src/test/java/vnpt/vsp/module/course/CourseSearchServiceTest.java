@@ -50,6 +50,12 @@ class CourseSearchServiceTest {
     @Mock
     private DataVersionRepository dataVersionRepository;
 
+    @Mock
+    private vnpt.vsp.module.pkg.repository.PackageManifestRepository manifestRepository;
+
+    @Mock
+    private vnpt.vsp.module.course.repository.HoleRepository holeRepository;
+
     private CourseSearchServiceImpl service;
 
     private GolfFacility testFacility;
@@ -60,7 +66,8 @@ class CourseSearchServiceTest {
     void setUp() {
         service = new CourseSearchServiceImpl(
                 courseRepository, facilityRepository, searchRepository,
-                favoriteRepository, recentRepository, dataVersionRepository);
+                favoriteRepository, recentRepository, dataVersionRepository,
+                manifestRepository, holeRepository);
 
         testFacility = new GolfFacility();
         testFacility.setId(1L);
@@ -111,7 +118,9 @@ class CourseSearchServiceTest {
         assertEquals(10L, dto.getCourseId());
         assertEquals("Championship Course", dto.getCourseName());
         assertEquals("Thuyle Golf Club", dto.getFacilityName());
-        assertTrue(dto.isHasPackage());
+        // A published DataVersion is no longer enough to claim a download —
+        // see the offline-availability group below.
+        assertFalse(dto.isHasPackage());
         assertNotNull(dto.getDataFreshness());
         assertEquals(3, dto.getDataFreshness().getVersionNumber());
         assertEquals("VERIFIED", dto.getDataFreshness().getVerificationStatus());
@@ -352,5 +361,117 @@ class CourseSearchServiceTest {
         when(courseRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThrows(VspApiException.class, () -> service.recordRecentView(100L, 999L));
+    }
+
+    // ─── Offline availability ──────────────────────────────────────────────
+    //
+    // hasPackage used to answer "is there a published DataVersion", which is a
+    // different question: publishing a version and building a package from it
+    // are separate steps and the second was failing quietly. So all 50 courses
+    // advertised a download, 8 had a manifest, and every one of those had
+    // package_size_bytes = 0 — a Download button with nothing behind it, which
+    // a golfer discovers on the first tee with no signal.
+
+    private vnpt.vsp.module.pkg.entity.CoursePackageManifest manifest(Long sizeBytes) {
+        return new vnpt.vsp.module.pkg.entity.CoursePackageManifest(
+                testCourse.getId(), 100L, "1.0.0", sizeBytes, "checksum",
+                Instant.parse("2026-07-15T10:00:00Z"), "1.0.0",
+                vnpt.vsp.module.pkg.entity.CoursePackageManifest.TilesFormat.PMTILES,
+                "tiles", "geojson", Instant.parse("2026-07-15T10:00:00Z"), "tester");
+    }
+
+    private boolean hasPackageFor(Optional<vnpt.vsp.module.pkg.entity.CoursePackageManifest> manifest) {
+        when(manifestRepository.findActiveManifest(eq(10L), any())).thenReturn(manifest);
+        when(searchRepository.searchByText(eq("Championship"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(testCourse)));
+
+        CourseSearchRequest request = new CourseSearchRequest();
+        request.setQ("Championship");
+        request.setPage(0);
+        request.setSize(20);
+
+        return service.searchCourses(request).getContent().get(0).isHasPackage();
+    }
+
+    @Test
+    void aCourseWithAPackageThatHasBytesIsDownloadable() {
+        assertTrue(hasPackageFor(Optional.of(manifest(4_200_000L))));
+    }
+
+    @Test
+    void aCourseWithNoManifestIsNotDownloadable() {
+        assertFalse(hasPackageFor(Optional.empty()));
+    }
+
+    @Test
+    void aManifestWithNoBytesBehindItIsNotAPackage() {
+        // The exact state of all 8 manifests in the database today.
+        assertFalse(hasPackageFor(Optional.of(manifest(0L))));
+    }
+
+    @Test
+    void aManifestWithAnUnknownSizeIsNotAPackage() {
+        assertFalse(hasPackageFor(Optional.of(manifest(null))));
+    }
+
+    // ─── The badge a golfer reads ──────────────────────────────────────────
+
+    private CourseSearchResultDto badgeFor(long holes, long surveyed) {
+        CourseSearchRequest request = new CourseSearchRequest();
+        request.setQ("Thuyle");
+        request.setPage(0);
+        request.setSize(20);
+
+        when(searchRepository.searchByText(eq("Thuyle"), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(testCourse)));
+        when(dataVersionRepository.findLatestPublishedByCourseId(10L))
+                .thenReturn(Optional.of(testDataVersion));
+        when(holeRepository.countByCourseId(10L)).thenReturn(holes);
+        when(holeRepository.countSurveyedHoles(10L)).thenReturn(surveyed);
+        when(holeRepository.weakestAccuracyClass(10L))
+                .thenReturn(vnpt.vsp.module.course.entity.AccuracyClass.C_VERIFIED_SATELLITE);
+
+        return service.searchCourses(request).getContent().get(0);
+    }
+
+    @Test
+    void aCourseWithEveryHoleVerifiedIsBadgedVerified() {
+        assertEquals("VERIFIED",
+                badgeFor(18, 18).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void aPartlyReviewedCourseIsNotBadgedVerified() {
+        // The version row says VERIFIED — the seed wrote it that way, and
+        // geometry review does not touch it. The holes are what the app gates
+        // on, and a golfer cannot tell from a course badge which eight holes to
+        // distrust, so the badge describes the weakest one.
+        assertEquals("PENDING_REVIEW",
+                badgeFor(18, 10).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void aCourseWithNoVerifiedHolesIsUnverified() {
+        assertEquals("UNVERIFIED",
+                badgeFor(18, 0).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void aCourseWithNoHolesKeepsWhateverTheVersionSaid() {
+        // Nothing to derive from. Inventing a status here would be the same
+        // mistake in the other direction.
+        assertEquals("VERIFIED",
+                badgeFor(0, 0).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void aVerifiedCourseAlsoReportsTheClassItsHolesCarry() {
+        // The client badges on status AND class — "verified" plus class D reads
+        // as unverified there, exactly as the hole map treats it. Deriving one
+        // from the holes and leaving the other on the stale data_version left
+        // the two disagreeing, and Long Thành kept showing "Chưa xác minh" on
+        // the device while the API said VERIFIED.
+        assertEquals("C_VERIFIED_SATELLITE",
+                badgeFor(18, 18).getDataFreshness().getAccuracyClass());
     }
 }

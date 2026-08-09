@@ -10,19 +10,27 @@ import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.audit.AuditAction;
 import vnpt.vsp.module.audit.AuditService;
+import org.mockito.ArgumentMatchers;
+import org.springframework.data.jpa.domain.Specification;
+import vnpt.vsp.module.correction.dto.CorrectionQueueRequest;
+import vnpt.vsp.module.correction.dto.CorrectionQueueResponse;
 import vnpt.vsp.module.correction.dto.CorrectionResolutionRequest;
 import vnpt.vsp.module.correction.dto.CorrectionResolutionResponse;
+import vnpt.vsp.module.correction.dto.CorrectionReviewRequest;
+import vnpt.vsp.module.correction.entity.CorrectionReviewAction;
 import vnpt.vsp.module.correction.entity.CorrectionStatus;
 import vnpt.vsp.module.correction.entity.CorrectionType;
 import vnpt.vsp.module.correction.entity.CourseCorrection;
 import vnpt.vsp.module.correction.repository.CourseCorrectionRepository;
 import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.course.repository.CourseRepository;
+import vnpt.vsp.module.course.entity.Hole;
 import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.module.notification.NotificationService;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -198,6 +206,44 @@ class CorrectionServiceImplTest {
         assertEquals(CorrectionStatus.APPROVED, inReviewCorrection.getStatus());
     }
 
+    // ─── review() must work on a PENDING correction ─────────────────────────────
+
+    @Test
+    void review_fromPending_requestsInfo() {
+        // The review queue's four buttons all go through review(), and every one
+        // of them used to fail on a correction the same screen showed as
+        // Pending: the code demanded IN_REVIEW, and nothing in the system can
+        // put a correction into IN_REVIEW — no endpoint calls markInReview().
+        // The whole review workflow was unreachable.
+        when(correctionRepository.findById(1L)).thenReturn(Optional.of(pendingCorrection));
+        when(correctionRepository.save(any(CourseCorrection.class))).thenAnswer(inv -> inv.getArgument(0));
+        doNothing().when(auditService).log(any(AuditAction.class), anyString(), anyString(),
+                anyString(), anyString(), anyString());
+
+        CorrectionReviewRequest request = new CorrectionReviewRequest();
+        request.setAction(CorrectionReviewAction.REQUEST_INFO);
+        request.setReason("Gửi thêm ảnh chụp vị trí giúp mình nhé");
+
+        CourseCorrection reviewed = correctionService.review(1L, request, 99L);
+
+        assertEquals(CorrectionStatus.INFO_REQUESTED, reviewed.getStatus());
+    }
+
+    @Test
+    void review_stillRefusesACorrectionAlreadyReviewed() {
+        // The relaxation is PENDING only — a decision already taken must not be
+        // quietly overwritten by a second reviewer.
+        CourseCorrection approved = createCorrection(4L, CorrectionStatus.APPROVED);
+        when(correctionRepository.findById(4L)).thenReturn(Optional.of(approved));
+
+        CorrectionReviewRequest request = new CorrectionReviewRequest();
+        request.setAction(CorrectionReviewAction.REJECT);
+        request.setReason("nope");
+
+        assertThrows(VspApiException.class, () -> correctionService.review(4L, request, 99L));
+        assertEquals(CorrectionStatus.APPROVED, approved.getStatus());
+    }
+
     // ─── Correction not found ───────────────────────────────────────────────────
 
     @Test
@@ -342,5 +388,48 @@ class CorrectionServiceImplTest {
         assertNotNull(response.notifiedAt());
         // resultingVersionId is null until the draft is published
         assertNull(response.resultingVersionId());
+    }
+
+    // ─── The hole a reviewer is being sent to ─────────────────────────────────
+
+    @Test
+    void theQueueNamesTheHoleOnTheCardNotTheDatabaseRow() {
+        // Hole 1 of Long Thành is row 127. The queue used to print the row id
+        // in the hole-number column, so a report about the 1st arrived as
+        // "hole 127" of an eighteen-hole course — a hole a reviewer cannot walk
+        // to, on a card that does not have one.
+        Hole hole = new Hole();
+        hole.setId(127L);
+        hole.setHoleNumber(1);
+
+        CourseCorrection correction = createCorrection(1L, CorrectionStatus.PENDING);
+        correction.setHoleId(127L);
+
+        when(correctionRepository.findAll(ArgumentMatchers.<Specification<CourseCorrection>>any()))
+                .thenReturn(List.of(correction));
+        when(courseRepository.findAllById(anyIterable())).thenReturn(List.of(course));
+        when(holeRepository.findAllById(anyIterable())).thenReturn(List.of(hole));
+
+        CorrectionQueueResponse response =
+                correctionService.getQueue(new CorrectionQueueRequest());
+
+        assertEquals(1, response.getCorrections().get(0).getHoleNumber());
+    }
+
+    @Test
+    void aCourseWideReportNamesNoHole() {
+        CourseCorrection correction = createCorrection(2L, CorrectionStatus.PENDING);
+        correction.setHoleId(null);
+
+        when(correctionRepository.findAll(ArgumentMatchers.<Specification<CourseCorrection>>any()))
+                .thenReturn(List.of(correction));
+        when(courseRepository.findAllById(anyIterable())).thenReturn(List.of(course));
+
+        CorrectionQueueResponse response =
+                correctionService.getQueue(new CorrectionQueueRequest());
+
+        // Null, not zero and not a row id. A report about the whole course is
+        // not a report about hole 0.
+        assertNull(response.getCorrections().get(0).getHoleNumber());
     }
 }

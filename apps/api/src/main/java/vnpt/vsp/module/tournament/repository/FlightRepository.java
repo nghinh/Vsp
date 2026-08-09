@@ -12,6 +12,8 @@ public interface FlightRepository extends JpaRepository<Flight, UUID> {
 
     List<Flight> findByTournamentIdOrderByFlightNumber(UUID tournamentId);
 
+    List<Flight> findByTournamentId(UUID tournamentId);
+
     List<Flight> findByTournamentIdAndTeeTimeIsNotNull(UUID tournamentId);
 
     List<Flight> findByTournamentIdAndTeeTimeIsNull(UUID tournamentId);

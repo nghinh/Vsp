@@ -44,13 +44,16 @@ public interface CourseAlertService {
      *
      * @param alertType filter by alert type (optional)
      * @param targetType filter by target scope (optional)
-     * @param targetId filter by target ID (optional)
+     * @param targetId filter by target ID (optional). A string, because the
+     *                 scopes do not share a key space: facility, course and
+     *                 hole are BIGSERIAL ids, flight and group are UUIDs.
+     *                 It is parsed against whichever the scope uses.
      * @param deliveryStatus filter by delivery status (optional)
      * @param from filter effectiveAt >= from (optional)
      * @param to filter effectiveAt <= to (optional)
      * @return list of matching alerts ordered by effectiveAt desc
      */
-    List<CourseAlert> listAlerts(AlertType alertType, AlertTargetType targetType, UUID targetId,
+    List<CourseAlert> listAlerts(AlertType alertType, AlertTargetType targetType, String targetId,
                                   DeliveryStatus deliveryStatus, OffsetDateTime from, OffsetDateTime to);
 
     /**
@@ -86,8 +89,8 @@ public interface CourseAlertService {
      * Active = effectiveAt <= now AND (expiresAt IS NULL OR expiresAt > now) AND deliveryStatus != EXPIRED.
      *
      * @param targetType the target scope
-     * @param targetId the target ID
+     * @param targetId the target ID, as a string — see listAlerts
      * @return list of active alerts for this target
      */
-    List<CourseAlert> getActiveAlertsForTarget(AlertTargetType targetType, UUID targetId);
+    List<CourseAlert> getActiveAlertsForTarget(AlertTargetType targetType, String targetId);
 }

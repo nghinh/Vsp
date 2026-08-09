@@ -116,6 +116,13 @@ public class TeeSetAdminController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
+    /**
+     * Not implemented. When it is: delete children explicitly rather than
+     * relying on ON DELETE CASCADE. The migrations declare cascades, but the
+     * dev database is built by Hibernate rather than Flyway and has none — so
+     * cascade behaviour differs between the environment you test in and the
+     * one that ships. See CourseAdminController#deleteCourse for the detail.
+     */
     @DeleteMapping("/tee-sets/{teeSetId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<Void> deleteTeeSet(

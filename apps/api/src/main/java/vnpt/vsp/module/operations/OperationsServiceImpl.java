@@ -97,6 +97,7 @@ public class OperationsServiceImpl implements OperationsService {
         pin.setEffectiveFrom(effectiveFrom);
         pin.setExpiresAt(expiresAt);
         pin.setPublishedBy(publishedBy);
+        stampProvenance(pin.getMetadata(), publishedBy, "portal:pin-position");
         pin.setConfidence(confidence);
 
         PinPosition saved = pinPositionRepository.save(pin);
@@ -179,6 +180,7 @@ public class OperationsServiceImpl implements OperationsService {
         condition.setEffectiveFrom(effectiveFrom);
         condition.setExpiresAt(expiresAt);
         condition.setPublishedBy(publishedBy);
+        stampProvenance(condition.getMetadata(), publishedBy, "portal:green-condition");
 
         GreenCondition saved = greenConditionRepository.save(condition);
 
@@ -262,12 +264,15 @@ public class OperationsServiceImpl implements OperationsService {
 
         CourseCondition condition = new CourseCondition();
         condition.setCourse(course);
-        condition.setConditionType(CourseCondition.ConditionType.valueOf(conditionType));
-        condition.setSeverity(severity != null ? CourseCondition.Severity.valueOf(severity) : null);
+        condition.setConditionType(parseEnum(
+                CourseCondition.ConditionType.class, conditionType, "conditionType"));
+        condition.setSeverity(severity == null ? null : parseEnum(
+                CourseCondition.Severity.class, severity, "severity"));
         condition.setDescription(description);
         condition.setEffectiveFrom(effectiveFrom);
         condition.setExpiresAt(expiresAt);
         condition.setPublishedBy(publishedBy);
+        stampProvenance(condition.getMetadata(), publishedBy, "portal:course-condition");
 
         CourseCondition saved = courseConditionRepository.save(condition);
 
@@ -373,6 +378,57 @@ public class OperationsServiceImpl implements OperationsService {
     }
 
     // ─── DTO Mapping ────────────────────────────────────────────────────────────
+
+    /**
+     * Fills the provenance a row cannot be written without.
+     *
+     * `publisher` is NOT NULL on all three operations tables and nothing set
+     * it, so every create through this service failed with a constraint
+     * violation the API surfaced as a 500. Pin positions, course conditions
+     * and green conditions were all affected, which is to say the whole
+     * greenkeeping write path had never once succeeded — there was no portal
+     * screen calling it, so nothing had ever tried.
+     *
+     * The operator who published it is the publisher. Accuracy stays at the
+     * default D_UNVERIFIED_COMMUNITY: a greenkeeper typing today's pin into a
+     * form is a claim, not a survey, and the app's badge should say so.
+     */
+    /**
+     * Enum, or a 400 that names the values that would work.
+     *
+     * `Enum.valueOf` throws IllegalArgumentException, which nothing here
+     * caught, so a request naming a condition type that does not exist came
+     * back as a 500 with a correlation id and no hint. It is a bad request,
+     * and it should say which values are not bad — the portal's own list of
+     * types was wrong in three of eight entries and this error is what a
+     * developer has to read to find that out.
+     */
+    private static <E extends Enum<E>> E parseEnum(Class<E> type, String value, String field) {
+        try {
+            return Enum.valueOf(type, value);
+        } catch (IllegalArgumentException | NullPointerException ex) {
+            throw new VspApiException(
+                    VspErrorCode.VALIDATION_003,
+                    field + " must be one of "
+                            + java.util.Arrays.toString(type.getEnumConstants())
+                            + ", got: " + value,
+                    null, null);
+        }
+    }
+
+    private static void stampProvenance(
+            vnpt.vsp.module.course.entity.DataQualityMetadata metadata,
+            String publishedBy,
+            String source) {
+        if (metadata.getPublisher() == null || metadata.getPublisher().isBlank()) {
+            metadata.setPublisher(publishedBy != null && !publishedBy.isBlank()
+                    ? publishedBy
+                    : "VSP Portal");
+        }
+        if (metadata.getSource() == null) {
+            metadata.setSource(source);
+        }
+    }
 
     private PinPositionDto toPinPositionDto(PinPosition pin) {
         PinPositionDto dto = new PinPositionDto();

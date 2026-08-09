@@ -16,9 +16,9 @@ public class CourseAlertResponse {
     private Long id;
 
     // Targeting fields (AC-1)
-    private UUID facilityId;
-    private UUID courseId;
-    private UUID holeId;
+    private Long facilityId;
+    private Long courseId;
+    private Long holeId;
     private UUID flightId;
     private UUID groupId;
 
@@ -93,14 +93,14 @@ public class CourseAlertResponse {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public UUID getFacilityId() { return facilityId; }
-    public void setFacilityId(UUID facilityId) { this.facilityId = facilityId; }
+    public Long getFacilityId() { return facilityId; }
+    public void setFacilityId(Long facilityId) { this.facilityId = facilityId; }
 
-    public UUID getCourseId() { return courseId; }
-    public void setCourseId(UUID courseId) { this.courseId = courseId; }
+    public Long getCourseId() { return courseId; }
+    public void setCourseId(Long courseId) { this.courseId = courseId; }
 
-    public UUID getHoleId() { return holeId; }
-    public void setHoleId(UUID holeId) { this.holeId = holeId; }
+    public Long getHoleId() { return holeId; }
+    public void setHoleId(Long holeId) { this.holeId = holeId; }
 
     public UUID getFlightId() { return flightId; }
     public void setFlightId(UUID flightId) { this.flightId = flightId; }

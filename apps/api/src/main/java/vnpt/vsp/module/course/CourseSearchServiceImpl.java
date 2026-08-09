@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.logstash.logback.marker.Markers.append;
+import vnpt.vsp.module.pkg.repository.PackageManifestRepository;
 
 /**
  * Implementation of {@link CourseSearchService}.
@@ -41,6 +42,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     private final FavoriteCourseRepository favoriteRepository;
     private final RecentCourseRepository recentRepository;
     private final DataVersionRepository dataVersionRepository;
+    private final PackageManifestRepository manifestRepository;
+    private final HoleRepository holeRepository;
 
     public CourseSearchServiceImpl(
             CourseRepository courseRepository,
@@ -48,13 +51,17 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             CourseSearchRepository searchRepository,
             FavoriteCourseRepository favoriteRepository,
             RecentCourseRepository recentRepository,
-            DataVersionRepository dataVersionRepository) {
+            DataVersionRepository dataVersionRepository,
+            PackageManifestRepository manifestRepository,
+            HoleRepository holeRepository) {
         this.courseRepository = courseRepository;
         this.facilityRepository = facilityRepository;
         this.searchRepository = searchRepository;
         this.favoriteRepository = favoriteRepository;
         this.recentRepository = recentRepository;
         this.dataVersionRepository = dataVersionRepository;
+        this.manifestRepository = manifestRepository;
+        this.holeRepository = holeRepository;
     }
 
     // ─── Search ───────────────────────────────────────────────────────────
@@ -200,10 +207,28 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         // Enrich with data freshness from latest published DataVersion
         enrichDataFreshness(dto, course.getId());
 
-        // Check if a published package exists
-        dto.setHasPackage(dataVersionRepository.findLatestPublishedByCourseId(course.getId()).isPresent());
+        dto.setHasPackage(hasDownloadablePackage(course.getId()));
 
         return dto;
+    }
+
+    /// Whether there is actually something on the other end of Download.
+    ///
+    /// This used to answer "is there a published DataVersion", which is a
+    /// different question with a different answer: publishing a course version
+    /// and building a package from it are separate steps, and the second one
+    /// has been failing quietly. So all 50 courses advertised a download while
+    /// 8 had a manifest and every one of those had package_size_bytes = 0.
+    ///
+    /// A manifest with no bytes behind it is not a package. Requiring a real
+    /// size is what keeps "offline ready" from being a promise the app cannot
+    /// keep on the first tee with no signal.
+    private boolean hasDownloadablePackage(Long courseId) {
+        return manifestRepository
+                .findActiveManifest(courseId, Instant.now())
+                .filter(manifest -> manifest.getPackageSizeBytes() != null
+                        && manifest.getPackageSizeBytes() > 0)
+                .isPresent();
     }
 
     private void enrichDataFreshness(CourseSearchResultDto dto, Long courseId) {
@@ -222,8 +247,53 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                                     ? dv.getMetadata().getAccuracyClass().name() : null);
                     freshness.setLastVerifiedAt(dv.getMetadata().getLastVerifiedAt() != null
                             ? dv.getMetadata().getLastVerifiedAt().toString() : null);
+                    applyHoleProvenance(freshness, courseId);
                     dto.setDataFreshness(freshness);
                 });
+    }
+
+    /**
+     * Overrides the course-level badge with what the holes actually say.
+     *
+     * <p>The badge came from the course's {@code data_version} metadata, and
+     * geometry review does not touch that — it verifies holes. So Long Thành
+     * listed itself as "Chưa xác minh" to every golfer while all eighteen of
+     * its holes were verified and the app was drawing its strategic map from
+     * them. Two sources of truth for one question, and the one shown was the
+     * one nothing updated.</p>
+     *
+     * <p>Only a course whose every hole passes the app's own gate is badged
+     * verified. A partially reviewed course is still unverified: a golfer
+     * cannot tell from a course badge which of its holes they can trust, so the
+     * badge has to describe the weakest one.</p>
+     */
+    private void applyHoleProvenance(DataFreshnessDto freshness, Long courseId) {
+        long holes = holeRepository.countByCourseId(courseId);
+        if (holes == 0) {
+            return;
+        }
+        long surveyed = holeRepository.countSurveyedHoles(courseId);
+        if (surveyed == holes) {
+            freshness.setVerificationStatus(VerificationStatus.VERIFIED.name());
+            // The class has to move with the status. The client badges on both
+            // — "verified" plus class D reads as unverified there, exactly as
+            // the hole map treats it — so leaving the class on the stale
+            // data_version left the two disagreeing and the badge kept showing
+            // the old answer. Weakest class across the holes, because a course
+            // badge describes what holds everywhere on the course.
+            var weakest = holeRepository.weakestAccuracyClass(courseId);
+            if (weakest != null) {
+                freshness.setAccuracyClass(weakest.name());
+            }
+        } else if (freshness.getVerificationStatus() == null
+                || VerificationStatus.VERIFIED.name().equals(freshness.getVerificationStatus())) {
+            // The version row claimed verified while its holes are not. The
+            // holes are what the app gates on, so they win.
+            freshness.setVerificationStatus(
+                    surveyed > 0
+                            ? VerificationStatus.PENDING_REVIEW.name()
+                            : VerificationStatus.UNVERIFIED.name());
+        }
     }
 
     private void enrichUpdateAvailable(CourseSearchResultDto dto, Integer downloadedVersion) {

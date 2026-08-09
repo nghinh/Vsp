@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.module.course.entity.Hole;
+import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.audit.AuditAction;
 import vnpt.vsp.module.audit.AuditService;
@@ -42,10 +44,21 @@ public class ScoreServiceImpl implements ScoreService {
             "strokes", "putts", "penalties", "fairwayHit", "gir", "bunker", "notes"
     );
 
+    /// Par used only when the round's course does not cover the hole at all.
+    ///
+    /// Every new entry used to be stamped with this unconditionally, because
+    /// par was read from the client and ScoreSyncRequest.ScoreUpdate has no par
+    /// field — so the branch was taken every time. Every server-side
+    /// score-to-par, handicap input and derived statistic was therefore wrong
+    /// on every par 3 and every par 5, which on a standard course is eight
+    /// holes out of eighteen.
+    private static final int UNKNOWN_HOLE_PAR = 4;
+
     private final ScoreRepository scoreRepository;
     private final ScoreEntryRepository scoreEntryRepository;
     private final ScoreCorrectionRepository scoreCorrectionRepository;
     private final RoundRepository roundRepository;
+    private final HoleRepository holeRepository;
     private final AuditService auditService;
 
     public ScoreServiceImpl(
@@ -53,11 +66,13 @@ public class ScoreServiceImpl implements ScoreService {
             ScoreEntryRepository scoreEntryRepository,
             ScoreCorrectionRepository scoreCorrectionRepository,
             RoundRepository roundRepository,
+            HoleRepository holeRepository,
             AuditService auditService) {
         this.scoreRepository = scoreRepository;
         this.scoreEntryRepository = scoreEntryRepository;
         this.scoreCorrectionRepository = scoreCorrectionRepository;
         this.roundRepository = roundRepository;
+        this.holeRepository = holeRepository;
         this.auditService = auditService;
     }
 
@@ -122,9 +137,7 @@ public class ScoreServiceImpl implements ScoreService {
 
                 entry.setStrokes(update.grossScore());
                 if (entry.getPar() == null) {
-                    // Par comes from the course package on the device; default to
-                    // 4 so the not-null column is satisfied for ad-hoc syncs.
-                    entry.setPar(4);
+                    entry.setPar(resolvePar(round, update.holeIndex()));
                 }
                 if (update.putts() != null) {
                     entry.setPutts(update.putts());
@@ -211,8 +224,10 @@ public class ScoreServiceImpl implements ScoreService {
                 ScoreEntry newEntry = new ScoreEntry();
                 newEntry.setScoreId(scoreId);
                 newEntry.setHoleNumber(fc.getHoleNumber());
-                // Set default par=0; client should send it
-                newEntry.setPar(0);
+                // Was par=0 with "client should send it" — a par of zero is not
+                // a hole, and the client has no way to send one here. Same
+                // lookup the sync path uses: the server knows the course.
+                newEntry.setPar(resolvePar(round, fc.getHoleNumber()));
                 setFieldValue(newEntry, fc.getField(), fc.getNewValue());
                 newEntry.setStrokes(0); // required, avoid NPE
                 scoreEntryRepository.save(newEntry);
@@ -282,4 +297,23 @@ public class ScoreServiceImpl implements ScoreService {
             log.warn("Could not set field {} on ScoreEntry", field, e);
         }
     }
+
+    /// Par for a hole, from the course the round is being played on.
+    ///
+    /// The server knows this and should not take the client's word for it: par
+    /// is course data, the device only holds a copy of it, and a wrong par
+    /// silently corrupts every statistic derived from the score. Falls back to
+    /// [UNKNOWN_HOLE_PAR] only when the round has no course, or the course has
+    /// no such hole — an ad-hoc round on a course nobody has digitised.
+    private int resolvePar(Round round, Integer holeNumber) {
+        if (round == null || round.getCourseId() == null || holeNumber == null) {
+            return UNKNOWN_HOLE_PAR;
+        }
+        return holeRepository
+                .findByCourseIdAndHoleNumber(round.getCourseId(), holeNumber)
+                .map(Hole::getPar)
+                .filter(par -> par != null && par > 0)
+                .orElse(UNKNOWN_HOLE_PAR);
+    }
+
 }
