@@ -6133,6 +6133,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sending {count} tee rows from the photograph — yardages and ratings, for the reviewer to check against it.'**
   String scorecardScanTees(int count);
+
+  /// No description provided for @scoreScanRowBelongsTo.
+  ///
+  /// In en, this message translates to:
+  /// **'This row belongs to'**
+  String get scoreScanRowBelongsTo;
+
+  /// No description provided for @scoreScanRowUnassigned.
+  ///
+  /// In en, this message translates to:
+  /// **'Not assigned'**
+  String get scoreScanRowUnassigned;
+
+  /// No description provided for @scoreScanMatchedByName.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched from the name written on the card.'**
+  String get scoreScanMatchedByName;
+
+  /// No description provided for @scoreScanMatchedByInitial.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched from the initial written on the card.'**
+  String get scoreScanMatchedByInitial;
+
+  /// No description provided for @scoreScanSavedForPlayers.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {holes} holes for {players} players.'**
+  String scoreScanSavedForPlayers(int holes, int players);
+
+  /// No description provided for @scoreScanMatchedByBeingOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'The only row on the card, and you are the only player in this round.'**
+  String get scoreScanMatchedByBeingOnly;
 }
 
 class _AppLocalizationsDelegate

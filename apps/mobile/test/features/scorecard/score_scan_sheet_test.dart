@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/features/scorecard/data/scorecard_scan_api.dart';
+import 'package:vsp_mobile/features/scorecard/domain/score_row_matcher.dart';
 import 'package:vsp_mobile/features/scorecard/presentation/score_scan_sheet.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
@@ -45,13 +46,16 @@ void main() {
     checks: rowChecks ?? checks(),
   );
 
+  const solo = [RowCandidate(playerId: '66', name: 'Nguyễn Hồng Nghi')];
+
   /// Opens the sheet and hands back whatever the golfer confirmed.
-  Future<Map<int, int>?> open(
+  Future<ConfirmedStrokes?> open(
     WidgetTester tester, {
     required ScannedScores scanned,
     Map<String, int> pars = const {},
+    List<RowCandidate> players = solo,
   }) async {
-    Map<int, int>? result;
+    ConfirmedStrokes? result;
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('vi'),
@@ -65,6 +69,7 @@ void main() {
                   context,
                   scanned: scanned,
                   holePars: pars,
+                  players: players,
                 );
               },
               child: const Text('open'),
@@ -237,7 +242,7 @@ void main() {
       ],
     );
 
-    Map<int, int>? confirmed;
+    ConfirmedStrokes? confirmed;
     await tester.pumpWidget(
       MaterialApp(
         locale: const Locale('vi'),
@@ -251,6 +256,7 @@ void main() {
                   context,
                   scanned: scanned,
                   holePars: const {},
+                  players: solo,
                 );
               },
               child: const Text('open'),
@@ -268,44 +274,107 @@ void main() {
     await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    expect(confirmed, {1: 5});
+    expect(confirmed, {'66': {1: 5}});
   });
 
-  testWidgets('a four-ball card asks which row is the golfer\'s', (
-    tester,
-  ) async {
-    // Four rows of handwriting, and the server cannot know which belongs to
-    // the phone holding the card. Taking the first would post somebody else's
-    // round under this golfer's name.
+  testWidgets('the name written on the card picks the player', (tester) async {
+    // Four rows of handwriting and four golfers in the round. The label at the
+    // left of each row is how golfers have always said whose is whose, and the
+    // round already knows who is playing — so the app reads it rather than
+    // asking the question the card has already answered.
     final scanned = ScannedScores(
       players: [
-        row(player: 'A', holes: {1: 5}),
-        row(player: 'B', holes: {1: 3}),
+        row(player: 'Nam', holes: {1: 5}),
+        row(player: 'Nghi', holes: {1: 3}),
       ],
     );
 
-    await open(tester, scanned: scanned);
+    final confirmed = await open(
+      tester,
+      scanned: scanned,
+      players: const [
+        RowCandidate(playerId: '66', name: 'Nguyễn Hồng Nghi'),
+        RowCandidate(playerId: '67', name: 'Trần Văn Nam'),
+      ],
+    );
+    expect(confirmed, isNull);
 
-    expect(find.text('A'), findsOneWidget);
-    expect(find.text('B'), findsOneWidget);
-    expect(
-      tester
-          .widget<TextField>(find.byKey(const Key('score-scan-hole-1')))
-          .controller
-          ?.text,
-      '5',
+    // The chips say who each row went to, so the match is checked rather than
+    // trusted.
+    expect(find.text('Nam → Trần Văn Nam'), findsOneWidget);
+    expect(find.text('Nghi → Nguyễn Hồng Nghi'), findsOneWidget);
+
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets('both matched rows are saved, each to its own player', (
+    tester,
+  ) async {
+    final scanned = ScannedScores(
+      players: [
+        row(player: 'Nam', holes: {1: 5}),
+        row(player: 'N.H.N', holes: {1: 3}),
+      ],
     );
 
-    await tester.tap(find.text('B'));
+    ConfirmedStrokes? confirmed;
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('vi'),
+        supportedLocales: AppLocalizations.supportedLocales,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: ElevatedButton(
+              onPressed: () async {
+                confirmed = await showScoreScanSheet(
+                  context,
+                  scanned: scanned,
+                  holePars: const {},
+                  players: const [
+                    RowCandidate(playerId: '66', name: 'Nguyễn Hồng Nghi'),
+                    RowCandidate(playerId: '67', name: 'Trần Văn Nam'),
+                  ],
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(FilledButton));
     await tester.pumpAndSettle();
 
-    expect(
-      tester
-          .widget<TextField>(find.byKey(const Key('score-scan-hole-1')))
-          .controller
-          ?.text,
-      '3',
+    expect(confirmed, {
+      '67': {1: 5},
+      '66': {1: 3},
+    });
+  });
+
+  testWidgets('a row nobody could be matched to is not saved', (tester) async {
+    // A guest who wrote "Khách" is nobody in this round. Writing their strokes
+    // onto the nearest player would take one golfer's card and give it to
+    // another, which is worse than the row simply not arriving.
+    final scanned = ScannedScores(
+      players: [
+        row(player: 'Khách', holes: {1: 5}),
+        row(player: 'Nghi', holes: {1: 4}),
+      ],
     );
+
+    final confirmed = await open(
+      tester,
+      scanned: scanned,
+      players: const [RowCandidate(playerId: '66', name: 'Nguyễn Hồng Nghi')],
+    );
+    expect(confirmed, isNull);
+
+    await tester.tap(find.byType(FilledButton));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('a to_par hole with no par known stays blank', (tester) async {

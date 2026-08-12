@@ -3434,4 +3434,26 @@ class AppLocalizationsVi extends AppLocalizations {
   String scorecardScanTees(int count) {
     return 'Gửi kèm $count hàng tee từ ảnh — yardage và rating, để người duyệt đối chiếu.';
   }
+
+  @override
+  String get scoreScanRowBelongsTo => 'Dòng này của';
+
+  @override
+  String get scoreScanRowUnassigned => 'Chưa gán';
+
+  @override
+  String get scoreScanMatchedByName => 'Nhận diện theo tên ghi trên card.';
+
+  @override
+  String get scoreScanMatchedByInitial =>
+      'Nhận diện theo chữ cái đầu ghi trên card.';
+
+  @override
+  String scoreScanSavedForPlayers(int holes, int players) {
+    return 'Đã lưu $holes hố cho $players người chơi.';
+  }
+
+  @override
+  String get scoreScanMatchedByBeingOnly =>
+      'Card chỉ có một dòng và vòng này chỉ có mình bạn.';
 }

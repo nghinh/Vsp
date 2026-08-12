@@ -3435,4 +3435,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String scorecardScanTees(int count) {
     return 'Sending $count tee rows from the photograph — yardages and ratings, for the reviewer to check against it.';
   }
+
+  @override
+  String get scoreScanRowBelongsTo => 'This row belongs to';
+
+  @override
+  String get scoreScanRowUnassigned => 'Not assigned';
+
+  @override
+  String get scoreScanMatchedByName =>
+      'Matched from the name written on the card.';
+
+  @override
+  String get scoreScanMatchedByInitial =>
+      'Matched from the initial written on the card.';
+
+  @override
+  String scoreScanSavedForPlayers(int holes, int players) {
+    return 'Saved $holes holes for $players players.';
+  }
+
+  @override
+  String get scoreScanMatchedByBeingOnly =>
+      'The only row on the card, and you are the only player in this round.';
 }

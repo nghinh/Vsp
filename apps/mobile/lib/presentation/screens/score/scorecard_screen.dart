@@ -41,6 +41,7 @@ import '../../../features/bag/data/bag_repository.dart';
 import '../../../features/bag/data/bag_service.dart';
 import '../../../features/round/presentation/round_summary_screen.dart';
 import '../../../features/scorecard/data/scorecard_scan_api.dart';
+import '../../../features/scorecard/domain/score_row_matcher.dart';
 import '../../../features/scorecard/presentation/score_scan_sheet.dart';
 import '../../../infrastructure/persistence/sync_queue_repository.dart';
 import '../../sheets/shot_entry_sheet.dart';
@@ -421,15 +422,41 @@ class _ScorecardScreenContent extends StatelessWidget {
       context,
       scanned: scanned,
       holePars: state.holePars,
+      players: _playersOf(state),
     );
     if (confirmed == null || confirmed.isEmpty) return;
 
-    final written = await cubit.applyScannedStrokes(
-      playerId: state.playerIds.isNotEmpty ? state.playerIds.first : 'me',
-      grossByHole: confirmed,
+    var written = 0;
+    for (final entry in confirmed.entries) {
+      written += await cubit.applyScannedStrokes(
+        playerId: entry.key,
+        grossByHole: entry.value,
+      );
+    }
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(confirmed.length > 1
+            ? l10n.scoreScanSavedForPlayers(written, confirmed.length)
+            : l10n.scoreScanSaved(written)),
+      ),
     );
-    messenger.showSnackBar(SnackBar(content: Text(l10n.scoreScanSaved(written))));
   }
+
+  /// Who is playing, for matching the labels written on the card.
+  ///
+  /// A player with no name recorded is still offered — as their id, which is
+  /// at least something the golfer can recognise their own row by — because
+  /// leaving them out would make their row unassignable rather than merely
+  /// unmatched.
+  List<RowCandidate> _playersOf(ScorecardScreenState state) => [
+    for (final playerId in state.playerIds)
+      RowCandidate(
+        playerId: playerId,
+        name: state.playerNames[playerId]?.trim().isNotEmpty == true
+            ? state.playerNames[playerId]!.trim()
+            : playerId,
+      ),
+  ];
 
   Future<ImageSource?> _chooseImageSource(
     BuildContext context,

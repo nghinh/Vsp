@@ -6,21 +6,22 @@
 // hole the golfer actually took six on, and they would find out at the end of
 // the season when their handicap was wrong.
 //
-// Three things are asked before any number counts:
-//
-//   1. Which row is theirs, when the card carries a four-ball.
-//   2. Whether the row is strokes or against par — never guessed. The same
-//      "1" is a hole in one or a bogey depending on the answer.
-//   3. Every hole, on one screen, editable, beside its par.
+// Whose row is whose is worked out from the card rather than asked. Golfers
+// label their row the way they always have — a first name, a nickname, a pair
+// of initials, one letter — and the round already knows who is playing, so
+// `ScoreRowMatcher` puts the two together. A row it cannot place stays
+// unassigned rather than being guessed at, and every match is shown next to
+// the row it was made for, so the golfer is confirming rather than trusting.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../data/scorecard_scan_api.dart';
+import '../domain/score_row_matcher.dart';
 
-/// The strokes a golfer confirmed, hole number → gross score.
-typedef ConfirmedStrokes = Map<int, int>;
+/// What the golfer confirmed: player id → hole number → gross score.
+typedef ConfirmedStrokes = Map<String, Map<int, int>>;
 
 /// Shows the scanned card and returns what the golfer confirmed, or null if
 /// they backed out.
@@ -28,13 +29,17 @@ Future<ConfirmedStrokes?> showScoreScanSheet(
   BuildContext context, {
   required ScannedScores scanned,
   required Map<String, int> holePars,
+  List<RowCandidate> players = const [],
 }) {
   return showModalBottomSheet<ConfirmedStrokes>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (_) =>
-        ScoreScanSheet(scanned: scanned, holePars: holePars),
+    builder: (_) => ScoreScanSheet(
+      scanned: scanned,
+      holePars: holePars,
+      players: players,
+    ),
   );
 }
 
@@ -43,6 +48,7 @@ class ScoreScanSheet extends StatefulWidget {
     super.key,
     required this.scanned,
     required this.holePars,
+    this.players = const [],
   });
 
   final ScannedScores scanned;
@@ -51,6 +57,9 @@ class ScoreScanSheet extends StatefulWidget {
   /// par into strokes, and shown beside every hole either way.
   final Map<String, int> holePars;
 
+  /// Who is playing this round, for matching the labels on the card.
+  final List<RowCandidate> players;
+
   @override
   State<ScoreScanSheet> createState() => ScoreScanSheetState();
 }
@@ -58,19 +67,32 @@ class ScoreScanSheet extends StatefulWidget {
 @visibleForTesting
 class ScoreScanSheetState extends State<ScoreScanSheet> {
   int _row = 0;
-  ScannedNotation _notation = ScannedNotation.unknown;
 
-  /// hole number → what the golfer will save. Null means "left blank": a hole
+  /// Which player each row belongs to, and how that was decided.
+  late List<RowMatch> _matches;
+  final Map<int, String?> _assigned = {};
+
+  final Map<int, ScannedNotation> _notation = {};
+
+  /// row → hole → what the golfer will save. Null means "left blank": a hole
   /// the server could not read, or one the golfer cleared.
-  final Map<int, int?> _gross = {};
-  final Map<int, TextEditingController> _controllers = {};
+  final Map<int, Map<int, int?>> _gross = {};
+  final Map<String, TextEditingController> _controllers = {};
 
   ScannedScoreRow get _selected => widget.scanned.players[_row];
 
   @override
   void initState() {
     super.initState();
-    _selectRow(0);
+    _matches = ScoreRowMatcher.match(
+      widget.scanned.players.map((row) => row.player).toList(),
+      widget.players,
+    );
+    for (var i = 0; i < widget.scanned.players.length; i++) {
+      _assigned[i] = _matches[i].playerId;
+      _notation[i] = widget.scanned.players[i].notation;
+      _recompute(i);
+    }
   }
 
   @override
@@ -81,13 +103,15 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
     super.dispose();
   }
 
-  void _selectRow(int index) {
-    _row = index;
-    _notation = _selected.notation;
-    _recompute();
-  }
-
   int? _parOf(int hole) => widget.holePars['$hole'];
+
+  String? _nameOf(String? playerId) {
+    if (playerId == null) return null;
+    for (final player in widget.players) {
+      if (player.playerId == playerId) return player.name;
+    }
+    return null;
+  }
 
   /// The gross strokes a written number stands for.
   ///
@@ -95,26 +119,27 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
   /// and a round whose pars are unknown cannot supply it. Rather than assume a
   /// par 4 — which would be right about half the time and silently wrong the
   /// rest — the hole is left blank for the golfer to fill.
-  int? _grossFrom(int? written, int hole) {
+  int? _grossFrom(int? written, int hole, int row) {
     if (written == null) return null;
-    if (_notation != ScannedNotation.toPar) return written;
+    if (_notation[row] != ScannedNotation.toPar) return written;
     final par = _parOf(hole);
     if (par == null) return null;
     final gross = par + written;
     return gross < 1 ? null : gross;
   }
 
-  void _recompute() {
-    _gross.clear();
-    for (final stroke in _selected.holes) {
-      final gross = _grossFrom(stroke.written, stroke.hole);
-      _gross[stroke.hole] = gross;
-      _controller(stroke.hole).text = gross?.toString() ?? '';
+  void _recompute(int row) {
+    final values = <int, int?>{};
+    for (final stroke in widget.scanned.players[row].holes) {
+      final gross = _grossFrom(stroke.written, stroke.hole, row);
+      values[stroke.hole] = gross;
+      _controller(row, stroke.hole).text = gross?.toString() ?? '';
     }
+    _gross[row] = values;
   }
 
-  TextEditingController _controller(int hole) =>
-      _controllers.putIfAbsent(hole, TextEditingController.new);
+  TextEditingController _controller(int row, int hole) =>
+      _controllers.putIfAbsent('$row-$hole', TextEditingController.new);
 
   /// What the golfer's own arithmetic disagrees with, in their words.
   ///
@@ -125,7 +150,8 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
     final checks = _selected.checks;
     final warnings = <String>[];
 
-    final blanks = _gross.values.where((value) => value == null).length;
+    final blanks =
+        (_gross[_row] ?? {}).values.where((value) => value == null).length;
     if (blanks > 0) {
       warnings.add(l10n.scoreScanBlanks(blanks));
     }
@@ -138,15 +164,25 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
     return warnings;
   }
 
-  bool get _canSave =>
-      _notation != ScannedNotation.unknown &&
-      _gross.values.any((value) => value != null);
+  /// Rows that would be saved: assigned to a player, notation known, and with
+  /// at least one number on them.
+  Iterable<int> get _savable => List.generate(widget.scanned.players.length, (i) => i)
+      .where((i) =>
+          _assigned[i] != null &&
+          _notation[i] != ScannedNotation.unknown &&
+          (_gross[i] ?? {}).values.any((value) => value != null));
+
+  bool get _canSave => _savable.isNotEmpty;
 
   void _save() {
-    final confirmed = <int, int>{};
-    for (final entry in _gross.entries) {
-      final value = entry.value;
-      if (value != null) confirmed[entry.key] = value;
+    final confirmed = <String, Map<int, int>>{};
+    for (final row in _savable) {
+      final strokes = <int, int>{};
+      for (final entry in (_gross[row] ?? {}).entries) {
+        final value = entry.value;
+        if (value != null) strokes[entry.key] = value;
+      }
+      confirmed[_assigned[row]!] = strokes;
     }
     Navigator.of(context).pop(confirmed);
   }
@@ -176,11 +212,15 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
               children: [
                 if (widget.scanned.players.length > 1) _rowPicker(l10n),
+                if (widget.players.isNotEmpty) _playerPicker(l10n),
                 _notationPicker(l10n),
                 for (final warning in _warnings(l10n))
                   _WarningRow(text: warning),
                 const SizedBox(height: 8),
-                Text(l10n.scoreScanCheckEveryHole, style: theme.textTheme.bodySmall),
+                Text(
+                  l10n.scoreScanCheckEveryHole,
+                  style: theme.textTheme.bodySmall,
+                ),
                 const SizedBox(height: 8),
                 for (final hole in holes) _holeRow(hole, l10n),
               ],
@@ -204,11 +244,11 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
     );
   }
 
-  /// Which row on the card is the golfer's.
+  /// Which row of the card is being checked.
   ///
-  /// A card carried round by a four-ball has four rows of handwriting on it,
-  /// and the server has no way to know which one belongs to the phone holding
-  /// it. Guessing at the first row would post somebody else's round.
+  /// Each chip carries the label as written and the player it was matched to,
+  /// so a card with four rows on it reads as four names rather than four
+  /// anonymous rows the golfer has to open one at a time.
   Widget _rowPicker(AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,16 +260,78 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
           children: [
             for (var i = 0; i < widget.scanned.players.length; i++)
               ChoiceChip(
-                label: Text(
-                  widget.scanned.players[i].player?.trim().isNotEmpty == true
-                      ? widget.scanned.players[i].player!.trim()
-                      : l10n.scoreScanRowNumber(i + 1),
-                ),
+                key: Key('score-scan-row-$i'),
+                label: Text(_chipLabel(i, l10n)),
                 selected: _row == i,
-                onSelected: (_) => setState(() => _selectRow(i)),
+                onSelected: (_) => setState(() => _row = i),
               ),
           ],
         ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  String _chipLabel(int row, AppLocalizations l10n) {
+    final written = widget.scanned.players[row].player?.trim();
+    final label = written == null || written.isEmpty
+        ? l10n.scoreScanRowNumber(row + 1)
+        : written;
+    final name = _nameOf(_assigned[row]);
+    return name == null ? label : '$label → $name';
+  }
+
+  /// Who this row belongs to.
+  ///
+  /// Pre-selected from the label on the card, and always shown: the match is a
+  /// reading of somebody's handwriting, and the golfer is the one who knows
+  /// whose row it was. Assigning strokes to the wrong player takes one
+  /// golfer's round away and builds another's handicap out of an afternoon
+  /// they never played, so this is confirmed rather than assumed.
+  Widget _playerPicker(AppLocalizations l10n) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DropdownButtonFormField<String?>(
+          key: const Key('score-scan-player'),
+          initialValue: _assigned[_row],
+          decoration: InputDecoration(labelText: l10n.scoreScanRowBelongsTo),
+          items: [
+            DropdownMenuItem<String?>(
+              value: null,
+              child: Text(l10n.scoreScanRowUnassigned),
+            ),
+            for (final player in widget.players)
+              DropdownMenuItem<String?>(
+                value: player.playerId,
+                child: Text(player.name),
+              ),
+          ],
+          onChanged: (value) => setState(() {
+            // One player, one row. Taking them off whichever row had them
+            // beats writing one round over another without saying so.
+            if (value != null) {
+              for (final row in _assigned.keys.toList()) {
+                if (row != _row && _assigned[row] == value) _assigned[row] = null;
+              }
+            }
+            _assigned[_row] = value;
+          }),
+        ),
+        if (_matches[_row].kind != RowMatchKind.none &&
+            _assigned[_row] == _matches[_row].playerId)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              switch (_matches[_row].kind) {
+                RowMatchKind.name => l10n.scoreScanMatchedByName,
+                RowMatchKind.initial => l10n.scoreScanMatchedByInitial,
+                RowMatchKind.only => l10n.scoreScanMatchedByBeingOnly,
+                RowMatchKind.none => '',
+              },
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         const SizedBox(height: 16),
       ],
     );
@@ -257,13 +359,13 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
               label: Text(l10n.scoreScanNotationToPar),
             ),
           ],
-          selected: _notation == ScannedNotation.unknown
+          selected: _notation[_row] == ScannedNotation.unknown
               ? const {}
-              : {_notation},
+              : {_notation[_row]!},
           emptySelectionAllowed: true,
           onSelectionChanged: (selection) => setState(() {
-            _notation = selection.first;
-            _recompute();
+            _notation[_row] = selection.first;
+            _recompute(_row);
           }),
         ),
         const SizedBox(height: 16),
@@ -298,16 +400,15 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
             width: 64,
             child: TextField(
               key: Key('score-scan-hole-$hole'),
-              controller: _controller(hole),
+              controller: _controller(_row, hole),
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(isDense: true),
               onChanged: (text) => setState(() {
                 final value = int.tryParse(text);
-                _gross[hole] = value != null && value >= 1 && value <= 20
-                    ? value
-                    : null;
+                _gross[_row]![hole] =
+                    value != null && value >= 1 && value <= 20 ? value : null;
               }),
             ),
           ),
@@ -330,8 +431,11 @@ class _WarningRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.warning_amber_rounded,
-              size: 18, color: theme.colorScheme.error),
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 18,
+            color: theme.colorScheme.error,
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(

@@ -2176,5 +2176,21 @@
         "type": "int"
       }
     }
-  }
+  },
+  "scoreScanRowBelongsTo": "This row belongs to",
+  "scoreScanRowUnassigned": "Not assigned",
+  "scoreScanMatchedByName": "Matched from the name written on the card.",
+  "scoreScanMatchedByInitial": "Matched from the initial written on the card.",
+  "scoreScanSavedForPlayers": "Saved {holes} holes for {players} players.",
+  "@scoreScanSavedForPlayers": {
+    "placeholders": {
+      "holes": {
+        "type": "int"
+      },
+      "players": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanMatchedByBeingOnly": "The only row on the card, and you are the only player in this round."
 }

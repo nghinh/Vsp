@@ -1219,5 +1219,11 @@
   "scoreScanInDisagrees": "Tổng chín hố sau không khớp với số {in_} bạn ghi ở ô IN — kiểm tra lại chín hố đó.",
   "scoreScanSave": "Lưu vào bảng điểm",
   "scoreScanSaved": "Đã lưu {count} hố vào bảng điểm.",
-  "scorecardScanTees": "Gửi kèm {count} hàng tee từ ảnh — yardage và rating, để người duyệt đối chiếu."
+  "scorecardScanTees": "Gửi kèm {count} hàng tee từ ảnh — yardage và rating, để người duyệt đối chiếu.",
+  "scoreScanRowBelongsTo": "Dòng này của",
+  "scoreScanRowUnassigned": "Chưa gán",
+  "scoreScanMatchedByName": "Nhận diện theo tên ghi trên card.",
+  "scoreScanMatchedByInitial": "Nhận diện theo chữ cái đầu ghi trên card.",
+  "scoreScanSavedForPlayers": "Đã lưu {holes} hố cho {players} người chơi.",
+  "scoreScanMatchedByBeingOnly": "Card chỉ có một dòng và vòng này chỉ có mình bạn."
 }
