@@ -256,6 +256,18 @@ class _LoadedBody extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+            actions: [
+              // The scorecard button also sits at the foot of this page, past
+              // the conditions and the tee sets and the data-quality panel —
+              // which is to say, past where anyone scrolls. A golfer holding
+              // the club's card needs it on arrival.
+              IconButton(
+                key: const Key('course_detail_scorecard_action'),
+                icon: const Icon(Icons.assignment_outlined),
+                tooltip: AppLocalizations.of(context).scorecardTitle,
+                onPressed: () => _openScorecardSubmission(context, course),
+              ),
+            ],
           ),
 
           // Hero section
@@ -317,17 +329,7 @@ class _LoadedBody extends StatelessWidget {
                 key: const Key('course_detail_submit_scorecard'),
                 icon: const Icon(Icons.assignment_outlined),
                 label: Text(AppLocalizations.of(context).scorecardTitle),
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ScorecardSubmitScreen(
-                      courseId: course.courseId,
-                      facilityCourses: course.facilityCourses,
-                      defaultName: course.facilityCourses.length > 1
-                          ? ''
-                          : course.facilityName,
-                    ),
-                  ),
-                ),
+                onPressed: () => _openScorecardSubmission(context, course),
               ),
             ),
           ),
@@ -339,6 +341,26 @@ class _LoadedBody extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// Opens the form for typing in the club's printed card.
+  ///
+  /// Reached from the app bar and from the foot of the page: the golfer with
+  /// the card in their hand is the app's only source of stroke index, and a
+  /// button they have to scroll past a data-quality panel to find is a source
+  /// nobody uses.
+  void _openScorecardSubmission(BuildContext context, CourseDetail course) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ScorecardSubmitScreen(
+          courseId: course.courseId,
+          facilityCourses: course.facilityCourses,
+          defaultName: course.facilityCourses.length > 1
+              ? ''
+              : course.facilityName,
+        ),
       ),
     );
   }
