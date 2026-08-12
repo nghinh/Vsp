@@ -105,130 +105,134 @@ morning, B+C this afternoon. **Not representable today, at any level.**
    when `layouts.length <= 1`, so the dropdown has never once appeared. The UI
    for choosing a configuration exists; there is no data to put in it.
 
-## 5. Proposed organisation
+## 5. The organisation, as decided
 
-Keep the three levels, redefine the middle one, and add the thing that is
-actually missing: **the playing configuration**.
+Vocabulary, fixed:
+
+| level | Vietnamese | what it is | table |
+|---|---|---|---|
+| property | **sân golf** | the club, the gate you drive through | `golf_facilities` |
+| named unit | **đường** | 9 or 18 holes the club names and signs | `courses` |
+| what was played | **vòng** | an ordered list of đường, chosen by the golfer | `rounds` + `round_segments` |
 
 ```
-golf_facility        BRG Kings Island          Long Biên
+sân golf             BRG Kings Island          Long Biên
    │
-   ├── course        King's Course (18)        Đường A (9)
-   │                 Mountainview (18)         Đường B (9)
-   │                 Lakeside (18)             Đường C (9)
-   │                   └── holes 1..N, numbered within the course
-   │
-   └── layout        King's Course             A + B
-                     Mountainview              B + C
-                     Lakeside                  A + C
-                       └── ordered segments → courses
+   └── đường         King's Course (18)        Đường A (9)
+                     Mountainview (18)         Đường B (9)
+                     Lakeside (18)             Đường C (9)
+                       └── holes 1..N, numbered inside the đường
 ```
 
-- **`courses` becomes the named physical unit the club markets** — an eighteen
-  or a nine. "King's Course", "Đường A". This is what the club puts on a sign.
-- **Holes are numbered within their course.** Đường A holds holes 1..9.
-- **A layout is an ordered list of courses played as one round.** An eighteen
-  is the trivial layout of one segment; A+B is two.
-- **A round points at a layout**, not at a course.
+There is no table of published combinations. **The golfer picks the đường at
+round setup** — one for an eighteen, two for a 27-hole club — and the round
+records what was chosen:
 
 ```sql
-CREATE TABLE course_layouts (
-    id           BIGSERIAL PRIMARY KEY,
-    facility_id  BIGINT NOT NULL REFERENCES golf_facilities(id) ON DELETE CASCADE,
-    name         VARCHAR(255) NOT NULL,        -- 'A + B', "King's Course"
-    holes_count  INTEGER NOT NULL,
-    par_total    INTEGER,
-    is_default   BOOLEAN NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_layout_facility_name UNIQUE (facility_id, name)
-);
-
-CREATE TABLE course_layout_segments (
-    layout_id  BIGINT   NOT NULL REFERENCES course_layouts(id) ON DELETE CASCADE,
-    position   SMALLINT NOT NULL,              -- 1 = the first nine played
+-- Which đường were played, in the order they were played.
+CREATE TABLE round_segments (
+    round_id   UUID     NOT NULL REFERENCES rounds(id) ON DELETE CASCADE,
+    position   SMALLINT NOT NULL,             -- 1 = the first nine
     course_id  BIGINT   NOT NULL REFERENCES courses(id),
-    PRIMARY KEY (layout_id, position)
-);
-
--- The flattened scorecard: one row per hole of the round, generated when a
--- layout is created. Makes par resolution a single indexed lookup and keeps
--- the arithmetic out of the client, the sync endpoint and the exporters.
-CREATE TABLE layout_holes (
-    layout_id          BIGINT  NOT NULL REFERENCES course_layouts(id) ON DELETE CASCADE,
-    round_hole_number  INTEGER NOT NULL,       -- 1..18 as the golfer counts
-    hole_id            BIGINT  NOT NULL REFERENCES holes(id),
-    stroke_index       INTEGER,                -- allocation for THIS layout
-    PRIMARY KEY (layout_id, round_hole_number)
+    PRIMARY KEY (round_id, position)
 );
 ```
 
-`resolvePar` becomes `layout_holes.find(layout_id, holeNumber) → hole.par`, one
-lookup, no division by nine, and it stays correct if a facility ever combines a
-nine with something that is not a nine.
+A round on a single eighteen gets one row and behaves exactly as today. Par
+resolution walks the segments by cumulative hole count:
 
-Ratings hang off the layout, not the course, because that is where the real
-world puts them:
+```
+round hole 12 on A+B  →  A holds 9  →  segment 2 (B), B's hole 3
+```
+
+This is why the segments carry a `position` and not a hardcoded nine: a club
+that pairs a nine with a par-3 loop, or plays A+A, still resolves correctly.
+
+**What this costs:** a golfer-chosen combination cannot carry a course rating,
+because a rating is issued against a specific published eighteen. Net scoring
+and handicap differentials for 27-hole clubs are therefore out of reach until
+someone publishes ratings — which is the accepted trade for not making an
+operator maintain a combination table.
+
+**Tees stay on the đường.** `tee_sets.course_id` is unchanged, so "Trắng" at
+Long Biên is three rows, one per đường. Round setup asks for a tee per segment;
+where the colours match — they usually do — the second selector can default to
+the first one's name and stay out of the way.
+
+## 6. Stroke index — golfer submits, admin reviews
+
+The index is printed on the club's scorecard and exists in no open dataset.
+It is also the last thing standing between the app and net scoring: without it
+no handicap allocation can be computed, not for a 27-hole club and not for the
+60 eighteens that already have hole data.
+
+**Nothing new needs building for the review side.** `course_corrections`
+(V23) already carries reporter → evidence → queue → approve / reject / request
+info / convert-to-draft, and the portal already renders that queue
+(`apps/portal/src/components/corrections/`, nine components). What it does not
+have is a correction that describes a scorecard: `chk_correction_type` allows
+`GEOMETRY, PIN_POSITION, BUNKER, WATER, OB, CART_PATH, LANDMARK,
+COURSE_CONDITION, GREEN_SPEED, OTHER` — every one of them geometric.
+
+So:
 
 ```sql
-CREATE TABLE layout_tee_ratings (
-    layout_id      BIGINT NOT NULL REFERENCES course_layouts(id) ON DELETE CASCADE,
-    tee_set_id     BIGINT NOT NULL REFERENCES tee_sets(id),
-    course_rating  NUMERIC(4,1),
-    slope_rating   INTEGER CHECK (slope_rating BETWEEN 55 AND 155),
-    par            INTEGER,
-    PRIMARY KEY (layout_id, tee_set_id)
-);
+ALTER TABLE holes ADD COLUMN stroke_index INTEGER
+    CHECK (stroke_index BETWEEN 1 AND 18);
+
+-- one new correction type, and a payload the reviewer can read
+ALTER TABLE course_corrections DROP CONSTRAINT chk_correction_type;
+ALTER TABLE course_corrections ADD CONSTRAINT chk_correction_type CHECK (
+    correction_type IN ('GEOMETRY','PIN_POSITION','BUNKER','WATER','OB',
+                        'CART_PATH','LANDMARK','COURSE_CONDITION',
+                        'GREEN_SPEED','SCORECARD','OTHER'));
+ALTER TABLE course_corrections ADD COLUMN proposed_holes JSONB;
+    -- [{"hole":1,"par":4,"strokeIndex":7}, …] for the whole đường at once
 ```
 
-## 6. Migration path, in an order that never leaves the app broken
+A scorecard is submitted for a whole đường in one correction, not hole by hole:
+it is one photograph of one card, and 9 or 18 separate queue items would be 9
+or 18 separate decisions about the same piece of evidence.
+`reporter_evidence_url` already exists for the photo.
 
-**Step 1 — give every existing course a trivial layout.** One layout per
-course, one segment, `is_default = true`, `layout_holes` backfilled from
-`holes`. `rounds.layout_id` added nullable and backfilled from `course_id`;
-both columns coexist until step 4. Nothing changes for a golfer. 73 layouts,
-1,080 layout_holes.
+**The one assumption**, and it needs a decision if it is wrong: a club with
+đường A/B/C prints its stroke indexes per *combination* (1..18 across A+B), not
+per đường. Storing the index on the hole means storing one card's numbers. The
+proposal is to store the index **as printed on the đường's own card** and, when
+two đường are combined, allocate odd numbers to the first and even to the
+second — the standard rule. If Long Biên's cards do something else, the column
+moves to `round_segments` and the golfer's submission has to say which pairing
+the card was for.
 
-**Step 2 — serve layouts.** Course detail returns the facility's layouts;
-`round_setup_bloc` stops hardcoding its single `LayoutOption` and the dropdown
-that has always been hidden starts appearing — but still with one entry
-everywhere, so no visible change yet.
+## 7. Implementation slices
 
-**Step 3 — split the facilities that are really several courses.** Data work,
-not migration. Đồng Mô's one row becomes three courses and three layouts; Long
-Biên's becomes three nines and three combinations. Each split needs real hole
-data, which is the same blocker as everything else in
-`course-geometry-autogen-architecture.md` — the pars are known from the club's
-scorecard even when the geometry is not, and pars are all scoring needs.
+Each slice ships on its own and leaves the app working.
 
-**Step 4 — make `layout_id` the contract.** Score sync resolves par through
-`layout_holes`; `rounds.course_id` becomes derived (the layout's first segment)
-or is dropped.
+**Slice 1 — schema.** `round_segments`, `holes.stroke_index`,
+`course_corrections.proposed_holes` + the `SCORECARD` type. Backfill one
+`round_segments` row per existing round from `rounds.course_id` — 164 rounds,
+all of them with a `course_id`, so the backfill leaves none behind.
+Nothing reads the new tables yet.
 
-Packages (step 5, independent): key the manifest on `layout_id` so a golfer
-playing A+B downloads exactly those eighteen holes, or keep it on `course_id`
-and let the phone fetch two packages. The second is less work and matches how
-the club thinks about its nines.
+**Slice 2 — par resolution through segments.** `ScoreServiceImpl.resolvePar`
+walks `round_segments` instead of `holes.find(course_id, hole_number)`. With
+one segment per round the behaviour is identical, which is what makes it safe
+to ship before any đường exists.
 
-## 7. What has to be decided before step 3
+**Slice 3 — round setup picks đường.** The API returns a facility's đường;
+`round_setup_bloc` stops hardcoding its single `LayoutOption`; the golfer picks
+one or two and the round posts its segments. `_LayoutSelector` — already
+written, never yet visible — becomes the picker.
 
-1. **Who picks the combination?** Either the club publishes today's eighteen
-   ("A+B") and the golfer picks one layout, or the golfer picks two nines at
-   round setup and the layout is created on the fly. The first is one dropdown
-   and a table the operator maintains; the second needs no operator but cannot
-   carry a rating.
-2. **Tee colours per nine or per facility?** `tee_sets.course_id` makes a tee
-   belong to one nine, so "White at Long Biên" is three rows today. If a tee
-   colour is a property of the facility, `tee_sets` wants to move up a level
-   before layouts start referencing them.
-3. **Where does stroke index come from?** It is on the club's scorecard and
-   nowhere in OSM. Without it, net scoring and handicap allocation cannot be
-   computed for any layout — including the 60 eighteens that already have hole
-   data.
-4. **What do we call these in Vietnamese?** The UI has no word for either
-   concept yet. "Sân" is the property *and* the course in ordinary speech;
-   "đường" is the nine. Suggest: facility = *khu sân*, course = *sân*, layout =
-   *vòng đấu* or *tổ hợp sân*.
-5. **How many of the 73 are actually multi-course?** The OSM snapshot suggests
-   at least three (Kings Island ×2 polygons, KN Cam Ranh ×2). The roster review
-   in `vn-golf-roster-review.md` was built one-facility-per-row and did not ask
-   the question. Answering it is a directory pass over 73 clubs, not a code
-   change, and it decides how much of step 3 there is.
+**Slice 4 — scorecard submission and review.** Mobile: photograph the card,
+type par and index for 9 holes, submit as a `SCORECARD` correction. Portal:
+the existing queue gains a table view of the proposed holes and an approve that
+writes `holes.par` / `holes.stroke_index`.
+
+**Slice 5 — the data itself.** Split the facilities that really have đường.
+Long Biên and Đại Lải are confirmed; the rest needs a directory pass over 73
+clubs. Until a facility is split it keeps its single "— Championship" đường and
+nothing about it changes.
+
+Packages stay keyed on `course_id`: a golfer playing A+B downloads two
+packages of nine holes, which is also the granularity the club thinks in.
