@@ -66,6 +66,13 @@ public class CorrectionDetailResponse {
      */
     private String proposedGeometry;
 
+    /**
+     * SCORECARD corrections only: the card the golfer typed in, as JSON.
+     * The reviewer decides on this against the photograph in
+     * {@code reporterEvidenceUrl}, so it has to travel with the detail.
+     */
+    private String proposedScorecard;
+
     /** Reporter's horizontal GPS accuracy in metres at submission time. */
     private Double gpsAccuracyMeters;
 
@@ -121,6 +128,7 @@ public class CorrectionDetailResponse {
         r.setConfidence(c.getConfidence());
         r.setGeometryLayer(c.getGeometryLayer() != null ? c.getGeometryLayer().getWireValue() : null);
         r.setProposedGeometry(proposedGeometryWkt);
+        r.setProposedScorecard(c.getProposedScorecard());
         r.setGpsAccuracyMeters(c.getGpsAccuracyMeters());
         r.setCorroborationCount(c.getCorroborationCount());
         r.setSubmittedAt(c.getSubmittedAt());
@@ -142,6 +150,9 @@ public class CorrectionDetailResponse {
     }
 
     // ─── Getters and Setters ─────────────────────────────────────────────────
+
+    public String getProposedScorecard() { return proposedScorecard; }
+    public void setProposedScorecard(String proposedScorecard) { this.proposedScorecard = proposedScorecard; }
 
     public String getGeometryLayer() { return geometryLayer; }
     public void setGeometryLayer(String geometryLayer) { this.geometryLayer = geometryLayer; }

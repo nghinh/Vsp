@@ -27,6 +27,7 @@ export type CorrectionTypeValue =
   | 'LANDMARK'
   | 'COURSE_CONDITION'
   | 'GREEN_SPEED'
+  | 'SCORECARD'
   | 'OTHER';
 
 /** Review actions available to a course administrator. */
@@ -85,6 +86,14 @@ export interface CorrectionDetailResponse {
    * endpoint, so the detail panel could not draw what was being claimed.
    */
   proposedGeometry: string | null;
+
+  /**
+   * SCORECARD corrections only: the card the golfer typed in, as a JSON
+   * string. Stroke index is on the club's printed card and in no dataset
+   * anyone can buy, so this is what the reviewer is deciding about — read
+   * against the photograph in reporterEvidenceUrl.
+   */
+  proposedScorecard: string | null;
 
   // Classification
   correctionType: CorrectionTypeValue;

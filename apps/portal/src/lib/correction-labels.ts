@@ -21,6 +21,7 @@ export const CORRECTION_TYPE_LABELS: Record<CorrectionTypeValue, string> = {
   LANDMARK: 'Mốc định vị',
   COURSE_CONDITION: 'Tình trạng sân',
   GREEN_SPEED: 'Tốc độ green',
+  SCORECARD: 'Bảng điểm sân',
   OTHER: 'Khác',
 };
 

@@ -25,6 +25,9 @@
       :map-context="mapContext"
     />
 
+    <!-- The card a golfer typed in, when that is what this is -->
+    <CorrectionScorecardTable :detail="detail" />
+
     <!-- Official data comparison -->
     <CorrectionOfficialDataPanel :detail="detail" />
 
@@ -58,6 +61,7 @@ import { ref } from 'vue';
 import { formatInstant } from '@/lib/datetime';
 import type { CorrectionDetailResponse, CorrectionMapContext, CorrectionTypeValue } from '@/types/correction';
 import { correctionTypeLabel } from '@/lib/correction-labels';
+import CorrectionScorecardTable from './CorrectionScorecardTable.vue';
 import CorrectionStatusBadge from './CorrectionStatusBadge.vue';
 import CorrectionEvidenceViewer from './CorrectionEvidenceViewer.vue';
 import CorrectionLocationMap from './CorrectionLocationMap.vue';
