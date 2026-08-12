@@ -11,6 +11,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../domain/models/round_review_metrics.dart';
+import '../../../features/round/domain/score_entry.dart';
+import '../../../features/round/presentation/widgets/score_row_widget.dart';
 import '../../cubit/round_review/round_review_cubit.dart';
 import '../../cubit/round_review/round_review_state.dart';
 import '../../widgets/analytics/analytics_empty_state.dart';
@@ -31,10 +33,25 @@ class RoundReviewScreen extends StatefulWidget {
   /// The player ID for who the review is for.
   final String playerId;
 
+  /// Course the round was played on, when the caller already knows it.
+  ///
+  /// The shot store does not record it, so without this the header falls back
+  /// to "Unknown Course" even for a round the history list just named.
+  final String? courseName;
+
+  /// When the round was played, when the caller already knows it.
+  final DateTime? roundDate;
+
+  /// Course the round was played on, so each listed hole can show its par.
+  final int? courseId;
+
   const RoundReviewScreen({
     super.key,
     required this.roundId,
     required this.playerId,
+    this.courseName,
+    this.roundDate,
+    this.courseId,
   });
 
   @override
@@ -48,7 +65,13 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
   void initState() {
     super.initState();
     _cubit = RoundReviewCubit();
-    _cubit.loadRoundReview(roundId: widget.roundId, playerId: widget.playerId);
+    _cubit.loadRoundReview(
+      roundId: widget.roundId,
+      playerId: widget.playerId,
+      courseName: widget.courseName,
+      roundDate: widget.roundDate,
+      courseId: widget.courseId,
+    );
   }
 
   @override
@@ -81,10 +104,11 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
                 title: AppLocalizations.of(context).roundReviewNoData,
                 subtitle: AppLocalizations.of(context).roundReviewNoDataSubtitle,
               ),
-              RoundReviewLoaded(metrics: final metrics) => _buildLoadedState(
-                context,
-                metrics,
-              ),
+              RoundReviewLoaded(
+                metrics: final metrics,
+                holeScores: final holes,
+              ) =>
+                _buildLoadedState(context, metrics, holes),
               RoundReviewError(message: final msg, roundId: _) =>
                 AnalyticsErrorState(
                   message: msg,
@@ -97,7 +121,11 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
     );
   }
 
-  Widget _buildLoadedState(BuildContext context, RoundReviewMetrics metrics) {
+  Widget _buildLoadedState(
+    BuildContext context,
+    RoundReviewMetrics metrics,
+    List<ScoreEntry> holeScores,
+  ) {
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,6 +141,26 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
             padding: const EdgeInsets.all(16),
             child: RoundSummaryCard(scoring: metrics.scoring),
           ),
+          // The card, hole by hole. Round totals alone left a golfer unable to
+          // see what they shot on any given hole.
+          if (holeScores.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppLocalizations.of(context).roundReviewHolesTitle,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  ...holeScores.map(
+                    (hole) => ScoreRowWidget(entry: hole),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
           // Shot metrics charts
           if (metrics.shotMetrics.clubMetrics.isNotEmpty)
             Padding(

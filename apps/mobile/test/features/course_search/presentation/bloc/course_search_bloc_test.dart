@@ -202,6 +202,48 @@ void main() {
       ],
     );
 
+    // Four tabs share one bloc, so the last load to finish owns the state.
+    // Returning to All rebuilt it from whatever that was and emptied the list,
+    // which is how a golfer arrived at an empty course picker.
+    test('returning to the All tab keeps the courses it had found', () async {
+      mockRepository.mockSearchPage = CourseSearchPage(
+        content: [
+          CourseSearchResult(
+            courseId: 1,
+            facilityId: 1,
+            facilityName: 'Kings Island',
+            holesCount: 18,
+            hasPackage: true,
+            updateAvailable: false,
+          ),
+        ],
+        page: 0,
+        size: 20,
+        totalElements: 1,
+        totalPages: 1,
+        first: true,
+        last: true,
+      );
+      mockRepository.mockGetFavorites = [];
+      final bloc = CourseSearchBloc(repository: mockRepository);
+
+      bloc.add(const SearchSubmitted(''));
+      await bloc.stream.firstWhere(
+        (s) => s is CourseSearchLoaded && s.activeTab == SearchTab.all,
+      );
+
+      bloc.add(const TabSwitched(2)); // Favourites
+      await bloc.stream.firstWhere((s) => s is CourseSearchFavoritesLoaded);
+
+      bloc.add(const TabSwitched(0)); // back to All
+      final restored = await bloc.stream.firstWhere(
+        (s) => s is CourseSearchLoaded && s.activeTab == SearchTab.all,
+      );
+
+      expect((restored as CourseSearchLoaded).results.length, 1);
+      await bloc.close();
+    });
+
     blocTest<CourseSearchBloc, CourseSearchState>(
       'TabSwitched(3) triggers LoadRecent',
       build: () {

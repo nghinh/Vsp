@@ -35,6 +35,17 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
   /// Debounce timer for text search.
   Timer? _debounceTimer;
 
+  /// The last course list the "All" tab held.
+  ///
+  /// Four tabs share this one bloc, so a single state has to stand for all of
+  /// them and the most recent load wins. Opening the screen fires three loads
+  /// at once, and switching tabs fires more, so the All tab's results were
+  /// routinely overwritten by whichever sibling finished last — and returning
+  /// to All then rebuilt it with an empty list, leaving a golfer staring at an
+  /// empty course picker. Holding the list here lets that tab be restored
+  /// instead of blanked.
+  CourseSearchLoaded? _lastAllResults;
+
   /// Default page size.
   static const int _pageSize = 20;
 
@@ -56,6 +67,15 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     on<RefreshResults>(_onRefreshResults);
     on<TabSwitched>(_onTabSwitched);
     on<DismissError>(_onDismissError);
+  }
+
+  @override
+  void onChange(Change<CourseSearchState> change) {
+    super.onChange(change);
+    final next = change.nextState;
+    if (next is CourseSearchLoaded && next.activeTab == SearchTab.all) {
+      _lastAllResults = next;
+    }
   }
 
   @override
@@ -450,23 +470,15 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
 
     switch (tab) {
       case SearchTab.all:
-        if (state is CourseSearchLoaded ||
-            state is CourseSearchLoading ||
-            state is CourseSearchError) {
-          emit(
-            CourseSearchLoaded(
-              results: state is CourseSearchLoaded
-                  ? (state as CourseSearchLoaded).results
-                  : const [],
-              page: state is CourseSearchLoaded
-                  ? (state as CourseSearchLoaded).page
-                  : 0,
-              hasNext: state is CourseSearchLoaded
-                  ? (state as CourseSearchLoaded).hasNext
-                  : false,
-              activeTab: SearchTab.all,
-            ),
-          );
+        final current = state;
+        // Prefer whatever this tab last held. Rebuilding it from the current
+        // state discarded the list whenever a sibling tab had replaced it,
+        // which is the ordinary case: the screen loads favourites and recent
+        // alongside the course list on open.
+        if (current is CourseSearchLoaded) {
+          emit(current.copyWith(activeTab: SearchTab.all));
+        } else if (_lastAllResults != null) {
+          emit(_lastAllResults!);
         } else {
           emit(const CourseSearchInitial());
         }

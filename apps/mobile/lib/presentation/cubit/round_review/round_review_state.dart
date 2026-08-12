@@ -6,6 +6,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../domain/models/round_review_metrics.dart';
+import '../../../features/round/domain/score_entry.dart';
 
 /// Screen state for the Round Review view.
 sealed class RoundReviewState extends Equatable {
@@ -44,10 +45,20 @@ class RoundReviewEmpty extends RoundReviewState {
 class RoundReviewLoaded extends RoundReviewState {
   final RoundReviewMetrics metrics;
 
-  const RoundReviewLoaded({required this.metrics});
+  /// The golfer's card, hole by hole, ordered by hole number.
+  ///
+  /// The screen reported only round totals, so a golfer who wanted to see what
+  /// they shot on the 7th had nowhere to look. Empty when the round was played
+  /// without a card.
+  final List<ScoreEntry> holeScores;
+
+  const RoundReviewLoaded({
+    required this.metrics,
+    this.holeScores = const [],
+  });
 
   @override
-  List<Object?> get props => [metrics];
+  List<Object?> get props => [metrics, holeScores];
 }
 
 /// Error state when loading fails.

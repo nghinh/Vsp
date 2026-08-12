@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../../core/storage/secure_storage.dart';
+import '../../../data/repositories/score_repository_impl.dart';
 import '../../../data/repositories/shot_repository_impl.dart';
 import '../../../data/services/location_service_impl.dart';
 import '../../../domain/models/round.dart';
@@ -487,31 +489,61 @@ class _RoundDetailsSheet extends StatelessWidget {
     onChanged();
   }
 
-  /// Opens the Round Review analytics screen for this round. The player id is
-  /// resolved from the round's locally-recorded shots so scoring/shot metrics
-  /// render for the right golfer; the screen shows its own empty state when no
-  /// shots have been captured yet.
+  /// Opens the Round Review analytics screen for this round.
+  ///
+  /// The player id has to match the one the round was recorded under, or the
+  /// review filters every entry out and reports a round of nothing. Shots are
+  /// the first source, but a golfer who only keeps a card records none, so the
+  /// scorecard is consulted too. The literal `'me'` is a last resort that no
+  /// stored row ever carries — round setup identifies the golfer by their
+  /// account id — so reaching it means the round has nothing to show anyway.
   Future<void> _openRoundReview(BuildContext context) async {
     final navigator = Navigator.of(context);
-    var playerId = 'me';
-    try {
-      final shots = await ShotRepositoryImpl().getShotsForRound(round.id);
-      if (shots.isNotEmpty) {
-        playerId = shots.first.playerId;
-      }
-    } catch (_) {
-      // No local shot store (e.g. preview) — fall back to the default id and
-      // let the review screen render its empty state.
-    }
+    final playerId = await _resolveReviewPlayerId();
     if (!navigator.mounted) return;
     navigator.push(
       MaterialPageRoute(
         builder: (_) => RoundReviewScreen(
           roundId: round.id,
           playerId: playerId,
+          // The round already knows where and when it was played; without
+          // these the review header reads "Unknown Course", because the
+          // shot store holds neither.
+          courseName: round.courseName,
+          roundDate: round.startedAt,
+          // Lets the review put a par against each hole it lists.
+          courseId: round.courseId,
         ),
       ),
     );
+  }
+
+  /// The golfer this round's review should be built for.
+  Future<String> _resolveReviewPlayerId() async {
+    try {
+      final shots = await ShotRepositoryImpl().getShotsForRound(round.id);
+      if (shots.isNotEmpty) return shots.first.playerId;
+    } catch (_) {
+      // No local shot store (e.g. preview) — try the card instead.
+    }
+
+    try {
+      final scores = await ScoreRepositoryImpl().getScoresForFlight(round.id);
+      if (scores.isNotEmpty) {
+        // A flight can hold playing partners' cards as well. Prefer the
+        // signed-in golfer; only when they are absent does the first card
+        // stand in, which is the solo round the id then belongs to anyway.
+        final storedId = (await SecureStorage().getGolferId())?.toString();
+        if (storedId != null && scores.any((s) => s.playerId == storedId)) {
+          return storedId;
+        }
+        return scores.first.playerId;
+      }
+    } catch (_) {
+      // No local score store either — fall through.
+    }
+
+    return 'me';
   }
 }
 

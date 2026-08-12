@@ -290,11 +290,17 @@ class _SearchResultsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CourseSearchBloc, CourseSearchState>(
       builder: (context, state) {
-        if (state is CourseSearchLoading) {
+        // Every tab reads the one shared bloc, so a state belonging to another
+        // tab must not be painted here. Without this guard a failure on the
+        // Favourites tab replaced this tab's contents with "could not load
+        // favourites" — the wrong message, on a tab the golfer had not opened,
+        // in place of the courses they came to browse. The sibling tabs below
+        // already scope themselves this way.
+        if (state is CourseSearchLoading && state.activeTab == SearchTab.all) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state is CourseSearchError) {
+        if (state is CourseSearchError && state.activeTab == SearchTab.all) {
           return EmptySearchState(
             message: AppLocalizations.of(context).commonError,
             subtitle: context.tr(state.message),
