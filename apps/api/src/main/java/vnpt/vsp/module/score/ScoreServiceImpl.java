@@ -5,13 +5,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.course.entity.Hole;
+import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.audit.AuditAction;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.round.entity.Round;
+import vnpt.vsp.module.round.entity.RoundSegment;
 import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.RoundSegmentRepository;
 import vnpt.vsp.module.score.dto.FieldCorrection;
 import vnpt.vsp.module.score.dto.ScoreCorrectionRequest;
 import vnpt.vsp.module.score.dto.ScoreCorrectionResponse;
@@ -55,11 +59,17 @@ public class ScoreServiceImpl implements ScoreService {
     /// holes out of eighteen.
     private static final int UNKNOWN_HOLE_PAR = 4;
 
+    /// Length assumed for a đường whose course row has lost its hole count.
+    /// Nine is the unit a club builds in; an eighteen is two of them.
+    private static final int DEFAULT_SEGMENT_HOLES = 9;
+
     private final ScoreRepository scoreRepository;
     private final ScoreEntryRepository scoreEntryRepository;
     private final ScoreCorrectionRepository scoreCorrectionRepository;
     private final RoundRepository roundRepository;
+    private final RoundSegmentRepository roundSegmentRepository;
     private final HoleRepository holeRepository;
+    private final CourseRepository courseRepository;
     private final AuditService auditService;
 
     public ScoreServiceImpl(
@@ -67,13 +77,17 @@ public class ScoreServiceImpl implements ScoreService {
             ScoreEntryRepository scoreEntryRepository,
             ScoreCorrectionRepository scoreCorrectionRepository,
             RoundRepository roundRepository,
+            RoundSegmentRepository roundSegmentRepository,
             HoleRepository holeRepository,
+            CourseRepository courseRepository,
             AuditService auditService) {
         this.scoreRepository = scoreRepository;
         this.scoreEntryRepository = scoreEntryRepository;
         this.scoreCorrectionRepository = scoreCorrectionRepository;
         this.roundRepository = roundRepository;
+        this.roundSegmentRepository = roundSegmentRepository;
         this.holeRepository = holeRepository;
+        this.courseRepository = courseRepository;
         this.auditService = auditService;
     }
 
@@ -292,14 +306,69 @@ public class ScoreServiceImpl implements ScoreService {
     /// no such hole — an ad-hoc round on a course nobody has digitised.
 
     private int resolvePar(Round round, Integer holeNumber) {
-        if (round == null || round.getCourseId() == null || holeNumber == null) {
+        if (round == null || holeNumber == null || holeNumber < 1) {
             return UNKNOWN_HOLE_PAR;
         }
-        return holeRepository
-                .findByCourseIdAndHoleNumber(round.getCourseId(), holeNumber)
+
+        return locateHole(round, holeNumber)
                 .map(Hole::getPar)
                 .filter(par -> par != null && par > 0)
                 .orElse(UNKNOWN_HOLE_PAR);
+    }
+
+    /// The hole a round's hole number lands on.
+    ///
+    /// The two numbers are not the same thing the moment a club has more than
+    /// one đường. Long Biên's A, B and C are nine holes each, and a golfer who
+    /// plays A+C counts to eighteen while the holes themselves are numbered
+    /// one to nine twice over. Round hole 12 is đường C's hole 3, and reading
+    /// hole 12 off a course is either a miss or — on a 27-hole row — the wrong
+    /// hole's par written into the scorecard as if it were right.
+    ///
+    /// So walk the segments in playing order, subtracting each đường's length
+    /// until the number falls inside one. A round on a single eighteen has one
+    /// segment and the walk returns on the first step, which is what makes
+    /// this safe to ship before any đường exists.
+    ///
+    /// Falls back to the round's own course when it has no segments at all —
+    /// a round created before V40 and never backfilled, which should not
+    /// happen but costs one lookup to survive.
+    private Optional<Hole> locateHole(Round round, int holeNumber) {
+        List<RoundSegment> segments =
+                roundSegmentRepository.findByIdRoundIdOrderByIdPositionAsc(round.getId());
+
+        if (segments.isEmpty()) {
+            return round.getCourseId() == null
+                    ? Optional.empty()
+                    : holeRepository.findByCourseIdAndHoleNumber(round.getCourseId(), holeNumber);
+        }
+
+        int remaining = holeNumber;
+        for (RoundSegment segment : segments) {
+            int length = segmentLength(segment.getCourseId());
+            if (remaining <= length) {
+                return holeRepository
+                        .findByCourseIdAndHoleNumber(segment.getCourseId(), remaining);
+            }
+            remaining -= length;
+        }
+
+        // Past the end of the last đường: an ad-hoc extra hole, or a segment
+        // list that does not cover the round. Neither is a par we know.
+        return Optional.empty();
+    }
+
+    /// How many holes a đường is worth when counting through a round.
+    ///
+    /// `courses.holes_count` is the club's own answer and is never null. The
+    /// count of `holes` rows is not a substitute: thirteen courses carry a
+    /// name and a hole count with no hole rows behind them, and treating those
+    /// as zero-length would make the walk skip straight past them.
+    private int segmentLength(Long courseId) {
+        return courseRepository.findById(courseId)
+                .map(Course::getHolesCount)
+                .filter(count -> count != null && count > 0)
+                .orElse(DEFAULT_SEGMENT_HOLES);
     }
 
 }

@@ -23,6 +23,7 @@ import vnpt.vsp.module.round.dto.RoundCreateRequest;
 import vnpt.vsp.module.round.dto.RoundResponse;
 import vnpt.vsp.module.round.entity.Round;
 import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.RoundSegmentRepository;
 import vnpt.vsp.module.round.repository.ScoreRepository;
 import vnpt.vsp.module.tournament.TournamentPolicyService;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -45,6 +46,7 @@ import static org.mockito.Mockito.*;
 class RoundServiceTournamentPolicyTest {
 
     @Mock private RoundRepository roundRepository;
+    @Mock private RoundSegmentRepository roundSegmentRepository;
     @Mock private ScoreRepository scoreRepository;
     @Mock private CourseService courseService;
     @Mock private GolferAccountRepository golferAccountRepository;
@@ -58,6 +60,7 @@ class RoundServiceTournamentPolicyTest {
     void setUp() {
         service = new RoundServiceImpl(
                 roundRepository,
+                roundSegmentRepository,
                 scoreRepository,
                 courseService,
                 golferAccountRepository,

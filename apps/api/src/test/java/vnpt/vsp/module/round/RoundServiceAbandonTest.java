@@ -31,6 +31,7 @@ import vnpt.vsp.module.identity.repository.GolferAccountRepository;
 import vnpt.vsp.module.round.dto.RoundResponse;
 import vnpt.vsp.module.round.entity.Round;
 import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.RoundSegmentRepository;
 import vnpt.vsp.module.round.repository.ScoreRepository;
 import vnpt.vsp.module.tournament.TournamentPolicyService;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -53,6 +54,7 @@ class RoundServiceAbandonTest {
     private static final Long COURSE_ID = 1L;
 
     @Mock private RoundRepository roundRepository;
+    @Mock private RoundSegmentRepository roundSegmentRepository;
     @Mock private ScoreRepository scoreRepository;
     @Mock private CourseService courseService;
     @Mock private GolferAccountRepository golferAccountRepository;
@@ -66,6 +68,7 @@ class RoundServiceAbandonTest {
     void setUp() {
         service = new RoundServiceImpl(
                 roundRepository,
+                roundSegmentRepository,
                 scoreRepository,
                 courseService,
                 golferAccountRepository,

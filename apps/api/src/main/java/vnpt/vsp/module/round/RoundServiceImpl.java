@@ -19,8 +19,10 @@ import vnpt.vsp.module.round.dto.RoundCompleteRequest;
 import vnpt.vsp.module.round.dto.RoundCreateRequest;
 import vnpt.vsp.module.round.dto.RoundResponse;
 import vnpt.vsp.module.round.entity.Round;
+import vnpt.vsp.module.round.entity.RoundSegment;
 import vnpt.vsp.module.round.entity.Score;
 import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.RoundSegmentRepository;
 import vnpt.vsp.module.round.repository.ScoreRepository;
 import vnpt.vsp.module.tournament.TournamentPolicyService;
 import vnpt.vsp.module.tournament.TournamentService;
@@ -44,6 +46,7 @@ public class RoundServiceImpl implements RoundService {
     private static final Logger log = LoggerFactory.getLogger(RoundServiceImpl.class);
 
     private final RoundRepository roundRepository;
+    private final RoundSegmentRepository roundSegmentRepository;
     private final ScoreRepository scoreRepository;
     private final CourseService courseService;
     private final GolferAccountRepository golferAccountRepository;
@@ -53,6 +56,7 @@ public class RoundServiceImpl implements RoundService {
 
     public RoundServiceImpl(
             RoundRepository roundRepository,
+            RoundSegmentRepository roundSegmentRepository,
             ScoreRepository scoreRepository,
             CourseService courseService,
             GolferAccountRepository golferAccountRepository,
@@ -60,12 +64,34 @@ public class RoundServiceImpl implements RoundService {
             TournamentPolicyService tournamentPolicyService,
             TournamentService tournamentService) {
         this.roundRepository = roundRepository;
+        this.roundSegmentRepository = roundSegmentRepository;
         this.scoreRepository = scoreRepository;
         this.courseService = courseService;
         this.golferAccountRepository = golferAccountRepository;
         this.auditService = auditService;
         this.tournamentPolicyService = tournamentPolicyService;
         this.tournamentService = tournamentService;
+    }
+
+    /**
+     * Record which đường the round is played on, in playing order.
+     *
+     * <p>A club with one eighteen sends nothing here and gets one segment, the
+     * course it named — which is what every round in the database already has
+     * after the V40 backfill, so scoring behaves identically. A club with
+     * đường A, B and C sends the pairing the golfer picked, and that is the
+     * only place the pairing is ever written down: the round's own
+     * {@code courseId} can hold no more than the first of them.
+     */
+    private void saveSegments(Round round, List<Long> segmentCourseIds) {
+        List<Long> courseIds = (segmentCourseIds == null || segmentCourseIds.isEmpty())
+                ? (round.getCourseId() == null ? List.of() : List.of(round.getCourseId()))
+                : segmentCourseIds;
+
+        int position = 1;
+        for (Long courseId : courseIds) {
+            roundSegmentRepository.save(new RoundSegment(round.getId(), position++, courseId));
+        }
     }
 
     @Override
@@ -133,6 +159,8 @@ public class RoundServiceImpl implements RoundService {
 
         Round savedRound = roundRepository.save(round);
         log.debug("Round created with id {}", savedRound.getId());
+
+        saveSegments(savedRound, request.getSegmentCourseIds());
 
         // Auto-lock tournament policy when round starts (idempotent — no-op if already locked)
         if (tournamentPolicyId != null) {

@@ -9,9 +9,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.course.entity.Hole;
+import vnpt.vsp.module.course.entity.Course;
+import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.module.round.entity.Round;
+import vnpt.vsp.module.round.entity.RoundSegment;
 import vnpt.vsp.module.round.repository.RoundRepository;
+import vnpt.vsp.module.round.repository.RoundSegmentRepository;
 import vnpt.vsp.module.score.dto.FieldCorrection;
 import vnpt.vsp.module.score.dto.ScoreCorrectionRequest;
 import vnpt.vsp.module.score.dto.ScoreSyncRequest;
@@ -52,7 +56,9 @@ class ScoreServiceImplTest {
     @Mock private ScoreEntryRepository scoreEntryRepository;
     @Mock private ScoreCorrectionRepository scoreCorrectionRepository;
     @Mock private RoundRepository roundRepository;
+    @Mock private RoundSegmentRepository roundSegmentRepository;
     @Mock private HoleRepository holeRepository;
+    @Mock private CourseRepository courseRepository;
     @Mock private AuditService auditService;
 
     private ScoreServiceImpl service;
@@ -69,7 +75,9 @@ class ScoreServiceImplTest {
                 scoreEntryRepository,
                 scoreCorrectionRepository,
                 roundRepository,
+                roundSegmentRepository,
                 holeRepository,
+                courseRepository,
                 auditService);
     }
 
@@ -342,5 +350,104 @@ class ScoreServiceImplTest {
         assertThatThrownBy(() ->
                 service.correctScoreEntries(ROUND_ID, 999L, correction("putts", 8, "2")))
                 .isInstanceOf(VspApiException.class);
+    }
+
+    // ─── Đường: a round is played on segments, not on hole numbers ─────────
+
+    private Course course(Long id, int holesCount) {
+        Course c = new Course();
+        c.setId(id);
+        c.setHolesCount(holesCount);
+        return c;
+    }
+
+    private void segments(Long... courseIds) {
+        java.util.List<RoundSegment> list = new java.util.ArrayList<>();
+        for (int i = 0; i < courseIds.length; i++) {
+            list.add(new RoundSegment(ROUND_ID, i + 1, courseIds[i]));
+        }
+        when(roundSegmentRepository.findByIdRoundIdOrderByIdPositionAsc(ROUND_ID))
+                .thenReturn(list);
+    }
+
+    @Test
+    void theSecondNineIsReadFromTheSecondDuong() {
+        // Long Biên: đường A then đường C. The golfer counts to eighteen; the
+        // holes are numbered one to nine twice. Round hole 12 is C's hole 3,
+        // and reading hole 12 off either đường finds nothing at all.
+        Long duongA = 21L;
+        Long duongC = 23L;
+        when(roundRepository.findById(ROUND_ID)).thenReturn(Optional.of(round(duongA)));
+        when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
+                .thenReturn(List.of(score()));
+        segments(duongA, duongC);
+        when(courseRepository.findById(duongA)).thenReturn(Optional.of(course(duongA, 9)));
+        when(holeRepository.findByCourseIdAndHoleNumber(duongC, 3))
+                .thenReturn(Optional.of(hole(3, 5)));
+
+        service.syncScores(ACCOUNT_ID, "key", request(12, 6));
+
+        verify(scoreEntryRepository).upsertHole(
+                eq(SCORE_ID), eq(12), eq(5), eq(6),
+                any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void aRoundOnOneEighteenResolvesExactlyAsItAlwaysHas() {
+        // The safety property of the whole change: one segment, and hole 7 is
+        // hole 7 of that course. This is every round in the database today.
+        when(roundRepository.findById(ROUND_ID)).thenReturn(Optional.of(round(COURSE_ID)));
+        when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
+                .thenReturn(List.of(score()));
+        segments(COURSE_ID);
+        when(courseRepository.findById(COURSE_ID)).thenReturn(Optional.of(course(COURSE_ID, 18)));
+        when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 7))
+                .thenReturn(Optional.of(hole(7, 3)));
+
+        service.syncScores(ACCOUNT_ID, "key", request(7, 2));
+
+        verify(scoreEntryRepository).upsertHole(
+                eq(SCORE_ID), eq(7), eq(3), eq(2),
+                any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void aRoundWithNoSegmentsStillFindsItsCourse() {
+        // A round created before V40 and never backfilled. It should not
+        // happen; it costs one lookup to survive if it does.
+        when(roundRepository.findById(ROUND_ID)).thenReturn(Optional.of(round(COURSE_ID)));
+        when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
+                .thenReturn(List.of(score()));
+        when(roundSegmentRepository.findByIdRoundIdOrderByIdPositionAsc(ROUND_ID))
+                .thenReturn(List.of());
+        when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 4))
+                .thenReturn(Optional.of(hole(4, 5)));
+
+        service.syncScores(ACCOUNT_ID, "key", request(4, 6));
+
+        verify(scoreEntryRepository).upsertHole(
+                eq(SCORE_ID), eq(4), eq(5), eq(6),
+                any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void aHolePastTheEndOfTheLastDuongIsNotGivenSomebodyElsesPar() {
+        // Nine plus nine is eighteen. A nineteenth hole belongs to no đường,
+        // and the unknown-par fallback is the honest answer.
+        Long duongA = 21L;
+        Long duongB = 22L;
+        when(roundRepository.findById(ROUND_ID)).thenReturn(Optional.of(round(duongA)));
+        when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
+                .thenReturn(List.of(score()));
+        segments(duongA, duongB);
+        when(courseRepository.findById(duongA)).thenReturn(Optional.of(course(duongA, 9)));
+        when(courseRepository.findById(duongB)).thenReturn(Optional.of(course(duongB, 9)));
+
+        service.syncScores(ACCOUNT_ID, "key", request(19, 5));
+
+        verify(scoreEntryRepository).upsertHole(
+                eq(SCORE_ID), eq(19), eq(4), eq(5),
+                any(), any(), any(), any(), any(), any());
+        verify(holeRepository, never()).findByCourseIdAndHoleNumber(any(), eq(19));
     }
 }

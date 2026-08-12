@@ -20,6 +20,17 @@ public class RoundCreateRequest {
     @NotNull(message = "courseId is required")
     private Long courseId;
 
+    /**
+     * The đường played, in playing order, when the club has more than one.
+     *
+     * <p>Long Biên has đường A, B and C and a round there is a pairing the
+     * golfer chooses on the day; the phone sends both ids here. Absent — which
+     * is every request from a club with a single eighteen, and every request
+     * from a client built before this field — the round has one segment, the
+     * {@code courseId}.
+     */
+    private List<Long> segmentCourseIds;
+
     private Instant startTime;
 
     @Size(min = 1, max = 4, message = "playerIds must contain between 1 and 4 players")
@@ -46,6 +57,14 @@ public class RoundCreateRequest {
 
     public Long getCourseId() {
         return courseId;
+    }
+
+    public List<Long> getSegmentCourseIds() {
+        return segmentCourseIds;
+    }
+
+    public void setSegmentCourseIds(List<Long> segmentCourseIds) {
+        this.segmentCourseIds = segmentCourseIds;
     }
 
     public void setCourseId(Long courseId) {

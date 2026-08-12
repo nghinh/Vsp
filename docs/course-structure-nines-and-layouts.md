@@ -159,57 +159,69 @@ Long Biên is three rows, one per đường. Round setup asks for a tee per segm
 where the colours match — they usually do — the second selector can default to
 the first one's name and stay out of the way.
 
-## 6. Stroke index — golfer submits, admin reviews
+## 6. Stroke index — per pairing, submitted by golfers, reviewed by admins
 
 The index is printed on the club's scorecard and exists in no open dataset.
 It is also the last thing standing between the app and net scoring: without it
 no handicap allocation can be computed, not for a 27-hole club and not for the
 60 eighteens that already have hole data.
 
-**Nothing new needs building for the review side.** `course_corrections`
-(V23) already carries reporter → evidence → queue → approve / reject / request
-info / convert-to-draft, and the portal already renders that queue
-(`apps/portal/src/components/corrections/`, nine components). What it does not
-have is a correction that describes a scorecard: `chk_correction_type` allows
-`GEOMETRY, PIN_POSITION, BUNKER, WATER, OB, CART_PATH, LANDMARK,
-COURSE_CONDITION, GREEN_SPEED, OTHER` — every one of them geometric.
+**It cannot live on the hole.** A club with đường A, B and C prints a card per
+pairing, and the index on it runs 1..18 across the two nines it was printed
+for. Hole 3 of đường A is index 7 on the A+B card and something else on A+C. A
+column on `holes` would be storing one card's numbers and claiming they belong
+to the hole.
 
-So:
+So the card is the row:
 
 ```sql
-ALTER TABLE holes ADD COLUMN stroke_index INTEGER
-    CHECK (stroke_index BETWEEN 1 AND 18);
+CREATE TABLE scorecards (            -- one printed card, for one pairing
+    id, facility_id, name,           -- 'A + B'
+    holes_count CHECK (IN (9,18)), par_total,
+    source/publisher/verification_status/effective_date,
+    UNIQUE (facility_id, name));
 
--- one new correction type, and a payload the reviewer can read
-ALTER TABLE course_corrections DROP CONSTRAINT chk_correction_type;
-ALTER TABLE course_corrections ADD CONSTRAINT chk_correction_type CHECK (
-    correction_type IN ('GEOMETRY','PIN_POSITION','BUNKER','WATER','OB',
-                        'CART_PATH','LANDMARK','COURSE_CONDITION',
-                        'GREEN_SPEED','SCORECARD','OTHER'));
-ALTER TABLE course_corrections ADD COLUMN proposed_holes JSONB;
-    -- [{"hole":1,"par":4,"strokeIndex":7}, …] for the whole đường at once
+CREATE TABLE scorecard_segments (    -- which đường, in which order
+    scorecard_id, position CHECK (BETWEEN 1 AND 2), course_id,
+    PRIMARY KEY (scorecard_id, position),
+    UNIQUE (scorecard_id, course_id));
+
+CREATE TABLE scorecard_holes (
+    scorecard_id, hole_number CHECK (BETWEEN 1 AND 18),
+    par CHECK (BETWEEN 3 AND 6), stroke_index CHECK (BETWEEN 1 AND 18),
+    PRIMARY KEY (scorecard_id, hole_number),
+    UNIQUE (scorecard_id, stroke_index));   -- an index is handed out once
 ```
 
-A scorecard is submitted for a whole đường in one correction, not hole by hole:
-it is one photograph of one card, and 9 or 18 separate queue items would be 9
-or 18 separate decisions about the same piece of evidence.
-`reporter_evidence_url` already exists for the photo.
+A club with a single eighteen has one card with one segment — the same shape,
+nothing special about it. Par is read from the card when one matches the
+round's pairing, and falls back to `holes.par` when none does; a round on a
+pairing nobody has photographed still scores, it just cannot compute net.
 
-**The one assumption**, and it needs a decision if it is wrong: a club with
-đường A/B/C prints its stroke indexes per *combination* (1..18 across A+B), not
-per đường. Storing the index on the hole means storing one card's numbers. The
-proposal is to store the index **as printed on the đường's own card** and, when
-two đường are combined, allocate odd numbers to the first and even to the
-second — the standard rule. If Long Biên's cards do something else, the column
-moves to `round_segments` and the golfer's submission has to say which pairing
-the card was for.
+**Nothing new is needed for the review side.** `course_corrections` (V23)
+already carries reporter → evidence → queue → approve / reject / request info /
+convert-to-draft, and the portal already renders that queue
+(`apps/portal/src/components/corrections/`, nine components). What it does not
+have is a correction that is not geometric: `chk_correction_type` allows
+`GEOMETRY, PIN_POSITION, BUNKER, WATER, OB, CART_PATH, LANDMARK,
+COURSE_CONDITION, GREEN_SPEED, OTHER` — every one of them a shape on the
+ground. `SCORECARD` joins the list, carrying the proposed card in
+`proposed_scorecard`:
+
+```json
+{"name": "A + B", "segmentCourseIds": [12, 13],
+ "holes": [{"hole": 1, "par": 4, "strokeIndex": 7}, …]}
+```
+
+One photograph is one queue item and one decision, not eighteen of them.
+`reporter_evidence_url` already exists for the photo.
 
 ## 7. Implementation slices
 
 Each slice ships on its own and leaves the app working.
 
-**Slice 1 — schema.** `round_segments`, `holes.stroke_index`,
-`course_corrections.proposed_holes` + the `SCORECARD` type. Backfill one
+**Slice 1 — schema.** `round_segments`, the three `scorecards` tables, and
+`course_corrections.proposed_scorecard` + the `SCORECARD` type. Backfill one
 `round_segments` row per existing round from `rounds.course_id` — 164 rounds,
 all of them with a `course_id`, so the backfill leaves none behind.
 Nothing reads the new tables yet.
@@ -226,8 +238,8 @@ written, never yet visible — becomes the picker.
 
 **Slice 4 — scorecard submission and review.** Mobile: photograph the card,
 type par and index for 9 holes, submit as a `SCORECARD` correction. Portal:
-the existing queue gains a table view of the proposed holes and an approve that
-writes `holes.par` / `holes.stroke_index`.
+the existing queue gains a table view of the proposed card and an approve that
+writes a `scorecards` row with its eighteen lines.
 
 **Slice 5 — the data itself.** Split the facilities that really have đường.
 Long Biên and Đại Lải are confirmed; the rest needs a directory pass over 73
