@@ -103,6 +103,10 @@ class VspTextField extends StatefulWidget {
   /// (`next` for text, `done` for numeric) when null.
   final TextInputAction? textInputAction;
 
+  /// Extra input formatters, applied after the variant's own. Use for things
+  /// the variant cannot know — grouping a phone number as it is typed, say.
+  final List<TextInputFormatter>? inputFormatters;
+
   const VspTextField({
     super.key,
     required this.label,
@@ -124,6 +128,7 @@ class VspTextField extends StatefulWidget {
     this.semanticLabel,
     this.autofillHints,
     this.textInputAction,
+    this.inputFormatters,
   });
 
   @override
@@ -194,14 +199,16 @@ class _VspTextFieldState extends State<VspTextField> {
   }
 
   List<TextInputFormatter>? get _inputFormatters {
-    switch (widget.variant) {
-      case VspTextFieldVariant.numeric:
-        return [FilteringTextInputFormatter.digitsOnly];
-      case VspTextFieldVariant.decimal:
-        return [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))];
-      default:
-        return null;
-    }
+    final variantFormatters = switch (widget.variant) {
+      VspTextFieldVariant.numeric => [FilteringTextInputFormatter.digitsOnly],
+      VspTextFieldVariant.decimal => [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+      ],
+      _ => const <TextInputFormatter>[],
+    };
+
+    final formatters = [...variantFormatters, ...?widget.inputFormatters];
+    return formatters.isEmpty ? null : formatters;
   }
 
   @override

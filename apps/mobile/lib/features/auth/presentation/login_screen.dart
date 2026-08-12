@@ -6,6 +6,7 @@ import 'package:mobile_theme/components/vsp_text_field.dart';
 import 'package:mobile_theme/tokens/vsp_color.dart';
 import 'package:mobile_theme/tokens/vsp_spacing.dart';
 
+import 'package:vsp_mobile/core/text/vietnam_phone.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/auth/presentation/social_sign_in_availability.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
@@ -346,8 +347,12 @@ class _SignInSheetState extends State<_SignInSheet> {
       return;
     }
 
+    // Same normalisation the registration form uses, so the string sent here
+    // is the string stored there. The old expression only knew how to strip a
+    // leading zero: a golfer who typed their number the way it is printed on
+    // their SIM pack, +84947306688, was sent as "+84+84947306688".
     final identifier = widget.usePhone
-        ? '+84${identifierText.replaceFirst(RegExp('^0'), '')}'
+        ? VietnamPhone.toE164(identifierText)
         : identifierText;
     context.read<AuthBloc>().add(
       LoginRequested(identifier: identifier, password: password),

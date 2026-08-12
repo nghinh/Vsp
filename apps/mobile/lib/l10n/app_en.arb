@@ -102,7 +102,19 @@
   "authConfirmRequired": "Please confirm your password",
   "authPasswordMismatch": "Passwords do not match",
   "authPhoneRequired": "Please enter your phone number",
-  "authPhoneInvalid": "Enter a valid phone number (e.g. +84-90-123-4567)",
+  "authPhoneInvalid": "Enter a Vietnamese mobile number, e.g. 0947 306 688",
+  "authPhonePlaceholder": "0912 345 678",
+  "authPhoneOtpTarget": "The code goes to {number}",
+  "@authPhoneOtpTarget": {
+    "description": "Shown under the phone field once the number is complete, in the +84 form the server stores.",
+    "placeholders": {
+      "number": {
+        "type": "String",
+        "example": "+84 947 306 688"
+      }
+    }
+  },
+  "authPasswordsMatch": "Passwords match",
   "otpPhoneTitle": "Verify phone number",
   "otpEmailTitle": "Verify email",
   "otpRecoveryTitle": "Password recovery",

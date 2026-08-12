@@ -309,8 +309,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authPhoneRequired => 'Vui lòng nhập số điện thoại';
 
   @override
-  String get authPhoneInvalid =>
-      'Số điện thoại không hợp lệ (ví dụ +84-90-123-4567)';
+  String get authPhoneInvalid => 'Số di động không hợp lệ, ví dụ 0947 306 688';
+
+  @override
+  String get authPhonePlaceholder => '0912 345 678';
+
+  @override
+  String authPhoneOtpTarget(String number) {
+    return 'Mã xác thực sẽ gửi tới $number';
+  }
+
+  @override
+  String get authPasswordsMatch => 'Mật khẩu khớp';
 
   @override
   String get otpPhoneTitle => 'Xác thực số điện thoại';

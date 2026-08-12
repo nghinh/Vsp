@@ -310,7 +310,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authPhoneInvalid =>
-      'Enter a valid phone number (e.g. +84-90-123-4567)';
+      'Enter a Vietnamese mobile number, e.g. 0947 306 688';
+
+  @override
+  String get authPhonePlaceholder => '0912 345 678';
+
+  @override
+  String authPhoneOtpTarget(String number) {
+    return 'The code goes to $number';
+  }
+
+  @override
+  String get authPasswordsMatch => 'Passwords match';
 
   @override
   String get otpPhoneTitle => 'Verify phone number';

@@ -695,8 +695,26 @@ abstract class AppLocalizations {
   /// No description provided for @authPhoneInvalid.
   ///
   /// In en, this message translates to:
-  /// **'Enter a valid phone number (e.g. +84-90-123-4567)'**
+  /// **'Enter a Vietnamese mobile number, e.g. 0947 306 688'**
   String get authPhoneInvalid;
+
+  /// No description provided for @authPhonePlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'0912 345 678'**
+  String get authPhonePlaceholder;
+
+  /// Shown under the phone field once the number is complete, in the +84 form the server stores.
+  ///
+  /// In en, this message translates to:
+  /// **'The code goes to {number}'**
+  String authPhoneOtpTarget(String number);
+
+  /// No description provided for @authPasswordsMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords match'**
+  String get authPasswordsMatch;
 
   /// No description provided for @otpPhoneTitle.
   ///
