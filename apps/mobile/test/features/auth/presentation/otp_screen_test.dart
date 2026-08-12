@@ -48,6 +48,7 @@ void main() {
       String identifier = '+84901234468',
       OtpType type = OtpType.phoneVerify,
       bool isRegistration = true,
+      double textScale = 1.0,
     }) async {
       await tester.pumpWidget(
         BlocProvider<AuthBloc>.value(
@@ -57,6 +58,11 @@ void main() {
             locale: const Locale('vi'),
             supportedLocales: kSupportedLocales,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
+            builder: (context, child) => MediaQuery.withClampedTextScaling(
+              minScaleFactor: textScale,
+              maxScaleFactor: textScale,
+              child: child!,
+            ),
             home: OtpScreen(
               identifier: identifier,
               otpType: type,
@@ -80,6 +86,55 @@ void main() {
       expect(find.byKey(const Key('otp_digit_0')), findsOneWidget);
       expect(find.byKey(const Key('otp_digit_5')), findsOneWidget);
       expect(find.text('+84901234468'), findsNothing);
+    });
+
+    testWidgets('masks a locally typed number without a stray plus sign', (
+      tester,
+    ) async {
+      // Most golfers type their number the way they say it — 09..., not +84.
+      // The mask used to prefix a bare "+" in that case, which on a phone
+      // reads as a missing glyph rather than as a country code.
+      await pumpOtp(tester, identifier: '0901234468');
+
+      expect(find.text('••• ••• 468'), findsOneWidget);
+      expect(find.text('+ ••• ••• 468'), findsNothing);
+    });
+
+    testWidgets('gives each digit its full line, at any text size', (
+      tester,
+    ) async {
+      // The digit boxes were pinned to 58 pixels while an outlined field with
+      // a 28pt line needs 68, so the decorator took the missing ten out of the
+      // input and cut the bottom off every digit: a typed 0 rendered as an
+      // arch. Assert the box is never asked for less height than it needs.
+      for (final scale in [1.0, 1.5, 2.0]) {
+        await tester.pumpWidget(const SizedBox());
+        await pumpOtp(tester, textScale: scale);
+        await tester.enterText(find.byKey(const Key('otp_digit_0')), '0');
+        await tester.pump();
+
+        for (var index = 0; index < 6; index++) {
+          final box = tester.renderObject<RenderBox>(
+            find.byKey(Key('otp_digit_$index')),
+          );
+          final decorator = tester.renderObject<RenderBox>(
+            find
+                .descendant(
+                  of: find.byKey(Key('otp_digit_$index')),
+                  matching: find.byType(InputDecorator),
+                )
+                .first,
+          );
+          expect(
+            decorator.getMinIntrinsicHeight(box.size.width),
+            lessThanOrEqualTo(box.size.height),
+            reason:
+                'digit $index at text scale $scale is squeezed below the '
+                'height its own content needs, so it renders clipped',
+          );
+        }
+        expect(tester.takeException(), isNull);
+      }
     });
 
     testWidgets('supports email and recovery destinations without disclosure', (

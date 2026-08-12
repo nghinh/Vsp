@@ -98,8 +98,13 @@ class _OtpScreenState extends State<OtpScreen> {
     final suffix = digits.length >= 3
         ? digits.substring(digits.length - 3)
         : digits;
-    final countryCode = digits.startsWith('84') ? '+84' : '+';
-    return '$countryCode ••• ••• $suffix';
+    // Only show a country code the golfer actually gave. A number typed as
+    // "0901234688" carries none, and the old fallback printed a lone "+" in
+    // front of the mask — which reads as a missing glyph, not as a phone
+    // number. Guessing +84 instead would be worse: it would show them a
+    // number they never entered.
+    final countryCode = digits.startsWith('84') ? '+84 ' : '';
+    return '$countryCode••• ••• $suffix';
   }
 
   String get _countdownLabel {
@@ -350,7 +355,6 @@ class _OtpScreenState extends State<OtpScreen> {
                                       ),
                                       child: SizedBox(
                                         width: 52,
-                                        height: 58,
                                         child: Focus(
                                           onKeyEvent: (_, event) =>
                                               _handleKey(index, event),
@@ -373,6 +377,8 @@ class _OtpScreenState extends State<OtpScreen> {
                                                     ]
                                                   : null,
                                               textAlign: TextAlign.center,
+                                              textAlignVertical:
+                                                  TextAlignVertical.center,
                                               maxLength: index == 0 ? 6 : 1,
                                               style: Theme.of(context)
                                                   .textTheme
@@ -385,6 +391,32 @@ class _OtpScreenState extends State<OtpScreen> {
                                                   ),
                                               decoration: InputDecoration(
                                                 counterText: '',
+                                                // The box used to be pinned to
+                                                // 58 pixels tall. An outlined
+                                                // field's default padding —
+                                                // 20 above, 12 below — plus a
+                                                // 28pt line needs 68, so the
+                                                // decorator was overconstrained
+                                                // by ten pixels and took them
+                                                // out of the input itself: the
+                                                // digit was laid out in 26
+                                                // pixels instead of 36 and lost
+                                                // its lower third, leaving a
+                                                // typed 0 looking like an arch.
+                                                //
+                                                // Padding the line by 11 on
+                                                // each side reproduces the 58
+                                                // the design asks for while
+                                                // letting the box measure
+                                                // itself, so a golfer with
+                                                // larger system text gets a
+                                                // taller box rather than a
+                                                // beheaded digit.
+                                                isDense: true,
+                                                contentPadding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 11,
+                                                    ),
                                                 filled: true,
                                                 fillColor: _codeError == null
                                                     ? scheme
