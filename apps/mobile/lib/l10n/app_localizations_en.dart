@@ -654,7 +654,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonAdd => 'Add';
 
   @override
-  String get scorecardTitle => 'Scorecard';
+  String get scorecardTitle => 'Submit the club\'s scorecard';
 
   @override
   String get scorecardTrackShot => 'Track Shot';
@@ -3261,4 +3261,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get correctionOldValueEmpty => 'not entered';
+
+  @override
+  String get scorecardIntro =>
+      'Stroke index is printed on the card and nowhere else. Type what the card says; an admin checks it before it counts.';
+
+  @override
+  String get scorecardName => 'Card name';
+
+  @override
+  String get scorecardNameHint => 'A + B';
+
+  @override
+  String get scorecardSegments => 'Đường on this card';
+
+  @override
+  String get scorecardPar => 'Par';
+
+  @override
+  String get scorecardIndex => 'Index';
+
+  @override
+  String get scorecardHole => 'Hole';
+
+  @override
+  String get scorecardPhoto => 'Photo of the card (link)';
+
+  @override
+  String get scorecardNote => 'Note for the reviewer';
+
+  @override
+  String get scorecardSubmit => 'Send for review';
+
+  @override
+  String get scorecardSent => 'Sent. An admin will review it.';
+
+  @override
+  String get scorecardNameRequired =>
+      'Give the card the name the club prints on it';
+
+  @override
+  String get scorecardSegmentsRequired => 'Choose one or two đường';
+
+  @override
+  String scorecardMissingPar(int hole) {
+    return 'Hole $hole has no par yet';
+  }
+
+  @override
+  String scorecardMissingIndex(int hole) {
+    return 'Hole $hole has no stroke index yet';
+  }
+
+  @override
+  String scorecardDuplicateIndex(int index) {
+    return 'Two holes share index $index';
+  }
+
+  @override
+  String scorecardParTotal(int total) {
+    return 'Par total: $total';
+  }
 }

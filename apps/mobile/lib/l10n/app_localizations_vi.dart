@@ -653,7 +653,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get commonAdd => 'Thêm';
 
   @override
-  String get scorecardTitle => 'Bảng điểm';
+  String get scorecardTitle => 'Gửi scorecard của sân';
 
   @override
   String get scorecardTrackShot => 'Ghi cú đánh';
@@ -3262,4 +3262,64 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get correctionOldValueEmpty => 'chưa nhập';
+
+  @override
+  String get scorecardIntro =>
+      'Chỉ số gậy chỉ có trên tấm card, không có ở đâu khác. Anh/chị nhập đúng như card ghi; admin duyệt rồi mới có hiệu lực.';
+
+  @override
+  String get scorecardName => 'Tên card';
+
+  @override
+  String get scorecardNameHint => 'A + B';
+
+  @override
+  String get scorecardSegments => 'Đường trên card này';
+
+  @override
+  String get scorecardPar => 'Par';
+
+  @override
+  String get scorecardIndex => 'Chỉ số';
+
+  @override
+  String get scorecardHole => 'Hố';
+
+  @override
+  String get scorecardPhoto => 'Ảnh chụp card (đường dẫn)';
+
+  @override
+  String get scorecardNote => 'Ghi chú cho người duyệt';
+
+  @override
+  String get scorecardSubmit => 'Gửi duyệt';
+
+  @override
+  String get scorecardSent => 'Đã gửi. Admin sẽ duyệt.';
+
+  @override
+  String get scorecardNameRequired => 'Đặt tên card đúng như sân in trên đó';
+
+  @override
+  String get scorecardSegmentsRequired => 'Chọn một hoặc hai đường';
+
+  @override
+  String scorecardMissingPar(int hole) {
+    return 'Hố $hole chưa có par';
+  }
+
+  @override
+  String scorecardMissingIndex(int hole) {
+    return 'Hố $hole chưa có chỉ số gậy';
+  }
+
+  @override
+  String scorecardDuplicateIndex(int index) {
+    return 'Hai hố cùng chỉ số $index';
+  }
+
+  @override
+  String scorecardParTotal(int total) {
+    return 'Tổng par: $total';
+  }
 }

@@ -199,7 +199,7 @@
   "roundSetupSelectedTapToChange": "Đã chọn: {label}. Chạm để đổi.",
   "packageExpiredOn": "Hết hạn {date}",
   "commonAdd": "Thêm",
-  "scorecardTitle": "Bảng điểm",
+  "scorecardTitle": "Gửi scorecard của sân",
   "scorecardTrackShot": "Ghi cú đánh",
   "scorecardReviewShots": "Xem lại cú đánh",
   "scorecardFinishRound": "Kết thúc vòng đấu",
@@ -896,7 +896,6 @@
   "@roundSetupStartRound": {
     "description": "Primary action that starts the round."
   },
-  "packageOfflineReady": "Sẵn sàng ngoại tuyến",
   "@packageOfflineReady": {
     "description": "Course package is fully downloaded."
   },
@@ -916,7 +915,9 @@
   "@packageDaysAgo": {
     "description": "How long ago the package was updated.",
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "wifiOnlyTitle": "Chỉ tải qua Wi-Fi",
@@ -939,11 +940,14 @@
   "@scoreEnteredCount": {
     "description": "How many players in the group have a score for this hole.",
     "placeholders": {
-      "entered": {"type": "int"},
-      "total": {"type": "int"}
+      "entered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
-  "gpsReady": "GPS sẵn sàng",
   "@gpsReady": {
     "description": "GPS accuracy chip: waiting for first fix."
   },
@@ -987,7 +991,9 @@
   "@relativeHoursAgo": {
     "description": "Timestamp in hours.",
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "relativeToday": "Hôm nay",
@@ -1002,43 +1008,57 @@
   "@relativeDaysAgo": {
     "description": "Timestamp in days.",
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "relativeMonthsAgo": "{months} tháng trước",
   "@relativeMonthsAgo": {
     "description": "Timestamp in months.",
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
   "relativeYearsAgo": "{years} năm trước",
   "@relativeYearsAgo": {
     "description": "Timestamp in years.",
     "placeholders": {
-      "years": {"type": "int"}
+      "years": {
+        "type": "int"
+      }
     }
   },
   "scoreRowEntered": "{player}, điểm {score}",
   "@scoreRowEntered": {
     "description": "Screen-reader label for a player row with a score.",
     "placeholders": {
-      "player": {"type": "String"},
-      "score": {"type": "String"}
+      "player": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "scoreRowNotEntered": "{player}, chưa nhập điểm",
   "@scoreRowNotEntered": {
     "description": "Screen-reader label for a player row with no score yet.",
     "placeholders": {
-      "player": {"type": "String"}
+      "player": {
+        "type": "String"
+      }
     }
   },
   "scoreRowNotPlayed": "{player}, chưa chơi hố này",
   "@scoreRowNotPlayed": {
     "description": "Screen-reader label for a player who did not play this hole.",
     "placeholders": {
-      "player": {"type": "String"}
+      "player": {
+        "type": "String"
+      }
     }
   },
   "measureGreenReportAction": "Green ở ngay đây — báo vị trí",
@@ -1154,5 +1174,22 @@
   "correctionFieldGir": "Lên green đúng chuẩn",
   "correctionFieldBunker": "Bunker",
   "correctionFieldNotes": "Ghi chú",
-  "correctionOldValueEmpty": "chưa nhập"
+  "correctionOldValueEmpty": "chưa nhập",
+  "scorecardIntro": "Chỉ số gậy chỉ có trên tấm card, không có ở đâu khác. Anh/chị nhập đúng như card ghi; admin duyệt rồi mới có hiệu lực.",
+  "scorecardName": "Tên card",
+  "scorecardNameHint": "A + B",
+  "scorecardSegments": "Đường trên card này",
+  "scorecardPar": "Par",
+  "scorecardIndex": "Chỉ số",
+  "scorecardHole": "Hố",
+  "scorecardPhoto": "Ảnh chụp card (đường dẫn)",
+  "scorecardNote": "Ghi chú cho người duyệt",
+  "scorecardSubmit": "Gửi duyệt",
+  "scorecardSent": "Đã gửi. Admin sẽ duyệt.",
+  "scorecardNameRequired": "Đặt tên card đúng như sân in trên đó",
+  "scorecardSegmentsRequired": "Chọn một hoặc hai đường",
+  "scorecardMissingPar": "Hố {hole} chưa có par",
+  "scorecardMissingIndex": "Hố {hole} chưa có chỉ số gậy",
+  "scorecardDuplicateIndex": "Hai hố cùng chỉ số {index}",
+  "scorecardParTotal": "Tổng par: {total}"
 }

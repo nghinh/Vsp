@@ -329,7 +329,7 @@
     }
   },
   "commonAdd": "Add",
-  "scorecardTitle": "Scorecard",
+  "scorecardTitle": "Submit the club's scorecard",
   "scorecardTrackShot": "Track Shot",
   "scorecardReviewShots": "Review Shots",
   "scorecardFinishRound": "Finish Round",
@@ -1595,7 +1595,6 @@
   "@roundSetupStartRound": {
     "description": "Primary action that starts the round."
   },
-  "packageOfflineReady": "Offline Ready",
   "@packageOfflineReady": {
     "description": "Course package is fully downloaded."
   },
@@ -1615,7 +1614,9 @@
   "@packageDaysAgo": {
     "description": "How long ago the package was updated.",
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "wifiOnlyTitle": "Download on Wi-Fi only",
@@ -1638,11 +1639,14 @@
   "@scoreEnteredCount": {
     "description": "How many players in the group have a score for this hole.",
     "placeholders": {
-      "entered": {"type": "int"},
-      "total": {"type": "int"}
+      "entered": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
-  "gpsReady": "GPS Ready",
   "@gpsReady": {
     "description": "GPS accuracy chip: waiting for first fix."
   },
@@ -1686,7 +1690,9 @@
   "@relativeHoursAgo": {
     "description": "Timestamp in hours.",
     "placeholders": {
-      "hours": {"type": "int"}
+      "hours": {
+        "type": "int"
+      }
     }
   },
   "relativeToday": "Today",
@@ -1701,43 +1707,57 @@
   "@relativeDaysAgo": {
     "description": "Timestamp in days.",
     "placeholders": {
-      "days": {"type": "int"}
+      "days": {
+        "type": "int"
+      }
     }
   },
   "relativeMonthsAgo": "{months} months ago",
   "@relativeMonthsAgo": {
     "description": "Timestamp in months.",
     "placeholders": {
-      "months": {"type": "int"}
+      "months": {
+        "type": "int"
+      }
     }
   },
   "relativeYearsAgo": "{years} years ago",
   "@relativeYearsAgo": {
     "description": "Timestamp in years.",
     "placeholders": {
-      "years": {"type": "int"}
+      "years": {
+        "type": "int"
+      }
     }
   },
   "scoreRowEntered": "{player}, score {score}",
   "@scoreRowEntered": {
     "description": "Screen-reader label for a player row with a score.",
     "placeholders": {
-      "player": {"type": "String"},
-      "score": {"type": "String"}
+      "player": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "scoreRowNotEntered": "{player}, score not entered",
   "@scoreRowNotEntered": {
     "description": "Screen-reader label for a player row with no score yet.",
     "placeholders": {
-      "player": {"type": "String"}
+      "player": {
+        "type": "String"
+      }
     }
   },
   "scoreRowNotPlayed": "{player}, hole not played",
   "@scoreRowNotPlayed": {
     "description": "Screen-reader label for a player who did not play this hole.",
     "placeholders": {
-      "player": {"type": "String"}
+      "player": {
+        "type": "String"
+      }
     }
   },
   "measureGreenReportAction": "The green is right here — report it",
@@ -1845,7 +1865,11 @@
   "distanceUnavailableSemantics": "{label} distance unavailable",
   "@distanceUnavailableSemantics": {
     "description": "Screen-reader label for a green distance the app does not have. Replaces a placeholder that rendered 0 m badged as official data.",
-    "placeholders": { "label": { "type": "String" } }
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
   },
   "analyticsNoClubsInBag": "No clubs in your bag yet. Add clubs to filter by club.",
   "downloadOfflineCoursesSubtitle": "Manage courses saved for playing without a signal",
@@ -1864,20 +1888,54 @@
   "telemetryExportShare": "Export and share",
   "telemetryExportSamples": "{gps} GPS samples · {battery} battery readings · {map} map loads",
   "@telemetryExportSamples": {
-    "placeholders": { "gps": {"type": "String"}, "battery": {"type": "String"}, "map": {"type": "String"} }
+    "placeholders": {
+      "gps": {
+        "type": "String"
+      },
+      "battery": {
+        "type": "String"
+      },
+      "map": {
+        "type": "String"
+      }
+    }
   },
   "telemetryExportBatteryUsed": "Battery used over the recorded period: {percent}%",
-  "@telemetryExportBatteryUsed": { "placeholders": { "percent": {"type": "String"} } },
+  "@telemetryExportBatteryUsed": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
   "telemetryExportSlowestMap": "Slowest map load: {ms} ms (target: under 2000 ms)",
-  "@telemetryExportSlowestMap": { "placeholders": { "ms": {"type": "String"} } },
+  "@telemetryExportSlowestMap": {
+    "placeholders": {
+      "ms": {
+        "type": "String"
+      }
+    }
+  },
   "telemetryExportWorstAccuracy": "Worst GPS accuracy: {meters} m (warns above 10 m)",
-  "@telemetryExportWorstAccuracy": { "placeholders": { "meters": {"type": "String"} } },
+  "@telemetryExportWorstAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
   "telemetryExportEmpty": "This round recorded nothing. Telemetry is written from fixes the round already receives, so a round played entirely on the Score tab produces no GPS samples — open the Map tab during the round.",
   "@telemetryExportEmpty": {
     "description": "The failure a field tester most needs to catch before leaving the course."
   },
   "telemetryExportWritten": "Written to {path}",
-  "@telemetryExportWritten": { "placeholders": { "path": {"type": "String"} } },
+  "@telemetryExportWritten": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "settingsAbout": "About",
   "creditsTitle": "Credits and licences",
   "creditsSubtitle": "Course data sources, imagery, and open-source licences",
@@ -1945,5 +2003,50 @@
   "correctionFieldGir": "Green in regulation",
   "correctionFieldBunker": "Bunker",
   "correctionFieldNotes": "Notes",
-  "correctionOldValueEmpty": "not entered"
+  "correctionOldValueEmpty": "not entered",
+  "scorecardIntro": "Stroke index is printed on the card and nowhere else. Type what the card says; an admin checks it before it counts.",
+  "scorecardName": "Card name",
+  "scorecardNameHint": "A + B",
+  "scorecardSegments": "Đường on this card",
+  "scorecardPar": "Par",
+  "scorecardIndex": "Index",
+  "scorecardHole": "Hole",
+  "scorecardPhoto": "Photo of the card (link)",
+  "scorecardNote": "Note for the reviewer",
+  "scorecardSubmit": "Send for review",
+  "scorecardSent": "Sent. An admin will review it.",
+  "scorecardNameRequired": "Give the card the name the club prints on it",
+  "scorecardSegmentsRequired": "Choose one or two đường",
+  "scorecardMissingPar": "Hole {hole} has no par yet",
+  "@scorecardMissingPar": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardMissingIndex": "Hole {hole} has no stroke index yet",
+  "@scorecardMissingIndex": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardDuplicateIndex": "Two holes share index {index}",
+  "@scorecardDuplicateIndex": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardParTotal": "Par total: {total}",
+  "@scorecardParTotal": {
+    "placeholders": {
+      "total": {
+        "type": "int"
+      }
+    }
+  }
 }

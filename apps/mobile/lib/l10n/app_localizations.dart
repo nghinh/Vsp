@@ -1295,7 +1295,7 @@ abstract class AppLocalizations {
   /// No description provided for @scorecardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Scorecard'**
+  /// **'Submit the club\'s scorecard'**
   String get scorecardTitle;
 
   /// No description provided for @scorecardTrackShot.
@@ -5863,6 +5863,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'not entered'**
   String get correctionOldValueEmpty;
+
+  /// No description provided for @scorecardIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Stroke index is printed on the card and nowhere else. Type what the card says; an admin checks it before it counts.'**
+  String get scorecardIntro;
+
+  /// No description provided for @scorecardName.
+  ///
+  /// In en, this message translates to:
+  /// **'Card name'**
+  String get scorecardName;
+
+  /// No description provided for @scorecardNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A + B'**
+  String get scorecardNameHint;
+
+  /// No description provided for @scorecardSegments.
+  ///
+  /// In en, this message translates to:
+  /// **'Đường on this card'**
+  String get scorecardSegments;
+
+  /// No description provided for @scorecardPar.
+  ///
+  /// In en, this message translates to:
+  /// **'Par'**
+  String get scorecardPar;
+
+  /// No description provided for @scorecardIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Index'**
+  String get scorecardIndex;
+
+  /// No description provided for @scorecardHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole'**
+  String get scorecardHole;
+
+  /// No description provided for @scorecardPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo of the card (link)'**
+  String get scorecardPhoto;
+
+  /// No description provided for @scorecardNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note for the reviewer'**
+  String get scorecardNote;
+
+  /// No description provided for @scorecardSubmit.
+  ///
+  /// In en, this message translates to:
+  /// **'Send for review'**
+  String get scorecardSubmit;
+
+  /// No description provided for @scorecardSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. An admin will review it.'**
+  String get scorecardSent;
+
+  /// No description provided for @scorecardNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Give the card the name the club prints on it'**
+  String get scorecardNameRequired;
+
+  /// No description provided for @scorecardSegmentsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one or two đường'**
+  String get scorecardSegmentsRequired;
+
+  /// No description provided for @scorecardMissingPar.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole} has no par yet'**
+  String scorecardMissingPar(int hole);
+
+  /// No description provided for @scorecardMissingIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole} has no stroke index yet'**
+  String scorecardMissingIndex(int hole);
+
+  /// No description provided for @scorecardDuplicateIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Two holes share index {index}'**
+  String scorecardDuplicateIndex(int index);
+
+  /// No description provided for @scorecardParTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Par total: {total}'**
+  String scorecardParTotal(int total);
 }
 
 class _AppLocalizationsDelegate

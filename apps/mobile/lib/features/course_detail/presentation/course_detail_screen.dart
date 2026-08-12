@@ -35,6 +35,7 @@ import 'widgets/local_rules_section.dart';
 import 'widgets/data_quality_section.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import '../../scorecard/presentation/scorecard_submit_screen.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -302,6 +303,34 @@ class _LoadedBody extends StatelessWidget {
 
           // Data quality section
           SliverToBoxAdapter(child: DataQualitySection(course: course)),
+
+          // The club's card. Stroke index is printed on it and held nowhere
+          // else, so the golfer standing there with it is the only source the
+          // app will ever have.
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: VspSpacing.md,
+                vertical: VspSpacing.sm,
+              ),
+              child: OutlinedButton.icon(
+                key: const Key('course_detail_submit_scorecard'),
+                icon: const Icon(Icons.assignment_outlined),
+                label: Text(AppLocalizations.of(context).scorecardTitle),
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => ScorecardSubmitScreen(
+                      courseId: course.courseId,
+                      facilityCourses: course.facilityCourses,
+                      defaultName: course.facilityCourses.length > 1
+                          ? ''
+                          : course.facilityName,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
 
           // Bottom safe area
           SliverToBoxAdapter(
