@@ -41,15 +41,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Anthropic SDK — reads a club's printed scorecard out of a photograph.
-             Stroke index exists on that card and in no dataset anyone can buy,
-             so the alternative is a golfer typing eighteen lines by hand. -->
-        <dependency>
-            <groupId>com.anthropic</groupId>
-            <artifactId>anthropic-java</artifactId>
-            <version>2.34.0</version>
-        </dependency>
-
         <!-- Spring Boot Web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,13 +1,6 @@
 package vnpt.vsp.module.correction;
 
-import com.anthropic.client.AnthropicClient;
-import com.anthropic.client.okhttp.AnthropicOkHttpClient;
-import com.anthropic.models.messages.Base64ImageSource;
-import com.anthropic.models.messages.ContentBlockParam;
-import com.anthropic.models.messages.ImageBlockParam;
-import com.anthropic.models.messages.Message;
-import com.anthropic.models.messages.MessageCreateParams;
-import com.anthropic.models.messages.TextBlockParam;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,8 +9,14 @@ import org.springframework.stereotype.Service;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -158,11 +157,16 @@ public class ScorecardOcrService {
                           "holes": [{"hole": 1, "written": 4}, ...]}]}
             """;
 
+    private static final String CHAT_COMPLETIONS = "/chat/completions";
+    private static final String MESSAGES = "/messages";
+
     private final ObjectMapper objectMapper;
     private final String apiKey;
     private final String baseUrl;
     private final String model;
-    private AnthropicClient client;
+    private final HttpClient http = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(15))
+            .build();
 
     public ScorecardOcrService(
             ObjectMapper objectMapper,
@@ -171,7 +175,8 @@ public class ScorecardOcrService {
             @Value("${vsp.ocr.model:}") String model) {
         this.objectMapper = objectMapper;
         this.apiKey = apiKey == null ? "" : apiKey.trim();
-        this.baseUrl = baseUrl == null ? "" : baseUrl.trim();
+        this.baseUrl = baseUrl == null || baseUrl.isBlank()
+                ? "https://api.anthropic.com" : baseUrl.trim();
         this.model = model == null || model.isBlank() ? "claude-opus-5" : model.trim();
     }
 
@@ -208,50 +213,212 @@ public class ScorecardOcrService {
 
         String base64 = Base64.getEncoder().encodeToString(image);
 
-        // No `output_config` schema. The configured gateway accepts the
-        // parameter and answers as if it had not been sent — asking for a
-        // schema and trusting the answer would be worse than not asking, so
-        // the shape is requested in the prompt and checked here instead.
-        MessageCreateParams params = MessageCreateParams.builder()
-                .model(model)
-                // A five-tee card is ninety yardages plus par and index, and
-                // at 4096 the answer was cut off mid-yardage on hole 13 of
-                // the fourth tee — a truncation that reads as a short card
-                // rather than an error.
-                .maxTokens(12000L)
-                // The SDK's non-streaming call omits `stream` entirely, and
-                // the configured gateway reads a missing `stream` as "stream
-                // it" — so the answer came back as server-sent events and the
-                // parser rejected it on the word "event". Saying so
-                // explicitly costs nothing against a server that already
-                // defaults to false.
-                .putAdditionalBodyProperty("stream", com.anthropic.core.JsonValue.from(false))
-                .addUserMessageOfBlockParams(List.of(
-                        ContentBlockParam.ofImage(ImageBlockParam.builder()
-                                .source(Base64ImageSource.builder()
-                                        .mediaType(Base64ImageSource.MediaType.of(mediaType))
-                                        .data(base64)
-                                        .build())
-                                .build()),
-                        ContentBlockParam.ofText(TextBlockParam.builder().text(prompt).build())))
-                .build();
+        // The chat-completions surface first, because that is the one an
+        // OpenAI-compatible router is defined by, and this deployment points
+        // at a router whose `image` alias is repointed at a different model
+        // whenever a better one turns up. The Anthropic surface is tried only
+        // if the router does not serve that path at all.
+        JsonNode body = post(CHAT_COMPLETIONS, chatRequest(base64, mediaType, prompt));
+        if (body == null) {
+            body = post(MESSAGES, messagesRequest(base64, mediaType, prompt));
+        }
+        if (body == null) {
+            log.error("The OCR gateway serves neither {} nor {}", CHAT_COMPLETIONS, MESSAGES);
+            throw unreadable();
+        }
 
-        Message response = client().messages().create(params);
+        return answerOf(body, mediaType, image.length);
+    }
 
-        // A refusal is a successful HTTP response with no content to read, so
-        // it has to be checked before the content blocks are touched.
-        if ("refusal".equals(response.stopReason().map(Object::toString).orElse(""))) {
-            log.warn("Scorecard reading was refused for a {} image of {} bytes", mediaType, image.length);
+    private JsonNode chatRequest(String base64, String mediaType, String prompt) {
+        var body = objectMapper.createObjectNode();
+        body.put("model", model);
+        // A five-tee card is ninety yardages plus par and index, and at 4096
+        // the answer was cut off mid-yardage on hole 13 of the fourth tee — a
+        // truncation that reads as a short card rather than an error.
+        body.put("max_tokens", 12000);
+        // Left in deliberately: this gateway reads an absent `stream` as
+        // "stream it", and the answer came back as server-sent events that the
+        // JSON parser rejected on the word "event". Saying so costs nothing
+        // against a server that already defaults to false.
+        body.put("stream", false);
+
+        var text = objectMapper.createObjectNode();
+        text.put("type", "text");
+        text.put("text", prompt);
+
+        var url = objectMapper.createObjectNode();
+        url.put("type", "image_url");
+        url.putObject("image_url").put("url", "data:" + mediaType + ";base64," + base64);
+
+        var content = objectMapper.createArrayNode().add(url).add(text);
+        var message = objectMapper.createObjectNode();
+        message.put("role", "user");
+        message.set("content", content);
+        body.putArray("messages").add(message);
+        return body;
+    }
+
+    private JsonNode messagesRequest(String base64, String mediaType, String prompt) {
+        var body = objectMapper.createObjectNode();
+        body.put("model", model);
+        body.put("max_tokens", 12000);
+        body.put("stream", false);
+
+        var text = objectMapper.createObjectNode();
+        text.put("type", "text");
+        text.put("text", prompt);
+
+        var image = objectMapper.createObjectNode();
+        image.put("type", "image");
+        var source = image.putObject("source");
+        source.put("type", "base64");
+        source.put("media_type", mediaType);
+        source.put("data", base64);
+
+        var content = objectMapper.createArrayNode().add(image).add(text);
+        var message = objectMapper.createObjectNode();
+        message.put("role", "user");
+        message.set("content", content);
+        body.putArray("messages").add(message);
+        return body;
+    }
+
+    /**
+     * The gateway's answer, or null when it does not serve this path at all.
+     *
+     * <p>Everything else — a refused key, a model that is not routed, a body
+     * that is not JSON — is this server's problem to report, not a reason to
+     * go asking somewhere else.
+     */
+    private JsonNode post(String path, JsonNode body) {
+        HttpRequest request;
+        try {
+            request = HttpRequest.newBuilder(URI.create(endpoint(path)))
+                    .header("content-type", "application/json")
+                    // Both schemes, because the router accepts either and a
+                    // deployment may be pointed at one that only reads one of
+                    // them. Neither is meaningful to a server expecting the
+                    // other.
+                    .header("authorization", "Bearer " + apiKey)
+                    .header("x-api-key", apiKey)
+                    .header("anthropic-version", "2023-06-01")
+                    // Reading a card takes this gateway around thirty seconds.
+                    .timeout(Duration.ofSeconds(150))
+                    .POST(HttpRequest.BodyPublishers.ofString(
+                            objectMapper.writeValueAsString(body), StandardCharsets.UTF_8))
+                    .build();
+        } catch (Exception e) {
+            throw unreadable();
+        }
+
+        HttpResponse<String> response;
+        try {
+            response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            log.error("The OCR gateway could not be reached at {}", path, e);
+            throw unreadable();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw unreadable();
+        }
+
+        if (response.statusCode() == 404 || response.statusCode() == 405) {
+            return null;
+        }
+        if (response.statusCode() / 100 != 2) {
+            // The gateway's own words, trimmed: a 402 for exhausted credit and
+            // a 401 for a rotated key are the two failures an operator can
+            // actually act on, and neither is visible from a status code.
+            log.error("The OCR gateway answered {} at {}: {}", response.statusCode(), path,
+                    abbreviate(response.body()));
+            throw unreadable();
+        }
+
+        try {
+            return objectMapper.readTree(response.body());
+        } catch (Exception e) {
+            log.error("The OCR gateway answered {} at {} with a body that is not JSON: {}",
+                    response.statusCode(), path, abbreviate(response.body()));
+            throw unreadable();
+        }
+    }
+
+    /**
+     * The model's text, out of whichever shape the router answered in.
+     *
+     * <p>This gateway routes one alias at whatever model its operator has
+     * pointed it at, and the shape of the answer follows the model rather than
+     * the path asked on: the same `/v1/messages` request that used to come
+     * back with Anthropic `content` blocks now comes back as an OpenAI
+     * `chat.completion`. Reading both is what lets the operator swap the model
+     * without this server needing a deploy.
+     */
+    private String answerOf(JsonNode body, String mediaType, int bytes) {
+        JsonNode choice = body.path("choices").path(0);
+        String finish = choice.path("finish_reason").asText(
+                body.path("stop_reason").asText(""));
+
+        if ("refusal".equals(finish) || choice.path("message").hasNonNull("refusal")) {
+            log.warn("Scorecard reading was refused for a {} image of {} bytes", mediaType, bytes);
             throw VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
                     Map.of("image", "this image could not be read"));
         }
+        if ("length".equals(finish) || "max_tokens".equals(finish)) {
+            // Worth saying out loud: a cut-off answer parses as a card with
+            // fewer holes on it, which reads like a nine-hole course rather
+            // than a failure.
+            log.warn("The OCR gateway stopped at its token limit — the card was read only as far as it got");
+        }
 
-        log.info("Read a scorecard from a {} image of {} bytes", mediaType, image.length);
-        return response.content().stream()
-                .flatMap(block -> block.text().stream())
-                .map(text -> text.text())
-                .findFirst()
-                .orElseThrow(this::unreadable);
+        String text = textIn(choice.path("message").path("content"));
+        if (text == null) {
+            text = textIn(body.path("content"));
+        }
+        if (text == null || text.isBlank()) {
+            log.error("The OCR gateway answered in a shape with no text in it: {}",
+                    abbreviate(body.toString()));
+            throw unreadable();
+        }
+
+        log.info("Read a scorecard from a {} image of {} bytes", mediaType, bytes);
+        return text;
+    }
+
+    /// Text out of a content field, which is a bare string on the OpenAI
+    /// surface and a list of typed blocks on the Anthropic one.
+    private String textIn(JsonNode content) {
+        if (content.isTextual()) {
+            return content.asText();
+        }
+        if (content.isArray()) {
+            var joined = new StringBuilder();
+            for (var block : content) {
+                if (block.hasNonNull("text")) {
+                    joined.append(block.get("text").asText());
+                }
+            }
+            return joined.isEmpty() ? null : joined.toString();
+        }
+        return null;
+    }
+
+    /// The configured base URL may or may not already carry the version
+    /// segment: the gateway is documented as `.../v1` and Spring config has
+    /// been written both ways.
+    private String endpoint(String path) {
+        String base = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+        return base.endsWith("/v1") ? base + path : base + "/v1" + path;
+    }
+
+    /// Enough of a gateway error to act on, without putting a base64 echo of
+    /// the photograph into the log.
+    private String abbreviate(String body) {
+        if (body == null) {
+            return "";
+        }
+        String flat = body.replaceAll("\\s+", " ").trim();
+        return flat.length() <= 400 ? flat : flat.substring(0, 400) + "…";
     }
 
     /**
@@ -559,18 +726,5 @@ public class ScorecardOcrService {
     private VspApiException unreadable() {
         return VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
                 Map.of("image", "this image could not be read"));
-    }
-
-    /// Built on first use rather than at startup: a deployment without a key
-    /// must still boot, and every other endpoint must still work.
-    private synchronized AnthropicClient client() {
-        if (client == null) {
-            var builder = AnthropicOkHttpClient.builder().apiKey(apiKey);
-            if (!baseUrl.isEmpty()) {
-                builder.baseUrl(baseUrl);
-            }
-            client = builder.build();
-        }
-        return client;
     }
 }
