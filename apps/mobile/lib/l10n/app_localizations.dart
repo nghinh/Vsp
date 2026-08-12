@@ -6007,6 +6007,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Choose from library'**
   String get scorecardScanGallery;
+
+  /// No description provided for @scoreScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph the card'**
+  String get scoreScan;
+
+  /// No description provided for @scoreScanTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores read from the card'**
+  String get scoreScanTitle;
+
+  /// No description provided for @scoreScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the handwriting…'**
+  String get scoreScanning;
+
+  /// No description provided for @scoreScanNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'No handwritten scores could be read on this card.'**
+  String get scoreScanNothing;
+
+  /// No description provided for @scoreScanWhichRow.
+  ///
+  /// In en, this message translates to:
+  /// **'Which row on the card is yours?'**
+  String get scoreScanWhichRow;
+
+  /// No description provided for @scoreScanRowNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {number}'**
+  String scoreScanRowNumber(int number);
+
+  /// No description provided for @scoreScanNotationQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are the numbers strokes, or against par?'**
+  String get scoreScanNotationQuestion;
+
+  /// No description provided for @scoreScanNotationStrokes.
+  ///
+  /// In en, this message translates to:
+  /// **'Strokes'**
+  String get scoreScanNotationStrokes;
+
+  /// No description provided for @scoreScanNotationToPar.
+  ///
+  /// In en, this message translates to:
+  /// **'Against par'**
+  String get scoreScanNotationToPar;
+
+  /// No description provided for @scoreScanCheckEveryHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Check every hole against the card. Nothing is saved until you tap save.'**
+  String get scoreScanCheckEveryHole;
+
+  /// No description provided for @scoreScanHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole}'**
+  String scoreScanHole(int hole);
+
+  /// No description provided for @scoreScanUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'not read'**
+  String get scoreScanUnread;
+
+  /// No description provided for @scoreScanWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'written {written}'**
+  String scoreScanWritten(String written);
+
+  /// No description provided for @scoreScanParOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'par {par}, not read'**
+  String scoreScanParOnly(int par);
+
+  /// No description provided for @scoreScanParAndWritten.
+  ///
+  /// In en, this message translates to:
+  /// **'par {par}, written {written}'**
+  String scoreScanParAndWritten(int par, String written);
+
+  /// No description provided for @scoreScanBlanks.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} holes could not be read — fill them in yourself.'**
+  String scoreScanBlanks(int count);
+
+  /// No description provided for @scoreScanOutDisagrees.
+  ///
+  /// In en, this message translates to:
+  /// **'The front nine adds up to something other than the {out} you wrote in OUT — check those nine.'**
+  String scoreScanOutDisagrees(int out);
+
+  /// No description provided for @scoreScanInDisagrees.
+  ///
+  /// In en, this message translates to:
+  /// **'The back nine adds up to something other than the {in_} you wrote in IN — check those nine.'**
+  String scoreScanInDisagrees(int in_);
+
+  /// No description provided for @scoreScanSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to scorecard'**
+  String get scoreScanSave;
+
+  /// No description provided for @scoreScanSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {count} holes to the scorecard.'**
+  String scoreScanSaved(int count);
+
+  /// No description provided for @scorecardScanTees.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending {count} tee rows from the photograph — yardages and ratings, for the reviewer to check against it.'**
+  String scorecardScanTees(int count);
 }
 
 class _AppLocalizationsDelegate

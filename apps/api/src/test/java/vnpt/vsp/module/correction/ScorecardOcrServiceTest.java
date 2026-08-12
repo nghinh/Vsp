@@ -201,6 +201,152 @@ class ScorecardOcrServiceTest {
     }
 
     @Test
+    @DisplayName("reads a card out of a streamed answer — the gateway streams when it feels like it")
+    void readsServerSentEvents() throws Exception {
+        // This is not a guess at what some server might do. `stream` was
+        // omitted once and this gateway streamed anyway; the answer arrived as
+        // events and the parser died on the word "event". It is asked not to,
+        // and it is read either way.
+        var events = new StringBuilder();
+        for (String piece : split(CARD_JSON)) {
+            events.append("data: ").append(objectMapper.writeValueAsString(
+                    objectMapper.createObjectNode().set("choices",
+                            objectMapper.createArrayNode().add(
+                                    objectMapper.createObjectNode().set("delta",
+                                            objectMapper.createObjectNode().put("content", piece))))))
+                    .append("\n\n");
+        }
+        events.append("data: [DONE]\n\n");
+        serve("/v1/chat/completions", 200, events.toString());
+
+        String card = service(baseUrl()).extractCourse(new byte[]{1, 2, 3}, "image/jpeg");
+
+        assertThat(objectMapper.readTree(card).get("holes")).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("reads a card out of an Anthropic-streamed answer")
+    void readsAnthropicServerSentEvents() throws Exception {
+        var events = new StringBuilder();
+        for (String piece : split(CARD_JSON)) {
+            events.append("event: content_block_delta\n");
+            events.append("data: {\"type\":\"content_block_delta\",\"delta\":")
+                    .append("{\"type\":\"text_delta\",\"text\":")
+                    .append(objectMapper.writeValueAsString(piece))
+                    .append("}}\n\n");
+        }
+        serve("/v1/chat/completions", 200, events.toString());
+
+        String card = service(baseUrl()).extractCourse(new byte[]{1, 2, 3}, "image/jpeg");
+
+        assertThat(objectMapper.readTree(card).get("holes")).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("reads a card out of a Gemini-shaped answer")
+    void readsGeminiShape() throws Exception {
+        serve("/v1/chat/completions", 200, """
+                {"candidates": [{"content": {"parts": [{"text": %s}]},
+                                 "finishReason": "STOP"}]}
+                """.formatted(objectMapper.writeValueAsString(CARD_JSON)));
+
+        String card = service(baseUrl()).extractCourse(new byte[]{1, 2, 3}, "image/jpeg");
+
+        assertThat(objectMapper.readTree(card).get("holes")).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("asks again with max_completion_tokens when the server wants that spelling")
+    void retriesWithTheOtherTokenSpelling() throws Exception {
+        // Newer OpenAI-shaped models reject `max_tokens` and name the
+        // replacement in the 400. An operator who repoints the alias at one of
+        // them should not lose an afternoon to a parameter name.
+        var bodies = new ArrayList<String>();
+        String success = openAiAnswer(CARD_JSON);
+        server.createContext("/v1/chat/completions", exchange -> {
+            String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+            bodies.add(body);
+            if (body.contains("\"max_tokens\"")) {
+                respond(exchange, 400, "{\"error\":{\"message\":\"Use 'max_completion_tokens' instead.\"}}");
+            } else {
+                respond(exchange, 200, success);
+            }
+        });
+
+        String card = service(baseUrl()).extractCourse(new byte[]{1, 2, 3}, "image/jpeg");
+
+        assertThat(objectMapper.readTree(card).get("holes")).hasSize(2);
+        assertThat(bodies).hasSize(2);
+        assertThat(bodies.get(1)).contains("max_completion_tokens");
+    }
+
+    @Test
+    @DisplayName("a 400 that is not about the token spelling is not retried")
+    void doesNotRetryOtherBadRequests() {
+        var calls = new ArrayList<String>();
+        server.createContext("/v1/chat/completions", exchange -> {
+            calls.add("x");
+            respond(exchange, 400, "{\"error\":{\"message\":\"model not routed\"}}");
+        });
+
+        assertThatThrownBy(() -> service(baseUrl()).extractCourse(new byte[]{1, 2, 3}, "image/jpeg"))
+                .isInstanceOf(VspApiException.class);
+        assertThat(calls).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("a row of handwriting comes back with the golfer's own arithmetic")
+    void checksARowAgainstItsWrittenTotals() throws Exception {
+        // The check that earned its place: on the development card the back
+        // nine read one hole wrong and summed to 2 against the 1 the golfer
+        // had written in IN. Nothing in the numbers themselves showed it.
+        serve("/v1/chat/completions", 200, openAiAnswer("""
+                {"players": [{"player": "A", "notation": "to_par",
+                              "writtenOut": 2, "writtenIn": 1,
+                              "holes": [{"hole": 1, "written": 2},
+                                        {"hole": 10, "written": 2}]}]}
+                """));
+
+        String scores = service(baseUrl()).extractScores(new byte[]{1, 2, 3}, "image/jpeg");
+        var row = objectMapper.readTree(scores).get("players").get(0);
+
+        assertThat(row.get("notation").asText()).isEqualTo("to_par");
+        assertThat(row.get("checks").get("writtenOut").asInt()).isEqualTo(2);
+        assertThat(row.get("checks").get("outAgrees").asBoolean()).isTrue();
+        assertThat(row.get("checks").get("inAgrees").asBoolean()).isFalse();
+    }
+
+    @Test
+    @DisplayName("a nine with an unread hole in it agrees with nothing")
+    void doesNotClaimAgreementAcrossABlank() throws Exception {
+        // A sum missing a hole matches its written total only by coincidence,
+        // and claiming it disagrees would send the golfer hunting for a
+        // misread that is really a blank they can already see.
+        serve("/v1/chat/completions", 200, openAiAnswer("""
+                {"players": [{"player": "A", "notation": "strokes",
+                              "writtenOut": 9,
+                              "holes": [{"hole": 1, "written": 4},
+                                        {"hole": 2, "written": 5},
+                                        {"hole": 3, "written": null}]}]}
+                """));
+
+        String scores = service(baseUrl()).extractScores(new byte[]{1, 2, 3}, "image/jpeg");
+        var checks = objectMapper.readTree(scores).get("players").get(0).get("checks");
+
+        assertThat(checks.get("cellsRead").asInt()).isEqualTo(2);
+        assertThat(checks.get("outAgrees").asBoolean()).isFalse();
+    }
+
+    /// The answer in pieces, the way a stream delivers it.
+    private static List<String> split(String text) {
+        var pieces = new ArrayList<String>();
+        for (int i = 0; i < text.length(); i += 17) {
+            pieces.add(text.substring(i, Math.min(text.length(), i + 17)));
+        }
+        return pieces;
+    }
+
+    @Test
     @DisplayName("no key configured is a field error, not a call to nowhere")
     void staysOffWithoutAKey() {
         var off = new ScorecardOcrService(objectMapper, "  ", baseUrl(), "image");

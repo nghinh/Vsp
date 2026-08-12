@@ -18,6 +18,7 @@ import vnpt.vsp.module.correction.dto.ScorecardSubmissionRequest;
 import vnpt.vsp.module.correction.entity.CourseCorrection;
 import vnpt.vsp.module.course.dto.ScorecardDto;
 import vnpt.vsp.module.course.ScorecardQueryService;
+import vnpt.vsp.module.round.repository.RoundRepository;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,14 +49,17 @@ public class ScorecardController {
     private final ScorecardCorrectionService scorecardCorrectionService;
     private final ScorecardQueryService scorecardQueryService;
     private final ScorecardOcrService scorecardOcrService;
+    private final RoundRepository roundRepository;
 
     public ScorecardController(
             ScorecardCorrectionService scorecardCorrectionService,
             ScorecardQueryService scorecardQueryService,
-            ScorecardOcrService scorecardOcrService) {
+            ScorecardOcrService scorecardOcrService,
+            RoundRepository roundRepository) {
         this.scorecardCorrectionService = scorecardCorrectionService;
         this.scorecardQueryService = scorecardQueryService;
         this.scorecardOcrService = scorecardOcrService;
+        this.roundRepository = roundRepository;
     }
 
     /** Submit a card for review. */
@@ -123,6 +127,12 @@ public class ScorecardController {
 
         Long accountId = (Long) authentication.getPrincipal();
         String mediaType = validateImage(image);
+
+        // The round is checked before the photograph is sent anywhere. Reading
+        // a card costs a call to a metered gateway and takes half a minute, so
+        // an id nobody owns has to stop here rather than after the bill.
+        roundRepository.findByIdAndGolferAccountIdAndDeletedAtIsNull(roundId, accountId)
+                .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001));
 
         log.info("POST /rounds/{}/scores/extract - accountId={}, {} bytes",
                 roundId, accountId, image.getSize());

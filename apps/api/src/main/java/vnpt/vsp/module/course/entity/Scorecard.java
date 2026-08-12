@@ -70,6 +70,9 @@ public class Scorecard {
     @OneToMany(mappedBy = "scorecard", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ScorecardHole> holes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "scorecard", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ScorecardTee> tees = new ArrayList<>();
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Long getFacilityId() { return facilityId; }
@@ -100,4 +103,6 @@ public class Scorecard {
     public void setSegments(List<ScorecardSegment> segments) { this.segments = segments; }
     public List<ScorecardHole> getHoles() { return holes; }
     public void setHoles(List<ScorecardHole> holes) { this.holes = holes; }
+    public List<ScorecardTee> getTees() { return tees; }
+    public void setTees(List<ScorecardTee> tees) { this.tees = tees; }
 }

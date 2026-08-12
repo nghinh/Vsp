@@ -16,11 +16,15 @@ import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.course.entity.Scorecard;
 import vnpt.vsp.module.course.entity.ScorecardHole;
 import vnpt.vsp.module.course.entity.ScorecardSegment;
+import vnpt.vsp.module.course.entity.ScorecardTee;
+import vnpt.vsp.module.course.entity.ScorecardTeeYardage;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.ScorecardRepository;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 @Service
@@ -141,6 +145,7 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         card.setVerificationStatus("VERIFIED");
         card.getSegments().clear();
         card.getHoles().clear();
+        card.getTees().clear();
 
         Scorecard saved = scorecardRepository.saveAndFlush(card);
 
@@ -156,9 +161,77 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                     new ScorecardHole(saved, line.hole(), line.par(), line.strokeIndex()));
         }
 
+        int yardagesWritten = applyTees(saved, proposed);
+
         scorecardRepository.save(saved);
-        log.info("Scorecard '{}' published for facility {} from correction {}",
-                saved.getName(), facilityId, correction.getId());
+        log.info("Scorecard '{}' published for facility {} from correction {} — {} tee(s), {} yardage(s)",
+                saved.getName(), facilityId, correction.getId(),
+                saved.getTees().size(), yardagesWritten);
+    }
+
+    /**
+     * The tee rows of an approved card, written as rows rather than kept in
+     * the correction's JSON.
+     *
+     * <p>Until this ran, an approved card published its pars and its stroke
+     * indexes and dropped the rest of the photograph on the floor: the
+     * yardages and the course and slope ratings stayed in the correction
+     * payload, where nothing that scores a round can reach them. They are the
+     * numbers that make a score comparable at all — the same 82 is a different
+     * round off 7,311 yards than off 5,631 — so they belong beside the pars.
+     *
+     * <p>A card need not carry them. Photographs get taken with the rating
+     * table outside the frame, and a card with no tee rows is still worth
+     * publishing for its pars, so an empty list here is silence rather than an
+     * error.
+     *
+     * @return how many yardages were written, for the log
+     */
+    private int applyTees(Scorecard card, ScorecardSubmissionRequest proposed) {
+        if (proposed.tees() == null || proposed.tees().isEmpty()) {
+            return 0;
+        }
+
+        // A card names each tee once, and the table says so. Two rows called
+        // GOLD is one column read twice, and keeping both would put two
+        // ratings on one tee with nothing to choose between them.
+        var seenNames = new HashSet<String>();
+        var pairs = new ArrayList<Map.Entry<ScorecardTee, ScorecardSubmissionRequest.TeeLine>>();
+        for (ScorecardSubmissionRequest.TeeLine line : proposed.tees()) {
+            String name = line.name() == null ? "" : line.name().trim();
+            if (name.isEmpty() || !seenNames.add(name.toUpperCase(Locale.ROOT))) {
+                continue;
+            }
+            var tee = new ScorecardTee(card, name, line.courseRating(), line.slopeRating());
+            card.getTees().add(tee);
+            pairs.add(Map.entry(tee, line));
+        }
+        if (pairs.isEmpty()) {
+            return 0;
+        }
+
+        // The yardage's key is the tee's id, so the tees have to exist before
+        // their yardages can name them.
+        scorecardRepository.saveAndFlush(card);
+
+        int written = 0;
+        for (var pair : pairs) {
+            ScorecardTee tee = pair.getKey();
+            List<ScorecardSubmissionRequest.Yardage> yardages = pair.getValue().yardages();
+            if (yardages == null) {
+                continue;
+            }
+            var seenHoles = new HashSet<Integer>();
+            for (ScorecardSubmissionRequest.Yardage yardage : yardages) {
+                if (!seenHoles.add(yardage.hole())) {
+                    continue;
+                }
+                tee.getYardages().add(
+                        new ScorecardTeeYardage(tee, yardage.hole(), yardage.yards()));
+                written++;
+            }
+        }
+        return written;
     }
 
     private String writeJson(ScorecardSubmissionRequest request) {

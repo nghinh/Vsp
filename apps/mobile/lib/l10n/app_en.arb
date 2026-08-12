@@ -2082,5 +2082,99 @@
     }
   },
   "scorecardScanSource": "Take a photo",
-  "scorecardScanGallery": "Choose from library"
+  "scorecardScanGallery": "Choose from library",
+  "scoreScan": "Photograph the card",
+  "scoreScanTitle": "Scores read from the card",
+  "scoreScanning": "Reading the handwriting…",
+  "scoreScanNothing": "No handwritten scores could be read on this card.",
+  "scoreScanWhichRow": "Which row on the card is yours?",
+  "scoreScanRowNumber": "Row {number}",
+  "@scoreScanRowNumber": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanNotationQuestion": "Are the numbers strokes, or against par?",
+  "scoreScanNotationStrokes": "Strokes",
+  "scoreScanNotationToPar": "Against par",
+  "scoreScanCheckEveryHole": "Check every hole against the card. Nothing is saved until you tap save.",
+  "scoreScanHole": "Hole {hole}",
+  "@scoreScanHole": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanUnread": "not read",
+  "scoreScanWritten": "written {written}",
+  "@scoreScanWritten": {
+    "placeholders": {
+      "written": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreScanParOnly": "par {par}, not read",
+  "@scoreScanParOnly": {
+    "placeholders": {
+      "par": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanParAndWritten": "par {par}, written {written}",
+  "@scoreScanParAndWritten": {
+    "placeholders": {
+      "par": {
+        "type": "int"
+      },
+      "written": {
+        "type": "String"
+      }
+    }
+  },
+  "scoreScanBlanks": "{count} holes could not be read — fill them in yourself.",
+  "@scoreScanBlanks": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanOutDisagrees": "The front nine adds up to something other than the {out} you wrote in OUT — check those nine.",
+  "@scoreScanOutDisagrees": {
+    "placeholders": {
+      "out": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanInDisagrees": "The back nine adds up to something other than the {in_} you wrote in IN — check those nine.",
+  "@scoreScanInDisagrees": {
+    "placeholders": {
+      "in_": {
+        "type": "int"
+      }
+    }
+  },
+  "scoreScanSave": "Save to scorecard",
+  "scoreScanSaved": "Saved {count} holes to the scorecard.",
+  "@scoreScanSaved": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardScanTees": "Sending {count} tee rows from the photograph — yardages and ratings, for the reviewer to check against it.",
+  "@scorecardScanTees": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

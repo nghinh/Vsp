@@ -56,6 +56,7 @@ class ScorecardApi {
     required List<int> segmentCourseIds,
     required List<ScorecardLine> holes,
     required String idempotencyKey,
+    List<Map<String, dynamic>> tees = const [],
     String? evidenceUrl,
     String? note,
   }) async {
@@ -66,6 +67,10 @@ class ScorecardApi {
         'name': name,
         'segmentCourseIds': segmentCourseIds,
         'holes': holes.map((h) => h.toJson()).toList(),
+        // Omitted rather than sent empty: a card photographed with its rating
+        // table outside the frame has no tee rows, and an empty list would
+        // read as "this club prints none".
+        if (tees.isNotEmpty) 'tees': tees,
         if (evidenceUrl != null && evidenceUrl.isNotEmpty)
           'evidenceUrl': evidenceUrl,
         if (note != null && note.isNotEmpty) 'note': note,

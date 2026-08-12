@@ -3349,4 +3349,90 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scorecardScanGallery => 'Choose from library';
+
+  @override
+  String get scoreScan => 'Photograph the card';
+
+  @override
+  String get scoreScanTitle => 'Scores read from the card';
+
+  @override
+  String get scoreScanning => 'Reading the handwriting…';
+
+  @override
+  String get scoreScanNothing =>
+      'No handwritten scores could be read on this card.';
+
+  @override
+  String get scoreScanWhichRow => 'Which row on the card is yours?';
+
+  @override
+  String scoreScanRowNumber(int number) {
+    return 'Row $number';
+  }
+
+  @override
+  String get scoreScanNotationQuestion =>
+      'Are the numbers strokes, or against par?';
+
+  @override
+  String get scoreScanNotationStrokes => 'Strokes';
+
+  @override
+  String get scoreScanNotationToPar => 'Against par';
+
+  @override
+  String get scoreScanCheckEveryHole =>
+      'Check every hole against the card. Nothing is saved until you tap save.';
+
+  @override
+  String scoreScanHole(int hole) {
+    return 'Hole $hole';
+  }
+
+  @override
+  String get scoreScanUnread => 'not read';
+
+  @override
+  String scoreScanWritten(String written) {
+    return 'written $written';
+  }
+
+  @override
+  String scoreScanParOnly(int par) {
+    return 'par $par, not read';
+  }
+
+  @override
+  String scoreScanParAndWritten(int par, String written) {
+    return 'par $par, written $written';
+  }
+
+  @override
+  String scoreScanBlanks(int count) {
+    return '$count holes could not be read — fill them in yourself.';
+  }
+
+  @override
+  String scoreScanOutDisagrees(int out) {
+    return 'The front nine adds up to something other than the $out you wrote in OUT — check those nine.';
+  }
+
+  @override
+  String scoreScanInDisagrees(int in_) {
+    return 'The back nine adds up to something other than the $in_ you wrote in IN — check those nine.';
+  }
+
+  @override
+  String get scoreScanSave => 'Save to scorecard';
+
+  @override
+  String scoreScanSaved(int count) {
+    return 'Saved $count holes to the scorecard.';
+  }
+
+  @override
+  String scorecardScanTees(int count) {
+    return 'Sending $count tee rows from the photograph — yardages and ratings, for the reviewer to check against it.';
+  }
 }

@@ -72,11 +72,60 @@ class ScannedLine {
   );
 }
 
+/// One tee row of the card: what it measures and how it is rated.
+///
+/// These ride along with the card rather than being checked hole by hole on
+/// the phone. Ninety yardages is not something a golfer can verify at the tee,
+/// and the numbers that matter for a handicap — course rating and slope — are
+/// two per tee and printed in their own small table. They go to the admin as
+/// part of the same submission, and the admin has the photograph.
+class ScannedTee {
+  const ScannedTee({
+    required this.name,
+    this.courseRating,
+    this.slopeRating,
+    required this.yardages,
+  });
+
+  final String name;
+  final double? courseRating;
+  final int? slopeRating;
+
+  /// hole number → yards.
+  final Map<int, int> yardages;
+
+  factory ScannedTee.fromJson(Map<String, dynamic> json) => ScannedTee(
+    name: (json['name'] as String? ?? '').trim(),
+    courseRating: (json['courseRating'] as num?)?.toDouble(),
+    slopeRating: json['slopeRating'] as int?,
+    yardages: {
+      for (final entry in (json['yardages'] as List<dynamic>? ?? []))
+        (entry as Map<String, dynamic>)['hole'] as int: entry['yards'] as int,
+    },
+  );
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    if (courseRating != null) 'courseRating': courseRating,
+    if (slopeRating != null) 'slopeRating': slopeRating,
+    'yardages': [
+      for (final entry in yardages.entries)
+        {'hole': entry.key, 'yards': entry.value},
+    ],
+  };
+}
+
 class ScannedCard {
-  const ScannedCard({this.name, required this.holes, required this.checks});
+  const ScannedCard({
+    this.name,
+    required this.holes,
+    required this.tees,
+    required this.checks,
+  });
 
   final String? name;
   final List<ScannedLine> holes;
+  final List<ScannedTee> tees;
   final ScanChecks checks;
 
   factory ScannedCard.fromJson(Map<String, dynamic> json) => ScannedCard(
@@ -84,9 +133,122 @@ class ScannedCard {
     holes: (json['holes'] as List<dynamic>? ?? [])
         .map((e) => ScannedLine.fromJson(e as Map<String, dynamic>))
         .toList(),
+    tees: (json['tees'] as List<dynamic>? ?? [])
+        .map((e) => ScannedTee.fromJson(e as Map<String, dynamic>))
+        .where((tee) => tee.name.isNotEmpty)
+        .toList(),
     checks: ScanChecks.fromJson(
       (json['checks'] as Map<String, dynamic>?) ?? const {},
     ),
+  );
+}
+
+/// What the golfer's own arithmetic says about a row of handwriting.
+///
+/// A player writes their OUT, IN and TOTAL at the end of each nine, and those
+/// three numbers are the only independent check on their own handwriting there
+/// will ever be. On the card this was built against they earned their place at
+/// once: the front nine summed to the +2 written beside it, and the back nine
+/// summed to 2 against a written 1 — one hole misread, invisible in the
+/// numbers themselves.
+class ScannedRowChecks {
+  const ScannedRowChecks({
+    required this.holesRead,
+    required this.cellsRead,
+    this.writtenOut,
+    this.writtenIn,
+    this.writtenTotal,
+    required this.outAgrees,
+    required this.inAgrees,
+    required this.totalAgrees,
+  });
+
+  final int holesRead;
+  final int cellsRead;
+  final int? writtenOut;
+  final int? writtenIn;
+  final int? writtenTotal;
+  final bool outAgrees;
+  final bool inAgrees;
+  final bool totalAgrees;
+
+  factory ScannedRowChecks.fromJson(Map<String, dynamic> json) =>
+      ScannedRowChecks(
+        holesRead: json['holesRead'] as int? ?? 0,
+        cellsRead: json['cellsRead'] as int? ?? 0,
+        writtenOut: json['writtenOut'] as int?,
+        writtenIn: json['writtenIn'] as int?,
+        writtenTotal: json['writtenTotal'] as int?,
+        outAgrees: json['outAgrees'] as bool? ?? false,
+        inAgrees: json['inAgrees'] as bool? ?? false,
+        totalAgrees: json['totalAgrees'] as bool? ?? false,
+      );
+}
+
+/// How the numbers in a row are meant to be read.
+///
+/// A golfer writes either the strokes they took (4, 5, 6) or the score against
+/// par (0, +1, -1). The same "1" is a hole in one or a bogey depending on
+/// which, so this is never guessed on the golfer's behalf: an unknown notation
+/// is asked about before a single stroke is written down.
+enum ScannedNotation { strokes, toPar, unknown }
+
+/// One hole of one player's row. `written` is absent where the server would
+/// have had to guess at a smudge.
+class ScannedStroke {
+  const ScannedStroke({required this.hole, this.written});
+
+  final int hole;
+  final int? written;
+
+  factory ScannedStroke.fromJson(Map<String, dynamic> json) => ScannedStroke(
+    hole: json['hole'] as int,
+    written: json['written'] as int?,
+  );
+}
+
+/// One player's row, as the server read it off the photograph.
+class ScannedScoreRow {
+  const ScannedScoreRow({
+    this.player,
+    required this.notation,
+    required this.holes,
+    required this.checks,
+  });
+
+  /// Whatever is written at the left edge of the row — an initial, a name, or
+  /// nothing at all.
+  final String? player;
+  final ScannedNotation notation;
+  final List<ScannedStroke> holes;
+  final ScannedRowChecks checks;
+
+  factory ScannedScoreRow.fromJson(Map<String, dynamic> json) =>
+      ScannedScoreRow(
+        player: json['player'] as String?,
+        notation: switch (json['notation'] as String?) {
+          'strokes' => ScannedNotation.strokes,
+          'to_par' => ScannedNotation.toPar,
+          _ => ScannedNotation.unknown,
+        },
+        holes: (json['holes'] as List<dynamic>? ?? [])
+            .map((e) => ScannedStroke.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        checks: ScannedRowChecks.fromJson(
+          (json['checks'] as Map<String, dynamic>?) ?? const {},
+        ),
+      );
+}
+
+class ScannedScores {
+  const ScannedScores({required this.players});
+
+  final List<ScannedScoreRow> players;
+
+  factory ScannedScores.fromJson(Map<String, dynamic> json) => ScannedScores(
+    players: (json['players'] as List<dynamic>? ?? [])
+        .map((e) => ScannedScoreRow.fromJson(e as Map<String, dynamic>))
+        .toList(),
   );
 }
 
@@ -105,6 +267,19 @@ class ScorecardScanApi {
       image,
     );
     return ScannedCard.fromJson(json);
+  }
+
+  /// Read the strokes a golfer wrote on their card by hand.
+  ///
+  /// The same photograph as [scanCourseCard] read for the opposite half of
+  /// itself: there the printed rows are the answer and the handwriting is
+  /// noise, here it is the other way round.
+  Future<ScannedScores> scanScores({
+    required String roundId,
+    required File image,
+  }) async {
+    final json = await _upload('/rounds/$roundId/scores/extract', image);
+    return ScannedScores.fromJson(json);
   }
 
   Future<Map<String, dynamic>> _upload(String path, File image) async {

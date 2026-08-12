@@ -58,6 +58,9 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
 
   late List<int> _segments = [widget.courseId];
   late ScorecardDraft _draft = ScorecardDraft(holeCount: _holeCount());
+
+  /// The tee rows the last scan read, sent with the card when it is submitted.
+  List<ScannedTee> _scannedTees = const [];
   bool _sending = false;
 
   TextEditingController _indexController(int hole) =>
@@ -235,6 +238,12 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
           _indexController(line.hole).text = line.strokeIndex!.toString();
         }
       }
+      // Kept, not shown hole by hole. Ninety yardages is not something a
+      // golfer can check standing at the tee, and the two numbers per tee that
+      // decide a handicap — course rating and slope — are printed in their own
+      // small table. They travel with the card to the admin, who has the
+      // photograph in front of them.
+      _scannedTees = card.tees;
       _scanWarnings = _warningsFrom(card.checks, l10n);
     });
   }
@@ -265,6 +274,7 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
         name: _nameController.text.trim(),
         segmentCourseIds: _segments,
         holes: _draft.toLines(),
+        tees: _scannedTees.map((tee) => tee.toJson()).toList(),
         idempotencyKey: const Uuid().v4(),
         evidenceUrl: _evidenceController.text.trim(),
         note: _noteController.text.trim(),
@@ -357,6 +367,13 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
                     ),
                   ),
                 ],
+              ),
+            ],
+            if (_scannedTees.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                l10n.scorecardScanTees(_scannedTees.length),
+                style: theme.textTheme.bodySmall,
               ),
             ],
             const SizedBox(height: 16),

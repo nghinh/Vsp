@@ -21,6 +21,7 @@ class _RecordingApi extends ScorecardApi {
   String? name;
   List<int>? segmentCourseIds;
   List<ScorecardLine>? holes;
+  List<Map<String, dynamic>>? tees;
   int calls = 0;
 
   @override
@@ -30,6 +31,7 @@ class _RecordingApi extends ScorecardApi {
     required List<int> segmentCourseIds,
     required List<ScorecardLine> holes,
     required String idempotencyKey,
+    List<Map<String, dynamic>> tees = const [],
     String? evidenceUrl,
     String? note,
   }) async {
@@ -38,6 +40,7 @@ class _RecordingApi extends ScorecardApi {
     this.name = name;
     this.segmentCourseIds = segmentCourseIds;
     this.holes = holes;
+    this.tees = tees;
     return 1;
   }
 }
@@ -185,9 +188,11 @@ void main() {
       int parRead = 36,
       int? parPrinted = 36,
       int indexCells = 9,
+      List<ScannedTee> tees = const [],
     }) => ScannedCard(
       name: 'Đường A',
       holes: holes,
+      tees: tees,
       checks: ScanChecks(
         holesRead: holes.length,
         parCellsRead: holes.length,
@@ -338,6 +343,120 @@ void main() {
             .initialValue,
         isNull,
       );
+    });
+
+    testWidgets('the tee rows the scan read travel with the card', (
+      tester,
+    ) async {
+      // Course rating and slope are what turn a round into a handicap
+      // differential, they are printed on the card and nowhere else, and a
+      // golfer cannot check ninety yardages at the tee. Dropping them on the
+      // floor would mean photographing the card twice: once for the pars now,
+      // once for the ratings when somebody notices they are missing.
+      final recording = _RecordingApi();
+      final scan = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+          tees: const [
+            ScannedTee(
+              name: 'GOLD',
+              courseRating: 75.5,
+              slopeRating: 138,
+              yardages: {1: 418, 2: 383},
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: recording,
+            scanApi: scan,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(scan.card);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('scorecard_submit')),
+        200,
+        scrollable: list,
+      );
+      await tester.tap(find.byKey(const Key('scorecard_submit')));
+      await tester.pumpAndSettle();
+
+      expect(recording.calls, 1);
+      expect(recording.tees, hasLength(1));
+      expect(recording.tees!.single['name'], 'GOLD');
+      expect(recording.tees!.single['courseRating'], 75.5);
+      expect(recording.tees!.single['slopeRating'], 138);
+      expect(recording.tees!.single['yardages'], [
+        {'hole': 1, 'yards': 418},
+        {'hole': 2, 'yards': 383},
+      ]);
+    });
+
+    testWidgets('a card photographed without its tee table sends no tees', (
+      tester,
+    ) async {
+      // An empty list would read as "this club prints no tees", which is a
+      // claim about the club rather than about the photograph.
+      final recording = _RecordingApi();
+      final scan = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: recording,
+            scanApi: scan,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(scan.card);
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('scorecard_submit')),
+        200,
+        scrollable: list,
+      );
+      await tester.tap(find.byKey(const Key('scorecard_submit')));
+      await tester.pumpAndSettle();
+
+      expect(recording.calls, 1);
+      expect(recording.tees, isEmpty);
     });
   });
 }

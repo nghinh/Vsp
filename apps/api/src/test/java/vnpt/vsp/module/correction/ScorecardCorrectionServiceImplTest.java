@@ -87,8 +87,25 @@ class ScorecardCorrectionServiceImplTest {
     }
 
     private ScorecardSubmissionRequest card(List<ScorecardSubmissionRequest.HoleLine> holes) {
+        return card(holes, null);
+    }
+
+    private ScorecardSubmissionRequest card(
+            List<ScorecardSubmissionRequest.HoleLine> holes,
+            List<ScorecardSubmissionRequest.TeeLine> tees) {
         return new ScorecardSubmissionRequest(
-                "A + B", List.of(DUONG_A, DUONG_B), holes, "https://example/card.jpg", "chụp ở tee 1");
+                "A + B", List.of(DUONG_A, DUONG_B), holes, tees,
+                "https://example/card.jpg", "chụp ở tee 1");
+    }
+
+    private ScorecardSubmissionRequest.TeeLine tee(String name, String rating, Integer slope, int holes) {
+        return new ScorecardSubmissionRequest.TeeLine(
+                name,
+                rating == null ? null : new java.math.BigDecimal(rating),
+                slope,
+                java.util.stream.IntStream.rangeClosed(1, holes)
+                        .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))
+                        .toList());
     }
 
     private List<ScorecardSubmissionRequest.HoleLine> eighteen() {
@@ -192,5 +209,100 @@ class ScorecardCorrectionServiceImplTest {
         ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
         verify(scorecardRepository).save(captor.capture());
         assertThat(captor.getValue().getId()).isEqualTo(42L);
+    }
+
+    @Test
+    void approvingWritesTheTeeRowsAndTheirYardages() {
+        // Until this existed, approving a card published its pars and its
+        // stroke indexes and dropped the rest of the photograph on the floor:
+        // the yardages and the ratings stayed in the correction payload, where
+        // nothing that scores a round can reach them. A score is only
+        // comparable against the tee it was played from, and course rating and
+        // slope are what make it a handicap differential at all.
+        CourseCorrection correction = service.submit(DUONG_A, 11L,
+                card(eighteen(), List.of(
+                        tee("GOLD", "75.5", 138, 18),
+                        tee("RED", "72.9", 129, 18))));
+        correction.setId(501L);
+        when(scorecardRepository.findByFacilityIdAndName(FACILITY_ID, "A + B"))
+                .thenReturn(Optional.empty());
+
+        service.applyIfScorecard(correction);
+
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scorecardRepository).save(captor.capture());
+        Scorecard published = captor.getValue();
+
+        assertThat(published.getTees()).hasSize(2);
+        assertThat(published.getTees().get(0).getName()).isEqualTo("GOLD");
+        assertThat(published.getTees().get(0).getCourseRating())
+                .isEqualByComparingTo(new java.math.BigDecimal("75.5"));
+        assertThat(published.getTees().get(0).getSlopeRating()).isEqualTo(138);
+        assertThat(published.getTees().get(0).getYardages()).hasSize(18);
+        assertThat(published.getTees().get(0).getYardages().get(0).getYards()).isEqualTo(301);
+        assertThat(published.getTees().get(1).getName()).isEqualTo("RED");
+    }
+
+    @Test
+    void aCardWithNoTeeRowsIsStillPublished() {
+        // Photographs get taken with the rating table outside the frame, and a
+        // card with no tee rows is still worth its pars and its indexes.
+        // Refusing it would cost the whole card for the sake of the yardages.
+        CourseCorrection correction = service.submit(DUONG_A, 11L, card(eighteen(), List.of()));
+        when(scorecardRepository.findByFacilityIdAndName(FACILITY_ID, "A + B"))
+                .thenReturn(Optional.empty());
+
+        service.applyIfScorecard(correction);
+
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scorecardRepository).save(captor.capture());
+        assertThat(captor.getValue().getHoles()).hasSize(18);
+        assertThat(captor.getValue().getTees()).isEmpty();
+    }
+
+    @Test
+    void oneTeeNamedTwiceIsOneTee() {
+        // The card names each tee once, and the table says so. Two rows called
+        // GOLD is one column read twice, and keeping both would put two
+        // ratings on one tee with nothing to choose between them — and break
+        // the unique constraint on the way.
+        CourseCorrection correction = service.submit(DUONG_A, 11L,
+                card(eighteen(), List.of(
+                        tee("GOLD", "75.5", 138, 9),
+                        tee("gold", "74.1", 136, 9))));
+        when(scorecardRepository.findByFacilityIdAndName(FACILITY_ID, "A + B"))
+                .thenReturn(Optional.empty());
+
+        service.applyIfScorecard(correction);
+
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scorecardRepository).save(captor.capture());
+        assertThat(captor.getValue().getTees()).hasSize(1);
+        assertThat(captor.getValue().getTees().get(0).getSlopeRating()).isEqualTo(138);
+    }
+
+    @Test
+    void aReprintReplacesTheTeesToo() {
+        // A club that reprints its card with new ratings has new ratings. The
+        // old tee rows going with the old card is the point of hanging them
+        // off the card rather than the course.
+        Scorecard existing = new Scorecard();
+        existing.setId(42L);
+        existing.setFacilityId(FACILITY_ID);
+        existing.setName("A + B");
+        existing.getTees().add(
+                new vnpt.vsp.module.course.entity.ScorecardTee(
+                        existing, "OLD", new java.math.BigDecimal("70.0"), 120));
+        when(scorecardRepository.findByFacilityIdAndName(FACILITY_ID, "A + B"))
+                .thenReturn(Optional.of(existing));
+
+        CourseCorrection correction = service.submit(DUONG_A, 11L,
+                card(eighteen(), List.of(tee("GOLD", "75.5", 138, 18))));
+        service.applyIfScorecard(correction);
+
+        ArgumentCaptor<Scorecard> captor = ArgumentCaptor.forClass(Scorecard.class);
+        verify(scorecardRepository).save(captor.capture());
+        assertThat(captor.getValue().getTees()).hasSize(1);
+        assertThat(captor.getValue().getTees().get(0).getName()).isEqualTo("GOLD");
     }
 }

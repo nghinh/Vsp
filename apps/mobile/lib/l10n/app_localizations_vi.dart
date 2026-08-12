@@ -3349,4 +3349,89 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get scorecardScanGallery => 'Chọn từ thư viện';
+
+  @override
+  String get scoreScan => 'Chụp ảnh card';
+
+  @override
+  String get scoreScanTitle => 'Điểm đọc từ card';
+
+  @override
+  String get scoreScanning => 'Đang đọc chữ viết tay…';
+
+  @override
+  String get scoreScanNothing =>
+      'Không đọc được điểm viết tay nào trên card này.';
+
+  @override
+  String get scoreScanWhichRow => 'Dòng nào trên card là của bạn?';
+
+  @override
+  String scoreScanRowNumber(int number) {
+    return 'Dòng $number';
+  }
+
+  @override
+  String get scoreScanNotationQuestion => 'Các số là số gậy hay số so với par?';
+
+  @override
+  String get scoreScanNotationStrokes => 'Số gậy';
+
+  @override
+  String get scoreScanNotationToPar => 'So với par';
+
+  @override
+  String get scoreScanCheckEveryHole =>
+      'Đối chiếu từng hố với card. Chưa có gì được lưu cho đến khi bạn bấm lưu.';
+
+  @override
+  String scoreScanHole(int hole) {
+    return 'Hố $hole';
+  }
+
+  @override
+  String get scoreScanUnread => 'không đọc được';
+
+  @override
+  String scoreScanWritten(String written) {
+    return 'viết $written';
+  }
+
+  @override
+  String scoreScanParOnly(int par) {
+    return 'par $par, không đọc được';
+  }
+
+  @override
+  String scoreScanParAndWritten(int par, String written) {
+    return 'par $par, viết $written';
+  }
+
+  @override
+  String scoreScanBlanks(int count) {
+    return '$count hố không đọc được — bạn tự điền giúp.';
+  }
+
+  @override
+  String scoreScanOutDisagrees(int out) {
+    return 'Tổng chín hố đầu không khớp với số $out bạn ghi ở ô OUT — kiểm tra lại chín hố đó.';
+  }
+
+  @override
+  String scoreScanInDisagrees(int in_) {
+    return 'Tổng chín hố sau không khớp với số $in_ bạn ghi ở ô IN — kiểm tra lại chín hố đó.';
+  }
+
+  @override
+  String get scoreScanSave => 'Lưu vào bảng điểm';
+
+  @override
+  String scoreScanSaved(int count) {
+    return 'Đã lưu $count hố vào bảng điểm.';
+  }
+
+  @override
+  String scorecardScanTees(int count) {
+    return 'Gửi kèm $count hàng tee từ ảnh — yardage và rating, để người duyệt đối chiếu.';
+  }
 }

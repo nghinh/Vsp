@@ -9,10 +9,12 @@
 // Story 5.4 — Slice 4: SyncStatusBadge in bottom bar
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../application/score/scorecard_cubit.dart';
 import '../../../application/score/scorecard_state.dart';
@@ -38,6 +40,8 @@ import '../../../features/bag/data/bag_dto.dart';
 import '../../../features/bag/data/bag_repository.dart';
 import '../../../features/bag/data/bag_service.dart';
 import '../../../features/round/presentation/round_summary_screen.dart';
+import '../../../features/scorecard/data/scorecard_scan_api.dart';
+import '../../../features/scorecard/presentation/score_scan_sheet.dart';
 import '../../../infrastructure/persistence/sync_queue_repository.dart';
 import '../../sheets/shot_entry_sheet.dart';
 import '../../widgets/score/hole_navigation_bar.dart';
@@ -352,6 +356,109 @@ class _ScorecardScreenContent extends StatelessWidget {
     );
   }
 
+  /// Photograph the card the golfer filled in by hand and read it back.
+  ///
+  /// The alternative is what this screen does the rest of the time: eighteen
+  /// keypads, one hole at a time, tapped in on a phone. For a round already
+  /// written down on paper that is transcription, and transcription is where
+  /// numbers go wrong.
+  ///
+  /// Nothing is written here. The read comes back as a draft, the golfer
+  /// checks every hole against the card in their hand, and only what they
+  /// confirm reaches the scorecard — through the same upsert and the same sync
+  /// queue as a hand-entered stroke.
+  Future<void> _scanScores(
+    BuildContext context,
+    ScorecardScreenState state,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final cubit = context.read<ScorecardCubit>();
+
+    final source = await _chooseImageSource(context, l10n);
+    if (source == null) return;
+
+    final picked = await ImagePicker().pickImage(
+      source: source,
+      // A card fills the frame and the numbers are small; a downscaled photo
+      // reads worse, and this one is going to a model that charges by it.
+      maxWidth: 3000,
+      imageQuality: 90,
+    );
+    if (picked == null) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(l10n.scoreScanning),
+        duration: const Duration(seconds: 60),
+      ),
+    );
+
+    ScannedScores scanned;
+    try {
+      scanned = await ScorecardScanApi().scanScores(
+        roundId: state.flightId,
+        image: File(picked.path),
+      );
+    } on ScorecardScanException catch (e) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      return;
+    } catch (_) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(SnackBar(content: Text(l10n.scoreScanNothing)));
+      return;
+    }
+    messenger.hideCurrentSnackBar();
+
+    if (scanned.players.isEmpty) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.scoreScanNothing)));
+      return;
+    }
+
+    if (!context.mounted) return;
+    final confirmed = await showScoreScanSheet(
+      context,
+      scanned: scanned,
+      holePars: state.holePars,
+    );
+    if (confirmed == null || confirmed.isEmpty) return;
+
+    final written = await cubit.applyScannedStrokes(
+      playerId: state.playerIds.isNotEmpty ? state.playerIds.first : 'me',
+      grossByHole: confirmed,
+    );
+    messenger.showSnackBar(SnackBar(content: Text(l10n.scoreScanSaved(written))));
+  }
+
+  Future<ImageSource?> _chooseImageSource(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l10n.scorecardScanSource),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.scorecardScanGallery),
+              onTap: () =>
+                  Navigator.of(sheetContext).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final content = _buildContent(context);
@@ -385,6 +492,11 @@ class _ScorecardScreenContent extends StatelessWidget {
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [
+              IconButton(
+                icon: const Icon(Icons.photo_camera_outlined),
+                tooltip: AppLocalizations.of(context).scoreScan,
+                onPressed: () => _scanScores(context, state),
+              ),
               IconButton(
                 icon: const Icon(Icons.add_location_alt_outlined),
                 tooltip: AppLocalizations.of(context).scorecardTrackShot,

@@ -2,6 +2,7 @@ package vnpt.vsp.module.correction;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -149,16 +150,30 @@ public class ScorecardOcrService {
             If nothing has been written on this card by hand, return an empty \
             players list.
 
+            ALSO READ WHAT THE ROW ADDS UP TO
+
+            A golfer almost always writes their own totals at the end of each \
+            nine, in the OUT, IN and TOTAL columns of their own row. Give them \
+            as written, in the same convention as the rest of the row, so the \
+            holes you read can be checked against the golfer's own arithmetic. \
+            Use null for any of them that is not written.
+
             Return only a JSON object, with no prose around it and no markdown \
             fences:
 
             {"players": [{"player": "A" or null,
                           "notation": "strokes" | "to_par" | null,
+                          "writtenOut": 2, "writtenIn": 1, "writtenTotal": 3,
                           "holes": [{"hole": 1, "written": 4}, ...]}]}
             """;
 
     private static final String CHAT_COMPLETIONS = "/chat/completions";
     private static final String MESSAGES = "/messages";
+    private static final int MAX_TOKENS = 12000;
+
+    /// The two spellings of a token budget, in the order they are tried. Newer
+    /// OpenAI-shaped models reject the first and name the second in the 400.
+    private static final String[] TOKEN_KEYS = {"max_tokens", "max_completion_tokens"};
 
     private final ObjectMapper objectMapper;
     private final String apiKey;
@@ -218,9 +233,9 @@ public class ScorecardOcrService {
         // at a router whose `image` alias is repointed at a different model
         // whenever a better one turns up. The Anthropic surface is tried only
         // if the router does not serve that path at all.
-        JsonNode body = post(CHAT_COMPLETIONS, chatRequest(base64, mediaType, prompt));
+        String body = post(CHAT_COMPLETIONS, base64, mediaType, prompt);
         if (body == null) {
-            body = post(MESSAGES, messagesRequest(base64, mediaType, prompt));
+            body = post(MESSAGES, base64, mediaType, prompt);
         }
         if (body == null) {
             log.error("The OCR gateway serves neither {} nor {}", CHAT_COMPLETIONS, MESSAGES);
@@ -230,39 +245,23 @@ public class ScorecardOcrService {
         return answerOf(body, mediaType, image.length);
     }
 
-    private JsonNode chatRequest(String base64, String mediaType, String prompt) {
+    /**
+     * The request, in the dialect the path expects.
+     *
+     * <p>The image goes inline either way: a data URI on the chat-completions
+     * surface, a base64 source block on the Anthropic one.
+     */
+    private ObjectNode request(String path, String base64, String mediaType, String prompt, String tokenKey) {
         var body = objectMapper.createObjectNode();
         body.put("model", model);
         // A five-tee card is ninety yardages plus par and index, and at 4096
         // the answer was cut off mid-yardage on hole 13 of the fourth tee — a
         // truncation that reads as a short card rather than an error.
-        body.put("max_tokens", 12000);
+        body.put(tokenKey, MAX_TOKENS);
         // Left in deliberately: this gateway reads an absent `stream` as
-        // "stream it", and the answer came back as server-sent events that the
-        // JSON parser rejected on the word "event". Saying so costs nothing
-        // against a server that already defaults to false.
-        body.put("stream", false);
-
-        var text = objectMapper.createObjectNode();
-        text.put("type", "text");
-        text.put("text", prompt);
-
-        var url = objectMapper.createObjectNode();
-        url.put("type", "image_url");
-        url.putObject("image_url").put("url", "data:" + mediaType + ";base64," + base64);
-
-        var content = objectMapper.createArrayNode().add(url).add(text);
-        var message = objectMapper.createObjectNode();
-        message.put("role", "user");
-        message.set("content", content);
-        body.putArray("messages").add(message);
-        return body;
-    }
-
-    private JsonNode messagesRequest(String base64, String mediaType, String prompt) {
-        var body = objectMapper.createObjectNode();
-        body.put("model", model);
-        body.put("max_tokens", 12000);
+        // "stream it", and the answer came back as server-sent events. Those
+        // are read now too, but asking for one document is still cheaper than
+        // reassembling a hundred frames.
         body.put("stream", false);
 
         var text = objectMapper.createObjectNode();
@@ -270,28 +269,66 @@ public class ScorecardOcrService {
         text.put("text", prompt);
 
         var image = objectMapper.createObjectNode();
-        image.put("type", "image");
-        var source = image.putObject("source");
-        source.put("type", "base64");
-        source.put("media_type", mediaType);
-        source.put("data", base64);
+        if (MESSAGES.equals(path)) {
+            image.put("type", "image");
+            var source = image.putObject("source");
+            source.put("type", "base64");
+            source.put("media_type", mediaType);
+            source.put("data", base64);
+        } else {
+            image.put("type", "image_url");
+            image.putObject("image_url").put("url", "data:" + mediaType + ";base64," + base64);
+        }
 
-        var content = objectMapper.createArrayNode().add(image).add(text);
         var message = objectMapper.createObjectNode();
         message.put("role", "user");
-        message.set("content", content);
+        message.set("content", objectMapper.createArrayNode().add(image).add(text));
         body.putArray("messages").add(message);
         return body;
     }
 
     /**
-     * The gateway's answer, or null when it does not serve this path at all.
+     * The gateway's answer as it came off the wire, or null when it does not
+     * serve this path at all.
      *
-     * <p>Everything else — a refused key, a model that is not routed, a body
-     * that is not JSON — is this server's problem to report, not a reason to
-     * go asking somewhere else.
+     * <p>Everything else — a refused key, a model that is not routed — is this
+     * server's problem to report, not a reason to go asking somewhere else.
+     * The one exception is the token-budget parameter: the OpenAI-shaped world
+     * spells it two ways and a server that wants the other one says so in a
+     * 400, which is worth one retry rather than an operator's afternoon.
      */
-    private JsonNode post(String path, JsonNode body) {
+    private String post(String path, String base64, String mediaType, String prompt) {
+        for (String tokenKey : TOKEN_KEYS) {
+            HttpResponse<String> response = send(path, request(path, base64, mediaType, prompt, tokenKey));
+
+            if (response.statusCode() == 404 || response.statusCode() == 405) {
+                return null;
+            }
+            if (response.statusCode() / 100 == 2) {
+                return response.body();
+            }
+
+            String complaint = response.body() == null ? "" : response.body();
+            boolean wrongSpelling = response.statusCode() == 400
+                    && !tokenKey.equals(TOKEN_KEYS[TOKEN_KEYS.length - 1])
+                    && complaint.contains(TOKEN_KEYS[1]);
+            if (wrongSpelling) {
+                log.info("The OCR gateway wants {} rather than {} — asking again",
+                        TOKEN_KEYS[1], tokenKey);
+                continue;
+            }
+
+            // The gateway's own words, trimmed: a 402 for exhausted credit and
+            // a 401 for a rotated key are the two failures an operator can
+            // actually act on, and neither is visible from a status code.
+            log.error("The OCR gateway answered {} at {}: {}", response.statusCode(), path,
+                    abbreviate(complaint));
+            throw unreadable();
+        }
+        throw unreadable();
+    }
+
+    private HttpResponse<String> send(String path, ObjectNode body) {
         HttpRequest request;
         try {
             request = HttpRequest.newBuilder(URI.create(endpoint(path)))
@@ -312,9 +349,8 @@ public class ScorecardOcrService {
             throw unreadable();
         }
 
-        HttpResponse<String> response;
         try {
-            response = http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            return http.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
         } catch (IOException e) {
             log.error("The OCR gateway could not be reached at {}", path, e);
             throw unreadable();
@@ -322,62 +358,44 @@ public class ScorecardOcrService {
             Thread.currentThread().interrupt();
             throw unreadable();
         }
-
-        if (response.statusCode() == 404 || response.statusCode() == 405) {
-            return null;
-        }
-        if (response.statusCode() / 100 != 2) {
-            // The gateway's own words, trimmed: a 402 for exhausted credit and
-            // a 401 for a rotated key are the two failures an operator can
-            // actually act on, and neither is visible from a status code.
-            log.error("The OCR gateway answered {} at {}: {}", response.statusCode(), path,
-                    abbreviate(response.body()));
-            throw unreadable();
-        }
-
-        try {
-            return objectMapper.readTree(response.body());
-        } catch (Exception e) {
-            log.error("The OCR gateway answered {} at {} with a body that is not JSON: {}",
-                    response.statusCode(), path, abbreviate(response.body()));
-            throw unreadable();
-        }
     }
 
     /**
-     * The model's text, out of whichever shape the router answered in.
+     * The model's text, out of whichever shape the answer arrived in.
      *
-     * <p>This gateway routes one alias at whatever model its operator has
-     * pointed it at, and the shape of the answer follows the model rather than
-     * the path asked on: the same `/v1/messages` request that used to come
-     * back with Anthropic `content` blocks now comes back as an OpenAI
-     * `chat.completion`. Reading both is what lets the operator swap the model
-     * without this server needing a deploy.
+     * <p>The gateway routes one model alias at whatever model its operator has
+     * pointed it at, and the answer's shape follows the model rather than the
+     * path it was asked on: the same {@code /v1/messages} request that used to
+     * come back with Anthropic {@code content} blocks now comes back as an
+     * OpenAI {@code chat.completion}. Choosing the model is the operator's; a
+     * deploy should not be the price of choosing.
+     *
+     * <p>So four dialects are read rather than one — OpenAI, Anthropic, Gemini,
+     * and any of them delivered as server-sent events, which is what this
+     * gateway does when it forgets it was asked not to.
      */
-    private String answerOf(JsonNode body, String mediaType, int bytes) {
-        JsonNode choice = body.path("choices").path(0);
-        String finish = choice.path("finish_reason").asText(
-                body.path("stop_reason").asText(""));
+    private String answerOf(String body, String mediaType, int bytes) {
+        String trimmed = body == null ? "" : body.trim();
+        String text;
 
-        if ("refusal".equals(finish) || choice.path("message").hasNonNull("refusal")) {
-            log.warn("Scorecard reading was refused for a {} image of {} bytes", mediaType, bytes);
-            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
-                    Map.of("image", "this image could not be read"));
-        }
-        if ("length".equals(finish) || "max_tokens".equals(finish)) {
-            // Worth saying out loud: a cut-off answer parses as a card with
-            // fewer holes on it, which reads like a nine-hole course rather
-            // than a failure.
-            log.warn("The OCR gateway stopped at its token limit — the card was read only as far as it got");
+        if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+            JsonNode json;
+            try {
+                json = objectMapper.readTree(trimmed);
+            } catch (Exception e) {
+                log.error("The OCR gateway answered with a body that is not JSON: {}", abbreviate(body));
+                throw unreadable();
+            }
+            refuseIfRefused(json, mediaType, bytes);
+            warnIfTruncated(json.path("choices").path(0).path("finish_reason")
+                    .asText(json.path("stop_reason").asText("")));
+            text = textIn(json);
+        } else {
+            text = textInEvents(trimmed, mediaType, bytes);
         }
 
-        String text = textIn(choice.path("message").path("content"));
-        if (text == null) {
-            text = textIn(body.path("content"));
-        }
         if (text == null || text.isBlank()) {
-            log.error("The OCR gateway answered in a shape with no text in it: {}",
-                    abbreviate(body.toString()));
+            log.error("The OCR gateway answered in a shape with no text in it: {}", abbreviate(body));
             throw unreadable();
         }
 
@@ -385,17 +403,103 @@ public class ScorecardOcrService {
         return text;
     }
 
-    /// Text out of a content field, which is a bare string on the OpenAI
-    /// surface and a list of typed blocks on the Anthropic one.
-    private String textIn(JsonNode content) {
+    /**
+     * The text out of a stream of server-sent events.
+     *
+     * <p>Every dialect streams the same way — {@code data:} per line, one JSON
+     * fragment each — so the fragments are read with the same reader as a whole
+     * answer and joined. A stream that carries a refusal or stops at its token
+     * limit says so in one of those fragments, and is treated exactly as it
+     * would be in a single document.
+     */
+    private String textInEvents(String body, String mediaType, int bytes) {
+        var joined = new StringBuilder();
+        for (String line : body.split("\\R")) {
+            if (!line.startsWith("data:")) {
+                continue;
+            }
+            String payload = line.substring("data:".length()).trim();
+            if (payload.isEmpty() || "[DONE]".equals(payload)) {
+                continue;
+            }
+            JsonNode frame;
+            try {
+                frame = objectMapper.readTree(payload);
+            } catch (Exception e) {
+                continue;
+            }
+            refuseIfRefused(frame, mediaType, bytes);
+            warnIfTruncated(frame.path("choices").path(0).path("finish_reason").asText(""));
+            String piece = textIn(frame);
+            if (piece != null) {
+                joined.append(piece);
+            }
+        }
+        return joined.isEmpty() ? null : joined.toString();
+    }
+
+    private void refuseIfRefused(JsonNode node, String mediaType, int bytes) {
+        boolean refused = "refusal".equals(node.path("stop_reason").asText())
+                || "refusal".equals(node.path("choices").path(0).path("finish_reason").asText())
+                || node.path("choices").path(0).path("message").hasNonNull("refusal")
+                || node.path("choices").path(0).path("delta").hasNonNull("refusal");
+        if (refused) {
+            log.warn("Scorecard reading was refused for a {} image of {} bytes", mediaType, bytes);
+            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
+                    Map.of("image", "this image could not be read"));
+        }
+    }
+
+    private void warnIfTruncated(String finish) {
+        // Worth saying out loud: a cut-off answer parses as a card with fewer
+        // holes on it, which reads like a nine-hole course rather than a
+        // failure.
+        if ("length".equals(finish) || "max_tokens".equals(finish) || "MAX_TOKENS".equals(finish)) {
+            log.warn("The OCR gateway stopped at its token limit — the card was read only as far as it got");
+        }
+    }
+
+    /**
+     * Text out of one answer or one stream fragment, in any of the dialects a
+     * router in front of several vendors can hand back.
+     */
+    private String textIn(JsonNode node) {
+        JsonNode choice = node.path("choices").path(0);
+        String text = contentText(choice.path("message").path("content"));   // OpenAI, whole
+        if (text == null) {
+            text = contentText(choice.path("delta").path("content"));        // OpenAI, streamed
+        }
+        if (text == null) {
+            text = contentText(choice.path("text"));                         // legacy completions
+        }
+        if (text == null) {
+            text = contentText(node.path("content"));                        // Anthropic, whole
+        }
+        if (text == null) {
+            text = contentText(node.path("delta").path("text"));             // Anthropic, streamed
+        }
+        if (text == null) {
+            text = contentText(node.path("candidates").path(0)
+                    .path("content").path("parts"));                         // Gemini
+        }
+        return text;
+    }
+
+    /// A content field, which is a bare string in some dialects and a list of
+    /// typed parts in others. Anything without text in it reads as absent, so
+    /// the caller can try the next dialect rather than stopping on an empty
+    /// answer that was really a shape it did not recognise.
+    private String contentText(JsonNode content) {
         if (content.isTextual()) {
             return content.asText();
         }
         if (content.isArray()) {
             var joined = new StringBuilder();
-            for (var block : content) {
-                if (block.hasNonNull("text")) {
-                    joined.append(block.get("text").asText());
+            for (var part : content) {
+                if (part.hasNonNull("text")) {
+                    joined.append(part.get("text").asText());
+                } else if (part.isTextual()) {
+                    joined.append(part.asText());
                 }
             }
             return joined.isEmpty() ? null : joined.toString();
@@ -546,6 +650,7 @@ public class ScorecardOcrService {
                     case "strokes", "to_par" -> objectMapper.getNodeFactory().textNode(notation);
                     default -> objectMapper.nullNode();
                 });
+                row.set("checks", checkRow(lines, player));
                 row.set("holes", lines);
                 rows.add(row);
             }
@@ -566,6 +671,68 @@ public class ScorecardOcrService {
     }
 
 
+
+    /**
+     * What the golfer's own arithmetic says about their row.
+     *
+     * <p>A player writes their OUT, IN and TOTAL at the end of each nine, and
+     * those three numbers are the only independent check on a row of
+     * handwriting there will ever be. On the card this was developed against
+     * they earned their place immediately: the front nine was read correctly
+     * and summed to the +2 the golfer had written, while the back nine summed
+     * to 2 against a written 1 — one hole misread, invisible in the numbers
+     * themselves.
+     *
+     * <p>They are not proof. Two holes misread in opposite directions leave
+     * the total standing, and a golfer who added up wrong disagrees with a
+     * perfect read. Both are reasons to look, which is all this claims.
+     */
+    private com.fasterxml.jackson.databind.JsonNode checkRow(
+            com.fasterxml.jackson.databind.node.ArrayNode lines,
+            com.fasterxml.jackson.databind.JsonNode player) {
+        var checks = objectMapper.createObjectNode();
+
+        int cellsRead = 0;
+        int out = 0;
+        int in = 0;
+        boolean outComplete = true;
+        boolean inComplete = true;
+        for (var line : lines) {
+            int hole = line.get("hole").asInt();
+            boolean read = line.hasNonNull("written");
+            if (read) {
+                cellsRead++;
+                if (hole <= 9) {
+                    out += line.get("written").asInt();
+                } else {
+                    in += line.get("written").asInt();
+                }
+            } else if (hole <= 9) {
+                outComplete = false;
+            } else {
+                inComplete = false;
+            }
+        }
+
+        checks.put("holesRead", lines.size());
+        checks.put("cellsRead", cellsRead);
+
+        // A sum of a nine with a hole missing from it agrees with nothing, and
+        // saying it disagrees would send the golfer looking for a misread that
+        // is really a blank they can already see.
+        Integer writtenOut = intInRange(player.get("writtenOut"), -30, 99);
+        Integer writtenIn = intInRange(player.get("writtenIn"), -30, 99);
+        Integer writtenTotal = intInRange(player.get("writtenTotal"), -60, 199);
+
+        checks.set("writtenOut", nullable(writtenOut));
+        checks.set("writtenIn", nullable(writtenIn));
+        checks.set("writtenTotal", nullable(writtenTotal));
+        checks.put("outAgrees", outComplete && writtenOut != null && writtenOut == out);
+        checks.put("inAgrees", inComplete && writtenIn != null && writtenIn == in);
+        checks.put("totalAgrees", outComplete && inComplete
+                && writtenTotal != null && writtenTotal == out + in);
+        return checks;
+    }
 
     /**
      * What the card's own arithmetic says about the read.

@@ -162,6 +162,75 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
   }
 
 
+  /// Write a whole card's worth of strokes at once.
+  ///
+  /// Entering eighteen holes one at a time is eighteen taps of Next between
+  /// eighteen keypads; a card photographed after the round is all eighteen at
+  /// once, and paging through the scorecard to type numbers the golfer has
+  /// already checked would undo the point of photographing it.
+  ///
+  /// Each hole still goes through the same upsert and the same sync queue as a
+  /// hand-entered stroke, so a scanned round syncs, resumes and corrects
+  /// identically. Only the typing is skipped — never a check.
+  ///
+  /// Returns how many holes were written.
+  Future<int> applyScannedStrokes({
+    required String playerId,
+    required Map<int, int> grossByHole,
+  }) async {
+    final now = DateTime.now();
+    final newScores = Map<String, Map<String, Score>>.from(state.scores);
+    newScores[playerId] = Map<String, Score>.from(newScores[playerId] ?? {});
+
+    var written = 0;
+    for (final entry in grossByHole.entries) {
+      final holeId = '${entry.key}';
+      // A hole this round does not play is not a hole to write to. A card
+      // photographed on the wrong nine would otherwise leave scores hanging
+      // off hole ids the round has never heard of.
+      if (!state.holeIds.contains(holeId)) continue;
+
+      final existing = state.getScore(playerId, holeId);
+      final updated = existing != null
+          ? existing.copyWith(
+              grossScore: entry.value,
+              syncStatus: ScoreSyncStatus.local,
+              updatedAt: now,
+            )
+          : Score(
+              id: '${state.flightId}_${holeId}_$playerId',
+              flightId: state.flightId,
+              holeId: holeId,
+              playerId: playerId,
+              grossScore: entry.value,
+              enteredAt: now,
+              syncStatus: ScoreSyncStatus.local,
+              updatedAt: now,
+            );
+
+      try {
+        await _scoreRepository.upsertScore(updated);
+        await _enqueueSync(updated);
+        newScores[playerId]![holeId] = updated;
+        written++;
+      } catch (_) {
+        // One hole that would not write is not a reason to drop the other
+        // seventeen. The golfer sees which holes landed on the scorecard.
+      }
+    }
+
+    if (written > 0) {
+      emit(
+        state.copyWith(
+          scores: newScores,
+          isOffline: true,
+          syncStatus: SyncStatus.pending,
+        ),
+      );
+    }
+    return written;
+  }
+
   /// Queues a score for the server.
   ///
   /// Every stroke used to stop at SQLite: `upsertScore` and nothing else. The
