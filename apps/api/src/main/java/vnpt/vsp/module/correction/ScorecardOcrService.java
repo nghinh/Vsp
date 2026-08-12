@@ -81,6 +81,12 @@ public class ScorecardOcrService {
             If the photograph is not a scorecard at all, return an empty holes \
             list.
 
+            ALSO READ WHAT THE CARD ADDS UP TO
+
+            The card prints its own sums: the PAR row's OUT, IN and TOTAL. \
+            Give them as printed, so the numbers can be checked against the \
+            holes you read.
+
             ALSO READ THE TEES
 
             The tee rows are the course's own measurements and belong with the \
@@ -95,6 +101,7 @@ public class ScorecardOcrService {
             fences:
 
             {"name": "A + B" or null,
+             "parOut": 36, "parIn": 36, "parTotal": 72,
              "holes": [{"hole": 1, "par": 4, "strokeIndex": 7}, ...],
              "tees": [{"name": "GOLD", "courseRating": 75.5, "slopeRating": 138,
                        "yardages": [{"hole": 1, "yards": 416}, ...]}, ...]}
@@ -207,7 +214,11 @@ public class ScorecardOcrService {
         // the shape is requested in the prompt and checked here instead.
         MessageCreateParams params = MessageCreateParams.builder()
                 .model(model)
-                .maxTokens(4096L)
+                // A five-tee card is ninety yardages plus par and index, and
+                // at 4096 the answer was cut off mid-yardage on hole 13 of
+                // the fourth tee — a truncation that reads as a short card
+                // rather than an error.
+                .maxTokens(12000L)
                 .addUserMessageOfBlockParams(List.of(
                         ContentBlockParam.ofImage(ImageBlockParam.builder()
                                 .source(Base64ImageSource.builder()
@@ -289,6 +300,7 @@ public class ScorecardOcrService {
             }
 
             var card = objectMapper.createObjectNode();
+            card.set("checks", check(lines, node));
             card.set("tees", readTees(node.get("tees")));
             var name = node.get("name");
             card.set("name", name == null || name.isNull() ? objectMapper.nullNode()
@@ -379,6 +391,65 @@ public class ScorecardOcrService {
         }
     }
 
+
+
+    /**
+     * What the card's own arithmetic says about the read.
+     *
+     * <p>A printed card carries two facts that a correct read must satisfy:
+     * the par row adds up to the total printed beside it, and the stroke
+     * indexes are the numbers 1..18 used once each. Both are cheap to check
+     * and worth surfacing — but neither is proof, and the app must not treat
+     * a clean check as a reason to skip the golfer's eyes:
+     *
+     * <ul>
+     *   <li>a read that swaps two pars leaves the total unchanged;</li>
+     *   <li>a read that drops one index column and shifts the rest along is
+     *       still a permutation of 1..18.</li>
+     * </ul>
+     *
+     * Both of those were observed on a real card during development. What
+     * these checks do is name the rows worth looking at first.
+     */
+    private com.fasterxml.jackson.databind.JsonNode check(
+            com.fasterxml.jackson.databind.node.ArrayNode lines,
+            com.fasterxml.jackson.databind.JsonNode node) {
+        var checks = objectMapper.createObjectNode();
+
+        int parRead = 0;
+        int parCells = 0;
+        int indexCells = 0;
+        var indexes = new java.util.ArrayList<Integer>();
+        for (var line : lines) {
+            if (line.hasNonNull("par")) {
+                parRead += line.get("par").asInt();
+                parCells++;
+            }
+            if (line.hasNonNull("strokeIndex")) {
+                indexes.add(line.get("strokeIndex").asInt());
+                indexCells++;
+            }
+        }
+
+        checks.put("holesRead", lines.size());
+        checks.put("parCellsRead", parCells);
+        checks.put("strokeIndexCellsRead", indexCells);
+        checks.put("parTotalRead", parRead);
+
+        Integer printed = intInRange(node.get("parTotal"), 27, 80);
+        checks.set("parTotalPrinted", nullable(printed));
+        checks.put("parTotalAgrees", printed != null && printed == parRead);
+
+        var sorted = new java.util.ArrayList<>(indexes);
+        java.util.Collections.sort(sorted);
+        var expected = new java.util.ArrayList<Integer>();
+        for (int i = 1; i <= lines.size(); i++) {
+            expected.add(i);
+        }
+        checks.put("strokeIndexComplete", sorted.equals(expected));
+
+        return checks;
+    }
 
     /**
      * The tee rows of the card: what each tee measures and how it is rated.
