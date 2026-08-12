@@ -33,6 +33,7 @@ enum SyncEventType {
   roundCreate,
   roundComplete,
   correctionSubmit,
+  scoreCorrection,
   shotStarted,
   shotEnded,
   shotEdited,
@@ -41,7 +42,11 @@ enum SyncEventType {
 
   static SyncEventType fromString(String value) {
     return SyncEventType.values.firstWhere(
-      (e) => e.name == value.toLowerCase(),
+      // Compared against value.toLowerCase() until this line, while every
+      // name here is camelCase — so "scoreUpdate" was matched against
+      // "scoreupdate", nothing ever matched, and every type fell through to
+      // the orElse below.
+      (e) => e.name == value,
       orElse: () => SyncEventType.scoreUpdate,
     );
   }
@@ -111,6 +116,26 @@ class SyncEvent extends Equatable {
       type: SyncEventType.scoreUpdate,
       entityId: scoreId,
       payload: _encodePayload(scorePayload),
+      state: SyncStatus.pending,
+      attemptCount: 0,
+      createdAt: DateTime.now().toUtc(),
+    );
+  }
+
+
+  /// Create a score-correction event for the round's card.
+  ///
+  /// A correction used to stop at the phone: the endpoint existed, and
+  /// nothing ever posted to it.
+  factory SyncEvent.forScoreCorrection({
+    required String roundId,
+    required Map<String, dynamic> correctionPayload,
+  }) {
+    return SyncEvent(
+      id: _generateUuid(),
+      type: SyncEventType.scoreCorrection,
+      entityId: roundId,
+      payload: _encodePayload(correctionPayload),
       state: SyncStatus.pending,
       attemptCount: 0,
       createdAt: DateTime.now().toUtc(),

@@ -14,13 +14,24 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../data/repositories/hole_repository_impl.dart';
+import '../../../data/repositories/player_repository.dart';
 import '../../../data/repositories/round_repository.dart';
+import '../../../data/repositories/score_repository_impl.dart';
+import '../../../domain/models/round.dart';
+import '../../../domain/models/score.dart';
+import '../../../domain/models/score_value_objects.dart';
+import '../../../domain/repositories/hole_repository.dart';
+import '../../../domain/repositories/score_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/round_state_service.dart';
 import '../../../data/services/connectivity_service.dart';
 import '../../../domain/models/round_sync_operation.dart';
 import '../../../core/storage/round_sync_store.dart';
+import '../../../domain/models/sync_event.dart';
+import '../../../infrastructure/persistence/sync_queue_repository.dart';
 import '../domain/round_summary.dart';
+import '../domain/score_entry.dart';
 import '../domain/sync_state.dart';
 import '../domain/correction.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
@@ -174,6 +185,10 @@ class RoundCompletionBloc
   final RoundSyncStore _syncStore;
   final ActiveRoundGuard _activeRoundGuard;
   final ConnectivityService _connectivityService;
+  final ScoreRepository _scoreRepository;
+  final HoleRepository _holeRepository;
+  final PlayerRepository _playerRepository;
+  final SyncQueueRepository _syncQueue;
   final Uuid _uuid = const Uuid();
 
   RoundCompletionBloc({
@@ -182,11 +197,21 @@ class RoundCompletionBloc
     required RoundSyncStore syncStore,
     required ActiveRoundGuard activeRoundGuard,
     required ConnectivityService connectivityService,
+    // Optional so the existing callers keep compiling; the defaults are the
+    // stores the scorecard actually writes to.
+    ScoreRepository? scoreRepository,
+    HoleRepository? holeRepository,
+    PlayerRepository? playerRepository,
+    SyncQueueRepository? syncQueue,
   }) : _roundRepo = roundRepo,
        _roundStateService = roundStateService,
        _syncStore = syncStore,
        _activeRoundGuard = activeRoundGuard,
        _connectivityService = connectivityService,
+       _scoreRepository = scoreRepository ?? ScoreRepositoryImpl(),
+       _holeRepository = holeRepository ?? HoleRepositoryImpl(),
+       _playerRepository = playerRepository ?? PlayerRepository(),
+       _syncQueue = syncQueue ?? SyncQueueRepository(),
        super(const RoundCompletionInitial()) {
     on<LoadRoundSummary>(_onLoadRoundSummary);
     on<CompleteRound>(_onCompleteRound);
@@ -207,18 +232,67 @@ class RoundCompletionBloc
         return;
       }
 
-      // Build summary from round data (simplified — real impl would fetch hole scores)
       final summary = RoundSummary(
         roundId: round.id,
         courseName: round.courseName,
         startedAt: round.startedAt,
         endedAt: round.endedAt,
-        players: [], // Would be populated from hole scores
+        players: await _playersFor(round),
       );
 
       emit(RoundSummaryLoaded(summary: summary));
     } catch (e) {
       emit(RoundCompletionError(message: AppMessages.roundLoadFailed));
+    }
+  }
+
+  /// Reads back what the golfer actually entered during the round.
+  ///
+  /// This used to be `players: []` with a comment saying a real
+  /// implementation would fetch the hole scores, so the summary was empty no
+  /// matter how many holes had been played — every round ended on "Chưa có
+  /// dữ liệu điểm".
+  ///
+  /// The scores come from the `scores` table, which is where the scorecard
+  /// writes them. That is worth stating because this screen was wired with a
+  /// [HoleScoreRepository] over the separate `hole_scores` table, and nothing
+  /// writes that table during play — reading it would have looked correct and
+  /// still returned nothing.
+  ///
+  /// The round id doubles as the scorecard's flight id.
+  Future<List<PlayerScoreSummary>> _playersFor(Round round) async {
+    final scores = await _scoreRepository.getScoresForFlight(round.id);
+    if (scores.isEmpty) {
+      return const [];
+    }
+
+    return buildPlayerSummaries(
+      scores: scores,
+      parByHole: await _parByHoleNumber(round.courseId),
+      playerNames: await _playerNames(round.id),
+    );
+  }
+
+  /// hole number → par, from the course package this round was started on.
+  Future<Map<int, int>> _parByHoleNumber(int courseId) async {
+    try {
+      final holes = await _holeRepository.findByCourseWithGeometry('$courseId');
+      return {for (final h in holes) h.holeNumber: h.par};
+    } catch (_) {
+      // No package on this device, or an unreadable one. The card still shows
+      // strokes; it just cannot say what they were relative to.
+      return const {};
+    }
+  }
+
+  /// player id → display name. Empty when the round recorded no players,
+  /// in which case the card falls back to the id it does have.
+  Future<Map<String, String>> _playerNames(String roundId) async {
+    try {
+      final players = await _playerRepository.getPlayersForRound(roundId);
+      return {for (final p in players) p.id: p.name};
+    } catch (_) {
+      return const {};
     }
   }
 
@@ -306,18 +380,209 @@ class RoundCompletionBloc
     add(CompleteRound(roundId: event.roundId));
   }
 
+  /// Applies a correction to the card the golfer is looking at.
+  ///
+  /// This used to write nothing at all — "for now, emit success — real
+  /// implementation would call the backend" — and then emit a summary built
+  /// from empty strings and `DateTime.now()`. So submitting a correction both
+  /// lost the edit and blanked the scorecard on screen, which is the worst of
+  /// the two possible failures: it looked like the round had been erased.
+  ///
+  /// The correction is written to the `scores` table, which is where the
+  /// scorecard writes and where the summary reads, then the summary is
+  /// rebuilt from storage rather than fabricated.
   Future<void> _onSubmitCorrection(
     SubmitCorrection event,
     Emitter<RoundCompletionState> emit,
   ) async {
-    // For now, emit success — real implementation would call the backend
-    final summary = RoundSummary(
-      roundId: event.roundId,
-      courseName: '',
-      startedAt: DateTime.now(),
-      endedAt: DateTime.now(),
-      players: [],
-    );
-    emit(RoundCorrectionSuccess(summary: summary));
+    final round = await _roundRepo.getRound(event.roundId);
+    if (round == null) {
+      emit(const RoundCompletionError(message: AppMessages.roundNotFound));
+      return;
+    }
+
+    try {
+      for (final correction in event.request.corrections) {
+        await _applyCorrection(
+          roundId: event.roundId,
+          playerId: event.request.playerId,
+          correction: correction,
+        );
+      }
+    } catch (_) {
+      emit(
+        RoundCorrectionFailure(
+          message: AppMessages.correctionSubmitFailed,
+          summary: await _summaryOf(round),
+        ),
+      );
+      return;
+    }
+
+    await _queueCorrection(event.roundId, event.request);
+    emit(RoundCorrectionSuccess(summary: await _summaryOf(round)));
   }
+
+  /// Queues the correction for the server.
+  ///
+  /// `POST /scores/rounds/{roundId}/corrections` has existed all along and
+  /// nothing ever posted to it, so a corrected hole stayed on the phone while
+  /// the server kept the original.
+  Future<void> _queueCorrection(String roundId, CorrectionRequest request) async {
+    // The endpoint keys corrections by golfer account id. A guest added on
+    // the tee has none, so their corrections stay local rather than being
+    // filed under somebody else's account.
+    final playerId = int.tryParse(request.playerId);
+    if (playerId == null || request.corrections.isEmpty) {
+      return;
+    }
+
+    try {
+      await _syncQueue.append(
+        SyncEvent.forScoreCorrection(
+          roundId: roundId,
+          correctionPayload: {
+            'playerId': playerId,
+            'corrections': [
+              for (final c in request.corrections)
+                {
+                  'field': c.field,
+                  'holeNumber': c.holeNumber,
+                  'oldValue': c.oldValue,
+                  'newValue': c.newValue,
+                },
+            ],
+          },
+        ),
+      );
+    } catch (_) {
+      // The correction is already applied locally. A queue that cannot be
+      // written is a sync that happens later, not an edit the golfer has to
+      // make twice.
+    }
+  }
+
+  /// Writes one field of one hole back to the score store.
+  Future<void> _applyCorrection({
+    required String roundId,
+    required String playerId,
+    required Correction correction,
+  }) async {
+    final existing = await _scoreRepository.getScore(
+      flightId: roundId,
+      holeId: '${correction.holeNumber}',
+      playerId: playerId,
+    );
+    if (existing == null) {
+      // Nothing to correct: a hole with no entry is a hole to play, not one
+      // to amend.
+      return;
+    }
+
+    final number = int.tryParse(correction.newValue.trim());
+    final flag = switch (correction.newValue.trim().toLowerCase()) {
+      'true' || '1' || 'yes' => true,
+      'false' || '0' || 'no' => false,
+      _ => null,
+    };
+
+    final corrected = switch (correction.field) {
+      'strokes' when number != null => existing.copyWith(grossScore: number),
+      'putts' when number != null => existing.copyWith(putts: number),
+      'penalties' when number != null => existing.copyWith(penalties: number),
+      'fairwayHit' when flag != null => existing.copyWith(fairwayHit: flag),
+      'gir' when flag != null => existing.copyWith(gir: flag),
+      'bunker' when flag != null => existing.copyWith(bunker: flag),
+      'notes' => existing.copyWith(notes: correction.newValue),
+      // An unparseable value is left alone rather than written as a zero.
+      _ => null,
+    };
+    if (corrected == null) {
+      return;
+    }
+
+    await _scoreRepository.upsertScore(
+      corrected.copyWith(
+        syncStatus: ScoreSyncStatus.local,
+        updatedAt: DateTime.now(),
+      ),
+    );
+  }
+
+  /// The round's current card, read back from storage.
+  Future<RoundSummary> _summaryOf(Round round) async {
+    return RoundSummary(
+      roundId: round.id,
+      courseName: round.courseName,
+      startedAt: round.startedAt,
+      endedAt: round.endedAt,
+      players: await _playersFor(round),
+    );
+  }
+}
+
+// ─── Summary aggregation ─────────────────────────────────────────────────────
+
+/// Turns the rows the scorecard wrote into the per-player cards the summary
+/// screen renders.
+///
+/// A top-level function so it can be tested for what it is — arithmetic over
+/// score rows — without standing up SQLite, SharedPreferences and four
+/// services to reach it.
+List<PlayerScoreSummary> buildPlayerSummaries({
+  required List<Score> scores,
+  required Map<int, int> parByHole,
+  required Map<String, String> playerNames,
+}) {
+  final byPlayer = <String, List<ScoreEntry>>{};
+  for (final score in scores) {
+    final strokes = score.grossScore;
+    final holeNumber = int.tryParse(score.holeId);
+    // A hole the golfer opened but never scored is not a zero; it is a hole
+    // with no score, and belongs in neither the total nor the card.
+    if (strokes == null || holeNumber == null) {
+      continue;
+    }
+    byPlayer
+        .putIfAbsent(score.playerId, () => <ScoreEntry>[])
+        .add(
+          ScoreEntry(
+            holeNumber: holeNumber,
+            // 0 when the course package carries no geometry for this hole.
+            par: parByHole[holeNumber] ?? 0,
+            strokes: strokes,
+            putts: score.putts,
+            penalties: score.penalties,
+            fairwayHit: score.fairwayHit,
+            gir: score.gir,
+            bunker: score.bunker,
+            notes: score.notes,
+          ),
+        );
+  }
+
+  final players = <PlayerScoreSummary>[];
+  for (final entry in byPlayer.entries) {
+    final holes = entry.value
+      ..sort((a, b) => a.holeNumber.compareTo(b.holeNumber));
+    final totalStrokes = holes.fold<int>(0, (sum, h) => sum + h.strokes);
+    // Par totals, and the score relative to them, count only holes whose par
+    // is known. Treating an unknown par as 0 would report a golfer as dozens
+    // of shots over par on a course this device has no card for.
+    final scored = holes.where((h) => h.par > 0);
+    players.add(
+      PlayerScoreSummary(
+        playerId: entry.key,
+        playerName: playerNames[entry.key] ?? entry.key,
+        holes: holes,
+        totalStrokes: totalStrokes,
+        totalPar: scored.fold<int>(0, (sum, h) => sum + h.par),
+        relativeScore: scored.fold<int>(0, (sum, h) => sum + h.relativeToPar),
+        syncState: SyncState.pending,
+      ),
+    );
+  }
+
+  players.sort((a, b) => a.playerName.compareTo(b.playerName));
+  return players;
 }

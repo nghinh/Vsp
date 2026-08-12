@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/storage/round_sync_store.dart';
@@ -186,15 +187,19 @@ class _RoundSummaryView extends StatelessWidget {
           );
         }
 
-        if (state is RoundSummaryLoaded ||
-            state is RoundCompletionSuccess ||
-            state is RoundCompletionOffline) {
-          final summary = state is RoundSummaryLoaded
-              ? state.summary
-              : state is RoundCompletionSuccess
-              ? state.summary
-              : (state as RoundCompletionOffline).summary;
-
+        // Every state that carries a card renders the card. The two
+        // correction states were missing, so submitting a correction dropped
+        // the golfer onto the bare "loading" fallback below and left them
+        // there — the card was in the state all along, unrendered.
+        final summary = switch (state) {
+          RoundSummaryLoaded(:final summary) => summary,
+          RoundCompletionSuccess(:final summary) => summary,
+          RoundCompletionOffline(:final summary) => summary,
+          RoundCorrectionSuccess(:final summary) => summary,
+          RoundCorrectionFailure(:final summary) => summary,
+          _ => null,
+        };
+        if (summary != null) {
           return _SummaryScaffold(summary: summary);
         }
 
@@ -295,7 +300,7 @@ class _SummaryScaffold extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ScoreRowWidget(
                       entry: hole,
-                      onTap: () => _showCorrectionDialog(context, hole),
+                      onTap: () => _showCorrectionDialog(context, player, hole),
                     ),
                   );
                 }, childCount: player.holes.length),
@@ -340,13 +345,20 @@ class _SummaryScaffold extends StatelessWidget {
     );
   }
 
-  void _showCorrectionDialog(BuildContext context, ScoreEntry hole) {
+  /// Corrects one hole on one player's card.
+  ///
+  /// The player used to be `summary.players.first` regardless of whose row was
+  /// tapped, so in a flight of four every correction was filed against the
+  /// first golfer — including corrections to somebody else's hole.
+  void _showCorrectionDialog(
+    BuildContext context,
+    PlayerScoreSummary player,
+    ScoreEntry hole,
+  ) {
     showDialog(
       context: context,
       builder: (dialogContext) => CorrectionDialog(
-        playerId: summary.players.isNotEmpty
-            ? summary.players.first.playerId
-            : '',
+        playerId: player.playerId,
         holes: [hole],
         onSubmit: (request) {
           context.read<RoundCompletionBloc>().add(
@@ -467,6 +479,61 @@ class _BottomActions extends StatelessWidget {
 
   const _BottomActions({required this.summary});
 
+  /// Opens the correction dialog over every hole on the card.
+  ///
+  /// Tapping a single row already opens this dialog for that hole; this is the
+  /// same flow with the whole round to choose from, so a correction made here
+  /// travels the route that was already built and tested for it.
+  void _editScores(BuildContext context) {
+    final player = summary.players.first;
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => CorrectionDialog(
+        playerId: player.playerId,
+        holes: player.holes,
+        onSubmit: (request) {
+          context.read<RoundCompletionBloc>().add(
+            SubmitCorrection(roundId: summary.roundId, request: request),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _share(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    await SharePlus.instance.share(
+      ShareParams(text: _shareText(l10n), subject: summary.courseName),
+    );
+  }
+
+  /// The card as text: course, date, and each player's total against par.
+  ///
+  /// Text rather than a rendered image — it pastes into Zalo, Messenger and
+  /// SMS alike, and it says nothing the golfer did not already see on screen.
+  String _shareText(AppLocalizations l10n) {
+    final date = summary.endedAt ?? summary.startedAt;
+    final lines = <String>[
+      summary.courseName,
+      '${date.day}/${date.month}/${date.year}',
+      '',
+    ];
+    for (final player in summary.players) {
+      final relative = player.totalPar == 0
+          ? ''
+          : player.relativeScore == 0
+          ? ' (E)'
+          : player.relativeScore > 0
+          ? ' (+${player.relativeScore})'
+          : ' (${player.relativeScore})';
+      lines.add(
+        '${player.playerName}: ${player.totalStrokes}$relative — '
+        '${player.holes.length} ${l10n.summaryHolesLabel}',
+      );
+    }
+    return lines.join('\n');
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -484,9 +551,14 @@ class _BottomActions extends StatelessWidget {
           children: [
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // Edit scores action
-                },
+                // Both of these were `onPressed: () {}` with a comment where
+                // the action should have been, so they looked live and did
+                // nothing. A hole is corrected through the same dialog the
+                // scorecard rows use, which is already wired to the
+                // correction flow — there is no second editor to reach.
+                onPressed: summary.players.isEmpty
+                    ? null
+                    : () => _editScores(context),
                 icon: const Icon(Icons.edit),
                 label: Text(AppLocalizations.of(context).summaryEditScores),
               ),
@@ -494,9 +566,9 @@ class _BottomActions extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // Share action
-                },
+                onPressed: summary.players.isEmpty
+                    ? null
+                    : () => _share(context),
                 icon: const Icon(Icons.share),
                 label: Text(AppLocalizations.of(context).summaryShare),
               ),

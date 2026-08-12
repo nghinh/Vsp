@@ -23,6 +23,7 @@ import vnpt.vsp.module.score.repository.ScoreCorrectionRepository;
 import vnpt.vsp.module.score.repository.ScoreEntryRepository;
 import vnpt.vsp.module.score.repository.ScoreRepository;
 
+
 import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.List;
@@ -126,33 +127,17 @@ public class ScoreServiceImpl implements ScoreService {
                     continue;
                 }
 
-                ScoreEntry entry = scoreEntryRepository
-                        .findByScoreIdAndHoleNumber(playerScore.getId(), update.holeIndex())
-                        .orElseGet(() -> {
-                            ScoreEntry created = new ScoreEntry();
-                            created.setScoreId(playerScore.getId());
-                            created.setHoleNumber(update.holeIndex());
-                            return created;
-                        });
-
-                entry.setStrokes(update.grossScore());
-                if (entry.getPar() == null) {
-                    entry.setPar(resolvePar(round, update.holeIndex()));
-                }
-                if (update.putts() != null) {
-                    entry.setPutts(update.putts());
-                }
-                if (update.penalties() != null) {
-                    entry.setPenalties(update.penalties());
-                }
-                entry.setFairwayHit(update.fairwayHit());
-                entry.setGir(update.gir());
-                entry.setBunker(update.bunker());
-                if (update.notes() != null) {
-                    entry.setNotes(update.notes());
-                }
-
-                scoreEntryRepository.save(entry);
+                scoreEntryRepository.upsertHole(
+                        playerScore.getId(),
+                        update.holeIndex(),
+                        resolvePar(round, update.holeIndex()),
+                        update.grossScore(),
+                        update.putts(),
+                        update.penalties(),
+                        update.fairwayHit(),
+                        update.gir(),
+                        update.bunker(),
+                        update.notes());
                 applied++;
             }
         }
@@ -305,6 +290,7 @@ public class ScoreServiceImpl implements ScoreService {
     /// silently corrupts every statistic derived from the score. Falls back to
     /// [UNKNOWN_HOLE_PAR] only when the round has no course, or the course has
     /// no such hole — an ad-hoc round on a course nobody has digitised.
+
     private int resolvePar(Round round, Integer holeNumber) {
         if (round == null || round.getCourseId() == null || holeNumber == null) {
             return UNKNOWN_HOLE_PAR;

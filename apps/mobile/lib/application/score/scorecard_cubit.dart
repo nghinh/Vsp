@@ -6,17 +6,22 @@
 // Story 5.3 — Slice 3: Score Entry UI
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../domain/models/score.dart';
 import '../../domain/models/score_value_objects.dart';
+import '../../domain/models/sync_event.dart';
 import '../../domain/models/sync_status.dart';
 import '../../domain/repositories/score_repository.dart';
 import '../../data/repositories/score_repository_impl.dart';
+import '../../infrastructure/persistence/sync_queue_repository.dart';
 import 'scorecard_state.dart';
 
 /// Cubit for managing the full scorecard screen state.
 class ScorecardCubit extends Cubit<ScorecardScreenState> {
   final ScoreRepository _scoreRepository;
+  final SyncQueueRepository _syncQueue;
+  static const Uuid _uuid = Uuid();
 
   ScorecardCubit({
     required String flightId,
@@ -26,8 +31,10 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
     Map<String, int>? holePars,
     bool isTournamentMode = false,
     ScoreRepository? scoreRepository,
+    SyncQueueRepository? syncQueue,
     int initialHoleIndex = 0,
   }) : _scoreRepository = scoreRepository ?? ScoreRepositoryImpl(),
+       _syncQueue = syncQueue ?? SyncQueueRepository(),
        super(
          ScorecardScreenState(
            flightId: flightId,
@@ -138,6 +145,7 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
 
     try {
       await _scoreRepository.upsertScore(updated);
+      await _enqueueSync(updated);
       final newScores = Map<String, Map<String, Score>>.from(state.scores);
       newScores[playerId] = Map<String, Score>.from(newScores[playerId] ?? {});
       newScores[playerId]![holeId] = updated;
@@ -150,6 +158,69 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
       );
     } catch (e) {
       emit(state.copyWith(errorMessage: 'Failed to save score: $e'));
+    }
+  }
+
+
+  /// Queues a score for the server.
+  ///
+  /// Every stroke used to stop at SQLite: `upsertScore` and nothing else. The
+  /// queue, the route and the endpoint all existed — `SyncEvent.forScore` had
+  /// no caller anywhere in the app — so a finished round left the phone with
+  /// zero `/scores/sync` requests, and the server held a scorecard with no
+  /// holes on it.
+  Future<void> _enqueueSync(Score score) async {
+    // The server keys a score update by golfer account id. The primary player
+    // carries theirs as their id; a guest added on the tee has no account, so
+    // their card stays on this phone rather than being posted under somebody
+    // else's name.
+    final golferAccountId = int.tryParse(score.playerId);
+    final holeIndex = int.tryParse(score.holeId);
+    if (golferAccountId == null || holeIndex == null) {
+      return;
+    }
+
+    try {
+      await _syncQueue.append(
+        SyncEvent.forScore(
+          scoreId: score.id,
+          // Shaped as the batch the endpoint takes, so the queue sends
+          // ScoreSyncRequest exactly: roundId and flightId in the envelope,
+          // and nothing in the ScoreUpdate that the record does not declare.
+          // Flattening it here would leave those two inside the update, and
+          // whether Jackson ignores unknown fields is a server setting the
+          // queue should not depend on.
+          scorePayload: {
+            'roundId': score.flightId,
+            'flightId': score.flightId,
+            'scores': [
+              {
+                // ScoreUpdate.scoreId is a UUID server-side; the local id is a
+                // `flight_hole_player` composite. Derived rather than random,
+                // so re-entering a hole updates that row instead of adding a
+                // second one for it.
+                'scoreId': _uuid.v5(
+                  Uuid.NAMESPACE_URL,
+                  'vsp/score/${score.id}',
+                ),
+                'holeIndex': holeIndex,
+                'playerId': golferAccountId,
+                'grossScore': score.grossScore,
+                'putts': score.putts,
+                'penalties': score.penalties,
+                'fairwayHit': score.fairwayHit,
+                'gir': score.gir,
+                'bunker': score.bunker,
+                'notes': score.notes,
+                'version': score.version,
+              },
+            ],
+          },
+        ),
+      );
+    } catch (_) {
+      // The score is already in SQLite. A queue that cannot be written is a
+      // sync that happens later, not a stroke the golfer has to enter again.
     }
   }
 

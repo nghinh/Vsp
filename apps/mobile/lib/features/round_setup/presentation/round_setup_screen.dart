@@ -18,6 +18,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../data/repositories/player_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/nearby_course_service.dart';
@@ -132,6 +133,31 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
   /// can be opened with the correct players/holes when the round starts.
   RoundSetupReady? _lastReady;
 
+
+  /// Writes the flight's players to the round database.
+  ///
+  /// The `players` table existed, `PlayerRepository` existed, and nothing on
+  /// the round-start path ever wrote a row: the names were handed to the
+  /// scorecard in memory and lost with the screen. The round summary, which
+  /// reads that table, then had only the player id to show — a golfer saw
+  /// their card headed "66".
+  ///
+  /// Fire-and-forget: a name that fails to persist must not stop a round from
+  /// starting, and the summary already falls back to the id.
+  void _recordPlayers(String roundId, List<Player> players) {
+    final repository = PlayerRepository();
+    Future<void>(() async {
+      for (final player in players) {
+        try {
+          await repository.addPlayer(player, roundId);
+        } catch (_) {
+          // Already recorded, or the database is unavailable. Either way the
+          // round goes ahead.
+        }
+      }
+    });
+  }
+
   /// Opens the active round.
   ///
   /// The round opens on [ActiveRoundScreen], not on the scorecard directly.
@@ -151,6 +177,7 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
 
     final holeIds = _holeIdsFor(ready);
     final players = ready.players;
+    _recordPlayers(flightId, players);
     // Real par per hole from the course detail; par 4 only where the course
     // data does not cover that hole.
     final pars = {

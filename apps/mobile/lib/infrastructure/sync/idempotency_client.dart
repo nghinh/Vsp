@@ -160,6 +160,17 @@ class IdempotencyClient {
       case SyncEventType.scoreUpdate:
         return SyncRequest('POST', '/scores/sync', _scoreSyncBody(event, payload));
 
+      // POST /scores/rounds/{roundId}/corrections — ScoreController,
+      // @Idempotent. A card correction, not a course-geometry one: the two
+      // are different endpoints and were never distinguished here because
+      // nothing queued the score kind.
+      case SyncEventType.scoreCorrection:
+        return SyncRequest(
+          'POST',
+          '/scores/rounds/${event.entityId}/corrections',
+          payload,
+        );
+
       // POST /courses/{courseId}/geometry-corrections — the one route that was
       // already right, and the only reason anything ever left this queue.
       case SyncEventType.correctionSubmit:

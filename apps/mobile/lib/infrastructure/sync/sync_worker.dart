@@ -81,6 +81,17 @@ class SyncWorker {
   /// True when the worker is running.
   bool _isRunning = false;
 
+  /// The drain currently in flight, if any.
+  ///
+  /// Four things wake this worker — the retry timer, a connectivity change,
+  /// [syncNow], and anything appended to the queue — and nothing stopped two
+  /// of them overlapping. Both runs then read the same pending rows and posted
+  /// the same event, so the server saw every score twice, microseconds apart
+  /// and under one idempotency key. Concurrent duplicates race each other into
+  /// the same row and the loser fails on the unique index; the score survived
+  /// only because the queue retried afterwards.
+  Future<void>? _draining;
+
   /// Callback invoked whenever the aggregated sync status changes.
   final SyncStatusCallback? onStatusChanged;
 
@@ -189,8 +200,20 @@ class SyncWorker {
     _syncTimer = Timer(const Duration(milliseconds: 100), _processQueue);
   }
 
+  /// Drains the queue, and never more than once at a time.
+  ///
+  /// A caller that arrives mid-drain awaits the run already under way rather
+  /// than starting a second one over the same rows.
+  Future<void> _processQueue() {
+    final running = _draining;
+    if (running != null) return running;
+    final started = _drainQueue().whenComplete(() => _draining = null);
+    _draining = started;
+    return started;
+  }
+
   /// Main sync loop — fetches pending events and processes them one by one.
-  Future<void> _processQueue() async {
+  Future<void> _drainQueue() async {
     if (!_isRunning) return;
 
     final pending = await _repository.getPending();

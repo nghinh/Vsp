@@ -114,10 +114,39 @@ class ScoreServiceImplTest {
                 .thenReturn(List.of(score()));
     }
 
-    private ScoreEntry syncAndCaptureEntry() {
+    /**
+     * The entry written by the correction path, which still uses save(): a
+     * correction is one deliberate edit, not the burst of taps that made the
+     * sync path race with itself.
+     */
+    private ScoreEntry correctedEntry() {
         ArgumentCaptor<ScoreEntry> captor = ArgumentCaptor.forClass(ScoreEntry.class);
         verify(scoreEntryRepository).save(captor.capture());
         return captor.getValue();
+    }
+
+    /**
+     * The par the service resolved and handed to the upsert.
+     *
+     * Sync writes each hole with a single {@code INSERT … ON CONFLICT DO
+     * UPDATE}. Read-then-insert cannot be made safe: two requests for the same
+     * hole can be in flight together, both read nothing, and the loser then
+     * fails on V39's unique index — which in PostgreSQL aborts the whole
+     * transaction, so the recovery that followed was itself rejected and the
+     * golfer got a 500.
+     */
+    private int syncAndCapturePar() {
+        ArgumentCaptor<Integer> par = ArgumentCaptor.forClass(Integer.class);
+        verify(scoreEntryRepository).upsertHole(
+                any(), any(), par.capture(), any(), any(), any(), any(), any(), any(), any());
+        return par.getValue();
+    }
+
+    private int syncAndCaptureStrokes() {
+        ArgumentCaptor<Integer> strokes = ArgumentCaptor.forClass(Integer.class);
+        verify(scoreEntryRepository).upsertHole(
+                any(), any(), any(), strokes.capture(), any(), any(), any(), any(), any(), any());
+        return strokes.getValue();
     }
 
     // ─── Par ───────────────────────────────────────────────────────────────
@@ -125,8 +154,6 @@ class ScoreServiceImplTest {
     @Test
     void parComesFromTheCourse_notFromAGuess() {
         givenRoundOnCourse(COURSE_ID);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 8))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 8))
                 .thenReturn(Optional.of(hole(8, 3)));
 
@@ -134,27 +161,23 @@ class ScoreServiceImplTest {
 
         // A par 3 recorded as par 4 turns a birdie into a par, in every
         // statistic derived from it, silently.
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(3);
+        assertThat(syncAndCapturePar()).isEqualTo(3);
     }
 
     @Test
     void parFiveIsRecordedAsFive() {
         givenRoundOnCourse(COURSE_ID);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 13))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 13))
                 .thenReturn(Optional.of(hole(13, 5)));
 
         service.syncScores(ACCOUNT_ID, "key-2", request(13, 6));
 
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(5);
+        assertThat(syncAndCapturePar()).isEqualTo(5);
     }
 
     @Test
     void theServerDoesNotAskTheClientForPar() {
         givenRoundOnCourse(COURSE_ID);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 8))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 8))
                 .thenReturn(Optional.of(hole(8, 3)));
 
@@ -168,37 +191,29 @@ class ScoreServiceImplTest {
     @Test
     void anAdHocRoundWithNoCourseStillRecordsAScore() {
         givenRoundOnCourse(null);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 4))
-                .thenReturn(Optional.empty());
-
         service.syncScores(ACCOUNT_ID, "key-4", request(4, 5));
 
         // Nothing to look par up against, and a not-null column to satisfy.
         // Refusing the score would be the one unacceptable outcome.
-        ScoreEntry entry = syncAndCaptureEntry();
-        assertThat(entry.getPar()).isEqualTo(4);
-        assertThat(entry.getStrokes()).isEqualTo(5);
+        assertThat(syncAndCapturePar()).isEqualTo(4);
+        assertThat(syncAndCaptureStrokes()).isEqualTo(5);
         verifyNoInteractions(holeRepository);
     }
 
     @Test
     void aHoleTheCourseDoesNotCoverStillRecordsAScore() {
         givenRoundOnCourse(COURSE_ID);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 19))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 19))
                 .thenReturn(Optional.empty());
 
         service.syncScores(ACCOUNT_ID, "key-5", request(19, 4));
 
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(4);
+        assertThat(syncAndCapturePar()).isEqualTo(4);
     }
 
     @Test
     void aCourseWithNonsenseParDoesNotOverwriteWithNonsense() {
         givenRoundOnCourse(COURSE_ID);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 2))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 2))
                 .thenReturn(Optional.of(hole(2, 0)));
 
@@ -206,25 +221,24 @@ class ScoreServiceImplTest {
 
         // A par of zero is a data defect, not a hole. Fall back rather than
         // write it into a golfer's scorecard.
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(4);
+        assertThat(syncAndCapturePar()).isEqualTo(4);
     }
 
     @Test
-    void anExistingEntryKeepsTheParItWasRecordedWith() {
+    void syncNeverReadsAHoleBeforeWritingIt() {
         givenRoundOnCourse(COURSE_ID);
-        ScoreEntry existing = new ScoreEntry();
-        existing.setScoreId(SCORE_ID);
-        existing.setHoleNumber(8);
-        existing.setPar(3);
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 8))
-                .thenReturn(Optional.of(existing));
+        when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 8))
+                .thenReturn(Optional.of(hole(8, 3)));
 
         service.syncScores(ACCOUNT_ID, "key-7", request(8, 4));
 
-        // Re-syncing a corrected score must not re-derive par from a course
-        // that may have been re-published since the round was played.
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(3);
-        verifyNoInteractions(holeRepository);
+        // Reading the row first is what let two concurrent requests for the
+        // same hole both decide to insert it. The write is now one statement,
+        // so there is no window between the read and the write to lose — and
+        // keeping a par that is already stored is the upsert's job, expressed
+        // in its ON CONFLICT clause rather than in a branch here.
+        verify(scoreEntryRepository, never()).findByScoreIdAndHoleNumber(any(), any());
+        verify(scoreEntryRepository, never()).saveAndFlush(any());
     }
 
     // ─── The rest of the sync contract ─────────────────────────────────────
@@ -237,7 +251,8 @@ class ScoreServiceImplTest {
 
         // The device queues placeholders for unplayed holes. Persisting them
         // would fill a scorecard with holes nobody has played.
-        verify(scoreEntryRepository, never()).save(any());
+        verify(scoreEntryRepository, never()).upsertHole(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -281,8 +296,6 @@ class ScoreServiceImplTest {
                 .thenReturn(Optional.of(completedRound(COURSE_ID)));
         when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
                 .thenReturn(List.of(score()));
-        when(scoreEntryRepository.findByScoreIdAndHoleNumber(SCORE_ID, 8))
-                .thenReturn(Optional.empty());
         when(holeRepository.findByCourseIdAndHoleNumber(COURSE_ID, 8))
                 .thenReturn(Optional.of(hole(8, 3)));
 
@@ -291,7 +304,7 @@ class ScoreServiceImplTest {
         // This path used to write par = 0 with the comment "client should send
         // it" — the client has no way to send one here, and a par of zero is
         // not a hole.
-        assertThat(syncAndCaptureEntry().getPar()).isEqualTo(3);
+        assertThat(correctedEntry().getPar()).isEqualTo(3);
     }
 
     @Test
@@ -317,7 +330,8 @@ class ScoreServiceImplTest {
         assertThatThrownBy(() ->
                 service.correctScoreEntries(ROUND_ID, ACCOUNT_ID, correction("par", 8, "3")))
                 .isInstanceOf(VspApiException.class);
-        verify(scoreEntryRepository, never()).save(any());
+        verify(scoreEntryRepository, never()).upsertHole(
+                any(), any(), any(), any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
