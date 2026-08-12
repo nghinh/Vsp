@@ -219,6 +219,13 @@ public class ScorecardOcrService {
                 // the fourth tee — a truncation that reads as a short card
                 // rather than an error.
                 .maxTokens(12000L)
+                // The SDK's non-streaming call omits `stream` entirely, and
+                // the configured gateway reads a missing `stream` as "stream
+                // it" — so the answer came back as server-sent events and the
+                // parser rejected it on the word "event". Saying so
+                // explicitly costs nothing against a server that already
+                // defaults to false.
+                .putAdditionalBodyProperty("stream", com.anthropic.core.JsonValue.from(false))
                 .addUserMessageOfBlockParams(List.of(
                         ContentBlockParam.ofImage(ImageBlockParam.builder()
                                 .source(Base64ImageSource.builder()

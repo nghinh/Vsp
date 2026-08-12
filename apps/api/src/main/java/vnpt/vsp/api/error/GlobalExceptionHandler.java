@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +42,8 @@ import java.util.stream.Collectors;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private static final String CORRELATION_ID_KEY = "correlationId";
 
@@ -357,10 +361,20 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request) {
 
+        String correlationId = correlationId();
+
+        // The response tells the caller to contact support with this id. That
+        // is a promise the server has to keep: without this line the id
+        // appears nowhere in the logs, and an unexpected failure leaves
+        // nothing behind to look up. The message stays out of the response —
+        // it is logged here instead, where support can read it.
+        log.error("Unhandled exception on {} {} — correlationId={}",
+                request.getMethod(), request.getRequestURI(), correlationId, ex);
+
         ErrorResponse body = ErrorResponse.builder()
                 .code(VspErrorCode.INTERNAL_001.getCode())
                 .message("An unexpected error occurred. Please contact support with the correlation ID.")
-                .correlationId(correlationId())
+                .correlationId(correlationId)
                 .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
