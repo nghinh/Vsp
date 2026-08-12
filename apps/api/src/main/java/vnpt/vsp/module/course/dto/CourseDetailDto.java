@@ -28,6 +28,8 @@ public class CourseDetailDto {
     private List<String> localRules = new ArrayList<>();
     private List<HoleSummaryDto> holes = new ArrayList<>();
     private List<TeeSetSummaryDto> teeSets = new ArrayList<>();
+    /** Every đường of this facility, this one included, in name order. */
+    private List<FacilityCourseDto> facilityCourses = new ArrayList<>();
     private List<ConditionDto> conditions = new ArrayList<>();
     private DataFreshnessDto dataFreshness;
 
@@ -41,6 +43,14 @@ public class CourseDetailDto {
 
     public void setCourseId(Long courseId) {
         this.courseId = courseId;
+    }
+
+    public List<FacilityCourseDto> getFacilityCourses() {
+        return facilityCourses;
+    }
+
+    public void setFacilityCourses(List<FacilityCourseDto> facilityCourses) {
+        this.facilityCourses = facilityCourses;
     }
 
     public Long getFacilityId() {

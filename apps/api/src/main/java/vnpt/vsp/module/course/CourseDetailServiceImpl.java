@@ -87,6 +87,20 @@ public class CourseDetailServiceImpl implements CourseDetailService {
                 .map(ts -> toTeeSetSummaryDto(ts, holes))
                 .collect(Collectors.toList()));
 
+        // 6b. The facility's other đường.
+        //
+        // A round is played on đường, and a club may hold several: Long Biên's
+        // A, B and C are nine holes each and the golfer pairs two of them,
+        // while Kings Island's three eighteens are each a round on their own.
+        // The phone asks this endpoint what a course is; it also has to be
+        // able to ask what else is here, and one round trip is enough.
+        List<Course> facilityCourses = courseRepository.findByFacilityId(facility.getId());
+        dto.setFacilityCourses(facilityCourses.stream()
+                .sorted(Comparator.comparing(Course::getName, String.CASE_INSENSITIVE_ORDER))
+                .map(c -> new FacilityCourseDto(
+                        c.getId(), c.getName(), c.getHolesCount(), c.getParTotal()))
+                .collect(Collectors.toList()));
+
         // 7. Active conditions (effectiveDate <= today <= expiryDate or expiryDate is null)
         LocalDate today = LocalDate.now();
         List<CourseCondition> activeConditions = courseConditionRepository.findActiveByCourseId(courseId, today);

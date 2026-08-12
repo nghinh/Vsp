@@ -439,4 +439,47 @@ class CourseDetailServiceTest {
         cond.setMetadata(dqm);
         return cond;
     }
+
+    @Test
+    void getCourseDetail_carriesEveryDuongOfTheFacility_inNameOrder() {
+        // Long Biên has đường A, B and C. A golfer setting up a round there
+        // pairs two of them, and this endpoint is the only place the phone
+        // learns that the other two exist.
+        Course duongB = new Course();
+        duongB.setId(22L);
+        duongB.setFacility(testFacility);
+        duongB.setName("Đường B");
+        duongB.setHolesCount(9);
+        duongB.setParTotal(36);
+
+        Course duongA = new Course();
+        duongA.setId(21L);
+        duongA.setFacility(testFacility);
+        duongA.setName("Đường A");
+        duongA.setHolesCount(9);
+        duongA.setParTotal(36);
+
+        when(courseRepository.findById(21L)).thenReturn(Optional.of(duongA));
+        when(courseRepository.findByFacilityId(1L))
+                .thenReturn(List.of(duongB, duongA));
+
+        CourseDetailDto dto = service.getCourseDetail(21L);
+
+        assertEquals(2, dto.getFacilityCourses().size());
+        assertEquals("Đường A", dto.getFacilityCourses().get(0).getName());
+        assertEquals(21L, dto.getFacilityCourses().get(0).getCourseId());
+        assertEquals(9, dto.getFacilityCourses().get(0).getHolesCount());
+        assertEquals("Đường B", dto.getFacilityCourses().get(1).getName());
+    }
+
+    @Test
+    void getCourseDetail_aClubWithOneCourse_listsOnlyItself() {
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(testCourse));
+        when(courseRepository.findByFacilityId(1L)).thenReturn(List.of(testCourse));
+
+        CourseDetailDto dto = service.getCourseDetail(10L);
+
+        assertEquals(1, dto.getFacilityCourses().size());
+        assertEquals(10L, dto.getFacilityCourses().get(0).getCourseId());
+    }
 }

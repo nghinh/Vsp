@@ -67,6 +67,7 @@ class RoundApi {
   /// what the mobile scorecard syncs.
   Future<RoundApiModel> createRound({
     required int courseId,
+    List<int> segmentCourseIds = const [],
     required String idempotencyKey,
     DateTime? startTime,
     int? packageId,
@@ -76,6 +77,10 @@ class RoundApi {
   }) async {
     final body = <String, dynamic>{
       'courseId': courseId,
+      // The đường played, in order. Sent only when it says something the
+      // courseId cannot — a pairing of nines. The server defaults a missing
+      // list to one segment, so an older build stays correct.
+      if (segmentCourseIds.length > 1) 'segmentCourseIds': segmentCourseIds,
       'cartRequested': cartRequested,
       if (startTime != null) 'startTime': startTime.toUtc().toIso8601String(),
       if (packageId != null) 'packageId': packageId,

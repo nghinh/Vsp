@@ -30,6 +30,13 @@ class CourseDetail extends Equatable {
   final List<String> localRules;
   final List<HoleSummary> holes;
   final List<TeeSetSummary> teeSets;
+
+  /// Every đường of this facility, this one included.
+  ///
+  /// A club may hold several: Long Biên's A, B and C are nine holes each and
+  /// a round there is a pairing chosen on the day. Empty from a server that
+  /// predates the field, which reads the same as "nothing else to choose".
+  final List<FacilityCourse> facilityCourses;
   final List<ConditionEntry> conditions;
   final DataFreshness? dataFreshness;
   final AccuracyClass? accuracyClass;
@@ -52,6 +59,7 @@ class CourseDetail extends Equatable {
     required this.localRules,
     required this.holes,
     required this.teeSets,
+    this.facilityCourses = const [],
     required this.conditions,
     this.dataFreshness,
     this.accuracyClass,
@@ -95,6 +103,11 @@ class CourseDetail extends Equatable {
       teeSets:
           (json['teeSets'] as List<dynamic>?)
               ?.map((e) => TeeSetSummary.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
+      facilityCourses:
+          (json['facilityCourses'] as List<dynamic>?)
+              ?.map((e) => FacilityCourse.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
       conditions:
@@ -196,8 +209,34 @@ class CourseDetail extends Equatable {
     localRules,
     holes,
     teeSets,
+    facilityCourses,
     conditions,
     dataFreshness,
     accuracyClass,
   ];
+}
+
+/// One đường a golfer can choose at this facility.
+class FacilityCourse extends Equatable {
+  const FacilityCourse({
+    required this.courseId,
+    required this.name,
+    required this.holesCount,
+    this.parTotal,
+  });
+
+  final int courseId;
+  final String name;
+  final int holesCount;
+  final int? parTotal;
+
+  factory FacilityCourse.fromJson(Map<String, dynamic> json) => FacilityCourse(
+    courseId: json['courseId'] as int,
+    name: json['name'] as String? ?? '',
+    holesCount: json['holesCount'] as int? ?? 18,
+    parTotal: json['parTotal'] as int?,
+  );
+
+  @override
+  List<Object?> get props => [courseId, name, holesCount, parTotal];
 }

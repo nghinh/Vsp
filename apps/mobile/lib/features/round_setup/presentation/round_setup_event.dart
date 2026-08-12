@@ -47,6 +47,16 @@ class LayoutSelected extends RoundSetupEvent {
   List<Object?> get props => [layoutId];
 }
 
+/// The second đường of a paired round was selected.
+class SecondLayoutSelected extends RoundSetupEvent {
+  final int? layoutId;
+
+  const SecondLayoutSelected(this.layoutId);
+
+  @override
+  List<Object?> get props => [layoutId];
+}
+
 /// Tee set was selected.
 class TeeSelected extends RoundSetupEvent {
   final int teeId;

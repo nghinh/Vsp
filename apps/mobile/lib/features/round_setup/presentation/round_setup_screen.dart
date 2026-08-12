@@ -828,11 +828,51 @@ class _LayoutSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
     if (state.layouts.length <= 1) return const SizedBox.shrink();
 
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _layoutDropdown(context),
+        // A nine is half a round. When the golfer picks đường A at a club that
+        // has B and C as well, the round is not defined until they say which
+        // one they are pairing it with — so ask, rather than assume the next
+        // one alphabetically.
+        if (state.needsSecondLayout) ...[
+          const SizedBox(height: 12),
+          _secondLayoutDropdown(context),
+        ],
+      ],
+    );
+  }
+
+  Widget _secondLayoutDropdown(BuildContext context) {
+    return DropdownButtonFormField<int>(
+      value: state.selectedSecondLayoutId,
+      decoration: InputDecoration(
+        labelText: AppLocalizations.of(context).roundSetupSecondLayout,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+      items: state.layouts
+          .where((l) => l.id != state.selectedLayoutId)
+          .map(
+            (l) => DropdownMenuItem(
+              value: l.id,
+              child: Text('${l.name} (${l.holeCount} holes)'),
+            ),
+          )
+          .toList(),
+      onChanged: (value) {
+        context.read<RoundSetupBloc>().add(SecondLayoutSelected(value));
+      },
+    );
+  }
+
+  Widget _layoutDropdown(BuildContext context) {
     return DropdownButtonFormField<int>(
       value: state.selectedLayoutId,
       decoration: InputDecoration(

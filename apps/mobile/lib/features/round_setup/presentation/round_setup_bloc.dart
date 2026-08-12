@@ -116,6 +116,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     on<LoadInitialData>(_onLoadInitialData);
     on<CourseSelected>(_onCourseSelected);
     on<LayoutSelected>(_onLayoutSelected);
+    on<SecondLayoutSelected>(_onSecondLayoutSelected);
     on<TeeSelected>(_onTeeSelected);
     on<PlayerAdded>(_onPlayerAdded);
     on<PlayerRemoved>(_onPlayerRemoved);
@@ -256,13 +257,26 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       final tees = detail.teeSets
           .map((t) => TeeOption(id: t.id, name: t.name))
           .toList();
-      final layouts = [
-        LayoutOption(
-          id: 1,
-          name: detail.facilityName,
-          holeCount: detail.holesCount,
-        ),
-      ];
+      // The đường this club has. A facility with one course yields one entry
+      // and the picker stays hidden, exactly as before; Long Biên yields A, B
+      // and C, and the golfer pairs two of them.
+      final layouts = detail.facilityCourses.isEmpty
+          ? [
+              LayoutOption(
+                id: courseId,
+                name: detail.facilityName,
+                holeCount: detail.holesCount,
+              ),
+            ]
+          : detail.facilityCourses
+                .map(
+                  (c) => LayoutOption(
+                    id: c.courseId,
+                    name: c.name,
+                    holeCount: c.holesCount,
+                  ),
+                )
+                .toList();
       final holePars = {
         for (final h in detail.holes) h.holeNumber: h.par,
       };
@@ -278,7 +292,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         latest.copyWith(
           layouts: layouts,
           tees: tees,
-          selectedLayoutId: layouts.first.id,
+          // The đường the golfer actually picked, not the first alphabetically.
+          selectedLayoutId: layouts.any((l) => l.id == courseId)
+              ? courseId
+              : layouts.first.id,
+          clearSecondLayout: true,
           selectedTeeId: tees.isNotEmpty ? tees.first.id : null,
           holePars: holePars,
         ),
@@ -332,7 +350,29 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     final currentState = state;
     if (currentState is! RoundSetupReady) return;
 
-    emit(currentState.copyWith(selectedLayoutId: event.layoutId));
+    // Changing the first đường drops the second: A+B and B+? are different
+    // rounds, and carrying the old partner over would silently keep a pairing
+    // the golfer did not choose.
+    emit(
+      currentState.copyWith(
+        selectedLayoutId: event.layoutId,
+        clearSecondLayout: true,
+      ),
+    );
+  }
+
+  Future<void> _onSecondLayoutSelected(
+    SecondLayoutSelected event,
+    Emitter<RoundSetupState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! RoundSetupReady) return;
+
+    emit(
+      event.layoutId == null
+          ? currentState.copyWith(clearSecondLayout: true)
+          : currentState.copyWith(selectedSecondLayoutId: event.layoutId),
+    );
   }
 
   Future<void> _onTeeSelected(
@@ -621,6 +661,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       try {
         final created = await _roundApi.createRound(
           courseId: config.courseId,
+          segmentCourseIds: currentState.segmentCourseIds,
           idempotencyKey: idempotencyKey,
           startTime: config.startTime,
           packageId: int.tryParse(config.packageId ?? ''),

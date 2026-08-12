@@ -82,6 +82,9 @@ class RoundSetupReady extends RoundSetupState {
   final List<LayoutOption> layouts;
   final int? selectedLayoutId;
 
+  /// The second đường, when the first is a nine and the golfer pairs it.
+  final int? selectedSecondLayoutId;
+
   // Tee sets (populated after course selected)
   final List<TeeOption> tees;
   final int? selectedTeeId;
@@ -129,6 +132,7 @@ class RoundSetupReady extends RoundSetupState {
     this.packageId,
     this.layouts = const [],
     this.selectedLayoutId,
+    this.selectedSecondLayoutId,
     this.tees = const [],
     this.selectedTeeId,
     this.players = const [],
@@ -170,12 +174,31 @@ class RoundSetupReady extends RoundSetupState {
     return hour < 12 ? 1 : 10;
   }
 
+
+  /// The đường the round is played on, in playing order.
+  ///
+  /// One id for a round on a full eighteen. Two when the golfer paired nines —
+  /// Long Biên's A+C — and that pairing exists nowhere else: the round's own
+  /// courseId can hold no more than the first of them.
+  List<int> get segmentCourseIds => [
+    if (selectedLayoutId != null) selectedLayoutId! else if (courseId != null) courseId!,
+    if (selectedSecondLayoutId != null) selectedSecondLayoutId!,
+  ];
+
+  /// True when the chosen đường is a nine and needs a partner to make a round.
+  bool get needsSecondLayout {
+    final first = layouts.where((l) => l.id == selectedLayoutId);
+    return first.isNotEmpty && first.first.holeCount < 18 && layouts.length > 1;
+  }
+
   RoundSetupReady copyWith({
     int? courseId,
     String? courseName,
     String? packageId,
     List<LayoutOption>? layouts,
     int? selectedLayoutId,
+    int? selectedSecondLayoutId,
+    bool clearSecondLayout = false,
     List<TeeOption>? tees,
     int? selectedTeeId,
     List<Player>? players,
@@ -201,6 +224,9 @@ class RoundSetupReady extends RoundSetupState {
       packageId: packageId ?? this.packageId,
       layouts: layouts ?? this.layouts,
       selectedLayoutId: selectedLayoutId ?? this.selectedLayoutId,
+      selectedSecondLayoutId: clearSecondLayout
+          ? null
+          : (selectedSecondLayoutId ?? this.selectedSecondLayoutId),
       tees: tees ?? this.tees,
       selectedTeeId: selectedTeeId ?? this.selectedTeeId,
       players: players ?? this.players,
@@ -229,6 +255,7 @@ class RoundSetupReady extends RoundSetupState {
     packageId,
     layouts,
     selectedLayoutId,
+    selectedSecondLayoutId,
     tees,
     selectedTeeId,
     players,

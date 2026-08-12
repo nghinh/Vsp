@@ -1016,6 +1016,12 @@ abstract class AppLocalizations {
   /// **'Layout'**
   String get roundSetupLayout;
 
+  /// No description provided for @roundSetupSecondLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Second layout'**
+  String get roundSetupSecondLayout;
+
   /// No description provided for @roundSetupTee.
   ///
   /// In en, this message translates to:

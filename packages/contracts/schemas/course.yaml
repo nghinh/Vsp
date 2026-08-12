@@ -688,6 +688,15 @@ CourseDetailDto:
       items:
         $ref: '#/TeeSetSummaryDto'
       description: Tee set summaries
+    facilityCourses:
+      type: array
+      items:
+        $ref: '#/FacilityCourseDto'
+      description: >-
+        Every đường of this facility, this one included, in name order. A club
+        may hold several — Long Biên's A, B and C are nine holes each and a
+        round there is a pairing chosen by the golfer — and this is where the
+        client learns what else can be played here.
     conditions:
       type: array
       items:
@@ -1686,3 +1695,26 @@ RollbackResponse:
       type: integer
       description: Human-facing version number of that DataVersion
       example: 6
+
+FacilityCourseDto:
+  type: object
+  description: >-
+    One đường a golfer can choose at a facility: a named nine or eighteen.
+  properties:
+    courseId:
+      type: integer
+      format: int64
+      description: Course unique identifier
+      example: 21
+    name:
+      type: string
+      description: The name the club signs it with
+      example: "Đường A"
+    holesCount:
+      type: integer
+      description: Holes in this đường — 9 or 18
+      example: 9
+    parTotal:
+      type: integer
+      description: Par for this đường (null when unknown)
+      example: 36

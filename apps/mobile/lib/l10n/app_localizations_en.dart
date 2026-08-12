@@ -495,6 +495,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roundSetupLayout => 'Layout';
 
   @override
+  String get roundSetupSecondLayout => 'Second layout';
+
+  @override
   String get roundSetupTee => 'Tee';
 
   @override

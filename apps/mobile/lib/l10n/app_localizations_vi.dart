@@ -492,7 +492,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get roundSetupSearchAll => 'Tìm tất cả sân golf';
 
   @override
-  String get roundSetupLayout => 'Bố cục sân';
+  String get roundSetupLayout => 'Đường';
+
+  @override
+  String get roundSetupSecondLayout => 'Đường thứ hai';
 
   @override
   String get roundSetupTee => 'Điểm phát bóng';
