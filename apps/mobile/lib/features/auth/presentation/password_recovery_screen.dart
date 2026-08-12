@@ -13,6 +13,7 @@ import '../data/auth_dto.dart';
 import 'auth_bloc.dart';
 import 'otp_screen.dart';
 import 'login_screen.dart';
+import 'package:vsp_mobile/core/text/vietnam_phone.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -45,14 +46,20 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
 
     if (identifier.isEmpty) {
       setState(
-        () => _identifierError = AppLocalizations.of(context).authIdentifierRequired,
+        () => _identifierError = AppLocalizations.of(
+          context,
+        ).authIdentifierRequired,
       );
       return;
     }
 
     setState(() => _isLoading = true);
     context.read<AuthBloc>().add(
-      PasswordRecoveryRequested(identifier: identifier),
+      // This box takes a phone number or an email, and the server matches
+      // either by exact string. A number typed as 0947306688 has to reach it
+      // as +84947306688, the shape registration stores; an email goes through
+      // untouched.
+      PasswordRecoveryRequested(identifier: VietnamPhone.toE164(identifier)),
     );
   }
 
@@ -133,7 +140,9 @@ class _PasswordRecoveryScreenState extends State<PasswordRecoveryScreen> {
                 // ─── Identifier Field ───────────────────────────────────────────
                 VspTextField(
                   label: AppLocalizations.of(context).authPhoneOrEmail,
-                  placeholder: AppLocalizations.of(context).authPhoneOrEmailPlaceholder,
+                  placeholder: AppLocalizations.of(
+                    context,
+                  ).authPhoneOrEmailPlaceholder,
                   controller: _identifierController,
                   onChanged: (_) {
                     if (_identifierError != null) {
