@@ -50,6 +50,8 @@ class ScorecardCorrectionServiceImplTest {
 
     private ScorecardCorrectionServiceImpl service;
 
+    private long teeIds = 1L;
+
     private static final Long FACILITY_ID = 7L;
     private static final Long DUONG_A = 21L;
     private static final Long DUONG_B = 22L;
@@ -75,6 +77,20 @@ class ScorecardCorrectionServiceImplTest {
                     return card;
                 });
         when(scorecardRepository.save(any(Scorecard.class))).thenAnswer(inv -> inv.getArgument(0));
+        // A real save returns the managed instance with an id on it, and the
+        // service depends on getting that instance back rather than the one it
+        // passed in — the whole reason the yardages went missing.
+        when(scorecardTeeRepository.saveAndFlush(any(vnpt.vsp.module.course.entity.ScorecardTee.class)))
+                .thenAnswer(inv -> {
+                    var tee = (vnpt.vsp.module.course.entity.ScorecardTee) inv.getArgument(0);
+                    if (tee.getId() == null) {
+                        java.lang.reflect.Field id = vnpt.vsp.module.course.entity.ScorecardTee.class
+                                .getDeclaredField("id");
+                        id.setAccessible(true);
+                        id.set(tee, teeIds++);
+                    }
+                    return tee;
+                });
     }
 
     private Course duong(Long id, Long facilityId) {

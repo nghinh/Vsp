@@ -147,9 +147,22 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         card.setSource(correction.getMetadata().getSource());
         card.setAccuracyClass("D_UNVERIFIED_COMMUNITY");
         card.setVerificationStatus("VERIFIED");
+        // Loaded before they are cleared, and that is not a formality.
+        // Hibernate does not remove orphans from a lazy collection nothing
+        // ever loaded: clear() on an uninitialised one is recorded as
+        // "recreate this collection" and the existing rows are left where they
+        // are. The reprint then dies on the very constraint it was replacing —
+        // observed on production as "Key (scorecard_id, name)=(3, GOLD)
+        // already exists" when republishing a card under its own name. Reading
+        // the size loads them, which is what makes clear() mean delete.
+        card.getSegments().size();
+        card.getHoles().size();
+        card.getTees().size();
+
         card.getSegments().clear();
         card.getHoles().clear();
         card.getTees().clear();
+        scorecardRepository.flush();
 
         Scorecard saved = scorecardRepository.saveAndFlush(card);
 
@@ -200,51 +213,46 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         // GOLD is one column read twice, and keeping both would put two
         // ratings on one tee with nothing to choose between them.
         var seenNames = new HashSet<String>();
-        var pairs = new ArrayList<Map.Entry<ScorecardTee, ScorecardSubmissionRequest.TeeLine>>();
+        int written = 0;
+
         for (ScorecardSubmissionRequest.TeeLine line : proposed.tees()) {
             String name = line.name() == null ? "" : line.name().trim();
             if (name.isEmpty() || !seenNames.add(name.toUpperCase(Locale.ROOT))) {
                 continue;
             }
-            var tee = new ScorecardTee(card, name, line.courseRating(), line.slopeRating());
-            card.getTees().add(tee);
-            pairs.add(Map.entry(tee, line));
-        }
-        if (pairs.isEmpty()) {
-            return 0;
-        }
 
-        // The yardage's key is the tee's id, so the tees have to exist before
-        // their yardages can name them.
-        scorecardRepository.saveAndFlush(card);
+            // Saved one at a time, and the *returned* instance is the one used
+            // from here on. Adding a new tee to the card's collection and
+            // saving the card instead goes through merge, and merge does not
+            // attach what it is given: it copies the state into fresh managed
+            // instances, inserts those, and leaves the originals transient
+            // with null ids. That is why the yardages went missing — they were
+            // keyed on a tee id that did not exist yet and hung off an object
+            // the persistence context had never heard of — and why saving
+            // those originals afterwards inserted every tee a second time.
+            ScorecardTee tee = scorecardTeeRepository.saveAndFlush(
+                    new ScorecardTee(card, name, line.courseRating(), line.slopeRating()));
 
-        int written = 0;
-        for (var pair : pairs) {
-            ScorecardTee tee = pair.getKey();
-            List<ScorecardSubmissionRequest.Yardage> yardages = pair.getValue().yardages();
-            if (yardages == null) {
-                continue;
-            }
-            var seenHoles = new HashSet<Integer>();
-            for (ScorecardSubmissionRequest.Yardage yardage : yardages) {
-                if (!seenHoles.add(yardage.hole())) {
-                    continue;
+            List<ScorecardSubmissionRequest.Yardage> yardages = line.yardages();
+            if (yardages != null) {
+                var seenHoles = new HashSet<Integer>();
+                for (ScorecardSubmissionRequest.Yardage yardage : yardages) {
+                    if (!seenHoles.add(yardage.hole())) {
+                        continue;
+                    }
+                    // The tee is managed and its yardages cascade, so reaching
+                    // them from it is enough: they are inserted at the flush
+                    // below, the same way the card's holes are.
+                    tee.getYardages().add(
+                            new ScorecardTeeYardage(tee, yardage.hole(), yardage.yards()));
+                    written++;
                 }
-                tee.getYardages().add(
-                        new ScorecardTeeYardage(tee, yardage.hole(), yardage.yards()));
-                written++;
             }
+
+            card.getTees().add(tee);
         }
 
-        // Saved through the tee rather than left to cascade a second level
-        // from the card. Cascading is what this did first, and the yardages
-        // did not arrive: the log said "2 tee(s), 36 yardage(s)" and
-        // `scorecard_tee_yardages` was empty, because they were added to a
-        // collection after the card had already been flushed and nothing
-        // carried them to an insert. One save, one cascade — the same single
-        // step that has always worked for the holes.
-        scorecardTeeRepository.saveAllAndFlush(
-                pairs.stream().map(Map.Entry::getKey).toList());
+        scorecardTeeRepository.flush();
         return written;
     }
 
