@@ -241,10 +241,18 @@ type par and index for 9 holes, submit as a `SCORECARD` correction. Portal:
 the existing queue gains a table view of the proposed card and an approve that
 writes a `scorecards` row with its eighteen lines.
 
-**Slice 5 — the data itself.** Split the facilities that really have đường.
-Long Biên and Đại Lải are confirmed; the rest needs a directory pass over 73
-clubs. Until a facility is split it keeps its single "— Championship" đường and
-nothing about it changes.
+**Slice 5 — the data itself.** `scripts/dev/split_facility_into_duong.sql`
+adds the đường of one facility from names you give it. It refuses two things
+on purpose: it invents no hole rows — `holes.par` is NOT NULL and eighteen
+invented pars is a scorecard for a course nobody has read, so pars arrive
+through the SCORECARD queue instead — and it leaves the "— Championship" row
+alone, because 164 rounds point at course ids and deleting one takes a
+golfer's round with it.
+
+What it needs is the đường names as the club signs them and how many holes
+each has. Long Biên and Đại Lải are confirmed as having them; the rest is a
+directory pass over 73 clubs, and it is the one part of this work that cannot
+be done from inside the repository.
 
 Packages stay keyed on `course_id`: a golfer playing A+B downloads two
 packages of nine holes, which is also the granularity the club thinks in.
