@@ -118,6 +118,37 @@ class CorrectionServiceImplTest {
                 false);
     }
 
+    // ─── Publishing an approved card ────────────────────────────────────────────
+
+    @Test
+    void resolveCorrection_approve_publishesAScorecard() {
+        // `review` published an approved card; `resolve` did not, and the two
+        // are both reachable from the admin API. A card approved through this
+        // one was marked APPROVED, its reporter was told so, and nothing was
+        // published — and because APPROVED is terminal, `review` could never
+        // pick it up afterwards. The golfer's photograph, their eighteen pars
+        // and the stroke indexes were gone, silently, with a success message
+        // on top.
+        when(correctionRepository.findById(1L)).thenReturn(Optional.of(pendingCorrection));
+        when(correctionRepository.save(any(CourseCorrection.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(notificationService.sendPushNotification(anyMap())).thenReturn("token-abc");
+
+        correctionService.resolveCorrection(1L, approveRequest(false), 99L);
+
+        verify(scorecardCorrectionService).applyIfScorecard(pendingCorrection);
+    }
+
+    @Test
+    void resolveCorrection_reject_publishesNothing() {
+        when(correctionRepository.findById(1L)).thenReturn(Optional.of(pendingCorrection));
+        when(correctionRepository.save(any(CourseCorrection.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(notificationService.sendPushNotification(anyMap())).thenReturn("token-abc");
+
+        correctionService.resolveCorrection(1L, rejectRequest(), 99L);
+
+        verify(scorecardCorrectionService, never()).applyIfScorecard(any());
+    }
+
     // ─── Happy path: PENDING → APPROVED ─────────────────────────────────────────
 
     @Test

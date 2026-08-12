@@ -269,6 +269,17 @@ public class CorrectionServiceImpl implements CorrectionService {
         correction.resolve(entityDecision, reviewedBy, request.reason());
         correctionRepository.save(correction);
 
+        // A scorecard has nowhere to go after approval but into the card
+        // itself — approving it *is* the act of publishing it. `review` has
+        // always done this; `resolve` never did, so a card approved through
+        // this endpoint was marked APPROVED, told its reporter so, and
+        // published nothing. The status is terminal afterwards, which left the
+        // card unpublishable by any route: the golfer's photograph, the
+        // eighteen pars and the stroke indexes were simply gone.
+        if (entityDecision == CourseCorrection.Decision.APPROVE) {
+            scorecardCorrectionService.applyIfScorecard(correction);
+        }
+
         // 4. Audit entry — CORRECTION_RESOLVED (async, auditId not available synchronously)
         auditCorrectionResolved(correction, reviewedBy, request.reason());
 
