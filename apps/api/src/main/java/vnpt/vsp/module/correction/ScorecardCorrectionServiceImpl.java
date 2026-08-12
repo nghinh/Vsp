@@ -20,6 +20,7 @@ import vnpt.vsp.module.course.entity.ScorecardTee;
 import vnpt.vsp.module.course.entity.ScorecardTeeYardage;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.ScorecardRepository;
+import vnpt.vsp.module.course.repository.ScorecardTeeRepository;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,16 +35,19 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
 
     private final CourseCorrectionRepository correctionRepository;
     private final ScorecardRepository scorecardRepository;
+    private final ScorecardTeeRepository scorecardTeeRepository;
     private final CourseRepository courseRepository;
     private final ObjectMapper objectMapper;
 
     public ScorecardCorrectionServiceImpl(
             CourseCorrectionRepository correctionRepository,
             ScorecardRepository scorecardRepository,
+            ScorecardTeeRepository scorecardTeeRepository,
             CourseRepository courseRepository,
             ObjectMapper objectMapper) {
         this.correctionRepository = correctionRepository;
         this.scorecardRepository = scorecardRepository;
+        this.scorecardTeeRepository = scorecardTeeRepository;
         this.courseRepository = courseRepository;
         this.objectMapper = objectMapper;
     }
@@ -231,6 +235,16 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                 written++;
             }
         }
+
+        // Saved through the tee rather than left to cascade a second level
+        // from the card. Cascading is what this did first, and the yardages
+        // did not arrive: the log said "2 tee(s), 36 yardage(s)" and
+        // `scorecard_tee_yardages` was empty, because they were added to a
+        // collection after the card had already been flushed and nothing
+        // carried them to an insert. One save, one cascade — the same single
+        // step that has always worked for the holes.
+        scorecardTeeRepository.saveAllAndFlush(
+                pairs.stream().map(Map.Entry::getKey).toList());
         return written;
     }
 

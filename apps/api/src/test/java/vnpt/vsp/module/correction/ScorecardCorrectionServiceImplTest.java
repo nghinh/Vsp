@@ -45,6 +45,7 @@ class ScorecardCorrectionServiceImplTest {
 
     @Mock private CourseCorrectionRepository correctionRepository;
     @Mock private ScorecardRepository scorecardRepository;
+    @Mock private vnpt.vsp.module.course.repository.ScorecardTeeRepository scorecardTeeRepository;
     @Mock private CourseRepository courseRepository;
 
     private ScorecardCorrectionServiceImpl service;
@@ -56,7 +57,8 @@ class ScorecardCorrectionServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new ScorecardCorrectionServiceImpl(
-                correctionRepository, scorecardRepository, courseRepository, new ObjectMapper());
+                correctionRepository, scorecardRepository, scorecardTeeRepository,
+                courseRepository, new ObjectMapper());
 
         when(courseRepository.findById(DUONG_A)).thenReturn(Optional.of(duong(DUONG_A, FACILITY_ID)));
         when(courseRepository.findById(DUONG_B)).thenReturn(Optional.of(duong(DUONG_B, FACILITY_ID)));
