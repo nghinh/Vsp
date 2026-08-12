@@ -111,6 +111,21 @@ resilience4j:
 
 # Admin MFA
 vsp:
+  # Registration OTPs are logged, not delivered — sendOtp() writes
+  # "SIMULATED SMS/EMAIL" to the log and returns. On any environment without a
+  # real SMS or email provider that makes the verification screen a dead end:
+  # the account is created PENDING and no code ever arrives, so the golfer is
+  # stuck and cannot even reuse the address. The dev profile escaped this with
+  # a master OTP, but the property lived only in application-dev.yml, so a
+  # staging deployment had no way to switch it on short of a code change.
+  #
+  # Empty by default, and empty means disabled — no environment gains a
+  # bypass by upgrading. Set VSP_DEV_MASTER_OTP on a test deployment to make
+  # verification passable; leave it unset in production, where a real provider
+  # belongs instead.
+  dev:
+    master-otp: ${VSP_DEV_MASTER_OTP:}
+
   # Satellite imagery for the hole map, served to the app at /config/basemap.
   #
   # Unset by default, and an unset deployment is a working one: the app says it

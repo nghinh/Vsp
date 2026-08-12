@@ -43,6 +43,23 @@ abstract final class AppMessages {
   static const authSessionsLoadFailed = 'msg.authSessionsLoadFailed';
   static const authRevokeSessionFailed = 'msg.authRevokeSessionFailed';
 
+  // Auth — backend error codes. `AuthFailure` used to carry English literals
+  // for these, which reached a Vietnamese user untranslated.
+  static const authInvalidCredentials = 'msg.authInvalidCredentials';
+  static const authSessionExpired = 'msg.authSessionExpired';
+  static const authSessionInvalid = 'msg.authSessionInvalid';
+  static const authAccountLocked = 'msg.authAccountLocked';
+  static const authNoPermission = 'msg.authNoPermission';
+  static const authPhoneAlreadyRegistered = 'msg.authPhoneAlreadyRegistered';
+  static const authEmailAlreadyRegistered = 'msg.authEmailAlreadyRegistered';
+  static const authAccountNotVerified = 'msg.authAccountNotVerified';
+  static const authAccountNotFound = 'msg.authAccountNotFound';
+  static const authInvalidOtpCode = 'msg.authInvalidOtpCode';
+  static const authRecoveryCodeExpired = 'msg.authRecoveryCodeExpired';
+  static const authSocialAlreadyLinked = 'msg.authSocialAlreadyLinked';
+  static const authSocialEmailMismatch = 'msg.authSocialEmailMismatch';
+  static const authSocialLinkFailed = 'msg.authSocialLinkFailed';
+
   // Feature data loading
   static const bagLoadFailed = 'msg.bagLoadFailed';
   static const bagDeleted = 'msg.bagDeleted';
@@ -141,6 +158,22 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.authAppleFailed => l10n.authAppleFailed,
     AppMessages.authSessionsLoadFailed => l10n.sessionsLoadFailed,
     AppMessages.authRevokeSessionFailed => l10n.msgAuthRevokeSessionFailed,
+    AppMessages.authInvalidCredentials => l10n.msgAuthInvalidCredentials,
+    AppMessages.authSessionExpired => l10n.msgAuthSessionExpired,
+    AppMessages.authSessionInvalid => l10n.msgAuthSessionInvalid,
+    AppMessages.authAccountLocked => l10n.msgAuthAccountLocked,
+    AppMessages.authNoPermission => l10n.msgAuthNoPermission,
+    AppMessages.authPhoneAlreadyRegistered =>
+      l10n.msgAuthPhoneAlreadyRegistered,
+    AppMessages.authEmailAlreadyRegistered =>
+      l10n.msgAuthEmailAlreadyRegistered,
+    AppMessages.authAccountNotVerified => l10n.msgAuthAccountNotVerified,
+    AppMessages.authAccountNotFound => l10n.msgAuthAccountNotFound,
+    AppMessages.authInvalidOtpCode => l10n.msgAuthInvalidOtpCode,
+    AppMessages.authRecoveryCodeExpired => l10n.msgAuthRecoveryCodeExpired,
+    AppMessages.authSocialAlreadyLinked => l10n.msgAuthSocialAlreadyLinked,
+    AppMessages.authSocialEmailMismatch => l10n.msgAuthSocialEmailMismatch,
+    AppMessages.authSocialLinkFailed => l10n.msgAuthSocialLinkFailed,
     AppMessages.bagLoadFailed => l10n.bagLoadFailedRetry,
     AppMessages.bagDeleted => l10n.bagDeleted,
     AppMessages.bagDetailLoadFailed => l10n.bagDetailLoadFailed,

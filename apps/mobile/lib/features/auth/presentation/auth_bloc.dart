@@ -274,13 +274,13 @@ class AuthFailure extends AuthState {
     if (code == 'VSP-ERR-AUTH-008' && field != null) {
       // AUTH_008: identifier already registered — field-level feedback
       if (field == 'phone') {
-        fieldErrors['phone'] = 'This phone number is already registered';
+        fieldErrors['phone'] = AppMessages.authPhoneAlreadyRegistered;
       } else if (field == 'email') {
-        fieldErrors['email'] = 'This email is already registered';
+        fieldErrors['email'] = AppMessages.authEmailAlreadyRegistered;
       }
     } else if (code == 'VSP-ERR-AUTH-011' && field == 'code') {
       // AUTH_011: invalid or expired OTP — field-level feedback
-      fieldErrors['code'] = 'Invalid verification code';
+      fieldErrors['code'] = AppMessages.authInvalidOtpCode;
     }
 
     // If we have field-level errors, use the first one as the global message
@@ -299,37 +299,41 @@ class AuthFailure extends AuthState {
 
   /// Returns the appropriate global (non-field) message for auth error codes.
   /// Per AC-3: credential errors never reveal which field failed.
+  ///
+  /// Returns an [AppMessages] key, not display text — the app ships in
+  /// Vietnamese, and these used to be English literals that reached the user
+  /// verbatim. Every screen resolves the key with `context.tr(state.message)`.
   static String _globalMessageForCode(String code, String defaultMessage) {
     switch (code) {
       case 'VSP-ERR-AUTH-001':
-        return 'Invalid phone number or password';
+        return AppMessages.authInvalidCredentials;
       case 'VSP-ERR-AUTH-002':
       case 'VSP-ERR-AUTH-007':
-        return 'Session expired. Please sign in again.';
+        return AppMessages.authSessionExpired;
       case 'VSP-ERR-AUTH-003':
-        return 'Invalid session. Please sign in again.';
+        return AppMessages.authSessionInvalid;
       case 'VSP-ERR-AUTH-004':
-        return 'Account temporarily locked. Try again later.';
+        return AppMessages.authAccountLocked;
       case 'VSP-ERR-AUTH-005':
-        return 'You do not have permission to perform this action.';
+        return AppMessages.authNoPermission;
       case 'VSP-ERR-AUTH-009':
-        return 'Account not verified. Please complete verification.';
+        return AppMessages.authAccountNotVerified;
       case 'VSP-ERR-AUTH-010':
-        return 'Account not found.';
+        return AppMessages.authAccountNotFound;
       case 'VSP-ERR-AUTH-012':
-        return 'Recovery code expired. Please request a new one.';
+        return AppMessages.authRecoveryCodeExpired;
       case 'VSP-ERR-AUTH-013':
-        return 'This social account is already linked to another account.';
+        return AppMessages.authSocialAlreadyLinked;
       case 'VSP-ERR-AUTH-014':
-        return 'Google sign-in failed. Please try again.';
+        return AppMessages.authGoogleFailed;
       case 'VSP-ERR-AUTH-015':
-        return 'Apple sign-in failed. Please try again.';
+        return AppMessages.authAppleFailed;
       case 'VSP-ERR-AUTH-016':
-        return 'Email mismatch. Please use the same email for both accounts.';
+        return AppMessages.authSocialEmailMismatch;
       case 'VSP-ERR-AUTH-017':
-        return 'Cannot link social account. Please contact support.';
+        return AppMessages.authSocialLinkFailed;
       case 'NETWORK_ERROR':
-        return 'Check your internet connection and try again.';
+        return AppMessages.networkError;
       default:
         return defaultMessage;
     }

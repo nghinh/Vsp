@@ -10,6 +10,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
+import 'social_sign_in_availability.dart';
 import 'auth_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'phone_register_screen.dart';
@@ -123,25 +124,27 @@ class RegisterScreen extends StatelessWidget {
                 const SizedBox(height: VspSpacing.lg),
 
                 // ─── Social Auth Buttons ───────────────────────────────────────
-                _SocialButton(
-                  icon: Icons.golf_course,
-                  label: AppLocalizations.of(context).authContinueWithGoogle,
-                  backgroundColor: colorScheme.surface,
-                  foregroundColor: colorScheme.onSurface,
-                  borderColor: colorScheme.outline,
-                  onPressed: () => _handleGoogleSignIn(context),
-                ),
+                if (isGoogleSignInAvailable)
+                  _SocialButton(
+                    icon: Icons.golf_course,
+                    label: AppLocalizations.of(context).authContinueWithGoogle,
+                    backgroundColor: colorScheme.surface,
+                    foregroundColor: colorScheme.onSurface,
+                    borderColor: colorScheme.outline,
+                    onPressed: () => _handleGoogleSignIn(context),
+                  ),
 
-                const SizedBox(height: 12),
-
-                _SocialButton(
-                  icon: Icons.apple,
-                  label: AppLocalizations.of(context).authSignInWithApple,
-                  backgroundColor: colorScheme.onSurface,
-                  foregroundColor: colorScheme.surface,
-                  borderColor: colorScheme.onSurface,
-                  onPressed: () => _handleAppleSignIn(context),
-                ),
+                if (isAppleSignInAvailable) ...[
+                  if (isGoogleSignInAvailable) const SizedBox(height: 12),
+                  _SocialButton(
+                    icon: Icons.apple,
+                    label: AppLocalizations.of(context).authSignInWithApple,
+                    backgroundColor: colorScheme.onSurface,
+                    foregroundColor: colorScheme.surface,
+                    borderColor: colorScheme.onSurface,
+                    onPressed: () => _handleAppleSignIn(context),
+                  ),
+                ],
 
                 const Spacer(),
 
@@ -176,32 +179,38 @@ class RegisterScreen extends StatelessWidget {
 
   Future<void> _handleGoogleSignIn(BuildContext context) async {
     try {
-      final googleSignIn = GoogleSignIn(
-        serverClientId: const String.fromEnvironment(
-          'GOOGLE_SERVER_CLIENT_ID',
-          defaultValue: '',
-        ),
-      );
-      final googleAccount = await googleSignIn.signIn();
+      final googleAccount = await buildGoogleSignIn().signIn();
       if (googleAccount == null) return;
       final auth = await googleAccount.authentication;
+      final idToken = auth.idToken;
       if (!context.mounted) return;
+      // A misconfigured client signs the golfer in and then hands back no
+      // identity token. `auth.idToken!` turned that into a null assertion,
+      // which the catch below reported as a generic failure.
+      if (idToken == null) {
+        _showGoogleFailure(context);
+        return;
+      }
       context.read<AuthBloc>().add(
         GoogleSignInRequested(
-          idToken: auth.idToken!,
+          idToken: idToken,
           displayName: googleAccount.displayName,
         ),
       );
     } catch (ex) {
       debugPrint('[RegisterScreen] Google sign-in error: $ex');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).authGoogleFailed),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
+      _showGoogleFailure(context);
     }
+  }
+
+  void _showGoogleFailure(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context).authGoogleFailed),
+        backgroundColor: Theme.of(context).colorScheme.error,
+      ),
+    );
   }
 
   Future<void> _handleAppleSignIn(BuildContext context) async {

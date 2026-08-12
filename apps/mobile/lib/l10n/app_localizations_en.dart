@@ -266,7 +266,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authDisplayNamePlaceholder => 'Your name as shown on the course';
 
   @override
-  String get authPasswordPlaceholder => 'At least 8 characters';
+  String get authPasswordPlaceholder => 'Enter a password';
 
   @override
   String get authPasswordHelper => 'Minimum 8 characters';
@@ -1605,6 +1605,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roundReviewNoDataSubtitle => 'No data found for this round.';
+
+  @override
+  String get roundReviewHolesTitle => 'Hole by hole';
 
   @override
   String get drivingZoneTitle => 'Driving Zone';
@@ -3158,4 +3161,90 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get msgAuthInvalidCredentials =>
+      'Incorrect phone number, email, or password.';
+
+  @override
+  String get msgAuthSessionExpired => 'Session expired. Please sign in again.';
+
+  @override
+  String get msgAuthSessionInvalid => 'Invalid session. Please sign in again.';
+
+  @override
+  String get msgAuthAccountLocked =>
+      'Account temporarily locked. Please try again later.';
+
+  @override
+  String get msgAuthNoPermission =>
+      'You do not have permission to perform this action.';
+
+  @override
+  String get msgAuthPhoneAlreadyRegistered =>
+      'This phone number is already registered.';
+
+  @override
+  String get msgAuthEmailAlreadyRegistered =>
+      'This email is already registered.';
+
+  @override
+  String get msgAuthAccountNotVerified =>
+      'Account not verified. Please complete verification.';
+
+  @override
+  String get msgAuthAccountNotFound => 'Account not found.';
+
+  @override
+  String get msgAuthInvalidOtpCode => 'Incorrect verification code.';
+
+  @override
+  String get msgAuthRecoveryCodeExpired =>
+      'Recovery code expired. Please request a new one.';
+
+  @override
+  String get msgAuthSocialAlreadyLinked =>
+      'This social account is already linked to another account.';
+
+  @override
+  String get msgAuthSocialEmailMismatch =>
+      'Email mismatch. Please use the same email for both accounts.';
+
+  @override
+  String get msgAuthSocialLinkFailed =>
+      'Cannot link this social account. Please contact support.';
+
+  @override
+  String get summaryHolesLabel => 'holes';
+
+  @override
+  String get correctionTitle => 'Correct score';
+
+  @override
+  String get correctionSubtitle =>
+      'Correct a score you already entered. Every change is logged.';
+
+  @override
+  String get correctionFieldStrokes => 'Strokes';
+
+  @override
+  String get correctionFieldPutts => 'Putts';
+
+  @override
+  String get correctionFieldPenalties => 'Penalties';
+
+  @override
+  String get correctionFieldFairwayHit => 'Fairway hit';
+
+  @override
+  String get correctionFieldGir => 'Green in regulation';
+
+  @override
+  String get correctionFieldBunker => 'Bunker';
+
+  @override
+  String get correctionFieldNotes => 'Notes';
+
+  @override
+  String get correctionOldValueEmpty => 'not entered';
 }

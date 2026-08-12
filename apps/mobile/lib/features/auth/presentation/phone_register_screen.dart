@@ -128,7 +128,7 @@ class _PhoneRegisterScreenState extends State<PhoneRegisterScreen> {
             final fieldErrors = state.fieldErrors;
             if (fieldErrors != null && fieldErrors.containsKey('phone')) {
               // Field-level error — show inline below phone field
-              setState(() => _phoneError = fieldErrors['phone']);
+              setState(() => _phoneError = context.tr(fieldErrors['phone']));
             } else {
               // Global error — clear field error and show snackbar
               setState(() => _phoneError = null);

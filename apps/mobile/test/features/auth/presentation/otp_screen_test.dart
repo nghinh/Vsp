@@ -12,6 +12,7 @@ import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/otp_screen.dart';
 import 'package:vsp_mobile/core/locale/locale_cubit.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class MockAuthBloc extends MockBloc<AuthEvent, AuthState> implements AuthBloc {
   final List<AuthEvent> recordedEvents = [];
@@ -166,8 +167,8 @@ void main() {
       authStateController.add(
         const AuthFailure(
           code: 'VSP-ERR-AUTH-011',
-          message: 'Invalid verification code',
-          fieldErrors: {'code': 'Invalid verification code'},
+          message: AppMessages.authInvalidOtpCode,
+          fieldErrors: {'code': AppMessages.authInvalidOtpCode},
         ),
       );
       await tester.pump();
@@ -188,7 +189,7 @@ void main() {
       authStateController.add(
         const AuthFailure(
           code: 'VSP-ERR-AUTH-012',
-          message: 'Recovery code expired',
+          message: AppMessages.authRecoveryCodeExpired,
         ),
       );
       await tester.pump();

@@ -266,7 +266,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authDisplayNamePlaceholder => 'Tên hiển thị khi ra sân';
 
   @override
-  String get authPasswordPlaceholder => 'Tối thiểu 8 ký tự';
+  String get authPasswordPlaceholder => 'Nhập mật khẩu';
 
   @override
   String get authPasswordHelper => 'Tối thiểu 8 ký tự';
@@ -1604,6 +1604,9 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get roundReviewNoDataSubtitle =>
       'Không tìm thấy dữ liệu cho vòng đấu này.';
+
+  @override
+  String get roundReviewHolesTitle => 'Từng hố';
 
   @override
   String get drivingZoneTitle => 'Vùng phát bóng';
@@ -3159,4 +3162,91 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get msgAuthInvalidCredentials =>
+      'Số điện thoại, email hoặc mật khẩu không đúng.';
+
+  @override
+  String get msgAuthSessionExpired =>
+      'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+
+  @override
+  String get msgAuthSessionInvalid =>
+      'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
+
+  @override
+  String get msgAuthAccountLocked =>
+      'Tài khoản tạm thời bị khoá. Vui lòng thử lại sau.';
+
+  @override
+  String get msgAuthNoPermission =>
+      'Bạn không có quyền thực hiện thao tác này.';
+
+  @override
+  String get msgAuthPhoneAlreadyRegistered =>
+      'Số điện thoại này đã được đăng ký.';
+
+  @override
+  String get msgAuthEmailAlreadyRegistered => 'Email này đã được đăng ký.';
+
+  @override
+  String get msgAuthAccountNotVerified =>
+      'Tài khoản chưa được xác thực. Vui lòng hoàn tất xác thực.';
+
+  @override
+  String get msgAuthAccountNotFound => 'Không tìm thấy tài khoản.';
+
+  @override
+  String get msgAuthInvalidOtpCode => 'Mã xác thực không đúng.';
+
+  @override
+  String get msgAuthRecoveryCodeExpired =>
+      'Mã khôi phục đã hết hạn. Vui lòng yêu cầu mã mới.';
+
+  @override
+  String get msgAuthSocialAlreadyLinked =>
+      'Tài khoản mạng xã hội này đã được liên kết với một tài khoản khác.';
+
+  @override
+  String get msgAuthSocialEmailMismatch =>
+      'Email không khớp. Vui lòng dùng cùng một email cho cả hai tài khoản.';
+
+  @override
+  String get msgAuthSocialLinkFailed =>
+      'Không thể liên kết tài khoản mạng xã hội này. Vui lòng liên hệ hỗ trợ.';
+
+  @override
+  String get summaryHolesLabel => 'hố';
+
+  @override
+  String get correctionTitle => 'Sửa điểm';
+
+  @override
+  String get correctionSubtitle =>
+      'Sửa lại điểm đã nhập. Mọi thay đổi đều được ghi lại.';
+
+  @override
+  String get correctionFieldStrokes => 'Số gậy';
+
+  @override
+  String get correctionFieldPutts => 'Số gạt';
+
+  @override
+  String get correctionFieldPenalties => 'Điểm phạt';
+
+  @override
+  String get correctionFieldFairwayHit => 'Trúng fairway';
+
+  @override
+  String get correctionFieldGir => 'Lên green đúng chuẩn';
+
+  @override
+  String get correctionFieldBunker => 'Bunker';
+
+  @override
+  String get correctionFieldNotes => 'Ghi chú';
+
+  @override
+  String get correctionOldValueEmpty => 'chưa nhập';
 }

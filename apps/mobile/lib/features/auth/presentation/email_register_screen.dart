@@ -125,7 +125,7 @@ class _EmailRegisterScreenState extends State<EmailRegisterScreen> {
             final fieldErrors = state.fieldErrors;
             if (fieldErrors != null && fieldErrors.containsKey('email')) {
               // Field-level error — show inline below email field
-              setState(() => _emailError = fieldErrors['email']);
+              setState(() => _emailError = context.tr(fieldErrors['email']));
             } else {
               // Global error — clear field error and show snackbar
               setState(() => _emailError = null);

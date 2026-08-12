@@ -329,14 +329,16 @@ class _VspTextFieldState extends State<VspTextField> {
       ],
     );
 
-    // Focus ring overlay when focused
-    if (_isFocused && !widget.isDisabled) {
-      textField = _FocusRingOverlay(
-        color: widget.hasError ? colorScheme.error : colorScheme.primary,
-        borderRadius: 8,
-        child: textField,
-      );
-    }
+    // No separate focus ring. There used to be one, drawn around this whole
+    // Column — label, input and helper text alike — while the input already
+    // draws its own 2dp primary border on focus. The result on screen was two
+    // concentric rounded rectangles, the outer one lassoing the label, which
+    // read as a rendering fault rather than as focus.
+    //
+    // The input's own border is the focus indicator: 2dp
+    // (VspFocusRing.width) in the ring colour, which is what the shared
+    // InputDecorationTheme gives a plain TextFormField too — so a focused
+    // VspTextField and a focused themed field now look alike.
 
     // Disabled opacity
     if (widget.isDisabled) {
@@ -354,32 +356,3 @@ class _VspTextFieldState extends State<VspTextField> {
   }
 }
 
-// ─── Focus Ring Overlay ────────────────────────────────────────────────────────
-
-/// Adds a visible focus ring around a child using a Stack overlay.
-class _FocusRingOverlay extends StatelessWidget {
-  final Widget child;
-  final Color color;
-  final double borderRadius;
-
-  const _FocusRingOverlay({
-    required this.child,
-    required this.color,
-    required this.borderRadius,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: VspReducedMotion.isSuppressed(context)
-          ? VspDuration.instant
-          : VspDuration.fast,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius + VspFocusRing.offset),
-        border: Border.all(color: color, width: VspFocusRing.width),
-      ),
-      padding: const EdgeInsets.all(VspFocusRing.offset),
-      child: child,
-    );
-  }
-}

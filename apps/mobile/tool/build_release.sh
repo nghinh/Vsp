@@ -53,6 +53,38 @@ else
   echo "      from the API's own /packages endpoint." >&2
 fi
 
+if [ -n "${GOOGLE_SERVER_CLIENT_ID:-}" ]; then
+  case "$GOOGLE_SERVER_CLIENT_ID" in
+    *.apps.googleusercontent.com) ;;
+    *) fail "GOOGLE_SERVER_CLIENT_ID does not look like an OAuth client id.
+     It must be the *web* client id from Google Cloud — the Android client id
+     is resolved natively from the package name and signing certificate and
+     will not produce an idToken here." ;;
+  esac
+  DEFINES+=(--dart-define="GOOGLE_SERVER_CLIENT_ID=$GOOGLE_SERVER_CLIENT_ID")
+else
+  echo "warning: GOOGLE_SERVER_CLIENT_ID unset — the app hides the Google" >&2
+  echo "         button rather than offer one that cannot work. Sign-in also" >&2
+  echo "         needs an Android OAuth client registered for this build's" >&2
+  echo "         signing certificate, and VSP_GOOGLE_CLIENT_IDS on the API." >&2
+fi
+
+# Apple platforms need a client of their own; Android resolves its client from
+# the signing certificate instead, so this is unset for apk/appbundle.
+if [ -n "${GOOGLE_IOS_CLIENT_ID:-}" ]; then
+  case "$GOOGLE_IOS_CLIENT_ID" in
+    *.apps.googleusercontent.com) ;;
+    *) fail "GOOGLE_IOS_CLIENT_ID does not look like an OAuth client id." ;;
+  esac
+  DEFINES+=(--dart-define="GOOGLE_IOS_CLIENT_ID=$GOOGLE_IOS_CLIENT_ID")
+elif [ "$TARGET" = "ipa" ]; then
+  echo "warning: GOOGLE_IOS_CLIENT_ID unset — this iOS build hides the Google" >&2
+  echo "         button. Create an iOS OAuth client for the bundle id, and put" >&2
+  echo "         its reversed form in ios/Runner/Info.plist as a" >&2
+  echo "         CFBundleURLTypes scheme, or the consent screen has nowhere" >&2
+  echo "         to return to." >&2
+fi
+
 if [ -n "${MAPBOX_ACCESS_TOKEN:-}" ]; then
   DEFINES+=(--dart-define="MAPBOX_ACCESS_TOKEN=$MAPBOX_ACCESS_TOKEN")
 elif [ -n "${VSP_SATELLITE_TILE_URL:-}" ]; then

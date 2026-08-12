@@ -11,6 +11,7 @@ import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 class OtpScreen extends StatefulWidget {
   const OtpScreen({
@@ -202,8 +203,10 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   String _failureMessage(AuthFailure state) {
+    // Matched on the English word "expired" before the messages became
+    // localizable keys; the code and the key are what actually identify it.
     if (state.code == 'VSP-ERR-AUTH-012' ||
-        state.message.toLowerCase().contains('expired')) {
+        state.message == AppMessages.authRecoveryCodeExpired) {
       return AppLocalizations.of(context).otpExpired;
     }
     if (state.code == 'NETWORK_ERROR' || state.isNetworkError) {

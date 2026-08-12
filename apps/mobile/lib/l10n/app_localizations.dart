@@ -611,7 +611,7 @@ abstract class AppLocalizations {
   /// No description provided for @authPasswordPlaceholder.
   ///
   /// In en, this message translates to:
-  /// **'At least 8 characters'**
+  /// **'Enter a password'**
   String get authPasswordPlaceholder;
 
   /// No description provided for @authPasswordHelper.
@@ -3031,6 +3031,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No data found for this round.'**
   String get roundReviewNoDataSubtitle;
+
+  /// Heading over the hole-by-hole card on the round review screen
+  ///
+  /// In en, this message translates to:
+  /// **'Hole by hole'**
+  String get roundReviewHolesTitle;
 
   /// No description provided for @drivingZoneTitle.
   ///
@@ -5683,6 +5689,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 of these holes has coordinates nobody has verified, so its length is approximate.} other{{count} of these holes have coordinates nobody has verified, so their lengths are approximate.}}'**
   String holeListUnverifiedNotice(int count);
+
+  /// No description provided for @msgAuthInvalidCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect phone number, email, or password.'**
+  String get msgAuthInvalidCredentials;
+
+  /// No description provided for @msgAuthSessionExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Session expired. Please sign in again.'**
+  String get msgAuthSessionExpired;
+
+  /// No description provided for @msgAuthSessionInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid session. Please sign in again.'**
+  String get msgAuthSessionInvalid;
+
+  /// No description provided for @msgAuthAccountLocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Account temporarily locked. Please try again later.'**
+  String get msgAuthAccountLocked;
+
+  /// No description provided for @msgAuthNoPermission.
+  ///
+  /// In en, this message translates to:
+  /// **'You do not have permission to perform this action.'**
+  String get msgAuthNoPermission;
+
+  /// No description provided for @msgAuthPhoneAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This phone number is already registered.'**
+  String get msgAuthPhoneAlreadyRegistered;
+
+  /// No description provided for @msgAuthEmailAlreadyRegistered.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get msgAuthEmailAlreadyRegistered;
+
+  /// No description provided for @msgAuthAccountNotVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'Account not verified. Please complete verification.'**
+  String get msgAuthAccountNotVerified;
+
+  /// No description provided for @msgAuthAccountNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Account not found.'**
+  String get msgAuthAccountNotFound;
+
+  /// No description provided for @msgAuthInvalidOtpCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect verification code.'**
+  String get msgAuthInvalidOtpCode;
+
+  /// No description provided for @msgAuthRecoveryCodeExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery code expired. Please request a new one.'**
+  String get msgAuthRecoveryCodeExpired;
+
+  /// No description provided for @msgAuthSocialAlreadyLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'This social account is already linked to another account.'**
+  String get msgAuthSocialAlreadyLinked;
+
+  /// No description provided for @msgAuthSocialEmailMismatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Email mismatch. Please use the same email for both accounts.'**
+  String get msgAuthSocialEmailMismatch;
+
+  /// No description provided for @msgAuthSocialLinkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot link this social account. Please contact support.'**
+  String get msgAuthSocialLinkFailed;
+
+  /// No description provided for @summaryHolesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'holes'**
+  String get summaryHolesLabel;
+
+  /// No description provided for @correctionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct score'**
+  String get correctionTitle;
+
+  /// No description provided for @correctionSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Correct a score you already entered. Every change is logged.'**
+  String get correctionSubtitle;
+
+  /// No description provided for @correctionFieldStrokes.
+  ///
+  /// In en, this message translates to:
+  /// **'Strokes'**
+  String get correctionFieldStrokes;
+
+  /// No description provided for @correctionFieldPutts.
+  ///
+  /// In en, this message translates to:
+  /// **'Putts'**
+  String get correctionFieldPutts;
+
+  /// No description provided for @correctionFieldPenalties.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalties'**
+  String get correctionFieldPenalties;
+
+  /// No description provided for @correctionFieldFairwayHit.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairway hit'**
+  String get correctionFieldFairwayHit;
+
+  /// No description provided for @correctionFieldGir.
+  ///
+  /// In en, this message translates to:
+  /// **'Green in regulation'**
+  String get correctionFieldGir;
+
+  /// No description provided for @correctionFieldBunker.
+  ///
+  /// In en, this message translates to:
+  /// **'Bunker'**
+  String get correctionFieldBunker;
+
+  /// No description provided for @correctionFieldNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get correctionFieldNotes;
+
+  /// No description provided for @correctionOldValueEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'not entered'**
+  String get correctionOldValueEmpty;
 }
 
 class _AppLocalizationsDelegate

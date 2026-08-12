@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:mobile_theme/components/vsp_text_field.dart';
 import 'package:mobile_theme/tokens/vsp_color.dart';
 import 'package:mobile_theme/tokens/vsp_spacing.dart';
 
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/auth/presentation/social_sign_in_availability.dart';
 import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/password_recovery_screen.dart';
@@ -40,9 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
     // Resolved before the first await so the message survives the async gap.
     final failedMessage = AppLocalizations.of(context).authGoogleFailed;
     try {
-      final account = await GoogleSignIn(
-        serverClientId: const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
-      ).signIn();
+      final account = await buildGoogleSignIn().signIn();
       if (account == null) {
         return;
       }
@@ -127,7 +127,9 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthFailure) {
-            _showError(state.message);
+            // `state.message` is an AppMessages key; without tr() the snackbar
+            // printed the key itself.
+            _showError(context.tr(state.message));
           } else if (state is AuthSuccess) {
             Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -250,37 +252,47 @@ class _AuthActions extends StatelessWidget {
             onPressed: onEmail,
             child: Text(l10n.authContinueWithEmail),
           ),
-          const SizedBox(height: VspSpacing.md),
-          Row(
-            children: [
-              const Expanded(child: Divider()),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: VspSpacing.md),
-                child: Text(l10n.commonOr),
-              ),
-              const Expanded(child: Divider()),
-            ],
-          ),
-          const SizedBox(height: VspSpacing.md),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onGoogle,
-                  icon: const Icon(Icons.g_mobiledata),
-                  label: Text(l10n.authGoogle),
+          // "or" introduces the social row, so it goes when the row does —
+          // otherwise a build with no usable provider shows a divider
+          // separating the buttons from nothing.
+          if (isGoogleSignInAvailable || isAppleSignInAvailable) ...[
+            const SizedBox(height: VspSpacing.md),
+            Row(
+              children: [
+                const Expanded(child: Divider()),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: VspSpacing.md,
+                  ),
+                  child: Text(l10n.commonOr),
                 ),
-              ),
-              const SizedBox(width: VspSpacing.md),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: onApple,
-                  icon: const Icon(Icons.apple),
-                  label: Text(l10n.authApple),
-                ),
-              ),
-            ],
-          ),
+                const Expanded(child: Divider()),
+              ],
+            ),
+            const SizedBox(height: VspSpacing.md),
+            Row(
+              children: [
+                if (isGoogleSignInAvailable)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onGoogle,
+                      icon: const Icon(Icons.g_mobiledata),
+                      label: Text(l10n.authGoogle),
+                    ),
+                  ),
+                if (isGoogleSignInAvailable && isAppleSignInAvailable)
+                  const SizedBox(width: VspSpacing.md),
+                if (isAppleSignInAvailable)
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: onApple,
+                      icon: const Icon(Icons.apple),
+                      label: Text(l10n.authApple),
+                    ),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: VspSpacing.md),
           Wrap(
             alignment: WrapAlignment.center,
@@ -307,10 +319,10 @@ class _SignInSheet extends StatefulWidget {
 }
 
 class _SignInSheetState extends State<_SignInSheet> {
-  final _formKey = GlobalKey<FormState>();
   final _identifierController = TextEditingController();
   final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+  String? _identifierError;
+  String? _passwordError;
 
   @override
   void dispose() {
@@ -320,17 +332,25 @@ class _SignInSheetState extends State<_SignInSheet> {
   }
 
   void _submit() {
-    if (!(_formKey.currentState?.validate() ?? false)) {
+    final l10n = AppLocalizations.of(context);
+    final identifierText = _identifierController.text.trim();
+    final password = _passwordController.text;
+
+    setState(() {
+      _identifierError = identifierText.isEmpty
+          ? (widget.usePhone ? l10n.authEnterPhoneNumber : l10n.authEnterEmail)
+          : null;
+      _passwordError = password.isEmpty ? l10n.authEnterPassword : null;
+    });
+    if (_identifierError != null || _passwordError != null) {
       return;
     }
+
     final identifier = widget.usePhone
-        ? '+84${_identifierController.text.trim().replaceFirst(RegExp('^0'), '')}'
-        : _identifierController.text.trim();
+        ? '+84${identifierText.replaceFirst(RegExp('^0'), '')}'
+        : identifierText;
     context.read<AuthBloc>().add(
-      LoginRequested(
-        identifier: identifier,
-        password: _passwordController.text,
-      ),
+      LoginRequested(identifier: identifier, password: password),
     );
   }
 
@@ -352,8 +372,7 @@ class _SignInSheetState extends State<_SignInSheet> {
             VspSpacing.lg,
             VspSpacing.lg + bottomInset,
           ),
-          child: Form(
-            key: _formKey,
+          child: AutofillGroup(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
@@ -385,50 +404,22 @@ class _SignInSheetState extends State<_SignInSheet> {
                   ],
                 ),
                 const SizedBox(height: VspSpacing.lg),
-                if (widget.usePhone)
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 88,
-                        child: InputDecorator(
-                          decoration: InputDecoration(
-                            labelText: l10n.authCountryCode,
-                          ),
-                          child: const Text('+84'),
-                        ),
-                      ),
-                      const SizedBox(width: VspSpacing.sm),
-                      Expanded(child: _identifierField()),
-                    ],
-                  )
-                else
-                  _identifierField(),
+                _identifierField(),
                 const SizedBox(height: VspSpacing.md),
-                TextFormField(
+                VspTextField(
+                  label: l10n.authPassword,
                   controller: _passwordController,
-                  obscureText: _obscurePassword,
+                  obscureText: true,
                   autofillHints: const [AutofillHints.password],
                   textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: l10n.authPassword,
-                    suffixIcon: IconButton(
-                      tooltip: _obscurePassword
-                          ? l10n.authShowPassword
-                          : l10n.authHidePassword,
-                      onPressed: () =>
-                          setState(() => _obscurePassword = !_obscurePassword),
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                      ),
-                    ),
-                  ),
-                  validator: (value) => value == null || value.isEmpty
-                      ? l10n.authEnterPassword
-                      : null,
+                  onChanged: (_) {
+                    if (_passwordError != null) {
+                      setState(() => _passwordError = null);
+                    }
+                  },
+                  onSubmitted: (_) => _submit(),
+                  hasError: _passwordError != null,
+                  errorText: _passwordError,
                 ),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -467,21 +458,29 @@ class _SignInSheetState extends State<_SignInSheet> {
 
   Widget _identifierField() {
     final l10n = AppLocalizations.of(context);
-    final label = widget.usePhone ? l10n.authPhoneNumber : l10n.authEmail;
-    return TextFormField(
+    return VspTextField(
+      // The country code used to sit in its own boxed InputDecorator, which
+      // looked like a second field a golfer could type into and could not.
+      // It is a fixed prefix, so it reads as one: part of the placeholder,
+      // with _submit still normalising a leading 0 to +84.
+      label: widget.usePhone ? l10n.authPhoneNumber : l10n.authEmail,
+      placeholder: widget.usePhone ? '+84 90 123 4567' : 'golfer@example.com',
       controller: _identifierController,
       autofocus: true,
-      keyboardType: widget.usePhone
-          ? TextInputType.phone
-          : TextInputType.emailAddress,
+      variant: widget.usePhone
+          ? VspTextFieldVariant.phone
+          : VspTextFieldVariant.email,
       autofillHints: widget.usePhone
           ? const [AutofillHints.telephoneNumber]
           : const [AutofillHints.username, AutofillHints.email],
       textInputAction: TextInputAction.next,
-      decoration: InputDecoration(labelText: label),
-      validator: (value) => value == null || value.trim().isEmpty
-          ? (widget.usePhone ? l10n.authEnterPhoneNumber : l10n.authEnterEmail)
-          : null,
+      onChanged: (_) {
+        if (_identifierError != null) {
+          setState(() => _identifierError = null);
+        }
+      },
+      hasError: _identifierError != null,
+      errorText: _identifierError,
     );
   }
 }

@@ -88,7 +88,7 @@
   "authPhoneStart": "Enter your phone number to get started",
   "authDisplayName": "Display Name",
   "authDisplayNamePlaceholder": "Your name as shown on the course",
-  "authPasswordPlaceholder": "At least 8 characters",
+  "authPasswordPlaceholder": "Enter a password",
   "authPasswordHelper": "Minimum 8 characters",
   "authConfirmPassword": "Confirm Password",
   "authConfirmPasswordPlaceholder": "Re-enter your password",
@@ -847,6 +847,10 @@
   "commonRefresh": "Refresh",
   "roundReviewNoData": "No Round Data",
   "roundReviewNoDataSubtitle": "No data found for this round.",
+  "roundReviewHolesTitle": "Hole by hole",
+  "@roundReviewHolesTitle": {
+    "description": "Heading over the hole-by-hole card on the round review screen"
+  },
   "drivingZoneTitle": "Driving Zone",
   "drivingZoneNoShotData": "No Shot Data",
   "strokesGainedRecalculate": "Recalculate",
@@ -1903,5 +1907,30 @@
         "type": "int"
       }
     }
-  }
+  },
+  "msgAuthInvalidCredentials": "Incorrect phone number, email, or password.",
+  "msgAuthSessionExpired": "Session expired. Please sign in again.",
+  "msgAuthSessionInvalid": "Invalid session. Please sign in again.",
+  "msgAuthAccountLocked": "Account temporarily locked. Please try again later.",
+  "msgAuthNoPermission": "You do not have permission to perform this action.",
+  "msgAuthPhoneAlreadyRegistered": "This phone number is already registered.",
+  "msgAuthEmailAlreadyRegistered": "This email is already registered.",
+  "msgAuthAccountNotVerified": "Account not verified. Please complete verification.",
+  "msgAuthAccountNotFound": "Account not found.",
+  "msgAuthInvalidOtpCode": "Incorrect verification code.",
+  "msgAuthRecoveryCodeExpired": "Recovery code expired. Please request a new one.",
+  "msgAuthSocialAlreadyLinked": "This social account is already linked to another account.",
+  "msgAuthSocialEmailMismatch": "Email mismatch. Please use the same email for both accounts.",
+  "msgAuthSocialLinkFailed": "Cannot link this social account. Please contact support.",
+  "summaryHolesLabel": "holes",
+  "correctionTitle": "Correct score",
+  "correctionSubtitle": "Correct a score you already entered. Every change is logged.",
+  "correctionFieldStrokes": "Strokes",
+  "correctionFieldPutts": "Putts",
+  "correctionFieldPenalties": "Penalties",
+  "correctionFieldFairwayHit": "Fairway hit",
+  "correctionFieldGir": "Green in regulation",
+  "correctionFieldBunker": "Bunker",
+  "correctionFieldNotes": "Notes",
+  "correctionOldValueEmpty": "not entered"
 }

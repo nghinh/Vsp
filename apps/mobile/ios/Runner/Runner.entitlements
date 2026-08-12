@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Sign in with Apple. Without this entitlement the native flow refuses
+	     the request on device, which is why the Apple button never worked:
+	     the capability was never declared, only called.
+
+	     The App ID vnpt.vsp.vspMobile must also have the Sign in with Apple
+	     capability enabled in the Apple Developer portal, and the server must
+	     name that bundle id in vsp.auth.social.apple.client-ids — the bundle
+	     id is the audience Apple puts in the identity token on iOS. -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+</dict>
+</plist>
