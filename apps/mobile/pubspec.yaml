@@ -21,6 +21,11 @@ dependencies:
   equatable: ^2.0.5
   # HTTP client
   http: ^1.2.2
+
+  # Photographing the club's scorecard. The golfer holding the card is the
+  # app's only source of stroke index, and typing eighteen numbers at the
+  # first tee is where they go wrong.
+  image_picker: ^1.1.2
   # Secure storage for tokens
   flutter_secure_storage: ^9.2.2
   # Google Sign-In

@@ -3322,4 +3322,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String scorecardParTotal(int total) {
     return 'Par total: $total';
   }
+
+  @override
+  String get scorecardScan => 'Photograph the card';
+
+  @override
+  String get scorecardScanning => 'Reading the card…';
+
+  @override
+  String scorecardScanFilled(int count) {
+    return 'Filled $count holes from the photograph. Check them against the card before sending.';
+  }
+
+  @override
+  String scorecardScanCheckPar(int read, int printed) {
+    return 'The pars read add up to $read; the card prints $printed — check the par row.';
+  }
+
+  @override
+  String scorecardScanCheckIndex(int count, int total) {
+    return 'Read $count of $total stroke indexes, and they are not 1-18 — check the index row.';
+  }
+
+  @override
+  String get scorecardScanSource => 'Take a photo';
+
+  @override
+  String get scorecardScanGallery => 'Choose from library';
 }

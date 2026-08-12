@@ -2048,5 +2048,39 @@
         "type": "int"
       }
     }
-  }
+  },
+  "scorecardScan": "Photograph the card",
+  "scorecardScanning": "Reading the card…",
+  "scorecardScanFilled": "Filled {count} holes from the photograph. Check them against the card before sending.",
+  "@scorecardScanFilled": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardScanCheckPar": "The pars read add up to {read}; the card prints {printed} — check the par row.",
+  "@scorecardScanCheckPar": {
+    "placeholders": {
+      "read": {
+        "type": "int"
+      },
+      "printed": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardScanCheckIndex": "Read {count} of {total} stroke indexes, and they are not 1-18 — check the index row.",
+  "@scorecardScanCheckIndex": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scorecardScanSource": "Take a photo",
+  "scorecardScanGallery": "Choose from library"
 }

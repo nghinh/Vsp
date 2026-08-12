@@ -87,5 +87,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- Reading the club's printed scorecard. Without these keys iOS kills the
+	     app the moment the picker opens, with no error the golfer can act on. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Chụp ảnh bảng điểm (scorecard) của sân để tự động điền par, chỉ số gậy và điểm.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Chọn ảnh bảng điểm (scorecard) đã chụp để tự động điền par, chỉ số gậy và điểm.</string>
 </dict>
 </plist>

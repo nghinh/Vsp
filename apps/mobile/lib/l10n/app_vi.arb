@@ -1191,5 +1191,12 @@
   "scorecardMissingPar": "Hố {hole} chưa có par",
   "scorecardMissingIndex": "Hố {hole} chưa có chỉ số gậy",
   "scorecardDuplicateIndex": "Hai hố cùng chỉ số {index}",
-  "scorecardParTotal": "Tổng par: {total}"
+  "scorecardParTotal": "Tổng par: {total}",
+  "scorecardScan": "Chụp ảnh card",
+  "scorecardScanning": "Đang đọc card…",
+  "scorecardScanFilled": "Đã điền {count} hố từ ảnh. Đối chiếu lại với card trước khi gửi.",
+  "scorecardScanCheckPar": "Tổng par đọc được là {read}, card in {printed} — kiểm tra lại hàng par.",
+  "scorecardScanCheckIndex": "Chỉ số gậy đọc được {count}/{total} ô và chưa đủ 1–18 — kiểm tra lại hàng chỉ số.",
+  "scorecardScanSource": "Chụp ảnh",
+  "scorecardScanGallery": "Chọn từ thư viện"
 }

@@ -7,7 +7,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/course_detail.dart';
+import 'dart:io';
+
 import 'package:vsp_mobile/features/scorecard/data/scorecard_api.dart';
+import 'package:vsp_mobile/features/scorecard/data/scorecard_scan_api.dart';
 import 'package:vsp_mobile/features/scorecard/presentation/scorecard_submit_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
@@ -36,6 +39,22 @@ class _RecordingApi extends ScorecardApi {
     this.segmentCourseIds = segmentCourseIds;
     this.holes = holes;
     return 1;
+  }
+}
+
+class _FakeScanApi extends ScorecardScanApi {
+  _FakeScanApi(this.card);
+
+  final ScannedCard card;
+  int calls = 0;
+
+  @override
+  Future<ScannedCard> scanCourseCard({
+    required int courseId,
+    required File image,
+  }) async {
+    calls++;
+    return card;
   }
 }
 
@@ -156,5 +175,169 @@ void main() {
       9,
     ]);
     expect(api.holes!.every((h) => h.par == 4), isTrue);
+  });
+
+  group('reading the card from a photograph', () {
+    ScannedCard cardWith({
+      required List<ScannedLine> holes,
+      bool parAgrees = true,
+      bool indexComplete = true,
+      int parRead = 36,
+      int? parPrinted = 36,
+      int indexCells = 9,
+    }) => ScannedCard(
+      name: 'Đường A',
+      holes: holes,
+      checks: ScanChecks(
+        holesRead: holes.length,
+        parCellsRead: holes.length,
+        strokeIndexCellsRead: indexCells,
+        parTotalRead: parRead,
+        parTotalPrinted: parPrinted,
+        parTotalAgrees: parAgrees,
+        strokeIndexComplete: indexComplete,
+      ),
+    );
+
+    testWidgets('a scanned index shows in the box the golfer checks', (
+      tester,
+    ) async {
+      // TextFormField reads initialValue once, on the first build. A scan that
+      // only filled the draft would submit numbers the golfer never saw.
+      final api = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: _RecordingApi(),
+            scanApi: api,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Drive the screen the way a finished scan does, without a camera.
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(api.card);
+      await tester.pumpAndSettle();
+
+      final field = tester.widget<TextFormField>(
+        find.byKey(const Key('scorecard_index_3')),
+      );
+      expect(field.controller?.text, '3');
+    });
+
+    testWidgets('shows the card\'s own doubts about the read', (tester) async {
+      // The read is not reliable enough to accept silently: eleven of eighteen
+      // pars on a real card. What the golfer needs is not a verdict but a
+      // pointer to the row worth checking first.
+      final api = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+          parAgrees: false,
+          parRead: 38,
+          parPrinted: 36,
+          indexComplete: false,
+          indexCells: 8,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: _RecordingApi(),
+            scanApi: api,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(api.card);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('38'), findsOneWidget);
+      expect(find.textContaining('chỉ số'), findsOneWidget);
+    });
+
+    testWidgets('a card read with gaps leaves them blank, not guessed', (
+      tester,
+    ) async {
+      // The server drops any value a printed card could not hold. A blank box
+      // is one tap to fill; a plausible wrong number has to be spotted first.
+      final api = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(
+                hole: hole,
+                par: hole == 4 ? null : 4,
+                strokeIndex: hole == 7 ? null : hole,
+              ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: _RecordingApi(),
+            scanApi: api,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(api.card);
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<TextFormField>(find.byKey(const Key('scorecard_index_7')))
+            .controller
+            ?.text,
+        isEmpty,
+      );
+      expect(
+        tester
+            .widget<DropdownButtonFormField<int>>(
+              find.byKey(const Key('scorecard_par_4')),
+            )
+            .initialValue,
+        isNull,
+      );
+    });
   });
 }

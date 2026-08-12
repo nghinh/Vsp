@@ -5965,6 +5965,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Par total: {total}'**
   String scorecardParTotal(int total);
+
+  /// No description provided for @scorecardScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph the card'**
+  String get scorecardScan;
+
+  /// No description provided for @scorecardScanning.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the card…'**
+  String get scorecardScanning;
+
+  /// No description provided for @scorecardScanFilled.
+  ///
+  /// In en, this message translates to:
+  /// **'Filled {count} holes from the photograph. Check them against the card before sending.'**
+  String scorecardScanFilled(int count);
+
+  /// No description provided for @scorecardScanCheckPar.
+  ///
+  /// In en, this message translates to:
+  /// **'The pars read add up to {read}; the card prints {printed} — check the par row.'**
+  String scorecardScanCheckPar(int read, int printed);
+
+  /// No description provided for @scorecardScanCheckIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Read {count} of {total} stroke indexes, and they are not 1-18 — check the index row.'**
+  String scorecardScanCheckIndex(int count, int total);
+
+  /// No description provided for @scorecardScanSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get scorecardScanSource;
+
+  /// No description provided for @scorecardScanGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from library'**
+  String get scorecardScanGallery;
 }
 
 class _AppLocalizationsDelegate

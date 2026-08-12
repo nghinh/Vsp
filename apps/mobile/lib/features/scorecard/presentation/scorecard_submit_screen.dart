@@ -4,13 +4,17 @@
 // eighteen queue items about one photograph, and a reviewer who approved half
 // of them would leave the card disagreeing with itself.
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../domain/models/course_detail.dart';
 import '../../../l10n/app_localizations.dart';
 import '../data/scorecard_api.dart';
+import '../data/scorecard_scan_api.dart';
 import '../domain/scorecard_draft.dart';
 
 class ScorecardSubmitScreen extends StatefulWidget {
@@ -20,19 +24,32 @@ class ScorecardSubmitScreen extends StatefulWidget {
     required this.facilityCourses,
     required this.defaultName,
     ScorecardApi? api,
-  }) : _api = api;
+    ScorecardScanApi? scanApi,
+  }) : _api = api,
+       _scanApi = scanApi;
 
   final int courseId;
   final List<FacilityCourse> facilityCourses;
   final String defaultName;
   final ScorecardApi? _api;
+  final ScorecardScanApi? _scanApi;
 
   @override
-  State<ScorecardSubmitScreen> createState() => _ScorecardSubmitScreenState();
+  State<ScorecardSubmitScreen> createState() => ScorecardSubmitScreenState();
 }
 
-class _ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
+class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
   late final ScorecardApi _api = widget._api ?? ScorecardApi();
+  late final ScorecardScanApi _scanApi = widget._scanApi ?? ScorecardScanApi();
+  final _picker = ImagePicker();
+
+  /// One controller per index cell. `initialValue` is read once, on the first
+  /// build, so a scan that filled the draft would leave every index box
+  /// looking empty — the numbers would be in the submission and not on the
+  /// screen the golfer is checking.
+  final Map<int, TextEditingController> _indexControllers = {};
+  bool _scanning = false;
+  List<String> _scanWarnings = const [];
   late final TextEditingController _nameController = TextEditingController(
     text: widget.defaultName,
   );
@@ -43,8 +60,19 @@ class _ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
   late ScorecardDraft _draft = ScorecardDraft(holeCount: _holeCount());
   bool _sending = false;
 
+  TextEditingController _indexController(int hole) =>
+      _indexControllers.putIfAbsent(
+        hole,
+        () => TextEditingController(
+          text: _draft.strokeIndexes[hole]?.toString() ?? '',
+        ),
+      );
+
   @override
   void dispose() {
+    for (final controller in _indexControllers.values) {
+      controller.dispose();
+    }
     _nameController.dispose();
     _evidenceController.dispose();
     _noteController.dispose();
@@ -78,6 +106,136 @@ class _ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
         pars: Map.of(_draft.pars),
         strokeIndexes: Map.of(_draft.strokeIndexes),
       );
+    });
+  }
+
+  /// Photograph the card and fill the table in from it.
+  ///
+  /// What comes back is a draft, so it lands in the same fields the golfer
+  /// types into rather than in a separate confirm-this dialog: every number
+  /// stays editable, and the read's own doubts are shown above the table so
+  /// they know which row to look at first.
+  Future<void> _scan(ImageSource source) async {
+    final l10n = AppLocalizations.of(context);
+    final XFile? photo;
+    try {
+      photo = await _picker.pickImage(
+        source: source,
+        // A card fills the frame and is read for its digits, so resolution is
+        // the whole game — but the server refuses anything over 8 MB, and a
+        // full-resolution phone photo can exceed that.
+        maxWidth: 3000,
+        imageQuality: 90,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+      return;
+    }
+    if (photo == null || !mounted) return;
+
+    setState(() {
+      _scanning = true;
+      _scanWarnings = const [];
+    });
+
+    try {
+      final card = await _scanApi.scanCourseCard(
+        courseId: widget.courseId,
+        image: File(photo.path),
+      );
+      if (!mounted) return;
+
+      setState(() => _scanning = false);
+      applyScannedCard(card);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.scorecardScanFilled(card.holes.length))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _scanning = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
+
+  /// The card's own arithmetic, turned into the two sentences worth showing.
+  ///
+  /// Silence here is not a clean bill of health — a swapped pair of pars keeps
+  /// the total, and a shifted index row is still 1-18 — so these appear as
+  /// prompts to check a row, never as a verdict on the card.
+  List<String> _warningsFrom(ScanChecks checks, AppLocalizations l10n) {
+    final warnings = <String>[];
+    if (!checks.parTotalAgrees && checks.parTotalPrinted != null) {
+      warnings.add(
+        l10n.scorecardScanCheckPar(
+          checks.parTotalRead,
+          checks.parTotalPrinted!,
+        ),
+      );
+    }
+    if (!checks.strokeIndexComplete) {
+      warnings.add(
+        l10n.scorecardScanCheckIndex(
+          checks.strokeIndexCellsRead,
+          checks.holesRead,
+        ),
+      );
+    }
+    return warnings;
+  }
+
+  Future<void> _chooseScanSource() async {
+    final l10n = AppLocalizations.of(context);
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: Text(l10n.scorecardScanSource),
+              onTap: () => Navigator.of(sheetContext).pop(ImageSource.camera),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: Text(l10n.scorecardScanGallery),
+              onTap: () => Navigator.of(sheetContext).pop(ImageSource.gallery),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (source != null) {
+      await _scan(source);
+    }
+  }
+
+  /// Put a read card into the form.
+  ///
+  /// Separate from the camera so it can be driven in a test: the interesting
+  /// part is not the picker but that every scanned number ends up in a box the
+  /// golfer can see and change.
+  @visibleForTesting
+  void applyScannedCard(ScannedCard card) {
+    final l10n = AppLocalizations.of(context);
+    setState(() {
+      if (card.name != null && card.name!.trim().isNotEmpty) {
+        _nameController.text = card.name!.trim();
+      }
+      for (final line in card.holes) {
+        if (line.par != null) _draft.pars[line.hole] = line.par!;
+        if (line.strokeIndex != null) {
+          _draft.strokeIndexes[line.hole] = line.strokeIndex;
+          _indexController(line.hole).text = line.strokeIndex!.toString();
+        }
+      }
+      _scanWarnings = _warningsFrom(card.checks, l10n);
     });
   }
 
@@ -166,8 +324,45 @@ class _ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
               ),
             ],
             const SizedBox(height: 16),
+            OutlinedButton.icon(
+              key: const Key('scorecard_scan'),
+              icon: _scanning
+                  ? const SizedBox.square(
+                      dimension: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.photo_camera_outlined),
+              label: Text(
+                _scanning ? l10n.scorecardScanning : l10n.scorecardScan,
+              ),
+              onPressed: _scanning ? null : _chooseScanSource,
+            ),
+            for (final warning in _scanWarnings) ...[
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 20,
+                    color: theme.colorScheme.error,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      warning,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
             _HoleTable(
               draft: _draft,
+              controllerFor: _indexController,
               onParChanged: (hole, par) =>
                   setState(() => _draft.pars[hole] = par),
               onIndexChanged: (hole, index) =>
@@ -211,11 +406,13 @@ class _ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
 class _HoleTable extends StatelessWidget {
   const _HoleTable({
     required this.draft,
+    required this.controllerFor,
     required this.onParChanged,
     required this.onIndexChanged,
   });
 
   final ScorecardDraft draft;
+  final TextEditingController Function(int hole) controllerFor;
   final void Function(int hole, int par) onParChanged;
   final void Function(int hole, int? index) onIndexChanged;
 
@@ -280,7 +477,7 @@ class _HoleTable extends StatelessWidget {
                 Expanded(
                   child: TextFormField(
                     key: Key('scorecard_index_$hole'),
-                    initialValue: draft.strokeIndexes[hole]?.toString(),
+                    controller: controllerFor(hole),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
                       FilteringTextInputFormatter.digitsOnly,

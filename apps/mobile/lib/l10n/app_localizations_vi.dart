@@ -3322,4 +3322,31 @@ class AppLocalizationsVi extends AppLocalizations {
   String scorecardParTotal(int total) {
     return 'Tổng par: $total';
   }
+
+  @override
+  String get scorecardScan => 'Chụp ảnh card';
+
+  @override
+  String get scorecardScanning => 'Đang đọc card…';
+
+  @override
+  String scorecardScanFilled(int count) {
+    return 'Đã điền $count hố từ ảnh. Đối chiếu lại với card trước khi gửi.';
+  }
+
+  @override
+  String scorecardScanCheckPar(int read, int printed) {
+    return 'Tổng par đọc được là $read, card in $printed — kiểm tra lại hàng par.';
+  }
+
+  @override
+  String scorecardScanCheckIndex(int count, int total) {
+    return 'Chỉ số gậy đọc được $count/$total ô và chưa đủ 1–18 — kiểm tra lại hàng chỉ số.';
+  }
+
+  @override
+  String get scorecardScanSource => 'Chụp ảnh';
+
+  @override
+  String get scorecardScanGallery => 'Chọn từ thư viện';
 }
