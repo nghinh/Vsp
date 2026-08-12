@@ -179,6 +179,15 @@ vsp:
   #
   # Comma-separated, because a real deployment has one client id per platform
   # (iOS, Android, web) and all of them are ours.
+  # Reading a club's printed scorecard out of a photograph. Empty by default:
+  # a deployment without a key boots normally and the two extract endpoints
+  # answer "not configured" rather than failing at startup. The key belongs in
+  # the deployment's env file, never in the repository.
+  ocr:
+    base-url: "${VSP_OCR_BASE_URL:}"
+    api-key: "${VSP_OCR_API_KEY:}"
+    model: "${VSP_OCR_MODEL:}"
+
   auth:
     social:
       clock-skew: ${VSP_SOCIAL_CLOCK_SKEW:PT1M}

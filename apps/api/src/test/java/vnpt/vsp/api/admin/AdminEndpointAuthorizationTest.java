@@ -556,6 +556,12 @@ class AdminEndpointAuthorizationTest {
             // same admin decision — nothing is published by submitting it.
             "ScorecardController.submit",
 
+            // Reading a photograph the golfer just took. Both write nothing
+            // at all: the card comes back as a draft for them to check, and
+            // only a later submit reaches the review queue.
+            "ScorecardController.extract",
+            "ScorecardController.extractScores",
+
             // Reads the TOURNAMENT_DIRECTOR role in the method body rather than
             // in an annotation, and grants different abilities depending on the
             // answer — see TournamentPolicyController.
