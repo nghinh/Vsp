@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.course.entity.Hole;
+import vnpt.vsp.module.course.ScorecardQueryService;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.api.error.VspErrorCode;
@@ -70,6 +71,7 @@ public class ScoreServiceImpl implements ScoreService {
     private final RoundSegmentRepository roundSegmentRepository;
     private final HoleRepository holeRepository;
     private final CourseRepository courseRepository;
+    private final ScorecardQueryService scorecardQueryService;
     private final AuditService auditService;
 
     public ScoreServiceImpl(
@@ -80,6 +82,7 @@ public class ScoreServiceImpl implements ScoreService {
             RoundSegmentRepository roundSegmentRepository,
             HoleRepository holeRepository,
             CourseRepository courseRepository,
+            ScorecardQueryService scorecardQueryService,
             AuditService auditService) {
         this.scoreRepository = scoreRepository;
         this.scoreEntryRepository = scoreEntryRepository;
@@ -88,6 +91,7 @@ public class ScoreServiceImpl implements ScoreService {
         this.roundSegmentRepository = roundSegmentRepository;
         this.holeRepository = holeRepository;
         this.courseRepository = courseRepository;
+        this.scorecardQueryService = scorecardQueryService;
         this.auditService = auditService;
     }
 
@@ -310,10 +314,48 @@ public class ScoreServiceImpl implements ScoreService {
             return UNKNOWN_HOLE_PAR;
         }
 
+        // The club's own card wins where it exists. It is the sheet the golfer
+        // is holding, it covers the exact pairing they are playing, and it is
+        // the only source that ever carries a stroke index.
+        Integer fromCard = parFromScorecard(round, holeNumber);
+        if (fromCard != null) {
+            return fromCard;
+        }
+
         return locateHole(round, holeNumber)
                 .map(Hole::getPar)
                 .filter(par -> par != null && par > 0)
                 .orElse(UNKNOWN_HOLE_PAR);
+    }
+
+
+    /// Par for this hole from the club's printed card, or null when no card
+    /// covers the pairing being played.
+    ///
+    /// Looked up by the đường in the round, not by name: what the club titled
+    /// the A+C card is not something the round knows.
+    private Integer parFromScorecard(Round round, int holeNumber) {
+        List<RoundSegment> segments =
+                roundSegmentRepository.findByIdRoundIdOrderByIdPositionAsc(round.getId());
+        if (segments.isEmpty()) {
+            return null;
+        }
+
+        Long facilityId = courseRepository.findById(segments.get(0).getCourseId())
+                .map(course -> course.getFacility() == null ? null : course.getFacility().getId())
+                .orElse(null);
+        if (facilityId == null) {
+            return null;
+        }
+
+        List<Long> courseIds = segments.stream().map(RoundSegment::getCourseId).toList();
+        return scorecardQueryService.byPairing(facilityId, courseIds)
+                .flatMap(card -> card.holes().stream()
+                        .filter(line -> line.hole() != null && line.hole() == holeNumber)
+                        .findFirst())
+                .map(vnpt.vsp.module.course.dto.ScorecardDto.Line::par)
+                .filter(par -> par != null && par > 0)
+                .orElse(null);
     }
 
     /// The hole a round's hole number lands on.

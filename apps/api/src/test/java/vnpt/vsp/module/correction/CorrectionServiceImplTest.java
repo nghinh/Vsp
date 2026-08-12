@@ -65,6 +65,7 @@ class CorrectionServiceImplTest {
     @Mock private HoleRepository holeRepository;
     @Mock private AuditService auditService;
     @Mock private NotificationService notificationService;
+    @Mock private ScorecardCorrectionService scorecardCorrectionService;
 
     private CorrectionServiceImpl correctionService;
 
@@ -78,7 +79,8 @@ class CorrectionServiceImplTest {
                 courseRepository,
                 holeRepository,
                 auditService,
-                notificationService);
+                notificationService,
+                scorecardCorrectionService);
 
         course = new Course();
         course.setId(1L);

@@ -20,5 +20,10 @@ public enum CorrectionType {
     LANDMARK,
     COURSE_CONDITION,
     GREEN_SPEED,
+
+    /// A club's printed card: par and stroke index for a whole pairing of
+    /// đường, submitted as one photograph and reviewed as one decision.
+    SCORECARD,
+
     OTHER
 }

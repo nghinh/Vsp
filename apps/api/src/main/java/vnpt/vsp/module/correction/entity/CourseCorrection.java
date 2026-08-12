@@ -120,6 +120,19 @@ public class CourseCorrection {
     private Double gpsAccuracyMeters;
 
     /**
+     * SCORECARD corrections only: the proposed card as JSON — the pairing it
+     * was printed for and its numbered lines, exactly as the golfer read them
+     * off the photograph.
+     */
+    // No columnDefinition: "jsonb" is Postgres's word for it and the test
+    // schema is H2, which fails the DDL and then fails every query against a
+    // table it never created. The type code says JSON and each dialect picks
+    // its own spelling.
+    @Column(name = "proposed_scorecard")
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    private String proposedScorecard;
+
+    /**
      * How many independent reports (including this one) corroborate this
      * correction — i.e. the size of the spatial cluster it belongs to.
      * Maintained by the corroboration pass; 1 until a second report lands nearby.
@@ -350,6 +363,14 @@ public class CourseCorrection {
 
     /** @param proposedGeometry SRID 4326 WKT, e.g. {@code POLYGON((...))}. */
     public void setProposedGeometry(String proposedGeometry) { this.proposedGeometry = proposedGeometry; }
+
+    public String getProposedScorecard() {
+        return proposedScorecard;
+    }
+
+    public void setProposedScorecard(String proposedScorecard) {
+        this.proposedScorecard = proposedScorecard;
+    }
 
     public Double getGpsAccuracyMeters() { return gpsAccuracyMeters; }
     public void setGpsAccuracyMeters(Double gpsAccuracyMeters) { this.gpsAccuracyMeters = gpsAccuracyMeters; }

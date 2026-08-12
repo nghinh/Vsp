@@ -51,18 +51,21 @@ public class CorrectionServiceImpl implements CorrectionService {
     private final HoleRepository holeRepository;
     private final AuditService auditService;
     private final NotificationService notificationService;
+    private final ScorecardCorrectionService scorecardCorrectionService;
 
     public CorrectionServiceImpl(
             CourseCorrectionRepository correctionRepository,
             CourseRepository courseRepository,
             HoleRepository holeRepository,
             AuditService auditService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            ScorecardCorrectionService scorecardCorrectionService) {
         this.correctionRepository = correctionRepository;
         this.courseRepository = courseRepository;
         this.holeRepository = holeRepository;
         this.auditService = auditService;
         this.notificationService = notificationService;
+        this.scorecardCorrectionService = scorecardCorrectionService;
     }
 
     // ─── queue ─────────────────────────────────────────────────────────────────
@@ -197,6 +200,10 @@ public class CorrectionServiceImpl implements CorrectionService {
         switch (request.getAction()) {
             case APPROVE -> {
                 correction.approve(request.getReason(), reviewedBy, request.getNote());
+                // A geometry correction is approved and a drafter picks it up
+                // later. A scorecard has nowhere else to go: approving it is
+                // the act of publishing the card, so it happens here.
+                scorecardCorrectionService.applyIfScorecard(correction);
                 auditCorrection(correction, AuditAction.CORRECTION_APPROVE, reviewedBy);
             }
             case REJECT -> {

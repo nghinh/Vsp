@@ -552,6 +552,10 @@ class AdminEndpointAuthorizationTest {
             // enters a queue an admin approves, which is where the privilege is.
             "GeometryCorrectionController.submitGeometryCorrection",
 
+            // A golfer typing in the club's printed scorecard. Same queue,
+            // same admin decision — nothing is published by submitting it.
+            "ScorecardController.submit",
+
             // Reads the TOURNAMENT_DIRECTOR role in the method body rather than
             // in an annotation, and grants different abilities depending on the
             // answer — see TournamentPolicyController.

@@ -10,6 +10,8 @@ import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.module.audit.AuditService;
 import vnpt.vsp.module.course.entity.Hole;
 import vnpt.vsp.module.course.entity.Course;
+import vnpt.vsp.module.course.ScorecardQueryService;
+import vnpt.vsp.module.course.dto.ScorecardDto;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.HoleRepository;
 import vnpt.vsp.module.round.entity.Round;
@@ -59,6 +61,7 @@ class ScoreServiceImplTest {
     @Mock private RoundSegmentRepository roundSegmentRepository;
     @Mock private HoleRepository holeRepository;
     @Mock private CourseRepository courseRepository;
+    @Mock private ScorecardQueryService scorecardQueryService;
     @Mock private AuditService auditService;
 
     private ScoreServiceImpl service;
@@ -78,6 +81,7 @@ class ScoreServiceImplTest {
                 roundSegmentRepository,
                 holeRepository,
                 courseRepository,
+                scorecardQueryService,
                 auditService);
     }
 
@@ -449,5 +453,37 @@ class ScoreServiceImplTest {
                 eq(SCORE_ID), eq(19), eq(4), eq(5),
                 any(), any(), any(), any(), any(), any());
         verify(holeRepository, never()).findByCourseIdAndHoleNumber(any(), eq(19));
+    }
+
+    @Test
+    void theClubsOwnCardOutranksTheHoleRow() {
+        // A published card is the sheet in the golfer's hand, printed for
+        // exactly this pairing. Where it disagrees with a hole row imported
+        // from somewhere else, the card is the one the club stands behind.
+        Long duongA = 21L;
+        Long duongC = 23L;
+        when(roundRepository.findById(ROUND_ID)).thenReturn(Optional.of(round(duongA)));
+        when(scoreRepository.findByRoundIdAndDeletedAtIsNull(ROUND_ID))
+                .thenReturn(List.of(score()));
+        segments(duongA, duongC);
+
+        Course a = course(duongA, 9);
+        vnpt.vsp.module.course.entity.GolfFacility facility =
+                new vnpt.vsp.module.course.entity.GolfFacility();
+        facility.setId(7L);
+        a.setFacility(facility);
+        when(courseRepository.findById(duongA)).thenReturn(Optional.of(a));
+        when(scorecardQueryService.byPairing(7L, List.of(duongA, duongC)))
+                .thenReturn(Optional.of(new ScorecardDto(
+                        1L, 7L, "A + C", 18, 71, List.of(duongA, duongC),
+                        List.of(new ScorecardDto.Line(12, 3, 17)))));
+
+        service.syncScores(ACCOUNT_ID, "key", request(12, 4));
+
+        verify(scoreEntryRepository).upsertHole(
+                eq(SCORE_ID), eq(12), eq(3), eq(4),
+                any(), any(), any(), any(), any(), any());
+        // The card answered; the hole table was never asked.
+        verify(holeRepository, never()).findByCourseIdAndHoleNumber(any(), any());
     }
 }
