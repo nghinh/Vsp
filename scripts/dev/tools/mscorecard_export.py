@@ -1,26 +1,38 @@
 #!/usr/bin/env python3
-"""Export Vietnamese scorecards from mscorecard.com, gently.
+"""Export Vietnamese scorecards from mscorecard.com, slowly and resumably.
 
-Run this on a machine that can still reach the site, logged in, and hand back
-the JSON it writes. It is deliberately slow: the first attempt at this fetched
-about 150 pages in a couple of minutes and got the IP blocked, which is what
-this pacing exists to avoid. At the default delay a full run is roughly fifteen
-minutes and nobody notices it.
+Run it on a machine that can still reach the site, logged in, and hand back the
+JSON file it writes.
 
-    PHPSESSID=xxxxxxxx python3 mscorecard_export.py > vn_scorecards.json
+    PHPSESSID=xxxxxxxx python3 mscorecard_export.py
 
-Get PHPSESSID from the browser: DevTools -> Application -> Cookies ->
-mscorecard.com. It expires when you log out.
+It writes vn_scorecards.json in the current directory and updates it after
+every single course. That matters: the first version of this only wrote at the
+end, so when the site cut it off at course 46 all forty-six went in the bin.
+Now a block costs you the one course in flight and nothing else.
 
-What it takes per course: par and stroke index per hole, and the yardage of
-every tee the club prints — the yardages are the point, because the round-setup
-picker needs to tell a golfer that GOLD is seven thousand yards and WHITE is
-six. Also the coordinates, if the club stored any.
+Re-run the same command to continue. It reads whatever is already in the file
+and skips those, so you can go until it stops, wait, and go again.
+
+Pacing: eight seconds a page by default, which is about twenty minutes for the
+whole country. Three seconds was not enough — that is what got cut off. Raise
+it if you get stopped again:
+
+    DELAY=15 PHPSESSID=xxxxxxxx python3 mscorecard_export.py
+
+Get PHPSESSID from the browser on that machine: DevTools -> Application ->
+Cookies -> mscorecard.com. It has to be that machine's own cookie.
+
+What it takes per course: par and stroke index per hole, the yardage of every
+tee the club prints — the yardages are the point, since the round-setup picker
+needs to say GOLD is seven thousand yards and WHITE is six — and the club's
+coordinates where it stored any.
 """
 
 import html
 import json
 import os
+import random
 import re
 import sys
 import time
@@ -29,20 +41,27 @@ import urllib.request
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/122.0 Safari/537.36")
 BASE = "https://www.mscorecard.com/mscorecard"
-DELAY = float(os.environ.get("DELAY", "3.0"))     # seconds between requests
+OUT = os.environ.get("OUT", "vn_scorecards.json")
+DELAY = float(os.environ.get("DELAY", "8.0"))
 SESSION = os.environ.get("PHPSESSID", "")
+
+
+class Blocked(Exception):
+    """The site has stopped answering. Not something to retry around."""
 
 
 def get(path):
     req = urllib.request.Request(BASE + path, headers={
         "User-Agent": UA,
         "Cookie": f"PHPSESSID={SESSION}",
+        "Referer": BASE + "/courses.php",
     })
     with urllib.request.urlopen(req, timeout=40) as r:
         body = r.read().decode("utf-8", "replace")
     if "access has been blocked" in body:
-        sys.exit("Blocked. Stop, wait, and mail support@mscorecard.com.")
-    time.sleep(DELAY)
+        raise Blocked()
+    # Jittered, because a request exactly every N seconds is itself a signal.
+    time.sleep(DELAY + random.uniform(0, DELAY * 0.4))
     return body
 
 
@@ -60,7 +79,6 @@ def number(tok):
 
 
 def course_list():
-    """Every Vietnamese course, from the three pages the search returns."""
     found = {}
     for page in (1, 2, 3):
         body = get(f"/courses.php?page={page}&CourseName=&Country=Vietnam"
@@ -78,11 +96,11 @@ def course_list():
 def scorecard(cid):
     """Par, stroke index and every tee's yardage, in the club's own unit.
 
-    The row is: hole, par, SI, one column per tee, then par and SI again for
+    A row reads: hole, par, SI, one column per tee, then par and SI again for
     the ladies' card. Tee names sit between "Hole Par SI" and the second
-    "Par SI", and a column is "-" when the club never entered it — which is
-    common for distance and never for par, so a missing distance is not a
-    reason to drop the hole.
+    "Par SI". A cell is "-" where the club never filled it in, which happens
+    often for distance and never for par, so a missing distance is not a reason
+    to drop the hole.
     """
     text = flatten(get(f"/showcourse.php?cid={cid}"))
     unit = "Meters" if "measurement Meters" in text else "Yards"
@@ -134,26 +152,59 @@ def scorecard(cid):
     }
 
 
+def save(out):
+    tmp = OUT + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(out, f, ensure_ascii=False, indent=1)
+    os.replace(tmp, OUT)          # atomic, so a kill mid-write cannot truncate
+
+
 def main():
     if not SESSION:
-        sys.exit("Set PHPSESSID. See the docstring.")
-    courses = course_list()
-    print(f"{len(courses)} courses listed", file=sys.stderr)
+        sys.exit("Set PHPSESSID. See the docstring at the top of this file.")
+
     out = {}
-    for n, (cid, name) in enumerate(sorted(courses.items(), key=lambda x: x[1]), 1):
+    if os.path.exists(OUT):
+        with open(OUT, encoding="utf-8") as f:
+            out = json.load(f)
+        print(f"resuming with {len(out)} already saved", file=sys.stderr)
+
+    try:
+        courses = course_list()
+    except Blocked:
+        sys.exit("Blocked before the listing. Wait a few hours and re-run.")
+
+    todo = [(c, n) for c, n in sorted(courses.items(), key=lambda x: x[1])
+            if c not in out]
+    print(f"{len(courses)} listed, {len(todo)} still to fetch, "
+          f"{DELAY}s between pages", file=sys.stderr)
+
+    for n, (cid, name) in enumerate(todo, 1):
         try:
             card = scorecard(cid)
-        except Exception as exc:                     # noqa: BLE001
-            print(f"  {n:3}/{len(courses)} {name[:44]:46} error: {exc}", file=sys.stderr)
+        except Blocked:
+            save(out)
+            sys.exit(f"\nBlocked at {n}/{len(todo)}. {len(out)} saved in {OUT}.\n"
+                     f"Wait a few hours, then run the same command again — it "
+                     f"picks up where it stopped.\nIf it keeps happening, raise "
+                     f"the delay: DELAY=20 PHPSESSID=... python3 {sys.argv[0]}")
+        except Exception as exc:                      # noqa: BLE001
+            print(f"  {n:3}/{len(todo)} {name[:42]:44} error: {exc}", file=sys.stderr)
             continue
+
         if not card:
-            print(f"  {n:3}/{len(courses)} {name[:44]:46} no scorecard", file=sys.stderr)
+            out[cid] = {"name": name, "holes": []}    # remembered, not refetched
+            save(out)
+            print(f"  {n:3}/{len(todo)} {name[:42]:44} no scorecard", file=sys.stderr)
             continue
+
         out[cid] = {"name": name, **card}
-        print(f"  {n:3}/{len(courses)} {name[:44]:46} "
+        save(out)
+        print(f"  {n:3}/{len(todo)} {name[:42]:44} "
               f"{len(card['holes'])}h {len(card['tees'])} tees", file=sys.stderr)
-    json.dump(out, sys.stdout, ensure_ascii=False, indent=1)
-    print(f"\nexported {len(out)}", file=sys.stderr)
+
+    save(out)
+    print(f"\ndone — {len(out)} courses in {OUT}", file=sys.stderr)
 
 
 if __name__ == "__main__":
