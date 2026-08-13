@@ -61,6 +61,20 @@ tile. Three tests, cheapest first:
                         wrong place, and 30% short is past what a dogleg buys
      no yardage on file unchecked — written, flagged, listed at the end
 
+     Measured against the longest tee on file, because the coordinates are the
+     back tee and a card loaded from a forward tee would make every hole on
+     the course look too long. Hoiana Shores is the case: its card is the
+     White tee, the map points are the back, and all eighteen holes came out
+     12-50% over on the first run.
+
+  4. A whole course reading long by a consistent factor is a forward-tee card,
+     not eighteen misplaced greens. Where the ratios across a course are tight
+     — the shape of the card reproduced at a different scale — the holes are
+     kept as *plausible* rather than refused, because a course of wrong points
+     does not produce a tight ratio distribution. Kings Island's Lakeside is
+     the counter-example: +250% on one hole and -47% on the next, which is
+     hole numbering that does not line up, and those stay refused.
+
 REFERENCE FILES
 ---------------
 Both come out of the database, so the checks compare against what is actually
@@ -157,13 +171,67 @@ def read_holes(path):
     return lengths
 
 
-def classify(straight_m, card_m):
+def read_tee_yards(path):
+    """(course_id, hole_number) → the longest tee's yardage, in metres.
+
+    The coordinates mark a back tee, so this is what they should be compared
+    against. `holes.playing_length_meters` carries whichever single tee was
+    loaded, and for a course whose card came off a forward tee that is a
+    yardstick shorter than the thing being measured.
+    """
+    longest = {}
+    for line in open(path, encoding="utf-8"):
+        parts = line.rstrip("\n").split("|")
+        if len(parts) < 3 or not parts[0].strip():
+            continue
+        course_id, hole, yards = parts[:3]
+        longest[(int(course_id), int(hole))] = int(yards) * YARD_M
+    return longest
+
+
+def forward_tee_offset(ratios):
+    """The factor a whole course reads long by, when it reads long uniformly.
+
+    A card printed for a forward tee makes every hole on the course come out
+    over by roughly the same proportion, because the greens are where they
+    are and only the tees moved. Eighteen misplaced points do not do that:
+    Kings Island's Lakeside came back +250% on one hole and -47% on the next.
+
+    So: the median ratio, but only when at least two thirds of the holes sit
+    within a tenth of it, and only when the course reads long. Returns None
+    otherwise, and the holes are judged one by one as before.
+    """
+    if len(ratios) < 6:
+        return None
+    ordered = sorted(ratios)
+    median = ordered[len(ordered) // 2]
+    if median <= 1.05:
+        return None
+    close = sum(1 for r in ratios if abs(r - median) <= 0.10 * median)
+    return median if close >= len(ratios) * 2 / 3 else None
+
+
+def classify(straight_m, card_m, offset=None):
     """corroborated | plausible | refused | unchecked, and a reason."""
     yards = straight_m / YARD_M
     if not MIN_YARDS <= yards <= MAX_YARDS:
         return "refused", f"{yards:.0f}y is not a golf hole"
     if card_m is None:
         return "unchecked", f"{yards:.0f}y, no yardage on file to check it"
+
+    # Where the whole course reads long by one factor, the card is a forward
+    # tee and the comparison is against the card scaled to it. Kept as
+    # plausible rather than corroborated even when it lands dead on: the shape
+    # agrees, the tee it was measured from does not.
+    if offset is not None:
+        scaled = card_m * offset
+        drift = (straight_m - scaled) / scaled
+        if abs(drift) <= 0.12:
+            return "plausible", (f"{yards:.0f}y vs card {card_m / YARD_M:.0f}y, "
+                                 f"which reads as a forward-tee card "
+                                 f"(course runs {offset:.2f}x long)")
+        return "refused", (f"{yards:.0f}y vs card {card_m / YARD_M:.0f}y "
+                           f"({drift:+.1%} off the course's own {offset:.2f}x)")
 
     off = (straight_m - card_m) / card_m
     if abs(off) <= CORROBORATED:
@@ -177,7 +245,103 @@ def classify(straight_m, card_m):
 # database's own. The facility-distance check below is a backstop, not a
 # licence to guess: it catches a course on the wrong continent, not đường A
 # mapped onto đường B at the same club.
-COURSE_BY_CID = {}
+COURSE_BY_CID = {
+    # ── Read against the database's own names, one by one. Fuzzy matching has
+    # attached foreign courses to Vietnamese clubs three times in this project;
+    # what is not here is listed under SKIPPED below with the reason.
+    "1496933914754196": 30,    # Ba Na Hills → Championship
+    "1338967524968633": 996,   # Cửa Lò
+    "15448885501426_1_1": 1419,   # Đại Lải Star / Đường A
+    "15448885501426_2_2": 1420,   # Đại Lải Star / Đường B
+    "15448885501426_3_3": 1421,   # Đại Lải Star / Đường C
+    "1233121197683": 33,       # Dalat Palace
+    "137033712269633": 37,     # Diamond Bay
+    "1198942514552_1_1": 1416,    # Đồng Nai / Đường A
+    "1198942514552_2_2": 1417,    # Đồng Nai / Đường B
+    "1198942514552_3_3": 1418,    # Đồng Nai / Đường C
+    "1489082539981667": 26,    # FLC Sầm Sơn
+    "1387506289912457_1_1": 1446, # Hà Nội Golf Club / Đường A
+    "1387506289912457_2_2": 1447, # Hà Nội Golf Club / Đường B
+    "1387506289912457_3_3": 1448, # Hà Nội Golf Club / Đường C
+    "1540955435607338": 43,    # Harmonie Golf Park
+    "1289190090570": 12,       # Heron Lake
+    "1553879755526383_1_1": 1451, # Hilltop Valley / Đường A
+    "1553879755526383_2_2": 1452, # Hilltop Valley / Đường B
+    "1553879755526383_3_3": 1453, # Hilltop Valley / Đường C
+    "1665561616396794": 31,    # Hoiana Shores
+    "1544589012327617": 1411,  # KN Golf Links / Links Course
+    "1372572183125": 32,       # Laguna Lăng Cô
+    "1355468551866142": 9,     # BRG Legend Hill
+    "1403513952650063_1_1": 1351, # Long Biên / Đường A
+    "1403513952650063_2_2": 1352, # Long Biên / Đường B
+    "1403513952650063_3_3": 1353, # Long Biên / Đường C
+    "1234225755789": 1406,     # Long Thành / Hill Course
+    "1198974833945": 1407,     # Long Thành / Lake Course
+    "140949494152206": 995,    # Móng Cái
+    "1217116282635": 29,       # Montgomerie Links
+    "1203590985101": 1387,     # Phoenix / Champion
+    "1208227432263": 1386,     # Phoenix / Dragon
+    "1221992788918": 1385,     # Phoenix / Phoenix
+    "1413452661939352": 998,   # Royal Island
+    "1256870639382": 17,       # BRG Ruby Tree
+    "1398932024758": 34,       # Sacom Tuyền Lâm, now SAM Tuyền Lâm — same club, Đà Lạt
+    "1218179209640": 39,       # Sea Links
+    "1329817612215937": 1389,  # Sky Lake / Lake Course
+    "1419690820874": 1388,     # Sky Lake / Sky Course
+    "1753254527479741": 1017,  # Sonadezi Châu Đức
+    "1199340902630_3_3": 1436,    # Sông Bé / Desert
+    "1199340902630_1_1": 1434,    # Sông Bé / Lotus
+    "1199340902630_2_2": 1435,    # Sông Bé / Palm
+    "1314338013001": 18,       # Sono Belle Hải Phòng — Championship (18)
+    "1731136015689921": 1410,  # Sono Belle / Hill Course (the executive nine)
+    "1541731529201714_1_1": 1422, # Stone Valley / Đường A
+    "1541731529201714_2_2": 1423, # Stone Valley / Đường B
+    "1511845569674543": 24,    # FLC Hạ Long
+    "1355468902462127": 35,    # Dalat at 1200
+    "1324654287519_1_1": 1413,    # Chí Linh / Đường A
+    "1324654287519_2_2": 1414,    # Chí Linh / Đường B
+    "1324654287519_3_3": 1415,    # Chí Linh / Đường C
+    "1527478823434517": 1354,  # Kings Island / Kings Course
+    "1223263951812": 1356,     # Kings Island / Lakeside Course
+    "1249531199282": 4,        # Tam Đảo
+    "1428837436119618_1_1": 1392, # Tân Sơn Nhất / Đường A
+    "1428837436119618_2_2": 1393, # Tân Sơn Nhất / Đường B
+    "1428837436119618_3_3": 1394, # Tân Sơn Nhất / Đường C
+    "1428837436119618_4_4": 1395, # Tân Sơn Nhất / Đường D
+    "1643077576696859": 13,    # Thanh Lanh Valley
+    "1397132823587": 46,       # The Bluffs Hồ Tràm
+    "1451119617767": 1398,     # Tràng An / Champion Course
+    "1730875129399598": 1399,  # Tràng An / Pine Night
+    "1146809480500_1_1": 1431,    # Twin Doves / Luna
+    "1146809480500_3_3": 1433,    # Twin Doves / Sole
+    "1146809480500_2_2": 1432,    # Twin Doves / Stella
+    "1270298785567": 1390,     # Vietnam Golf & CC / East
+    "1270299755138": 1391,     # Vietnam Golf & CC / West
+    "1316225488149": 36,       # Vinpearl Nha Trang
+    "1537501434236616": 5,     # Vinpearl Nam Hội An
+    "1451731662112_2_2": 1441,    # Paradise Vũng Tàu / Đường B
+    "1541902476728376": 49,    # West Lakes Golf & Villas
+}
+
+# SKIPPED, and why. Every one of these is a case where writing something would
+# have been worse than writing nothing.
+#
+#   Danang Golf Resort Nicklaus, Danang Golf Resort Norman
+#       BRG Đà Nẵng has two layouts and the database has one course row. Either
+#       choice puts one layout's coordinates on the other's holes.
+#   Taekwang Jeongsan ×2, jeongsan country club
+#       Three exports, one course row, no way to tell which layout is loaded.
+#   Vinpearl Golf Haiphong Lake Course, Marsh
+#       Two layouts, one Championship row.
+#   Vinpearl Golf Phú Quốc ×2
+#       Two nines against an eighteen-hole row: both would claim holes 1-9.
+#   Monty links, Sam Son Golf Links
+#       The same clubs as Montgomerie Links and FLC Sầm Sơn, listed twice.
+#   FLC Quy Nhơn ×2, Ocean Dunes Phan Thiết, Nhà Hàng Sân Golf Thủ Đức
+#       No such club in the database.
+#   Golf Bac Giang Hillside
+#       Yên Dũng is the database's Bắc Giang course, but the name does not say
+#       so and a wrong guess here is a whole course of wrong holes.
 
 
 def main():
@@ -191,6 +355,12 @@ def main():
     data = json.load(open(args[0], encoding="utf-8"))
     courses = read_courses(opt("--courses", "courses.txt"))
     card = read_holes(opt("--holes", "holes.txt"))
+    tee_yards = read_tee_yards(opt("--tee-yards", "tee-yards.txt"))
+
+    def reference(course_id, hole_no):
+        """The longest tee on file, or the single length loaded onto the hole."""
+        return (tee_yards.get((course_id, hole_no))
+                or card.get((course_id, hole_no)))
 
     counts = {"corroborated": 0, "plausible": 0, "refused": 0, "unchecked": 0}
     notes = []
@@ -221,6 +391,21 @@ def main():
             notes.append(f"{label}: the facility has no coordinates, so the "
                          f"distance check could not run")
 
+        # One pass to see whether the whole course reads long by one factor,
+        # which is what a card printed for a forward tee looks like.
+        ratios = []
+        for (hole_no, _), (tee, green) in zip(holes, points):
+            if not tee or not green:
+                continue
+            printed = reference(course_id, int(hole_no))
+            if printed:
+                ratios.append(metres(tee, green) / printed)
+        offset = forward_tee_offset(ratios)
+        if offset:
+            notes.append(f"{label}: reads {offset:.2f}x long across the course "
+                         f"— the card on file is a forward tee, so these are "
+                         f"written unverified")
+
         for (hole_no, _), (tee, green) in zip(holes, points):
             if not tee or not green:
                 continue
@@ -233,7 +418,7 @@ def main():
                 notes.append(f"{label}: no hole {hole_no} on this course, skipped")
                 continue
             straight = metres(tee, green)
-            verdict, why = classify(straight, card[(course_id, hole_no)])
+            verdict, why = classify(straight, reference(course_id, hole_no), offset)
             counts[verdict] += 1
             if verdict == "refused":
                 notes.append(f"{label} hole {hole_no}: refused — {why}")
