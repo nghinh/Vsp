@@ -49,4 +49,26 @@ public interface ScorecardTeeRepository extends JpaRepository<ScorecardTee, Long
             """)
     List<ScorecardTee> findWithYardagesByScorecardIdIn(
             @Param("scorecardIds") Collection<Long> scorecardIds);
+
+    /**
+     * The tees of whatever card was published for this one đường.
+     *
+     * <p>Reached through {@code scorecard_segments}, because a card names the
+     * đường it was printed for rather than belonging to one. Restricted to
+     * cards of a single segment: a card printed for A+B measures the pairing,
+     * and its hole 12 is đường B's hole 3, so lifting its yardages onto đường
+     * A alone would put the wrong numbers against the wrong holes.
+     */
+    @Query("""
+            select distinct t from ScorecardTee t
+            left join fetch t.yardages
+            where t.scorecard.id in (
+                select s.scorecard.id from ScorecardSegment s
+                where s.courseId = :courseId
+                group by s.scorecard.id
+                having count(s) = 1
+            )
+            order by t.id
+            """)
+    List<ScorecardTee> findWithYardagesByCourseId(@Param("courseId") Long courseId);
 }

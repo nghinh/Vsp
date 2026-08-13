@@ -8,6 +8,10 @@ import vnpt.vsp.module.course.repository.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import vnpt.vsp.module.course.entity.ScorecardTee;
+import vnpt.vsp.module.course.entity.ScorecardTeeYardage;
+import vnpt.vsp.module.course.repository.ScorecardTeeRepository;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,6 +26,7 @@ public class CourseDetailServiceImpl implements CourseDetailService {
     private final GolfFacilityRepository golfFacilityRepository;
     private final HoleRepository holeRepository;
     private final TeeSetRepository teeSetRepository;
+    private final ScorecardTeeRepository scorecardTeeRepository;
     private final CourseConditionRepository courseConditionRepository;
     private final DataVersionRepository dataVersionRepository;
 
@@ -30,12 +35,14 @@ public class CourseDetailServiceImpl implements CourseDetailService {
             GolfFacilityRepository golfFacilityRepository,
             HoleRepository holeRepository,
             TeeSetRepository teeSetRepository,
+            ScorecardTeeRepository scorecardTeeRepository,
             CourseConditionRepository courseConditionRepository,
             DataVersionRepository dataVersionRepository) {
         this.courseRepository = courseRepository;
         this.golfFacilityRepository = golfFacilityRepository;
         this.holeRepository = holeRepository;
         this.teeSetRepository = teeSetRepository;
+        this.scorecardTeeRepository = scorecardTeeRepository;
         this.courseConditionRepository = courseConditionRepository;
         this.dataVersionRepository = dataVersionRepository;
     }
@@ -100,11 +107,29 @@ public class CourseDetailServiceImpl implements CourseDetailService {
                 .map(this::toHoleSummaryDto)
                 .collect(Collectors.toList()));
 
-        // 6. Tee sets with yardages
-        List<TeeSet> teeSets = teeSetRepository.findByCourseId(courseId);
-        dto.setTeeSets(teeSets.stream()
-                .map(this::toTeeSetSummaryDto)
-                .collect(Collectors.toList()));
+        // 6. The tees a golfer picks between, off the club's published card
+        // where there is one.
+        //
+        // `tee_sets` names them and holds no distance: tee_boxes carries the
+        // teeing-ground point and nothing about how far the hole plays, so
+        // this list has always gone out with an empty yardage map and the
+        // picker has never been able to say what a tee measures. The card does
+        // say — that is most of what a card is — so when the club has
+        // published one, its rows are the answer.
+        //
+        // Falls back to `tee_sets` for a course with no card yet, which keeps
+        // the names a club already has rather than emptying the picker.
+        List<ScorecardTee> cardTees = scorecardTeeRepository.findWithYardagesByCourseId(courseId);
+        if (!cardTees.isEmpty()) {
+            dto.setTeeSets(cardTees.stream()
+                    .map(CourseDetailServiceImpl::toTeeSummaryFromCard)
+                    .collect(Collectors.toList()));
+        } else {
+            List<TeeSet> teeSets = teeSetRepository.findByCourseId(courseId);
+            dto.setTeeSets(teeSets.stream()
+                    .map(this::toTeeSetSummaryDto)
+                    .collect(Collectors.toList()));
+        }
 
         // 6b. The facility's other đường.
         //
@@ -165,6 +190,30 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         dto.setPar(hole.getPar());
         dto.setPlayingLengthMeters(hole.getPlayingLengthMeters());
         dto.setDataQuality(toDataQualityDto(hole.getDataQuality()));
+        return dto;
+    }
+
+    /**
+     * One tee of a published card, as the round-setup picker wants it.
+     *
+     * <p>Carries the yardages, which is the whole point: a golfer choosing
+     * between GOLD and WHITE is choosing between seven thousand yards and six,
+     * and until now the picker offered the names with no numbers behind them.
+     * Course rating and slope come along because they are on the same row of
+     * the same card and nothing else in the platform holds them.
+     */
+    private static TeeSetSummaryDto toTeeSummaryFromCard(ScorecardTee tee) {
+        TeeSetSummaryDto dto = new TeeSetSummaryDto();
+        dto.setId(tee.getId());
+        dto.setName(tee.getName());
+        dto.setRating(tee.getCourseRating());
+        dto.setSlope(tee.getSlopeRating());
+        Map<Integer, Integer> yardages = new HashMap<>();
+        for (ScorecardTeeYardage y : tee.getYardages()) {
+            yardages.put(y.getHoleNumber(), y.getYards());
+        }
+        dto.setYardages(yardages);
+        dto.setTotalPar(null);   // par belongs to the hole, not to the tee
         return dto;
     }
 

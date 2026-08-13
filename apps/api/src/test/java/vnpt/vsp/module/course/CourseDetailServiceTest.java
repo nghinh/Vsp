@@ -45,6 +45,9 @@ class CourseDetailServiceTest {
     private TeeSetRepository teeSetRepository;
 
     @Mock
+    private vnpt.vsp.module.course.repository.ScorecardTeeRepository scorecardTeeRepository;
+
+    @Mock
     private CourseConditionRepository courseConditionRepository;
 
     @Mock
@@ -60,7 +63,7 @@ class CourseDetailServiceTest {
     void setUp() {
         service = new CourseDetailServiceImpl(
                 courseRepository, golfFacilityRepository, holeRepository,
-                teeSetRepository, courseConditionRepository,
+                teeSetRepository, scorecardTeeRepository, courseConditionRepository,
                 dataVersionRepository);
 
         testFacility = new GolfFacility();
@@ -467,6 +470,61 @@ class CourseDetailServiceTest {
         assertEquals(21L, dto.getFacilityCourses().get(0).getCourseId());
         assertEquals(9, dto.getFacilityCourses().get(0).getHolesCount());
         assertEquals("Đường B", dto.getFacilityCourses().get(1).getName());
+    }
+
+    @Test
+    void getCourseDetail_theTeePicker_carriesWhatEachTeeMeasures() {
+        // A golfer choosing between GOLD and WHITE is choosing between seven
+        // thousand yards and six. The picker read `tee_sets`, which names tees
+        // and holds no distance — tee_boxes has the teeing-ground point and no
+        // length — so it offered the names with nothing behind them. The club's
+        // published card does carry the yardages, and the rating and slope that
+        // exist nowhere else in the platform.
+        ScorecardTee gold = new ScorecardTee(null, "GOLD", new BigDecimal("74.1"), 141);
+        setId(gold, 501L);
+        gold.getYardages().add(new ScorecardTeeYardage(gold, 1, 412));
+        gold.getYardages().add(new ScorecardTeeYardage(gold, 2, 178));
+
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(testCourse));
+        when(scorecardTeeRepository.findWithYardagesByCourseId(10L)).thenReturn(List.of(gold));
+        // tee_sets still has a row; the card wins where there is one.
+        when(teeSetRepository.findByCourseId(10L))
+                .thenReturn(List.of(createTeeSet(20L, "Black Tee", 72)));
+
+        CourseDetailDto dto = service.getCourseDetail(10L);
+
+        assertEquals(1, dto.getTeeSets().size());
+        TeeSetSummaryDto tee = dto.getTeeSets().get(0);
+        assertEquals("GOLD", tee.getName());
+        assertEquals(412, tee.getYardages().get(1));
+        assertEquals(178, tee.getYardages().get(2));
+        assertEquals(new BigDecimal("74.1"), tee.getRating());
+        assertEquals(141, tee.getSlope());
+    }
+
+    @Test
+    void getCourseDetail_aCourseWithNoCardYet_keepsTheTeeNamesTheClubHas() {
+        // Falling back rather than emptying the picker: a club that has named
+        // its tees but published no card should still show the names.
+        when(courseRepository.findById(10L)).thenReturn(Optional.of(testCourse));
+        when(scorecardTeeRepository.findWithYardagesByCourseId(10L)).thenReturn(List.of());
+        when(teeSetRepository.findByCourseId(10L))
+                .thenReturn(List.of(createTeeSet(20L, "Black Tee", 72)));
+
+        CourseDetailDto dto = service.getCourseDetail(10L);
+
+        assertEquals(1, dto.getTeeSets().size());
+        assertEquals("Black Tee", dto.getTeeSets().get(0).getName());
+    }
+
+    private static void setId(ScorecardTee tee, long id) {
+        try {
+            java.lang.reflect.Field f = ScorecardTee.class.getDeclaredField("id");
+            f.setAccessible(true);
+            f.set(tee, id);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     @Test
