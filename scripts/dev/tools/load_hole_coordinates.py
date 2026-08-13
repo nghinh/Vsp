@@ -302,7 +302,11 @@ COURSE_BY_CID = {
     "1324654287519_2_2": 1414,    # Chí Linh / Đường B
     "1324654287519_3_3": 1415,    # Chí Linh / Đường C
     "1527478823434517": 1354,  # Kings Island / Kings Course
-    "1223263951812": 1356,     # Kings Island / Lakeside Course
+    # mscorecard calls this page "Lake Side", and it is not. Measured against
+    # the club's own cards it agrees with Mountain View on 14 of 18 holes and
+    # with Lakeside on 1. Both cards came from Golfify URLs that name the
+    # course explicitly, so the mislabelling is on the user-contributed side.
+    "1223263951812": 1355,     # Kings Island / Mountain View Course
     "1249531199282": 4,        # Tam Đảo
     "1428837436119618_1_1": 1392, # Tân Sơn Nhất / Đường A
     "1428837436119618_2_2": 1393, # Tân Sơn Nhất / Đường B
@@ -339,6 +343,13 @@ COURSE_BY_CID = {
 #       The same clubs as Montgomerie Links and FLC Sầm Sơn, listed twice.
 #   FLC Quy Nhơn ×2, Ocean Dunes Phan Thiết, Nhà Hàng Sân Golf Thủ Đức
 #       No such club in the database.
+#   Kings Island Lakeside, West Lakes, Royal Island — coordinates withdrawn
+#       Their exports line up with their cards on neither the hole numbers
+#       given nor any rotation of them: the best shift scores 7 of 18, where a
+#       real off-by-n scores 17 or 18. Kings Island's turned out to be the
+#       Mountain View layout under the wrong name and is remapped above; the
+#       other two have one course each at their club, so there is nothing to
+#       cross-check against and nothing safe to write.
 #   Golf Bac Giang Hillside
 #       Yên Dũng is the database's Bắc Giang course, but the name does not say
 #       so and a wrong guess here is a whole course of wrong holes.
