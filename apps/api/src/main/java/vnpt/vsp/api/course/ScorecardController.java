@@ -1,8 +1,11 @@
 package vnpt.vsp.api.course;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -14,6 +17,7 @@ import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
 import vnpt.vsp.module.correction.ScorecardCorrectionService;
 import vnpt.vsp.module.correction.ScorecardOcrService;
+import vnpt.vsp.module.correction.ScorecardPhotoStore;
 import vnpt.vsp.module.correction.dto.ScorecardSubmissionRequest;
 import vnpt.vsp.module.correction.entity.CourseCorrection;
 import vnpt.vsp.module.course.dto.ScorecardDto;
@@ -21,6 +25,7 @@ import vnpt.vsp.module.course.ScorecardQueryService;
 import vnpt.vsp.module.round.repository.RoundRepository;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,17 +54,23 @@ public class ScorecardController {
     private final ScorecardCorrectionService scorecardCorrectionService;
     private final ScorecardQueryService scorecardQueryService;
     private final ScorecardOcrService scorecardOcrService;
+    private final ScorecardPhotoStore scorecardPhotoStore;
     private final RoundRepository roundRepository;
+    private final ObjectMapper objectMapper;
 
     public ScorecardController(
             ScorecardCorrectionService scorecardCorrectionService,
             ScorecardQueryService scorecardQueryService,
             ScorecardOcrService scorecardOcrService,
-            RoundRepository roundRepository) {
+            ScorecardPhotoStore scorecardPhotoStore,
+            RoundRepository roundRepository,
+            ObjectMapper objectMapper) {
         this.scorecardCorrectionService = scorecardCorrectionService;
         this.scorecardQueryService = scorecardQueryService;
         this.scorecardOcrService = scorecardOcrService;
+        this.scorecardPhotoStore = scorecardPhotoStore;
         this.roundRepository = roundRepository;
+        this.objectMapper = objectMapper;
     }
 
     /** Submit a card for review. */
@@ -84,10 +95,19 @@ public class ScorecardController {
     /**
      * Read a photograph of the club's card and hand back what it says.
      *
-     * <p>Nothing is stored and nothing is queued: the answer goes back to the
-     * phone as a draft for the golfer to check against the card in their
-     * hand, and only then does it become a SCORECARD correction for an admin
-     * to review. Two human checks, the same as a card typed by hand.
+     * <p>Nothing is queued: the answer goes back to the phone as a draft for
+     * the golfer to check against the card in their hand, and only then does
+     * it become a SCORECARD correction for an admin to review. Two human
+     * checks, the same as a card typed by hand.
+     *
+     * <p>The photograph itself is kept, and its URL comes back as
+     * {@code photoUrl} for the app to hand straight to the submission. It used
+     * to be discarded here, which left the reviewer approving eighteen pars
+     * and ninety yardages with nothing behind them but the golfer's typing —
+     * and left the published card indistinguishable from a table someone
+     * generated, which is the failure this project has already paid for once.
+     * Storing it after the read rather than before means a photograph that
+     * turned out not to be a scorecard leaves nothing behind.
      */
     @PostMapping(value = "/courses/{courseId}/scorecard-corrections/extract",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -108,9 +128,60 @@ public class ScorecardController {
 
         validateImage(image);
 
+        String card = scorecardOcrService.extractCourse(image.getBytes(), mediaType);
+        String photoUrl = scorecardPhotoStore.store(image.getBytes(), mediaType);
+        // For the phones that do not yet read photoUrl back. Without this,
+        // evidence would only start being kept once every installed app had
+        // been replaced, and every card submitted in between would be
+        // unverifiable for good.
+        scorecardPhotoStore.remember(reporterId, courseId, photoUrl);
+
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(scorecardOcrService.extractCourse(image.getBytes(), mediaType));
+                .body(withPhotoUrl(card, photoUrl));
+    }
+
+    /**
+     * The card the reader produced, plus where its photograph now lives.
+     *
+     * <p>Null when the deployment keeps no photographs, and null is honest: the
+     * app then submits without an evidence URL exactly as it did before, rather
+     * than sending a path that would 404 in the reviewer's face.
+     */
+    private String withPhotoUrl(String card, String photoUrl) {
+        if (photoUrl == null) {
+            return card;
+        }
+        try {
+            ObjectNode node = (ObjectNode) objectMapper.readTree(card);
+            node.put("photoUrl", photoUrl);
+            return objectMapper.writeValueAsString(node);
+        } catch (Exception e) {
+            // The card was read; losing the URL is worth less than the card.
+            log.warn("The card was read but its photograph URL could not be attached", e);
+            return card;
+        }
+    }
+
+    /**
+     * A photograph a card was read from.
+     *
+     * <p>Open, like {@code /packages/**}: an {@code <img src>} in the review
+     * portal carries no bearer token, and neither would a CDN. What stands in
+     * for the token is the name — a photograph is addressed by the SHA-256 of
+     * its own bytes, so it can only be fetched by someone who was already given
+     * the URL by the reader or the correction it is attached to.
+     */
+    @GetMapping("/scorecard-photos/{name}")
+    public ResponseEntity<byte[]> photo(@PathVariable String name) {
+        return scorecardPhotoStore.read(name)
+                .map(photo -> ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(photo.mediaType()))
+                        // Content-addressed, so the bytes at a name never
+                        // change and the portal need not ask twice.
+                        .cacheControl(CacheControl.maxAge(Duration.ofDays(365)).cachePublic())
+                        .body(photo.data()))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     /**

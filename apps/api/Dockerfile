@@ -35,9 +35,16 @@ RUN mvn -B -q -DskipTests -Ddependency-check.skip=true clean package
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
-# Not root. A Spring Boot service needs nothing root grants, and the container
-# writes only to stdout.
+# Not root. A Spring Boot service needs nothing root grants.
 RUN groupadd -r vsp && useradd -r -g vsp vsp
+
+# Where scorecard photographs land when VSP_SCORECARD_PHOTO_DIR points here.
+# Created with an owner because the service does not run as root and could not
+# otherwise create it; declared a VOLUME because a photograph written into the
+# container's own filesystem is gone at the next rebuild, and losing the image
+# a card was approved from is the failure this directory exists to prevent.
+RUN mkdir -p /var/lib/vsp/scorecard-photos && chown -R vsp:vsp /var/lib/vsp
+VOLUME ["/var/lib/vsp/scorecard-photos"]
 
 COPY --from=build /build/target/*.jar /app/app.jar
 

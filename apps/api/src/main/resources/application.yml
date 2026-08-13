@@ -203,6 +203,47 @@ vsp:
     api-key: "${VSP_OCR_API_KEY:}"
     model: "${VSP_OCR_MODEL:}"
 
+  # Where the photograph a card was read from is kept.
+  #
+  # This used to be nowhere. The reader took an image, returned the pars and
+  # yardages, and dropped the bytes; the only way to attach evidence was for
+  # the golfer to type a URL into a text box, so the review portal's evidence
+  # panel said "no photograph attached" for every card ever submitted and the
+  # reviewer approved numbers rather than a card.
+  #
+  # That matters more here than it looks. A table that adds up cannot be told
+  # from a table someone generated — the printed totals agree either way — and
+  # the photograph is the only thing that can tell them apart. Nine fabricated
+  # cards were published before anyone had a way to check, and without the
+  # image a published card cannot be re-checked at all.
+  #
+  # Point this at a MOUNTED VOLUME. A path inside the container's own
+  # filesystem is lost on the next `docker compose up --build`, which is the
+  # quietest possible way to lose the evidence again.
+  #
+  # Empty turns it off: the reader still works, the app submits without an
+  # evidence URL, and the startup log says so.
+  scorecard-photos:
+    dir: "${VSP_SCORECARD_PHOTO_DIR:}"
+
+  corrections:
+    # Golfers whose scorecards publish the moment they are submitted, by email,
+    # comma-separated. Empty by default, and empty means every card is reviewed
+    # in the portal exactly as before.
+    #
+    # The review step is there because a golfer typing eighteen stroke indexes
+    # at the first tee is where numbers go wrong, and a wrong index misallocates
+    # strokes for everyone who plays that card afterwards. That reasoning does
+    # not describe the operator loading the country's cards from photographs:
+    # they are the reviewer, so routing their own work into their own queue
+    # checks nothing and costs a round trip per club.
+    #
+    # Nothing else is relaxed for them. Every check still runs, the correction
+    # row is still written, and it still records who approved it and why — so
+    # the audit trail reads the same as a card an admin clicked through, and
+    # removing an address here puts that person straight back in the queue.
+    trusted-reporters: "${VSP_CORRECTION_TRUSTED_REPORTERS:}"
+
   auth:
     social:
       clock-skew: ${VSP_SOCIAL_CLOCK_SKEW:PT1M}

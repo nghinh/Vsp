@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
@@ -21,12 +22,17 @@ import vnpt.vsp.module.course.entity.ScorecardTeeYardage;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.ScorecardRepository;
 import vnpt.vsp.module.course.repository.ScorecardTeeRepository;
+import vnpt.vsp.module.identity.entity.GolferAccount;
+import vnpt.vsp.module.identity.repository.GolferAccountRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionService {
@@ -37,19 +43,42 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
     private final ScorecardRepository scorecardRepository;
     private final ScorecardTeeRepository scorecardTeeRepository;
     private final CourseRepository courseRepository;
+    private final ScorecardPhotoStore photoStore;
+    private final GolferAccountRepository golferAccountRepository;
     private final ObjectMapper objectMapper;
+
+    /// Reporters whose cards publish on submission, by email, lower-cased.
+    private final Set<String> trustedReporters;
 
     public ScorecardCorrectionServiceImpl(
             CourseCorrectionRepository correctionRepository,
             ScorecardRepository scorecardRepository,
             ScorecardTeeRepository scorecardTeeRepository,
             CourseRepository courseRepository,
+            ScorecardPhotoStore photoStore,
+            GolferAccountRepository golferAccountRepository,
+            @Value("${vsp.corrections.trusted-reporters:}") String trustedReporters,
             ObjectMapper objectMapper) {
         this.correctionRepository = correctionRepository;
         this.scorecardRepository = scorecardRepository;
         this.scorecardTeeRepository = scorecardTeeRepository;
         this.courseRepository = courseRepository;
+        this.photoStore = photoStore;
+        this.golferAccountRepository = golferAccountRepository;
         this.objectMapper = objectMapper;
+        this.trustedReporters = Arrays.stream(
+                        (trustedReporters == null ? "" : trustedReporters).split(","))
+                .map(entry -> entry.trim().toLowerCase(Locale.ROOT))
+                .filter(entry -> !entry.isEmpty())
+                .collect(Collectors.toUnmodifiableSet());
+
+        if (!this.trustedReporters.isEmpty()) {
+            // Said out loud at startup. A deployment that publishes some
+            // golfers' cards without review should never be a surprise to
+            // whoever is reading the log.
+            log.info("Scorecards from {} reporter(s) will publish without review: {}",
+                    this.trustedReporters.size(), this.trustedReporters);
+        }
     }
 
     @Override
@@ -65,7 +94,7 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         correction.setReporterId(reporterId);
         correction.setCorrectionType(CorrectionType.SCORECARD);
         correction.setReporterNote(request.note());
-        correction.setReporterEvidenceUrl(request.evidenceUrl());
+        correction.setReporterEvidenceUrl(evidenceFor(courseId, reporterId, request));
         correction.getMetadata().setPublisher("golfer:" + reporterId);
         correction.getMetadata().setSource("golfer-submitted-scorecard");
         correction.setProposedScorecard(writeJson(request));
@@ -73,7 +102,70 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         CourseCorrection saved = correctionRepository.save(correction);
         log.info("Scorecard submitted for course {} by {} — {} holes, correction {}",
                 courseId, reporterId, request.holes().size(), saved.getId());
+
+        if (isTrusted(reporterId)) {
+            applyIfScorecard(saved);
+            saved.approve("Published on submission: the reporter is a trusted operator.",
+                    reporterId, "Auto-approved — reporter is on vsp.corrections.trusted-reporters.");
+            saved = correctionRepository.save(saved);
+            log.info("Correction {} published without review: {} is a trusted reporter",
+                    saved.getId(), reporterId);
+        }
         return saved;
+    }
+
+    /**
+     * Whether this reporter's cards publish on submission.
+     *
+     * <p>The review step exists because a misread stroke index misallocates
+     * strokes for everyone who plays that card afterwards, and a golfer typing
+     * at the first tee is the step where numbers go wrong. That reasoning does
+     * not apply to the operator loading the country's cards from photographs:
+     * they are the reviewer, and sending their own work to their own queue is a
+     * round trip that checks nothing.
+     *
+     * <p>Named by email and configured per deployment, so the list is visible
+     * in the environment rather than compiled in, and an empty list — the
+     * default — means every card is reviewed exactly as before. Nothing else is
+     * relaxed: every check in {@link #validate} still runs, the correction row
+     * is still written, and it still records who approved it and why, so the
+     * audit trail reads the same as a card an admin clicked through.
+     */
+    private boolean isTrusted(Long reporterId) {
+        if (trustedReporters.isEmpty() || reporterId == null) {
+            return false;
+        }
+        return golferAccountRepository.findById(reporterId)
+                .map(GolferAccount::getEmail)
+                .filter(email -> email != null && !email.isBlank())
+                .map(email -> trustedReporters.contains(email.trim().toLowerCase(Locale.ROOT)))
+                .orElse(false);
+    }
+
+    /**
+     * The photograph this card should be reviewed against.
+     *
+     * <p>What the app sent, when it sent anything. An app that reads
+     * {@code photoUrl} back off the card reader puts it here itself, and so
+     * does a golfer who typed a URL of their own into the evidence box.
+     *
+     * <p>Otherwise, the photograph this golfer just had read for this course.
+     * Every app already on a phone predates {@code photoUrl} and sends nothing,
+     * and a card approved with no image behind it cannot be checked afterwards
+     * — which is how nine fabricated cards were published. This closes that
+     * without waiting for a release to reach every handset.
+     */
+    private String evidenceFor(Long courseId, Long reporterId, ScorecardSubmissionRequest request) {
+        String submitted = request.evidenceUrl();
+        if (submitted != null && !submitted.isBlank()) {
+            return submitted;
+        }
+        String remembered = photoStore.recall(reporterId, courseId);
+        if (remembered != null) {
+            log.info("Card for course {} arrived with no evidence; attached the photograph"
+                    + " golfer {} had read for it", courseId, reporterId);
+        }
+        return remembered;
     }
 
     /**

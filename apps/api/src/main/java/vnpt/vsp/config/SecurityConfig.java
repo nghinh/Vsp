@@ -94,6 +94,14 @@ public class SecurityConfig {
                         // would not carry the app's bearer token either.
                         .requestMatchers(HttpMethod.GET, "/packages/**").permitAll()
 
+                        // The photograph a scorecard was read from. Open for
+                        // the same reason: the review portal shows it with an
+                        // <img src>, which carries no bearer token. What stands
+                        // in for one is the name — a photograph is addressed by
+                        // the SHA-256 of its own bytes, so it is only reachable
+                        // by someone already holding the URL.
+                        .requestMatchers(HttpMethod.GET, "/scorecard-photos/**").permitAll()
+
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )

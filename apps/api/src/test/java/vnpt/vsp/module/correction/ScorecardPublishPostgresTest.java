@@ -67,6 +67,7 @@ class ScorecardPublishPostgresTest {
     @Autowired private ScorecardRepository scorecardRepository;
     @Autowired private ScorecardTeeRepository scorecardTeeRepository;
     @Autowired private CourseRepository courseRepository;
+    @Autowired private vnpt.vsp.module.identity.repository.GolferAccountRepository golferAccountRepository;
     @Autowired private EntityManager em;
 
     private ScorecardCorrectionServiceImpl service;
@@ -74,9 +75,13 @@ class ScorecardPublishPostgresTest {
 
     @BeforeEach
     void setUp() {
+        // No photograph store: this probe is about what reaches the tables,
+        // and an unconfigured store is what a deployment without a mounted
+        // volume has — the card still publishes, with no image behind it.
         service = new ScorecardCorrectionServiceImpl(
                 correctionRepository, scorecardRepository, scorecardTeeRepository,
-                courseRepository, new ObjectMapper());
+                courseRepository, new ScorecardPhotoStore("", null), golferAccountRepository,
+                "", new ObjectMapper());
 
         GolfFacility facility = new GolfFacility();
         facility.setName("Scorecard publish probe facility");

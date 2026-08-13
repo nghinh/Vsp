@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.module.correction.dto.ScorecardSubmissionRequest;
+import vnpt.vsp.module.correction.entity.CorrectionStatus;
 import vnpt.vsp.module.correction.entity.CorrectionType;
 import vnpt.vsp.module.correction.entity.CourseCorrection;
 import vnpt.vsp.module.correction.repository.CourseCorrectionRepository;
@@ -47,6 +48,8 @@ class ScorecardCorrectionServiceImplTest {
     @Mock private ScorecardRepository scorecardRepository;
     @Mock private vnpt.vsp.module.course.repository.ScorecardTeeRepository scorecardTeeRepository;
     @Mock private CourseRepository courseRepository;
+    @Mock private ScorecardPhotoStore photoStore;
+    @Mock private vnpt.vsp.module.identity.repository.GolferAccountRepository golferAccountRepository;
 
     private ScorecardCorrectionServiceImpl service;
 
@@ -60,7 +63,7 @@ class ScorecardCorrectionServiceImplTest {
     void setUp() {
         service = new ScorecardCorrectionServiceImpl(
                 correctionRepository, scorecardRepository, scorecardTeeRepository,
-                courseRepository, new ObjectMapper());
+                courseRepository, photoStore, golferAccountRepository, "", new ObjectMapper());
 
         when(courseRepository.findById(DUONG_A)).thenReturn(Optional.of(duong(DUONG_A, FACILITY_ID)));
         when(courseRepository.findById(DUONG_B)).thenReturn(Optional.of(duong(DUONG_B, FACILITY_ID)));
@@ -149,6 +152,57 @@ class ScorecardCorrectionServiceImplTest {
         assertThat(saved.getReporterEvidenceUrl()).isEqualTo("https://example/card.jpg");
         assertThat(saved.getProposedScorecard()).contains("\"strokeIndex\":18");
         verify(correctionRepository).save(any(CourseCorrection.class));
+    }
+
+    /// The operator loading the country's cards is the reviewer, so their own
+    /// work does not go into their own queue. Everything else is unchanged —
+    /// the correction row is still written, and it records who approved it.
+    @Test
+    void aTrustedReportersCardPublishesOnSubmission() {
+        service = new ScorecardCorrectionServiceImpl(
+                correctionRepository, scorecardRepository, scorecardTeeRepository,
+                courseRepository, photoStore, golferAccountRepository,
+                "Operator@Example.com", new ObjectMapper());
+        when(golferAccountRepository.findById(11L)).thenReturn(Optional.of(account("operator@example.com")));
+
+        CourseCorrection saved = service.submit(DUONG_A, 11L, card(eighteen()));
+
+        assertThat(saved.getStatus()).isEqualTo(CorrectionStatus.APPROVED);
+        assertThat(saved.getReviewedBy()).isEqualTo(11L);
+        // Published, not merely marked approved.
+        verify(scorecardRepository).saveAndFlush(any(Scorecard.class));
+    }
+
+    @Test
+    void anUntrustedReportersCardStillWaitsForReview() {
+        service = new ScorecardCorrectionServiceImpl(
+                correctionRepository, scorecardRepository, scorecardTeeRepository,
+                courseRepository, photoStore, golferAccountRepository,
+                "operator@example.com", new ObjectMapper());
+        when(golferAccountRepository.findById(12L)).thenReturn(Optional.of(account("someone@else.com")));
+
+        CourseCorrection saved = service.submit(DUONG_A, 12L, card(eighteen()));
+
+        assertThat(saved.getStatus()).isEqualTo(CorrectionStatus.PENDING);
+        verify(scorecardRepository, never()).saveAndFlush(any(Scorecard.class));
+    }
+
+    /// The default. A deployment that has named nobody reviews everything, so
+    /// this cannot be switched on by forgetting to configure it.
+    @Test
+    void noTrustedListMeansEveryCardIsReviewed() {
+        when(golferAccountRepository.findById(11L)).thenReturn(Optional.of(account("operator@example.com")));
+
+        CourseCorrection saved = service.submit(DUONG_A, 11L, card(eighteen()));
+
+        assertThat(saved.getStatus()).isEqualTo(CorrectionStatus.PENDING);
+        verify(scorecardRepository, never()).saveAndFlush(any(Scorecard.class));
+    }
+
+    private vnpt.vsp.module.identity.entity.GolferAccount account(String email) {
+        var account = new vnpt.vsp.module.identity.entity.GolferAccount();
+        account.setEmail(email);
+        return account;
     }
 
     @Test
