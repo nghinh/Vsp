@@ -51,6 +51,16 @@ def main():
         sys.exit(__doc__)
     export, cid, course_id = sys.argv[1], sys.argv[2], int(sys.argv[3])
 
+    # A 27-hole club's export lists each nine as an eighteen: the nine played
+    # twice, with the second lap carrying the even stroke indexes. Vinpearl Phú
+    # Quốc is the case — its "Phu Quoc" page repeats the same nine pars with
+    # 2,4,6.. against 1,3,5.. — so loading all eighteen would give the đường a
+    # phantom back nine. `--holes 1-9` takes only the lap that is the đường.
+    first, last = 1, 99
+    if "--holes" in sys.argv:
+        span = sys.argv[sys.argv.index("--holes") + 1]
+        first, last = (int(x) for x in span.split("-"))
+
     data = json.load(open(export, encoding="utf-8"))
     card = data.get(cid)
     if not card:
@@ -64,6 +74,8 @@ def main():
     yardages = {}          # tee name → {hole: yards}
     for line in holes:
         hole = int(line["hole"])
+        if not first <= hole <= last:
+            continue
         par = line.get("par")
         if par is None or not 3 <= int(par) <= 6:
             fail(f"hole {hole} says par {par}; a hole is a 3, 4, 5 or 6")
@@ -83,16 +95,29 @@ def main():
             yardages.setdefault(tee, {})[hole] = int(yards)
 
     n = len(pars)
-    if sorted(pars) != list(range(1, n + 1)):
-        fail(f"the holes are {sorted(pars)}, which is not 1..{n}")
+    if sorted(pars) != list(range(first, first + n)):
+        fail(f"the holes are {sorted(pars)}, which is not {first}..{first + n - 1}")
+
+    # Renumber a slice to start at 1: đường B's holes are its own 1 to 9, not
+    # the 10 to 18 they occupy on the pairing this was read from.
+    if first != 1:
+        shift = first - 1
+        pars = {h - shift: p for h, p in pars.items()}
+        indexes = {h - shift: i for h, i in indexes.items()}
+        yardages = {t: {h - shift: y for h, y in v.items()}
+                    for t, v in yardages.items()}
 
     if indexes:
         if len(indexes) != n:
             fail(f"{len(indexes)} of {n} holes carry a stroke index; a card "
                  f"prints all of them or none")
-        if sorted(indexes.values()) != list(range(1, n + 1)):
-            fail(f"the stroke indexes are {sorted(indexes.values())}, "
-                 f"which is not a complete 1..{n}")
+        # n distinct values inside 1..2n, not 1..n. A nine belonging to a
+        # rotation carries the indexes it has when played as half of an
+        # eighteen: Vinpearl Phú Quốc's three nines each run 1,3,5..17.
+        values = sorted(indexes.values())
+        if len(set(values)) != n or values[0] < 1 or values[-1] > 2 * n:
+            fail(f"the stroke indexes are {values}, which is not {n} distinct "
+                 f"values inside 1..{2 * n}")
 
     # The placeholder test. A directory with no data for a course serves
     # eighteen identical holes, which is self-consistent and passes everything
