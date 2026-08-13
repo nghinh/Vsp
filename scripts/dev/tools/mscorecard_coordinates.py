@@ -4,7 +4,14 @@
     PHPSESSID=xxxxxxxx python3 mscorecard_coordinates.py
 
 Writes vn_coordinates.json, updated after every course, and skips what it
-already has when re-run. Twenty seconds a page.
+already has when re-run.
+
+Twenty-five seconds a page, and it skips the pairings — "Dai Lai A + B" holds
+the same eighteen holes as "Dai Lai A" and "Dai Lai B" between them, so there
+is nothing there to fetch twice. That takes the run from 148 pages to 106,
+which matters: the two blocks so far both landed around the 150th page, and the
+scorecard run of 71 pages at twenty seconds got through untouched. Fewer
+requests is a better defence than a longer wait between them.
 
 FIRST RUN — read this
 ---------------------
@@ -49,7 +56,7 @@ UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/122.0 Safari/537.36")
 BASE = "https://www.mscorecard.com/mscorecard"
 OUT = os.environ.get("OUT", "vn_coordinates.json")
-DELAY = float(os.environ.get("DELAY", "20.0"))
+DELAY = float(os.environ.get("DELAY", "25.0"))
 SESSION = os.environ.get("PHPSESSID", "")
 INSPECT = os.environ.get("INSPECT", "")
 
@@ -218,10 +225,15 @@ def main():
     except Blocked:
         sys.exit("Blocked before the listing loaded. Wait a few hours.")
 
+    # "Dai Lai A + B" is đường A followed by đường B; both are fetched on their
+    # own, so its holes are already covered. Forty-two of the hundred and
+    # forty-eight are pairings like that.
+    pairings = [c for c, n in courses.items() if " + " in n]
     todo = [(c, n) for c, n in sorted(courses.items(), key=lambda x: x[1])
-            if c not in out]
-    print(f"{len(courses)} courses, {len(todo)} to fetch, {DELAY:.0f}s apart",
-          file=sys.stderr)
+            if c not in out and " + " not in n]
+    print(f"{len(courses)} courses, {len(pairings)} pairings skipped, "
+          f"{len(todo)} to fetch, {DELAY:.0f}s apart "
+          f"(~{len(todo) * DELAY * 1.2 / 60:.0f} min)", file=sys.stderr)
 
     for n, (cid, name) in enumerate(todo, 1):
         try:
