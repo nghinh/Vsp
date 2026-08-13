@@ -1718,3 +1718,130 @@ FacilityCourseDto:
       type: integer
       description: Par for this đường (null when unknown)
       example: 36
+
+# ─── Published scorecards (GET /facilities/{facilityId}/scorecards) ─────────────
+
+ScorecardDto:
+  type: object
+  description: >-
+    A club's printed card as it was published, for one pairing of đường.
+    Stroke index is on the card and in no open dataset, so without this the
+    client cannot work out a net score at all; course rating and slope are here
+    for the same reason — no other table in the platform holds them.
+  properties:
+    scorecardId:
+      type: integer
+      format: int64
+      description: Card unique identifier
+      example: 12
+    facilityId:
+      type: integer
+      format: int64
+      description: The club that published it
+      example: 456
+    name:
+      type: string
+      description: What the club titles this card
+      example: "A + B"
+    holesCount:
+      type: integer
+      description: Numbered lines on the card — 9 or 18
+      example: 18
+    parTotal:
+      type: integer
+      description: Par for the card as a whole (null when unknown)
+      example: 72
+    segmentCourseIds:
+      type: array
+      items:
+        type: integer
+        format: int64
+      description: >-
+        The đường this card was printed for, in the order it lists them. A
+        client matches a card to what the golfer is playing on this, not on the
+        name, because what the club titled the A+C card is not something the
+        client knows.
+      example: [21, 23]
+    holes:
+      type: array
+      items:
+        $ref: '#/ScorecardLineDto'
+      description: Every numbered line, in hole order
+    tees:
+      type: array
+      items:
+        $ref: '#/ScorecardTeeDto'
+      description: >-
+        The tee rows, in the order the card prints them. Empty when the card
+        was published without them — a photograph taken with the rating table
+        outside the frame is still a card worth having.
+
+ScorecardLineDto:
+  type: object
+  description: One numbered line of a card - the hole the golfer counts, its par and its index
+  properties:
+    hole:
+      type: integer
+      minimum: 1
+      maximum: 18
+      description: The hole number the golfer counts to, across the pairing
+      example: 3
+    par:
+      type: integer
+      description: Par for this line
+      example: 4
+    strokeIndex:
+      type: integer
+      minimum: 1
+      maximum: 18
+      description: >-
+        Stroke index as this card prints it (null when the card did not).
+        It belongs to the card, not to the đường - hole 3 of đường A is a
+        different index on the A+B card than on A+C.
+      example: 7
+
+ScorecardTeeDto:
+  type: object
+  description: >-
+    One tee row of a printed card - what it measures and how it is rated. A
+    score only means something against the tee it was played from.
+  properties:
+    name:
+      type: string
+      description: As the club prints it - GOLD, BLACK, BLUE, WHITE, RED, or a Vietnamese name
+      example: "GOLD"
+    courseRating:
+      type: number
+      format: float
+      minimum: 60.0
+      maximum: 80.0
+      description: Course rating for this tee (null when the card did not print one)
+      example: 72.4
+    slopeRating:
+      type: integer
+      minimum: 55
+      maximum: 155
+      description: Slope rating for this tee (null when the card did not print one)
+      example: 132
+    yardages:
+      type: array
+      items:
+        $ref: '#/ScorecardYardageDto'
+      description: What this tee measures on each hole, in hole order. Empty when the card did not print them.
+
+ScorecardYardageDto:
+  type: object
+  description: What one tee measures on one hole, by the card's numbering
+  properties:
+    hole:
+      type: integer
+      minimum: 1
+      maximum: 18
+      description: The hole number the golfer counts to, the same one the lines use
+      example: 3
+    yards:
+      type: integer
+      minimum: 60
+      maximum: 700
+      description: Distance in yards, as printed
+      example: 412

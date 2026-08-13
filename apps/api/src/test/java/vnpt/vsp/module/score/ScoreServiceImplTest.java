@@ -476,7 +476,8 @@ class ScoreServiceImplTest {
         when(scorecardQueryService.byPairing(7L, List.of(duongA, duongC)))
                 .thenReturn(Optional.of(new ScorecardDto(
                         1L, 7L, "A + C", 18, 71, List.of(duongA, duongC),
-                        List.of(new ScorecardDto.Line(12, 3, 17)))));
+                        List.of(new ScorecardDto.Line(12, 3, 17)),
+                        List.of())));
 
         service.syncScores(ACCOUNT_ID, "key", request(12, 4));
 

@@ -22,7 +22,6 @@ public class CourseDetailServiceImpl implements CourseDetailService {
     private final GolfFacilityRepository golfFacilityRepository;
     private final HoleRepository holeRepository;
     private final TeeSetRepository teeSetRepository;
-    private final TeeBoxRepository teeBoxRepository;
     private final CourseConditionRepository courseConditionRepository;
     private final DataVersionRepository dataVersionRepository;
 
@@ -31,14 +30,12 @@ public class CourseDetailServiceImpl implements CourseDetailService {
             GolfFacilityRepository golfFacilityRepository,
             HoleRepository holeRepository,
             TeeSetRepository teeSetRepository,
-            TeeBoxRepository teeBoxRepository,
             CourseConditionRepository courseConditionRepository,
             DataVersionRepository dataVersionRepository) {
         this.courseRepository = courseRepository;
         this.golfFacilityRepository = golfFacilityRepository;
         this.holeRepository = holeRepository;
         this.teeSetRepository = teeSetRepository;
-        this.teeBoxRepository = teeBoxRepository;
         this.courseConditionRepository = courseConditionRepository;
         this.dataVersionRepository = dataVersionRepository;
     }
@@ -69,9 +66,31 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         dto.setHolesCount(course.getHolesCount());
         dto.setParTotal(course.getParTotal());
 
-        // rating/slope — may be null if columns don't exist in DB (AC-2 compliance)
-        // Using reflection-free approach: try repository query, catch if column missing
-        // For now, leave as null — AC-2 says unavailable = null, mobile shows "N/A"
+        // Always null, and not for want of data.
+        //
+        // Neither `courses` nor `tee_sets` has ever had a rating or a slope
+        // column; `scorecard_tees` is the only place in the schema that holds
+        // either, and it holds them per tee row of a club's printed card. Two
+        // things stand between those rows and this field, and neither is a
+        // join:
+        //
+        // A card belongs to a facility and names the đường it was printed for.
+        // A card printed for exactly this one đường rates it; a club with A, B
+        // and C nines prints A+B, A+C and B+C, and none of those rates đường A
+        // — A+B's rating is for the composite eighteen, and copying it here
+        // would be inventing a number for a course nobody rated.
+        //
+        // And a rating is per tee. A card prints four or five, and this field
+        // is one scalar that the app draws as an unlabelled "Course rating".
+        // Picking the longest tee, or the highest number, or the first row is
+        // a decision about what the screen claims, not a lookup — a golfer off
+        // the white tees shown the black tee's 74.1/141 has been told something
+        // false about their own round.
+        //
+        // What a client can do today: GET /facilities/{facilityId}/scorecards
+        // carries every card's tees with their ratings and yardages. The client
+        // knows which đường the golfer picked and which tee they are playing;
+        // this endpoint knows neither.
         dto.setRating(null);
         dto.setSlope(null);
 
@@ -84,7 +103,7 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         // 6. Tee sets with yardages
         List<TeeSet> teeSets = teeSetRepository.findByCourseId(courseId);
         dto.setTeeSets(teeSets.stream()
-                .map(ts -> toTeeSetSummaryDto(ts, holes))
+                .map(this::toTeeSetSummaryDto)
                 .collect(Collectors.toList()));
 
         // 6b. The facility's other đường.
@@ -131,26 +150,23 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         return dto;
     }
 
-    private TeeSetSummaryDto toTeeSetSummaryDto(TeeSet teeSet, List<Hole> holes) {
+    private TeeSetSummaryDto toTeeSetSummaryDto(TeeSet teeSet) {
         TeeSetSummaryDto dto = new TeeSetSummaryDto();
         dto.setId(teeSet.getId());
         dto.setName(teeSet.getName());
         dto.setTotalPar(teeSet.getTotalPar());
-        dto.setRating(null);   // rating/slope are course-level, not per tee set
+        dto.setRating(null);
         dto.setSlope(null);
         dto.setDataQuality(toDataQualityDto(teeSet.getDataQuality()));
 
-        // Build yardages map: holeNumber -> yardage
-        // Yardage is derived from TeeBox entities for each hole belonging to this tee set
-        // If no TeeBox yardage column exists, map remains empty (AC-2 compliance)
-        Map<Integer, Integer> yardages = new HashMap<>();
-        for (Hole hole : holes) {
-            List<TeeBox> teeBoxes = teeBoxRepository.findByTeeSetId(teeSet.getId());
-            // TeeBox.teeingGroundLocation has the geometry — yardage requires distance calc
-            // For now, leave as 0 / absent — AC-2: unavailable = absent
-            // A future story can add explicit yardage columns to tee_boxes table
-        }
-        dto.setYardages(yardages);
+        // No yardages, and no query to find that out with. This used to loop
+        // over every hole asking tee_boxes for the same tee set eighteen times
+        // over and throw all eighteen answers away — tee_boxes holds the
+        // teeing-ground geometry and no distance, so there was never anything
+        // in them to read. Yardages a golfer can trust are the ones printed on
+        // the club's card, and those are published through
+        // GET /facilities/{facilityId}/scorecards.
+        dto.setYardages(new HashMap<>());
         return dto;
     }
 

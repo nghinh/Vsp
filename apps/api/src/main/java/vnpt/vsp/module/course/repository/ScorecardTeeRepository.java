@@ -1,8 +1,11 @@
 package vnpt.vsp.module.course.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import vnpt.vsp.module.course.entity.ScorecardTee;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -23,4 +26,27 @@ import java.util.List;
 public interface ScorecardTeeRepository extends JpaRepository<ScorecardTee, Long> {
 
     List<ScorecardTee> findByScorecardId(Long scorecardId);
+
+    /**
+     * Every tee row of these cards, yardages included, in two queries' worth of
+     * work done as one.
+     *
+     * <p>Reading them off {@code card.getTees()} instead would be a query per
+     * card for the tees and another per tee for its yardages. A club with five
+     * cards of five tees is thirty-one round trips for ninety rows apiece, and
+     * the endpoint that lists a facility's cards would get slower every time a
+     * club published another one — which is the one thing it exists to
+     * encourage.
+     *
+     * <p>Ordered by id so the tees come back the way the card printed them,
+     * left to right, rather than in whatever order the rows happen to arrive.
+     */
+    @Query("""
+            select t from ScorecardTee t
+            left join fetch t.yardages
+            where t.scorecard.id in :scorecardIds
+            order by t.id
+            """)
+    List<ScorecardTee> findWithYardagesByScorecardIdIn(
+            @Param("scorecardIds") Collection<Long> scorecardIds);
 }

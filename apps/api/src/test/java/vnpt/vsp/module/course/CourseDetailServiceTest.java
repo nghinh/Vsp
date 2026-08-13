@@ -45,9 +45,6 @@ class CourseDetailServiceTest {
     private TeeSetRepository teeSetRepository;
 
     @Mock
-    private TeeBoxRepository teeBoxRepository;
-
-    @Mock
     private CourseConditionRepository courseConditionRepository;
 
     @Mock
@@ -63,7 +60,7 @@ class CourseDetailServiceTest {
     void setUp() {
         service = new CourseDetailServiceImpl(
                 courseRepository, golfFacilityRepository, holeRepository,
-                teeSetRepository, teeBoxRepository, courseConditionRepository,
+                teeSetRepository, courseConditionRepository,
                 dataVersionRepository);
 
         testFacility = new GolfFacility();
@@ -116,7 +113,6 @@ class CourseDetailServiceTest {
 
         TeeSet teeSet1 = createTeeSet(20L, "Black Tee", 72);
         when(teeSetRepository.findByCourseId(10L)).thenReturn(Arrays.asList(teeSet1));
-        when(teeBoxRepository.findByTeeSetId(20L)).thenReturn(Collections.emptyList());
 
         CourseCondition cond = createCondition(30L, CourseCondition.ConditionType.GREEN_SPEED,
                 CourseCondition.Severity.MODERATE, "Greens running fast");
@@ -272,7 +268,6 @@ class CourseDetailServiceTest {
         teeSet.setDataQuality(teeSetDqm);
 
         when(teeSetRepository.findByCourseId(10L)).thenReturn(Arrays.asList(teeSet));
-        when(teeBoxRepository.findByTeeSetId(20L)).thenReturn(Collections.emptyList());
 
         CourseCondition cond = createCondition(30L, CourseCondition.ConditionType.COURSE_OVERALL,
                 CourseCondition.Severity.LOW, "Course in great shape");
