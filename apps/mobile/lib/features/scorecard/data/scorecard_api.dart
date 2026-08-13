@@ -13,16 +13,26 @@ class ScorecardLine {
     required this.hole,
     required this.par,
     this.strokeIndex,
+    this.strokeIndexLadies,
   });
 
   final int hole;
   final int par;
   final int? strokeIndex;
 
+  /// The ladies index row, where the card prints a second one.
+  ///
+  /// Not editable on the phone, and deliberately: it rides along with the
+  /// photograph the way the tee rows do. A golfer at the tee checks the row
+  /// they play off, and asking them to verify a second complete 1-18 would
+  /// double the form for a row most of them never read.
+  final int? strokeIndexLadies;
+
   Map<String, dynamic> toJson() => {
     'hole': hole,
     'par': par,
     if (strokeIndex != null) 'strokeIndex': strokeIndex,
+    if (strokeIndexLadies != null) 'strokeIndexLadies': strokeIndexLadies,
   };
 }
 

@@ -45,7 +45,19 @@ public record ScorecardSubmissionRequest(
     public record HoleLine(
             @NotNull @Min(1) @Max(18) Integer hole,
             @NotNull @Min(3) @Max(6) Integer par,
-            @Min(1) @Max(18) Integer strokeIndex) {}
+            @Min(1) @Max(18) Integer strokeIndex,
+
+            /// The ladies index row, where the card prints a second one. A
+            /// hole's difficulty ranking changes with the distance played, so
+            /// many Vietnamese cards rank the eighteen twice. Null means the
+            /// card printed one row, not that women play the hole unranked.
+            @Min(1) @Max(18) Integer strokeIndexLadies) {
+
+        /// Cards read before the second index row was asked for.
+        public HoleLine(Integer hole, Integer par, Integer strokeIndex) {
+            this(hole, par, strokeIndex, null);
+        }
+    }
 
     /**
      * One tee row. The ranges are the database's, restated here so a bad
@@ -60,6 +72,17 @@ public record ScorecardSubmissionRequest(
             @DecimalMin("60.0") @DecimalMax("80.0") BigDecimal courseRating,
 
             @Min(55) @Max(155) Integer slopeRating,
+
+            /// Whose rating this row carries: MEN, LADIES or UNSPECIFIED.
+            ///
+            /// A course is rated separately for men and for women, and a card
+            /// that prints ratings prints both — commonly as two rows against
+            /// the same tee colour. Without this the second was dropped as a
+            /// duplicate name, silently, along with its ratings.
+            ///
+            /// Null reads as UNSPECIFIED, which is what most cards are. It is
+            /// not a synonym for men's.
+            @Size(max = 16) String gender,
 
             /// What the card prints in this row's OUT, IN and TOTAL columns.
             ///

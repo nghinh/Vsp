@@ -17,6 +17,9 @@ export interface ProposedLine {
   hole: number;
   par: number;
   strokeIndex: number | null;
+  /** The ladies index row, where the card prints a second one. Absent on cards
+   *  submitted before it was read, and on the many cards that print one row. */
+  strokeIndexLadies?: number | null;
 }
 
 export interface ProposedYardage {
@@ -31,8 +34,13 @@ export interface ProposedYardage {
  * yardages and no ratings at all, and a card photographed with the rating
  * table outside the frame is still worth approving for its pars.
  */
+/** Whose rating a tee row carries. Most cards do not say, and UNSPECIFIED is
+ *  the honest name for that rather than an assumption of men's. */
+export type TeeGender = 'MEN' | 'LADIES' | 'UNSPECIFIED';
+
 export interface ProposedTee {
   name: string;
+  gender?: TeeGender | null;
   courseRating: number | null;
   slopeRating: number | null;
   /** What the card prints in this row's OUT, IN and TOTAL columns. Absent on
@@ -206,11 +214,16 @@ function numberOrNull(value: number | null | undefined): number | null {
 /**
  * The tee rows approval will silently leave out, by position in the list.
  *
- * The server keeps one row per name and skips a row with no name at all, so a
- * card that reads its GOLD column twice publishes one GOLD and drops the
- * other — along with its ratings and its eighteen yardages. Nothing tells the
- * reviewer afterwards, so it has to be visible before they decide, and the
+ * The server keeps one row per name and gender and skips a row with no name at
+ * all, so a card that reads its GOLD column twice publishes one GOLD and drops
+ * the other — along with its ratings and its eighteen yardages. Nothing tells
+ * the reviewer afterwards, so it has to be visible before they decide, and the
  * comparison is the server's: trimmed and case-insensitive.
+ *
+ * Gender is part of the key because a course is rated separately for men and
+ * for women, so two rows called RED with different ratings is what a rated
+ * card looks like rather than a column read twice. Keying on the name alone
+ * would now mark a row as dropped that the server goes on to keep.
  */
 export function droppedTeeIndexes(card: ProposedCard | null): Set<number> {
   const seen = new Set<string>();
@@ -218,11 +231,12 @@ export function droppedTeeIndexes(card: ProposedCard | null): Set<number> {
 
   teeRows(card).forEach((tee, index) => {
     const name = (tee.name ?? '').trim();
-    if (!name || seen.has(name.toUpperCase())) {
+    const key = `${name.toUpperCase()}/${tee.gender ?? 'UNSPECIFIED'}`;
+    if (!name || seen.has(key)) {
       dropped.add(index);
       return;
     }
-    seen.add(name.toUpperCase());
+    seen.add(key);
   });
 
   return dropped;
@@ -276,4 +290,19 @@ export function scorecardProblems(card: ProposedCard | null): string[] {
   }
 
   return problems;
+}
+
+
+/**
+ * True when the card carries a second index row.
+ *
+ * A hole's difficulty ranking changes with the distance played, so many
+ * Vietnamese cards rank the eighteen twice. Worth knowing before the reviewer
+ * reads the table, because a column that is empty on most cards and full on
+ * this one is otherwise easy to take for a rendering fault.
+ */
+export function hasLadiesIndex(card: ProposedCard | null): boolean {
+  return (card?.holes ?? []).some(
+    (line) => typeof line?.strokeIndexLadies === 'number',
+  );
 }

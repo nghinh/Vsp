@@ -60,26 +60,32 @@ class ScanChecks {
 /// the server drops any value a printed card could not hold rather than
 /// passing on a plausible wrong one.
 class ScannedLine {
-  const ScannedLine({required this.hole, this.par, this.strokeIndex});
+  const ScannedLine({
+    required this.hole,
+    this.par,
+    this.strokeIndex,
+    this.strokeIndexLadies,
+  });
 
   final int hole;
   final int? par;
   final int? strokeIndex;
 
+  /// The ladies index row, where the card prints a second one.
+  ///
+  /// A hole's difficulty ranking changes with the distance played, so many
+  /// Vietnamese cards rank the eighteen twice. Null means the card printed one
+  /// row — not that women play the hole unranked.
+  final int? strokeIndexLadies;
+
   factory ScannedLine.fromJson(Map<String, dynamic> json) => ScannedLine(
     hole: json['hole'] as int,
     par: json['par'] as int?,
     strokeIndex: json['strokeIndex'] as int?,
+    strokeIndexLadies: json['strokeIndexLadies'] as int?,
   );
 }
 
-/// One tee row of the card: what it measures and how it is rated.
-///
-/// These ride along with the card rather than being checked hole by hole on
-/// the phone. Ninety yardages is not something a golfer can verify at the tee,
-/// and the numbers that matter for a handicap — course rating and slope — are
-/// two per tee and printed in their own small table. They go to the admin as
-/// part of the same submission, and the admin has the photograph.
 /// A tee row against the OUT, IN and TOTAL the club printed beside it.
 ///
 /// The same test the par row has always had, applied to the row that needed it
@@ -127,16 +133,49 @@ class TeeChecks {
   );
 }
 
+/// Whose rating a tee row carries.
+///
+/// A course is rated separately for men and for women, and a card that prints
+/// ratings prints both — commonly two rows against the same tee colour. The
+/// second used to be dropped as a duplicate name, silently, along with the
+/// ratings that were the reason to photograph the card at all.
+enum TeeGender {
+  men('MEN'),
+  ladies('LADIES'),
+
+  /// What most cards are. Not a synonym for men's.
+  unspecified('UNSPECIFIED');
+
+  const TeeGender(this.wire);
+
+  final String wire;
+
+  static TeeGender fromWire(String? value) => switch (value?.toUpperCase()) {
+    'MEN' => TeeGender.men,
+    'LADIES' => TeeGender.ladies,
+    _ => TeeGender.unspecified,
+  };
+}
+
+/// One tee row of the card: what it measures and how it is rated.
+///
+/// These ride along with the card rather than being checked hole by hole on
+/// the phone. Ninety yardages is not something a golfer can verify at the tee,
+/// and the numbers that matter for a handicap — course rating and slope — are
+/// two per tee and printed in their own small table. They go to the admin as
+/// part of the same submission, and the admin has the photograph.
 class ScannedTee {
   const ScannedTee({
     required this.name,
     this.courseRating,
     this.slopeRating,
+    this.gender = TeeGender.unspecified,
     required this.yardages,
     this.checks,
   });
 
   final String name;
+  final TeeGender gender;
   final double? courseRating;
   final int? slopeRating;
 
@@ -150,6 +189,7 @@ class ScannedTee {
     name: (json['name'] as String? ?? '').trim(),
     courseRating: (json['courseRating'] as num?)?.toDouble(),
     slopeRating: json['slopeRating'] as int?,
+    gender: TeeGender.fromWire(json['gender'] as String?),
     yardages: {
       for (final entry in (json['yardages'] as List<dynamic>? ?? []))
         (entry as Map<String, dynamic>)['hole'] as int: entry['yards'] as int,
@@ -163,6 +203,7 @@ class ScannedTee {
     'name': name,
     if (courseRating != null) 'courseRating': courseRating,
     if (slopeRating != null) 'slopeRating': slopeRating,
+    'gender': gender.wire,
     // The club's own sums travel with the row. They are not stored — the
     // yardages are the data — but without them the reviewer sees only a total
     // the portal added up from the numbers being questioned.

@@ -50,6 +50,9 @@
         >
           <div class="tee-head">
             <span class="tee-name">{{ tee.name || '—' }}</span>
+            <span v-if="tee.gender && tee.gender !== 'UNSPECIFIED'" class="tee-gender">
+              {{ tee.gender === 'LADIES' ? 'Nữ' : 'Nam' }}
+            </span>
             <span v-if="tee.dropped" class="tee-drop-flag">sẽ không lưu</span>
             <span v-else-if="tee.totals.contradicted" class="tee-mismatch-flag">
               lệch tổng in trên card
@@ -109,6 +112,7 @@
             <th scope="col">Hố</th>
             <th scope="col">Par</th>
             <th scope="col">Chỉ số gậy</th>
+            <th v-if="ladiesIndex" scope="col">Chỉ số nữ</th>
             <th
               v-for="tee in tees"
               :key="tee.key"
@@ -129,6 +133,7 @@
             <td>{{ line.hole }}</td>
             <td>{{ line.par }}</td>
             <td>{{ line.strokeIndex ?? '—' }}</td>
+            <td v-if="ladiesIndex">{{ line.strokeIndexLadies ?? '—' }}</td>
             <td
               v-for="tee in tees"
               :key="tee.key"
@@ -144,6 +149,7 @@
             <td>Tổng</td>
             <td>{{ parTotal }}</td>
             <td>—</td>
+            <td v-if="ladiesIndex">—</td>
             <td
               v-for="tee in tees"
               :key="tee.key"
@@ -165,6 +171,7 @@ import type { CorrectionDetailResponse } from '@/types/correction';
 import {
   droppedTeeIndexes,
   duplicateStrokeIndexes,
+  hasLadiesIndex,
   parseProposedCard,
   parTotal as sumPar,
   scorecardProblems,
@@ -186,6 +193,10 @@ const parTotal = computed(() => sumPar(card.value));
 const duplicateIndexes = computed(() => duplicateStrokeIndexes(card.value));
 const problems = computed(() => scorecardProblems(card.value));
 
+// A column that is empty on most cards and full on this one reads as a
+// rendering fault unless it is only there when the card has the row.
+const ladiesIndex = computed(() => hasLadiesIndex(card.value));
+
 /**
  * The tee rows, with everything the two views of them need worked out once.
  *
@@ -199,6 +210,7 @@ const tees = computed(() => {
   return teeRows(card.value).map((tee, index) => ({
     key: index,
     name: tee.name,
+    gender: tee.gender ?? 'UNSPECIFIED',
     courseRating: tee.courseRating,
     slopeRating: tee.slopeRating,
     yards: yardsByHole(tee),
@@ -292,6 +304,14 @@ function isOff(read: number | null, printed: number | null): boolean {
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.03em;
+}
+
+.tee-gender {
+  font-size: 0.7rem;
+  color: #475569;
+  background: #f1f5f9;
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.35rem;
 }
 
 .tee-mismatch-flag {

@@ -174,8 +174,14 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         saved.getSegments().addAll(segments);
 
         for (ScorecardSubmissionRequest.HoleLine line : proposed.holes()) {
-            saved.getHoles().add(
-                    new ScorecardHole(saved, line.hole(), line.par(), line.strokeIndex()));
+            ScorecardHole hole =
+                    new ScorecardHole(saved, line.hole(), line.par(), line.strokeIndex());
+            // The second index row, where the card prints one. Set rather than
+            // passed to the constructor so cards submitted before this existed
+            // keep working: they carry null, which is "the card printed one
+            // row" and not "women play this hole unranked".
+            hole.setStrokeIndexLadies(line.strokeIndexLadies());
+            saved.getHoles().add(hole);
         }
 
         int yardagesWritten = applyTees(saved, proposed);
@@ -204,15 +210,39 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
      *
      * @return how many yardages were written, for the log
      */
+    /**
+     * Whose rating a submitted tee row carries.
+     *
+     * <p>Anything unrecognised is UNSPECIFIED rather than a rejection: a card
+     * whose rating table says something this does not know about is still
+     * worth publishing for its yardages, and an unlabelled rating read as the
+     * men's would be a guess that looks like data — a woman playing off it
+     * would get a differential computed against the wrong number, with nothing
+     * on the screen to show where it came from.
+     */
+    private ScorecardTee.Gender genderOf(String submitted) {
+        if (submitted == null || submitted.isBlank()) {
+            return ScorecardTee.Gender.UNSPECIFIED;
+        }
+        try {
+            return ScorecardTee.Gender.valueOf(submitted.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            return ScorecardTee.Gender.UNSPECIFIED;
+        }
+    }
+
     private int applyTees(Scorecard card, ScorecardSubmissionRequest proposed) {
         if (proposed.tees() == null || proposed.tees().isEmpty()) {
             return 0;
         }
 
-        // A card names each tee once, and the table says so. Two rows called
-        // GOLD is one column read twice, and keeping both would put two
-        // ratings on one tee with nothing to choose between them.
-        var seenNames = new HashSet<String>();
+        // A card names each tee once per gender, and the table says so. Two
+        // rows called GOLD for the same gender is one column read twice, and
+        // keeping both would put two ratings on one tee with nothing to choose
+        // between them. Two called RED, one men's and one ladies', is what a
+        // rated card looks like — keying this on the name alone dropped the
+        // second, silently, along with the ratings that were the point of it.
+        var seenRows = new HashSet<String>();
         int written = 0;
 
         // What the reviewer approved and what got written can differ, and until
@@ -229,8 +259,10 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                 dropped.add("a tee row with no name");
                 continue;
             }
-            if (!seenNames.add(name.toUpperCase(Locale.ROOT))) {
-                dropped.add("a second tee row named '" + name + "'");
+            ScorecardTee.Gender gender = genderOf(line.gender());
+            if (!seenRows.add(name.toUpperCase(Locale.ROOT) + "/" + gender)) {
+                dropped.add("a second tee row named '" + name + "' ("
+                        + gender.name().toLowerCase(Locale.ROOT) + ")");
                 continue;
             }
 
@@ -244,7 +276,7 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
             // the persistence context had never heard of — and why saving
             // those originals afterwards inserted every tee a second time.
             ScorecardTee tee = scorecardTeeRepository.saveAndFlush(
-                    new ScorecardTee(card, name, line.courseRating(), line.slopeRating()));
+                    new ScorecardTee(card, name, line.courseRating(), line.slopeRating(), gender));
 
             List<ScorecardSubmissionRequest.Yardage> yardages = line.yardages();
             if (yardages != null) {

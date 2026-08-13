@@ -45,6 +45,25 @@ public class ScorecardTee {
     @Column(name = "slope_rating")
     private Integer slopeRating;
 
+    /**
+     * Whose rating this row carries.
+     *
+     * <p>A course is rated separately for men and for women, and a card that
+     * prints ratings prints both — commonly as two rows against the same tee
+     * colour. One rating per tee meant one of them was dropped, and dropped
+     * silently, because the reader treats a repeated tee name as the same
+     * column read twice.
+     *
+     * <p>{@link Gender#UNSPECIFIED} where the card does not say, which is most
+     * of them. It is not a synonym for men's.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 16)
+    private Gender gender = Gender.UNSPECIFIED;
+
+    /** Whose row a tee's rating belongs to. */
+    public enum Gender { MEN, LADIES, UNSPECIFIED }
+
     @OneToMany(mappedBy = "tee", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ScorecardTeeYardage> yardages = new ArrayList<>();
 
@@ -52,10 +71,16 @@ public class ScorecardTee {
     }
 
     public ScorecardTee(Scorecard scorecard, String name, BigDecimal courseRating, Integer slopeRating) {
+        this(scorecard, name, courseRating, slopeRating, Gender.UNSPECIFIED);
+    }
+
+    public ScorecardTee(Scorecard scorecard, String name, BigDecimal courseRating,
+                        Integer slopeRating, Gender gender) {
         this.scorecard = scorecard;
         this.name = name;
         this.courseRating = courseRating;
         this.slopeRating = slopeRating;
+        this.gender = gender == null ? Gender.UNSPECIFIED : gender;
     }
 
     public Long getId() { return id; }
@@ -66,5 +91,7 @@ public class ScorecardTee {
     public void setCourseRating(BigDecimal courseRating) { this.courseRating = courseRating; }
     public Integer getSlopeRating() { return slopeRating; }
     public void setSlopeRating(Integer slopeRating) { this.slopeRating = slopeRating; }
+    public Gender getGender() { return gender; }
+    public void setGender(Gender gender) { this.gender = gender == null ? Gender.UNSPECIFIED : gender; }
     public List<ScorecardTeeYardage> getYardages() { return yardages; }
 }

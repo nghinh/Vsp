@@ -108,6 +108,7 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
         holeCount: _holeCount(),
         pars: Map.of(_draft.pars),
         strokeIndexes: Map.of(_draft.strokeIndexes),
+        ladiesStrokeIndexes: Map.of(_draft.ladiesStrokeIndexes),
       );
     });
   }
@@ -270,6 +271,13 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
         if (line.strokeIndex != null) {
           _draft.strokeIndexes[line.hole] = line.strokeIndex;
           _indexController(line.hole).text = line.strokeIndex!.toString();
+        }
+        // No cell for this one. It rides with the photograph the way the tee
+        // rows do: a golfer at the tee checks the row they play off, and a
+        // second complete 1-18 would double the form for a row most of them
+        // never read.
+        if (line.strokeIndexLadies != null) {
+          _draft.ladiesStrokeIndexes[line.hole] = line.strokeIndexLadies;
         }
       }
       // Kept, not shown hole by hole. Ninety yardages is not something a

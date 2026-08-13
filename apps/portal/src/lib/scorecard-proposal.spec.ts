@@ -19,6 +19,7 @@ import {
   droppedTeeIndexes,
   duplicateStrokeIndexes,
   duplicateYardageHoles,
+  hasLadiesIndex,
   holesMissingStrokeIndex,
   parseProposedCard,
   parTotal,
@@ -144,6 +145,66 @@ describe('the tee rows approval writes', () => {
       contradicted: false,
       checked: false,
     });
+  });
+});
+
+describe('the two ratings a card prints for one tee', () => {
+  it('keeps both rows when the card rates a tee for men and for women', () => {
+    // A course is rated separately for men and for women, and a card that
+    // prints ratings prints both — two rows against the same colour. Keying
+    // the drop check on the name alone marked the second as doomed, which was
+    // right until the server learned to keep it and wrong afterwards.
+    const card = parseProposedCard(
+      cardWithTees([
+        tee('RED', { gender: 'MEN', courseRating: 68.2, slopeRating: 118 }),
+        tee('RED', { gender: 'LADIES', courseRating: 72.4, slopeRating: 128 }),
+      ]),
+    );
+
+    expect(droppedTeeIndexes(card).size).toBe(0);
+  });
+
+  it('still drops the same row read twice', () => {
+    // The original problem has not gone away: a card whose GOLD column was
+    // read twice publishes one GOLD, and the reviewer has to see which.
+    const card = parseProposedCard(
+      cardWithTees([tee('GOLD', { gender: 'MEN' }), tee('GOLD', { gender: 'MEN' })]),
+    );
+
+    expect([...droppedTeeIndexes(card)]).toEqual([1]);
+  });
+
+  it('treats an unlabelled row as unspecified, not as the men\'s', () => {
+    // Reading a rating nobody labelled as the men's would be a guess that
+    // looks like data: a woman playing off it gets a differential computed
+    // against the wrong number with nothing on screen to say so.
+    const card = parseProposedCard(
+      cardWithTees([tee('BLUE'), tee('BLUE', { gender: 'MEN' })]),
+    );
+
+    expect(droppedTeeIndexes(card).size).toBe(0);
+  });
+});
+
+describe('the ladies index row', () => {
+  it('is shown only when the card printed one', () => {
+    const one = parseProposedCard(
+      JSON.stringify({
+        name: 'A',
+        segmentCourseIds: [1],
+        holes: [{ hole: 1, par: 4, strokeIndex: 7 }],
+      }),
+    );
+    const two = parseProposedCard(
+      JSON.stringify({
+        name: 'A',
+        segmentCourseIds: [1],
+        holes: [{ hole: 1, par: 4, strokeIndex: 7, strokeIndexLadies: 9 }],
+      }),
+    );
+
+    expect(hasLadiesIndex(one)).toBe(false);
+    expect(hasLadiesIndex(two)).toBe(true);
   });
 });
 

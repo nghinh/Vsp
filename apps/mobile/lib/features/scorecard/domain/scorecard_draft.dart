@@ -12,8 +12,10 @@ class ScorecardDraft {
     required this.holeCount,
     Map<int, int>? pars,
     Map<int, int?>? strokeIndexes,
+    Map<int, int?>? ladiesStrokeIndexes,
   }) : pars = pars ?? {},
-       strokeIndexes = strokeIndexes ?? {};
+       strokeIndexes = strokeIndexes ?? {},
+       ladiesStrokeIndexes = ladiesStrokeIndexes ?? {};
 
   final int holeCount;
 
@@ -28,12 +30,20 @@ class ScorecardDraft {
 
   int get parTotal => pars.values.fold(0, (sum, par) => sum + par);
 
+  /// What the scan read in the card's second index row, by hole.
+  ///
+  /// Kept apart from [strokeIndexes] because it is not edited: those are the
+  /// cells the golfer checks against the card in their hand, and this is a row
+  /// that travels with the photograph for the admin to confirm.
+  final Map<int, int?> ladiesStrokeIndexes;
+
   List<ScorecardLine> toLines() => holeNumbers
       .map(
         (hole) => ScorecardLine(
           hole: hole,
           par: pars[hole] ?? 4,
           strokeIndex: strokeIndexes[hole],
+          strokeIndexLadies: ladiesStrokeIndexes[hole],
         ),
       )
       .toList();

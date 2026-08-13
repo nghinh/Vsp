@@ -17,6 +17,7 @@ import vnpt.vsp.module.course.entity.DataQualityMetadata;
 import vnpt.vsp.module.course.entity.GolfFacility;
 import vnpt.vsp.module.course.repository.CourseRepository;
 import vnpt.vsp.module.course.repository.ScorecardRepository;
+import vnpt.vsp.module.course.entity.ScorecardTee;
 import vnpt.vsp.module.course.repository.ScorecardTeeRepository;
 import vnpt.vsp.persistence.PostgresTestSupport;
 
@@ -109,14 +110,93 @@ class ScorecardPublishPostgresTest {
     }
 
     private ScorecardSubmissionRequest.TeeLine tee(String name, String rating, Integer slope, int holes) {
+        return tee(name, rating, slope, holes, null);
+    }
+
+    private ScorecardSubmissionRequest.TeeLine tee(
+            String name, String rating, Integer slope, int holes, String gender) {
         return new ScorecardSubmissionRequest.TeeLine(
                 name,
                 rating == null ? null : new BigDecimal(rating),
                 slope,
+                gender,
                 null, null, null,
                 java.util.stream.IntStream.rangeClosed(1, holes)
                         .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))
                         .toList());
+    }
+
+    @Test
+    @DisplayName("a tee rated for men and for women keeps both rows")
+    void bothRatingsOfOneTeeSurvive() {
+        // A course is rated separately for men and for women, and a card that
+        // prints ratings prints both — commonly two rows against the same
+        // colour. The dedupe keyed on the name alone, so whichever arrived
+        // second went on the floor with its ratings and its eighteen
+        // yardages, and nothing recorded that it had.
+        CourseCorrection correction = service.submit(courseId, 11L,
+                card(List.of(tee("RED", "68.2", 118, 18, "MEN"),
+                             tee("RED", "72.4", 128, 18, "LADIES"))));
+
+        service.applyIfScorecard(correction);
+        em.flush();
+        em.clear();
+
+        var card = scorecardRepository.findByFacilityIdAndName(
+                courseRepository.findById(courseId).orElseThrow().getFacility().getId(),
+                "Probe card").orElseThrow();
+
+        var tees = scorecardTeeRepository.findByScorecardId(card.getId());
+        assertThat(tees).hasSize(2);
+        assertThat(tees).extracting(t -> t.getGender())
+                .containsExactlyInAnyOrder(ScorecardTee.Gender.MEN, ScorecardTee.Gender.LADIES);
+
+        var ladies = tees.stream()
+                .filter(t -> t.getGender() == ScorecardTee.Gender.LADIES)
+                .findFirst().orElseThrow();
+        assertThat(ladies.getCourseRating()).isEqualByComparingTo(new BigDecimal("72.4"));
+        assertThat(ladies.getSlopeRating()).isEqualTo(128);
+    }
+
+    @Test
+    @DisplayName("the same row read twice is still dropped, gender or no gender")
+    void aRepeatedRowIsStillOneRow() {
+        CourseCorrection correction = service.submit(courseId, 11L,
+                card(List.of(tee("GOLD", "75.5", 138, 18, "MEN"),
+                             tee("GOLD", "75.5", 138, 18, "MEN"))));
+
+        service.applyIfScorecard(correction);
+        em.flush();
+        em.clear();
+
+        var card = scorecardRepository.findByFacilityIdAndName(
+                courseRepository.findById(courseId).orElseThrow().getFacility().getId(),
+                "Probe card").orElseThrow();
+
+        assertThat(scorecardTeeRepository.findByScorecardId(card.getId())).hasSize(1);
+    }
+
+    @Test
+    @DisplayName("an unlabelled rating is unspecified, never assumed to be the men's")
+    void anUnlabelledRatingIsNotAssumed() {
+        // Reading it as the men's would be a guess that looks like data: a
+        // woman playing off it gets a handicap differential computed against
+        // the wrong rating, with nothing anywhere to show where it came from.
+        CourseCorrection correction = service.submit(courseId, 11L,
+                card(List.of(tee("BLUE", "71.0", 125, 18))));
+
+        service.applyIfScorecard(correction);
+        em.flush();
+        em.clear();
+
+        var card = scorecardRepository.findByFacilityIdAndName(
+                courseRepository.findById(courseId).orElseThrow().getFacility().getId(),
+                "Probe card").orElseThrow();
+
+        assertThat(scorecardTeeRepository.findByScorecardId(card.getId()))
+                .singleElement()
+                .extracting(t -> t.getGender())
+                .isEqualTo(ScorecardTee.Gender.UNSPECIFIED);
     }
 
     @Test

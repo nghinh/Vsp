@@ -117,10 +117,16 @@ class ScorecardCorrectionServiceImplTest {
     }
 
     private ScorecardSubmissionRequest.TeeLine tee(String name, String rating, Integer slope, int holes) {
+        return tee(name, rating, slope, holes, null);
+    }
+
+    private ScorecardSubmissionRequest.TeeLine tee(
+            String name, String rating, Integer slope, int holes, String gender) {
         return new ScorecardSubmissionRequest.TeeLine(
                 name,
                 rating == null ? null : new java.math.BigDecimal(rating),
                 slope,
+                gender,
                 null, null, null,
                 java.util.stream.IntStream.rangeClosed(1, holes)
                         .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))

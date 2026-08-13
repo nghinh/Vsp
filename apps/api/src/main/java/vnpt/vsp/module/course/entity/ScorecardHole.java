@@ -30,6 +30,16 @@ public class ScorecardHole {
     @Column(name = "stroke_index")
     private Integer strokeIndex;
 
+    /**
+     * The ladies index row, where the card prints a second one.
+     *
+     * <p>A hole's difficulty ranking changes with the distance played, so many
+     * Vietnamese cards rank the eighteen twice. Null means the card printed one
+     * index row — not that women play the hole unranked.
+     */
+    @Column(name = "stroke_index_ladies")
+    private Integer strokeIndexLadies;
+
     protected ScorecardHole() {
     }
 
@@ -46,6 +56,8 @@ public class ScorecardHole {
     public void setPar(Integer par) { this.par = par; }
     public Integer getStrokeIndex() { return strokeIndex; }
     public void setStrokeIndex(Integer strokeIndex) { this.strokeIndex = strokeIndex; }
+    public Integer getStrokeIndexLadies() { return strokeIndexLadies; }
+    public void setStrokeIndexLadies(Integer value) { this.strokeIndexLadies = value; }
     public int getHoleNumber() { return id == null ? 0 : id.getHoleNumber(); }
 
     @Embeddable

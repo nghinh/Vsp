@@ -63,6 +63,14 @@ public class ScorecardOcrService {
             Index, HDC, HCP, S.I. or "Chỉ số". Across eighteen holes it uses \
             each number 1 to 18 exactly once — commonly all the even numbers \
             on one nine and all the odd numbers on the other.
+            - Many cards print a SECOND index row for the ladies' tees, \
+            because a hole's difficulty ranking changes with the distance \
+            played. It is labelled "Ladies", "LDS", "Nữ" or sits under the red \
+            tee's block, and it is also a complete 1 to 18. When the card has \
+            two index rows, give the general or men's row as `strokeIndex` and \
+            the ladies' row as `strokeIndexLadies`. When it prints only one \
+            row, give it as `strokeIndex` and leave `strokeIndexLadies` null — \
+            do not copy one into the other.
 
             WHAT TO IGNORE
 
@@ -104,13 +112,23 @@ public class ScorecardOcrService {
             row of nine yardages that does not add up to the OUT beside it has \
             a digit wrong somewhere.
 
+            A course is rated separately for men and for women, so a rating \
+            table often has two entries for the same tee colour — the men's \
+            and the ladies' course rating and slope for one set of yardages. \
+            When the card says which is which, give each as its own entry with \
+            the same `name` and a `gender` of "MEN" or "LADIES". When the card \
+            does not say, use "UNSPECIFIED" — do not guess that an unlabelled \
+            rating is the men's one.
+
             Return only a JSON object, with no prose around it and no markdown \
             fences:
 
             {"name": "A + B" or null,
              "parOut": 36, "parIn": 36, "parTotal": 72,
-             "holes": [{"hole": 1, "par": 4, "strokeIndex": 7}, ...],
-             "tees": [{"name": "GOLD", "courseRating": 75.5, "slopeRating": 138,
+             "holes": [{"hole": 1, "par": 4, "strokeIndex": 7,
+                        "strokeIndexLadies": 9}, ...],
+             "tees": [{"name": "GOLD", "gender": "MEN",
+                       "courseRating": 75.5, "slopeRating": 138,
                        "yardsOut": 3520, "yardsIn": 3480, "yardsTotal": 7000,
                        "yardages": [{"hole": 1, "yards": 416}, ...]}, ...]}
             """;
@@ -558,6 +576,7 @@ public class ScorecardOcrService {
             }
 
             var seenIndexes = new java.util.HashSet<Integer>();
+            var seenLadiesIndexes = new java.util.HashSet<Integer>();
             var lines = objectMapper.createArrayNode();
             for (var hole : holes) {
                 Integer number = intInRange(hole.get("hole"), 1, 18);
@@ -577,6 +596,15 @@ public class ScorecardOcrService {
                     index = null;
                 }
                 line.set("strokeIndex", nullable(index));
+
+                // The ladies row is its own complete 1-18, so it gets its own
+                // seen-set: hole 3 being index 7 on one row and index 7 on the
+                // other is two rankings agreeing, not a misread.
+                Integer ladies = intInRange(hole.get("strokeIndexLadies"), 1, 18);
+                if (ladies != null && !seenLadiesIndexes.add(ladies)) {
+                    ladies = null;
+                }
+                line.set("strokeIndexLadies", nullable(ladies));
                 lines.add(line);
             }
 
@@ -817,17 +845,22 @@ public class ScorecardOcrService {
             return result;
         }
 
-        var seenNames = new java.util.HashSet<String>();
+        var seenRows = new java.util.HashSet<String>();
         for (var tee : tees) {
             String name = tee.hasNonNull("name") ? tee.get("name").asText().trim() : "";
-            // A card names each tee once. A repeat is the same column read
-            // twice, and keeping both would put two ratings on one tee.
-            if (name.isEmpty() || name.length() > 60 || !seenNames.add(name.toUpperCase())) {
+            // Whose rating this row carries. A course is rated separately for
+            // men and for women, so a card can print RED twice with different
+            // ratings — the dedupe used to key on the name alone and threw the
+            // second away, which is why one of the two was always missing.
+            String gender = gender(tee.get("gender"));
+            if (name.isEmpty() || name.length() > 60
+                    || !seenRows.add(name.toUpperCase() + "/" + gender)) {
                 continue;
             }
 
             var entry = objectMapper.createObjectNode();
             entry.put("name", name);
+            entry.put("gender", gender);
             entry.set("courseRating", decimalInRange(tee.get("courseRating"), 60.0, 80.0));
             entry.set("slopeRating", nullable(intInRange(tee.get("slopeRating"), 55, 155)));
 
@@ -919,6 +952,26 @@ public class ScorecardOcrService {
                 : objectMapper.getNodeFactory().booleanNode(true));
 
         return checks;
+    }
+
+    /**
+     * Whose rating a tee row carries, as the card labels it.
+     *
+     * <p>Anything the card does not say is UNSPECIFIED, which is most cards.
+     * Reading an unlabelled rating as the men's would be a guess that looks
+     * like data: a woman playing off it would get a handicap differential
+     * computed against the wrong rating, and nothing on the card or the screen
+     * would show where the number came from.
+     */
+    private String gender(com.fasterxml.jackson.databind.JsonNode node) {
+        if (node == null || node.isNull()) {
+            return "UNSPECIFIED";
+        }
+        return switch (node.asText("").trim().toUpperCase()) {
+            case "MEN", "MAN", "MENS", "MEN'S", "NAM" -> "MEN";
+            case "LADIES", "LADY", "LADIES'", "WOMEN", "WOMENS", "NỮ", "NU" -> "LADIES";
+            default -> "UNSPECIFIED";
+        };
     }
 
     private com.fasterxml.jackson.databind.JsonNode decimalInRange(
