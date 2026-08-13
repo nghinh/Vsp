@@ -203,6 +203,21 @@ BEGIN
     -- a photograph, with the indexes renumbered 1..18 the way the club does it.
     SELECT facility_id, name INTO v_facility_id, v_course_name FROM courses WHERE id = v_course_id;
 
+    -- A card a golfer photographed beats one read off a website, and quietly.
+    -- Kings Island ended up with both: the golfer's, carrying the course
+    -- ratings and slopes that are printed on the card and exist nowhere else,
+    -- and mine from Golfify with neither. Both had a segment on the same
+    -- đường, so the tee picker offered nine tees for a course that has five.
+    IF EXISTS (
+        SELECT 1 FROM scorecards s
+        JOIN scorecard_segments g ON g.scorecard_id = s.id
+        WHERE g.course_id = v_course_id AND s.source = 'golfer-submitted-scorecard'
+    ) THEN
+        RAISE NOTICE '% / % : holes written; card left alone, a golfer already published one.',
+            v_publisher, v_course_name;
+        RETURN;
+    END IF;
+
     DELETE FROM scorecards WHERE facility_id = v_facility_id AND name = v_course_name;
 
     INSERT INTO scorecards (
