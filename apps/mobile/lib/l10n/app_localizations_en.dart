@@ -495,6 +495,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roundSetupLayout => 'Layout';
 
   @override
+  String roundSetupLayoutHoles(int count) {
+    return '$count holes';
+  }
+
+  @override
   String get roundSetupSecondLayout => 'Second layout';
 
   @override

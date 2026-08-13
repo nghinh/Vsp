@@ -153,6 +153,11 @@
   "roundSetupNoCoursesYet": "Chưa có sân gần bạn hoặc sân đã chơi — hãy tìm sân.",
   "roundSetupSearchAll": "Tìm tất cả sân golf",
   "roundSetupLayout": "Đường",
+  "roundSetupLayoutHoles": "{count} hố",
+  "@roundSetupLayoutHoles": {
+    "description": "Hole count beside a đường name in the round-setup pickers",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "roundSetupSecondLayout": "Đường thứ hai",
   "roundSetupTee": "Điểm phát bóng",
   "roundSetupPlayers": "Người chơi",

@@ -1016,6 +1016,12 @@ abstract class AppLocalizations {
   /// **'Layout'**
   String get roundSetupLayout;
 
+  /// Hole count beside a đường name in the round-setup pickers
+  ///
+  /// In en, this message translates to:
+  /// **'{count} holes'**
+  String roundSetupLayoutHoles(int count);
+
   /// No description provided for @roundSetupSecondLayout.
   ///
   /// In en, this message translates to:

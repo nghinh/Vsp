@@ -826,6 +826,12 @@ class _LayoutSelector extends StatelessWidget {
 
   const _LayoutSelector({required this.state});
 
+  /// "Đường A · 9 hố". The hole count was hard-coded English — "(18 holes)" —
+  /// in a screen that is otherwise entirely Vietnamese.
+  static String _layoutLabel(BuildContext context, LayoutOption l) =>
+      '${l.name} · '
+      '${AppLocalizations.of(context).roundSetupLayoutHoles(l.holeCount)}';
+
   @override
   Widget build(BuildContext context) {
     if (state.layouts.length <= 1) return const SizedBox.shrink();
@@ -857,12 +863,19 @@ class _LayoutSelector extends StatelessWidget {
           vertical: 12,
         ),
       ),
+      // isExpanded, or the field sizes itself to its longest entry and a name
+      // like "Long Biên Golf Course — Championship" runs off the screen edge.
+      isExpanded: true,
       items: state.layouts
           .where((l) => l.id != state.selectedLayoutId)
           .map(
             (l) => DropdownMenuItem(
               value: l.id,
-              child: Text('${l.name} (${l.holeCount} holes)'),
+              child: Text(
+                _layoutLabel(context, l),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           )
           .toList(),
@@ -883,11 +896,16 @@ class _LayoutSelector extends StatelessWidget {
           vertical: 12,
         ),
       ),
+      isExpanded: true,
       items: state.layouts
           .map(
             (l) => DropdownMenuItem(
               value: l.id,
-              child: Text('${l.name} (${l.holeCount} holes)'),
+              child: Text(
+                _layoutLabel(context, l),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           )
           .toList(),
@@ -917,10 +935,15 @@ class _TeeSelector extends StatelessWidget {
           vertical: 12,
         ),
       ),
+      isExpanded: true,
       items: state.tees
           .map((t) => DropdownMenuItem(
                 value: t.id,
-                child: Text(teeLabel(t)),
+                child: Text(
+                  teeLabel(t),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ))
           .toList(),
       onChanged: (value) {

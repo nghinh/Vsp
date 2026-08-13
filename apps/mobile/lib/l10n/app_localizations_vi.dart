@@ -495,6 +495,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get roundSetupLayout => 'Đường';
 
   @override
+  String roundSetupLayoutHoles(int count) {
+    return '$count hố';
+  }
+
+  @override
   String get roundSetupSecondLayout => 'Đường thứ hai';
 
   @override

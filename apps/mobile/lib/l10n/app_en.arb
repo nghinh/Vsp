@@ -220,6 +220,11 @@
   "roundSetupNoCoursesYet": "No nearby or recent courses yet — search for one.",
   "roundSetupSearchAll": "Search all courses",
   "roundSetupLayout": "Layout",
+  "roundSetupLayoutHoles": "{count} holes",
+  "@roundSetupLayoutHoles": {
+    "description": "Hole count beside a đường name in the round-setup pickers",
+    "placeholders": { "count": { "type": "int" } }
+  },
   "roundSetupSecondLayout": "Second layout",
   "roundSetupTee": "Tee",
   "roundSetupPlayers": "Players",
