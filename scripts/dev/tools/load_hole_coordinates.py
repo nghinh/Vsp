@@ -306,6 +306,15 @@ COURSE_BY_CID = {
     # the club's own cards it agrees with Mountain View on 14 of 18 holes and
     # with Lakeside on 1. Both cards came from Golfify URLs that name the
     # course explicitly, so the mislabelling is on the user-contributed side.
+    #
+    # That left two readings — mscorecard mislabelled, or this database has the
+    # club's two cards swapped — and the second would mean golfers playing
+    # Lakeside off Mountain View's numbers, with the coordinates now agreeing
+    # with the mistake. Settled from outside: GolfPass and Where2Golf both put
+    # Lakeside at 6,511 yards and Mountain View at 6,978, against 6,516 and
+    # 6,963 on the cards here. The naming in this database is right, so the
+    # mislabelling is mscorecard's, and Lakeside genuinely has no coordinates
+    # rather than the wrong ones.
     "1223263951812": 1355,     # Kings Island / Mountain View Course
     "1249531199282": 4,        # Tam Đảo
     "1428837436119618_1_1": 1392, # Tân Sơn Nhất / Đường A
