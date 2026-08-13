@@ -296,7 +296,17 @@ class _VspButtonState extends State<VspButton>
               minHeight: _touchTargetHeight,
             ),
             padding: widget.compact ? EdgeInsets.zero : _padding,
-            child: Center(child: buttonContent),
+            // heightFactor ties the button's height to its label. A bare Center
+            // takes every point of height it is offered, and a bottom bar, a
+            // Stack or a sheet offers the whole screen — that is how a single
+            // create-account button came to be 248 points tall with the form
+            // hidden behind it. Under a tight height (Expanded, a fixed-height
+            // SizedBox) the incoming constraint still wins, so callers that ask
+            // for a taller button keep getting one. Width is deliberately left
+            // alone: callers rely on the button spreading across the width they
+            // hand it, and shrink-wrapping there would narrow every CTA in the
+            // app to the size of its text.
+            child: Center(heightFactor: 1.0, child: buttonContent),
           ),
         ),
       ),

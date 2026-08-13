@@ -369,26 +369,20 @@ class _RegisterBar extends StatelessWidget {
               VspSpacingSemantic.gutterMobile,
               VspSpacing.sm,
             ),
-            // A column of one, to hand the button an unbounded height the way
-            // a scrolling form does. VspButton centres its label with a bare
-            // Center, which fills whatever height it is offered — and a bottom
-            // bar is offered the whole screen. Without this the button grew to
-            // 932 points tall and swallowed the form behind it.
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                BlocBuilder<AuthBloc, AuthState>(
-                  builder: (context, state) {
-                    final isLoading = state is AuthLoading;
-                    return VspButton(
-                      label: AppLocalizations.of(context).authCreateAccount,
-                      onPressed: isLoading ? null : onRegister,
-                      isLoading: isLoading,
-                      size: VspButtonSize.large,
-                    );
-                  },
-                ),
-              ],
+            // A bottom bar is offered the whole screen height, and this bar
+            // takes only what the button needs because VspButton now sizes
+            // itself to its label rather than to the space on offer. The
+            // column of one that used to force that here is gone.
+            child: BlocBuilder<AuthBloc, AuthState>(
+              builder: (context, state) {
+                final isLoading = state is AuthLoading;
+                return VspButton(
+                  label: AppLocalizations.of(context).authCreateAccount,
+                  onPressed: isLoading ? null : onRegister,
+                  isLoading: isLoading,
+                  size: VspButtonSize.large,
+                );
+              },
             ),
           ),
         ),
