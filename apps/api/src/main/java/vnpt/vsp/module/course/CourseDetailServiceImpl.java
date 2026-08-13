@@ -113,8 +113,23 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         // while Kings Island's three eighteens are each a round on their own.
         // The phone asks this endpoint what a course is; it also has to be
         // able to ask what else is here, and one round trip is enough.
+        // Only the ones a golfer can actually play. A course row is written when
+        // a club's structure is learned — Long Biên's đường A, B and C, Kings
+        // Island's three sân — and it is written with no hole rows on purpose,
+        // because a hole needs a par and a par nobody read off the club's card
+        // is invented. The pars arrive later, through the scorecard queue.
+        //
+        // `holes_count` on the row says 9 or 18 the whole time, since the club
+        // does have that many. So an unfiltered list offers "Kings Course · 18
+        // holes", the golfer picks it, and the scorecard has nothing on it —
+        // the row promising eighteen holes is exactly what makes it look ready.
+        // The course the golfer arrived on is always offered, whatever state it
+        // is in, because hiding the thing they are looking at would be worse.
         List<Course> facilityCourses = courseRepository.findByFacilityId(facility.getId());
+        Set<Long> playable = new HashSet<>(holeRepository.findCourseIdsWithHoles(
+                facilityCourses.stream().map(Course::getId).toList()));
         dto.setFacilityCourses(facilityCourses.stream()
+                .filter(c -> playable.contains(c.getId()) || c.getId().equals(courseId))
                 .sorted(Comparator.comparing(Course::getName, String.CASE_INSENSITIVE_ORDER))
                 .map(c -> new FacilityCourseDto(
                         c.getId(), c.getName(), c.getHolesCount(), c.getParTotal()))

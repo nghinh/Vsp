@@ -12,6 +12,25 @@ public interface HoleRepository extends JpaRepository<Hole, Long> {
 
     List<Hole> findByCourseIdOrderByHoleNumber(Long courseId);
 
+    /**
+     * Which of these courses have any holes at all, in one query.
+     *
+     * <p>A course row can exist with none. Splitting a facility into its sân or
+     * đường writes the units a club actually has and deliberately writes no
+     * hole rows, because a hole needs a par and a par nobody read off the
+     * club's card is invented. The pars arrive later through the scorecard
+     * correction queue.
+     *
+     * <p>Until they do, the row is a name and nothing else, and the round-setup
+     * picker must not offer it: `holes_count` on the course says 18 because the
+     * club has eighteen, so the golfer is shown "Kings Course · 18 holes",
+     * picks it, and arrives at a scorecard with nothing on it.
+     */
+    @org.springframework.data.jpa.repository.Query(
+        "SELECT DISTINCT h.course.id FROM Hole h WHERE h.course.id IN :courseIds")
+    List<Long> findCourseIdsWithHoles(
+        @org.springframework.data.repository.query.Param("courseIds") java.util.Collection<Long> courseIds);
+
     Optional<Hole> findByCourseIdAndHoleNumber(Long courseId, Integer holeNumber);
 
     boolean existsByCourseIdAndHoleNumber(Long courseId, Integer holeNumber);

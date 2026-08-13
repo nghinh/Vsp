@@ -457,6 +457,8 @@ class CourseDetailServiceTest {
         when(courseRepository.findById(21L)).thenReturn(Optional.of(duongA));
         when(courseRepository.findByFacilityId(1L))
                 .thenReturn(List.of(duongB, duongA));
+        when(holeRepository.findCourseIdsWithHoles(anyCollection()))
+                .thenReturn(List.of(21L, 22L));
 
         CourseDetailDto dto = service.getCourseDetail(21L);
 
@@ -465,6 +467,66 @@ class CourseDetailServiceTest {
         assertEquals(21L, dto.getFacilityCourses().get(0).getCourseId());
         assertEquals(9, dto.getFacilityCourses().get(0).getHolesCount());
         assertEquals("Đường B", dto.getFacilityCourses().get(1).getName());
+    }
+
+    @Test
+    void getCourseDetail_aDuongWithNoHolesYet_isNotOfferedAsSomethingToPlay() {
+        // Splitting a facility into its real đường writes the names and no hole
+        // rows: a hole needs a par, and a par nobody read off the club's card
+        // is invented. Until a scorecard arrives, đường B is a name.
+        //
+        // Its `holes_count` says 9 the whole time, because the club does have
+        // nine — which is exactly what makes an unfiltered list dangerous. The
+        // golfer would be shown "Đường B · 9 holes", pick it, and land on an
+        // empty scorecard, with the promised hole count the reason they trusted
+        // it.
+        Course duongB = new Course();
+        duongB.setId(22L);
+        duongB.setFacility(testFacility);
+        duongB.setName("Đường B");
+        duongB.setHolesCount(9);
+        duongB.setParTotal(36);
+
+        Course duongA = new Course();
+        duongA.setId(21L);
+        duongA.setFacility(testFacility);
+        duongA.setName("Đường A");
+        duongA.setHolesCount(9);
+        duongA.setParTotal(36);
+
+        when(courseRepository.findById(21L)).thenReturn(Optional.of(duongA));
+        when(courseRepository.findByFacilityId(1L)).thenReturn(List.of(duongA, duongB));
+        // Only đường A has had a card published against it.
+        when(holeRepository.findCourseIdsWithHoles(anyCollection())).thenReturn(List.of(21L));
+
+        CourseDetailDto dto = service.getCourseDetail(21L);
+
+        assertEquals(1, dto.getFacilityCourses().size());
+        assertEquals("Đường A", dto.getFacilityCourses().get(0).getName());
+    }
+
+    @Test
+    void getCourseDetail_theCourseBeingLookedAt_isListedEvenWithNoHoles() {
+        // The one exception. A golfer who has navigated to đường B should see
+        // it named on the screen they are standing on; dropping it there would
+        // leave the picker empty and the screen looking broken rather than
+        // unready. What it must not do is appear in the list of *other* things
+        // to play — which is the case above.
+        Course duongB = new Course();
+        duongB.setId(22L);
+        duongB.setFacility(testFacility);
+        duongB.setName("Đường B");
+        duongB.setHolesCount(9);
+        duongB.setParTotal(36);
+
+        when(courseRepository.findById(22L)).thenReturn(Optional.of(duongB));
+        when(courseRepository.findByFacilityId(1L)).thenReturn(List.of(duongB));
+        when(holeRepository.findCourseIdsWithHoles(anyCollection())).thenReturn(List.of());
+
+        CourseDetailDto dto = service.getCourseDetail(22L);
+
+        assertEquals(1, dto.getFacilityCourses().size());
+        assertEquals(22L, dto.getFacilityCourses().get(0).getCourseId());
     }
 
     @Test
