@@ -248,6 +248,37 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 
+    // ─── Upload larger than the cap ─────────────────────────────────────────
+
+    /**
+     * Tomcat rejects an oversized part while parsing the request, so this never
+     * reaches the controller that would have said something useful about it.
+     *
+     * <p>Without this the golfer who photographed the club's card got "An
+     * unexpected error occurred. Please contact support with the correlation
+     * ID" — which tells them nothing they can act on, and reads as the app
+     * being broken rather than the photo being big. 413 rather than 400, so a
+     * client can tell "this photo is too big" from "this photo is not a
+     * photo" and offer to shrink it rather than to retake it.
+     */
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponse> handleUploadTooLarge(
+            org.springframework.web.multipart.MaxUploadSizeExceededException ex,
+            HttpServletRequest request) {
+
+        log.warn("Upload rejected as too large on {} — correlationId={}",
+                request.getRequestURI(), correlationId());
+
+        ErrorResponse body = ErrorResponse.builder()
+                .code(VspErrorCode.VALIDATION_001.getCode())
+                .message("The photograph is too large — send one under 8 MB")
+                .correlationId(correlationId())
+                .field("image")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(body);
+    }
+
     // ─── Wrong type for a request parameter ────────────────────────────────
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)

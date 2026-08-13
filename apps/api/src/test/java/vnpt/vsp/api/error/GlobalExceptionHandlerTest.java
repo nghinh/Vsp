@@ -34,6 +34,29 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    @DisplayName("a photograph over the cap says so, instead of reading as the app being broken")
+    void oversizedUploadIsAnsweredWithWhatToDoAboutIt() {
+        // Tomcat rejects the part while parsing, so the controller that would
+        // have said "the photograph is larger than 8 MB" never runs. Unhandled,
+        // this reached the catch-all and the golfer who photographed the club's
+        // card was told to contact support with a correlation ID.
+        var request = new org.springframework.mock.web.MockHttpServletRequest(
+                "POST", "/courses/1/scorecard-corrections/extract");
+
+        ResponseEntity<ErrorResponse> response = handler.handleUploadTooLarge(
+                new org.springframework.web.multipart.MaxUploadSizeExceededException(8L * 1024 * 1024),
+                request);
+
+        assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, response.getStatusCode());
+        ErrorResponse body = response.getBody();
+        assertNotNull(body);
+        // Named so a client can attach it to the field the golfer touched.
+        assertEquals("image", body.getField());
+        assertTrue(body.getMessage().contains("8 MB"),
+                "the golfer needs the number to act on, not just that it was too big");
+    }
+
+    @Test
     @DisplayName("Jackson's own enum coercion failure echoes the value, names the field and lists the wire forms")
     void invalidFormatOnEnumIsReportedInFull() throws Exception {
         JsonParser parser = new ObjectMapper().createParser("{}");

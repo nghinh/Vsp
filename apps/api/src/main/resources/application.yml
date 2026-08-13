@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: vsp-api
+  servlet:
+    multipart:
+      # A golfer photographing the card at the first tee, which is the only way
+      # pars and stroke indexes ever enter this platform. Spring's default is
+      # 1 MB and no phone photo is that small, so every scan failed — and it
+      # failed in Tomcat's multipart parser, before the request reached
+      # ScorecardController, whose own 8 MB check and "the photograph is larger
+      # than 8 MB" message were therefore unreachable code.
+      #
+      # 8 MB matches that check. The request cap is a little larger to leave
+      # room for the multipart envelope and the other form fields beside the
+      # image; capping the request at exactly the file size rejects a valid
+      # 8 MB photo for the few hundred bytes of boundary around it.
+      max-file-size: 8MB
+      max-request-size: 10MB
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:vsp}
     username: ${POSTGRES_USER:vsp}
