@@ -44,6 +44,12 @@ const ALLOWED = new Set([
   'HDC', 'CAP', 'FLY', 'Net', 'Golfer', 'Birdie', 'Eagle', 'Par', 'Green',
   'Tee box', 'Flight', 'Handicap', 'So par', 'Theo flight', 'Bir/Eag',
   'Stableford', 'Stroke Play', 'Match Play', 'Stimpmeter', 'Yard', 'Bunker',
+  // Printed on the club's card in English and said in English by the players
+  // reading it. The mobile app's Vietnamese catalogue made the same call —
+  // app_vi.arb has fieldCourseRating: "Course Rating" and fieldSlope: "Slope"
+  // — and a reviewer comparing the portal against a photograph is matching
+  // the words on that photograph.
+  'Course Rating', 'Slope',
   // Product and provider names
   'GolfOps Portal', 'Course Operations', 'Vietnam Smart Golf',
   'CARTO', 'OpenStreetMap', 'Esri', 'Maxar', 'SPDX', 'SPDX ID',
