@@ -300,6 +300,46 @@ class ScorecardCorrectionServiceImplTest {
     }
 
     @Test
+    void whatTheReviewerApprovedAndWhatWasWrittenDifferOutLoud() {
+        // The portal shows the reviewer every tee row before they approve, so
+        // a row that is then dropped is a discrepancy between what they signed
+        // off and what the club's card now says. Dropping it is right — it is
+        // one column read twice — but doing it in silence leaves "where did
+        // our GOLD row go" answerable only by re-reading the photograph.
+        var log = (ch.qos.logback.classic.Logger)
+                org.slf4j.LoggerFactory.getLogger(ScorecardCorrectionServiceImpl.class);
+        var appender = new ch.qos.logback.core.read.ListAppender<ch.qos.logback.classic.spi.ILoggingEvent>();
+        appender.start();
+        log.addAppender(appender);
+
+        try {
+            CourseCorrection correction = service.submit(DUONG_A, 11L,
+                    card(eighteen(), List.of(
+                            tee("GOLD", "75.5", 138, 9),
+                            tee("gold", "74.1", 136, 9),
+                            tee("  ", "70.0", 120, 9))));
+            when(scorecardRepository.findByFacilityIdAndName(FACILITY_ID, "A + B"))
+                    .thenReturn(Optional.empty());
+
+            service.applyIfScorecard(correction);
+
+            assertThat(appender.list)
+                    .filteredOn(event -> event.getLevel() == ch.qos.logback.classic.Level.WARN)
+                    .singleElement()
+                    .satisfies(event -> {
+                        String rendered = event.getFormattedMessage();
+                        // Named, not counted: an operator reading this needs to
+                        // know it was the second GOLD row, not that "2 rows"
+                        // went missing from a card printing five tees.
+                        assertThat(rendered).contains("gold").contains("no name");
+                        assertThat(rendered).contains("A + B");
+                    });
+        } finally {
+            log.detachAppender(appender);
+        }
+    }
+
+    @Test
     void aReprintReplacesTheTeesToo() {
         // A club that reprints its card with new ratings has new ratings. The
         // old tee rows going with the old card is the point of hanging them

@@ -215,9 +215,22 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         var seenNames = new HashSet<String>();
         int written = 0;
 
+        // What the reviewer approved and what got written can differ, and until
+        // now it differed in silence. The portal shows them every tee row on
+        // the card before they click approve, so a row that then vanishes is a
+        // discrepancy someone will eventually ask about — and "GOLD appeared
+        // twice on the photograph" has to be answerable from the log rather
+        // than by re-reading the original image.
+        var dropped = new ArrayList<String>();
+
         for (ScorecardSubmissionRequest.TeeLine line : proposed.tees()) {
             String name = line.name() == null ? "" : line.name().trim();
-            if (name.isEmpty() || !seenNames.add(name.toUpperCase(Locale.ROOT))) {
+            if (name.isEmpty()) {
+                dropped.add("a tee row with no name");
+                continue;
+            }
+            if (!seenNames.add(name.toUpperCase(Locale.ROOT))) {
+                dropped.add("a second tee row named '" + name + "'");
                 continue;
             }
 
@@ -238,6 +251,8 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                 var seenHoles = new HashSet<Integer>();
                 for (ScorecardSubmissionRequest.Yardage yardage : yardages) {
                     if (!seenHoles.add(yardage.hole())) {
+                        dropped.add("a second yardage for hole " + yardage.hole()
+                                + " on tee '" + name + "'");
                         continue;
                     }
                     // The tee is managed and its yardages cascade, so reaching
@@ -253,6 +268,15 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         }
 
         scorecardTeeRepository.flush();
+
+        if (!dropped.isEmpty()) {
+            log.warn("Card '{}' (scorecard {}, facility {}) published without {} of what was approved: {}."
+                            + " Where a name or hole repeats, the first reading was kept; a row the"
+                            + " photograph gave no name to cannot be written at all.",
+                    card.getName(), card.getId(), card.getFacilityId(), dropped.size(),
+                    String.join(", ", dropped));
+        }
+
         return written;
     }
 
