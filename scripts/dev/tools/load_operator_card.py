@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+"""Load a club card the operator transcribed, once it agrees with itself.
+
+    python3 load_operator_card.py <CARD_NAME> <course_id> [--drop Red,Blue]
+
+The cards live in operator_cards/cards.py, one dict each: the tee names, a row
+per hole as (hole, par, stroke index, *yards per tee), and the OUT, IN and
+TOTAL the source prints for every tee.
+
+WHY THE TOTALS MATTER MORE THAN THE CELLS
+-----------------------------------------
+These arrive as tables rather than photographs, and a table can be a faithful
+transcription or a reconstruction — there is no way to tell by looking. The
+printed totals are what tells them apart: eighteen holes across five tees is
+ninety numbers, and a table that sums to the OUT, IN and TOTAL it states for
+every one of five tees was not invented.
+
+It caught real errors. Royal Ninh Bình's file silently filled a blank Gold cell
+with the Blue value and left the total unchanged, so its Gold column read 3,053
+against a printed 2,741 — the photograph of the same card was self-consistent
+and the file was not. PGA Ocean's five OUT totals were each about 200 yards
+over, which is a table built from a different tee configuration. Neither was
+loaded.
+
+Where only some tees disagree, `--drop` leaves those out and takes the rest: a
+Red column that misses its total by ten yards says one Red cell is wrong and
+gives no way to find it, but it says nothing about Black.
+
+WHAT IS CHECKED
+---------------
+  * par sums to the stated OUT, IN and TOTAL
+  * every tee sums to its stated OUT, IN and TOTAL
+  * stroke indexes are n distinct values inside 1..2n
+  * no hole is longer off a shorter tee than off a longer one
+
+The last is new here, and is what flagged Royal's blank cell: tees on one hole
+run long to short, so a Gold that reads under its own Blue is a misprint.
+
+Red is written as the ladies' tee where the source labels it "(Nữ)". Every
+other tee is UNSPECIFIED — the source does not say, and reading an unlabelled
+rating as the men's would be a guess that looks like data.
+"""
+import sys, pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).parent / "operator_cards"))
