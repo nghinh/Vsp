@@ -25,7 +25,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/domain/value_objects/distance_measurement.dart'
     show GpsAccuracyLevel;
@@ -565,7 +565,7 @@ class _HoleContextRow extends StatelessWidget {
           if (!yardageIsSurveyed) const NotSurveyedChip(iconOnly: true),
           _Chip(
             label: l10n.activeRoundLength,
-            value: l10n.activeRoundLengthMeters(yardage!),
+            value: context.formatDistance(yardage!.toDouble()),
           ),
         ],
       ],

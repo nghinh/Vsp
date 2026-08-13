@@ -21,6 +21,7 @@ import 'dispersion_map_widget.dart';
 import 'dispersion_legend_widget.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -274,9 +275,7 @@ class _HazardDistanceBadge extends StatelessWidget {
     final brightness = colorScheme.brightness;
     final isDark = brightness == Brightness.dark;
 
-    final distanceText = distance >= 1000
-        ? '${(distance / 1000).toStringAsFixed(1)} km'
-        : '${distance.round()} m';
+    final distanceText = context.formatDistance(distance);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

@@ -17,6 +17,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../features/bag/data/bag_dto.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Bottom sheet club selector for shot entry.
 ///
@@ -181,7 +182,7 @@ class _ClubListTile extends StatelessWidget {
 
     return Semantics(
       label:
-          '${club.clubType.displayName}, carry distance ${club.formatCarryDistance(displayUnit: 'yards')}',
+          '${club.clubType.displayName}, carry distance ${club.formatCarryDistance(context.distanceUnit)}',
       button: true,
       child: Padding(
         padding: const EdgeInsets.only(bottom: VspSpacing.xs),
@@ -259,7 +260,7 @@ class _ClubListTile extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        club.formatCarryDistance(displayUnit: 'yards'),
+                        club.formatCarryDistance(context.distanceUnit),
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                           color: isSelected

@@ -8,18 +8,17 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/bag_dto.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// A card displaying a single club with its key data.
 class ClubCard extends StatelessWidget {
   final ClubDTO club;
-  final String displayUnit; // 'yards' or 'meters'
   final VoidCallback? onTap;
   final VoidCallback? onDelete;
 
   const ClubCard({
     super.key,
     required this.club,
-    this.displayUnit = 'meters',
     this.onTap,
     this.onDelete,
   });
@@ -32,7 +31,7 @@ class ClubCard extends StatelessWidget {
     return Semantics(
       label:
           '${club.clubType.displayName}, loft ${club.loft ?? "not set"} degrees, '
-          'carry ${club.formatCarryDistance(displayUnit: displayUnit)}',
+          'carry ${club.formatCarryDistance(context.distanceUnit)}',
       button: true,
       child: Dismissible(
         key: Key('club_${club.id}'),
@@ -102,7 +101,7 @@ class ClubCard extends StatelessWidget {
                           ],
                           _InfoChip(
                             label: club.formatCarryDistance(
-                              displayUnit: displayUnit,
+                              context.distanceUnit,
                             ),
                             tooltip: AppLocalizations.of(context).clubCarryTooltip,
                             isPrimary: true,
@@ -111,7 +110,7 @@ class ClubCard extends StatelessWidget {
                             const SizedBox(width: VspSpacing.xs),
                             _InfoChip(
                               label: club.formatTotalDistance(
-                                displayUnit: displayUnit,
+                                context.distanceUnit,
                               ),
                               tooltip: AppLocalizations.of(context).clubTotalTooltip,
                             ),

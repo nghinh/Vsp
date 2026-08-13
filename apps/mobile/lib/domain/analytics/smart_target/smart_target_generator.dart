@@ -764,8 +764,6 @@ class SmartTargetGenerator {
     required double? handicap,
   }) {
     final clubName = club.stats.clubName;
-    final carryMeters = candidate.carryMeters.round();
-    final remainingMeters = candidate.remainingMeters.round();
     final riskScore = club.riskScore;
 
     final hazardCount = club.hazards.length;
@@ -774,11 +772,11 @@ class SmartTargetGenerator {
     switch (strategyType) {
       case StrategyType.safe:
         if (hasHazards) {
-          return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+          return '$clubName. '
               'Lowest risk option ($riskScore/100) with ${(club.stats.confidence * 100).round()}% confidence. '
               '$hazardCount hazard(s) near landing zone.';
         }
-        return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+        return '$clubName. '
             'Lowest risk option ($riskScore/100) with ${(club.stats.confidence * 100).round()}% confidence. '
             'No hazards in landing zone.';
 
@@ -788,21 +786,21 @@ class SmartTargetGenerator {
             ? '+${sgValue.toStringAsFixed(2)}'
             : sgValue.toStringAsFixed(2);
         if (hasHazards) {
-          return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+          return '$clubName. '
               'Best risk/reward balance ($riskScore/100). '
               'Strokes gained: $sgStr/shot.';
         }
-        return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+        return '$clubName. '
             'Best risk/reward balance ($riskScore/100). '
             'Strokes gained: $sgStr/shot.';
 
       case StrategyType.aggressive:
         if (hasHazards) {
-          return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+          return '$clubName. '
               'Aggressive: maximizes distance, accepts risk ($riskScore/100). '
               '$hazardCount hazard(s) in zone.';
         }
-        return '$clubName carry ${carryMeters}m leaves ${remainingMeters}m to pin. '
+        return '$clubName. '
             'Aggressive: maximizes distance, accepts risk ($riskScore/100). '
             'No major hazards in zone.';
     }

@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import '../../../domain/models/driving_zone_statistics.dart';
 import 'chart_legend.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Driving zone chart showing landing zone distribution per club per hole.
 ///
@@ -161,7 +163,8 @@ class _HoleZoneCard extends StatelessWidget {
             // Average distance
             if (hole.averageDistanceYards != null)
               Text(
-                'Avg distance: ${hole.averageDistanceYards!.toStringAsFixed(1)} yds',
+                'Avg distance: ${MeasureUnits.formatYards(
+                  hole.averageDistanceYards!, context.distanceUnit)}',
                 style: TextStyle(fontSize: 12),
               ),
           ],

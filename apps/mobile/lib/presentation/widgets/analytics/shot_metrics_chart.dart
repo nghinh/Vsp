@@ -9,6 +9,8 @@ import '../../../domain/models/shot_metrics.dart';
 import 'accessible_bar_chart.dart';
 import 'accessible_pie_chart.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Chart widget showing shot metrics (club usage and distance distribution).
 ///
@@ -84,9 +86,9 @@ class _DistanceDistributionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final sections = clubMetrics.distanceDistribution.map((bucket) {
       return PieChartSection(
-        label: bucket.label,
+        label: bucket.labelIn(context.distanceUnit),
         value: bucket.percentage,
-        patternName: bucket.label,
+        patternName: bucket.labelIn(context.distanceUnit),
       );
     }).toList();
 
@@ -124,19 +126,28 @@ class _DistanceStatsRow extends StatelessWidget {
         _StatChip(
           label: AppLocalizations.of(context).analyticsAvg,
           value:
-              '${clubMetrics.averageDistanceYards?.toStringAsFixed(1) ?? '-'} yds',
+              clubMetrics.averageDistanceYards == null
+                  ? '-'
+                  : MeasureUnits.formatYards(
+                      clubMetrics.averageDistanceYards!, context.distanceUnit),
         ),
         const SizedBox(width: 8),
         _StatChip(
           label: AppLocalizations.of(context).analyticsMed,
           value:
-              '${clubMetrics.medianDistanceYards?.toStringAsFixed(1) ?? '-'} yds',
+              clubMetrics.medianDistanceYards == null
+                  ? '-'
+                  : MeasureUnits.formatYards(
+                      clubMetrics.medianDistanceYards!, context.distanceUnit),
         ),
         const SizedBox(width: 8),
         _StatChip(
           label: AppLocalizations.of(context).analyticsStdDev,
           value:
-              '${clubMetrics.standardDeviationYards?.toStringAsFixed(1) ?? '-'} yds',
+              clubMetrics.standardDeviationYards == null
+                  ? '-'
+                  : MeasureUnits.formatYards(
+                      clubMetrics.standardDeviationYards!, context.distanceUnit),
         ),
         if (clubMetrics.consistencyScore != null) ...[
           const SizedBox(width: 8),

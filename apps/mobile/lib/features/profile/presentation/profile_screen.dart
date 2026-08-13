@@ -14,7 +14,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/profile_sync_store.dart';

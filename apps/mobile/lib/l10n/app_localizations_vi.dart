@@ -1887,13 +1887,13 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clubLoft => 'ĐỘ LOFT (ĐỘ)';
 
   @override
-  String get clubCarryDistance => 'KHOẢNG CÁCH CARRY (MÉT)';
+  String get clubCarryDistance => 'KHOẢNG CÁCH CARRY';
 
   @override
   String get clubCarryHelper => 'Quãng đường bóng bay trên không';
 
   @override
-  String get clubTotalDistance => 'TỔNG KHOẢNG CÁCH (MÉT)';
+  String get clubTotalDistance => 'TỔNG KHOẢNG CÁCH';
 
   @override
   String get clubTotalHelper => 'Tổng quãng đường tính cả bóng lăn';
@@ -2181,11 +2181,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get activeRoundConditionsNoLocationMessage =>
       'Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.';
-
-  @override
-  String activeRoundLengthMeters(int meters) {
-    return '$meters m';
-  }
 
   @override
   String activeRoundTabSemantics(String label) {

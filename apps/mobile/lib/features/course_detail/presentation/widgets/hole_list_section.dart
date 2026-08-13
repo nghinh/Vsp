@@ -9,6 +9,7 @@ import '../../../../domain/models/course_detail.dart';
 import '../../../../domain/models/hole_summary.dart';
 import 'package:vsp_mobile/presentation/widgets/distance/not_surveyed_chip.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 class HoleListSection extends StatelessWidget {
   final CourseDetail course;
@@ -193,12 +194,13 @@ class _HoleGroup extends StatelessWidget {
                 // The marker rides with the number, not just with the table:
                 // a golfer reading one row must not have to have read the
                 // notice above to know what they are looking at.
-                if (!hole.isSurveyed && hole.formattedLength != null) ...[
+                if (!hole.isSurveyed &&
+                    hole.formattedLength(context.distanceUnit) != null) ...[
                   const NotSurveyedChip(iconOnly: true),
                   const SizedBox(width: 4),
                 ],
                 Text(
-                  hole.formattedLength ?? '—',
+                  hole.formattedLength(context.distanceUnit) ?? '—',
                   style: const TextStyle(fontFamily: 'Fira Code', fontSize: 14),
                 ),
               ],

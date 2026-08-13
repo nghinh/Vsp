@@ -9,6 +9,10 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Card showing directional deviation statistics.
 /// Per Story 11.1 AC-1: left/right and short/long deviation.
@@ -23,7 +27,7 @@ class DirectionalStatsCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: _semanticLabel(),
+      label: _semanticLabel(context.distanceUnit),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -48,9 +52,10 @@ class DirectionalStatsCard extends StatelessWidget {
               icon: Icons.swap_horiz,
               label: AppLocalizations.of(context).performanceLeftRight,
               description: 'Negative = left, Positive = right',
-              avg: stats.formatLeftRight(),
+              avg: stats.formatLeftRight(context.distanceUnit),
               stdDev: stats.leftRightStdDev != null
-                  ? '±${stats.leftRightStdDev!.abs().round()} m'
+                  ? MeasureUnits.formatTolerance(
+                      stats.leftRightStdDev!.abs(), context.distanceUnit)
                   : '—',
               isLeftNegative: (stats.leftRightAvg ?? 0) < 0,
             ),
@@ -64,9 +69,10 @@ class DirectionalStatsCard extends StatelessWidget {
               icon: Icons.straighten,
               label: AppLocalizations.of(context).performanceShortLong,
               description: 'Negative = short, Positive = long',
-              avg: stats.formatShortLong(),
+              avg: stats.formatShortLong(context.distanceUnit),
               stdDev: stats.shortLongStdDev != null
-                  ? '±${stats.shortLongStdDev!.abs().round()} m'
+                  ? MeasureUnits.formatTolerance(
+                      stats.shortLongStdDev!.abs(), context.distanceUnit)
                   : '—',
               isLeftNegative: (stats.shortLongAvg ?? 0) < 0,
             ),
@@ -76,10 +82,10 @@ class DirectionalStatsCard extends StatelessWidget {
     );
   }
 
-  String _semanticLabel() {
+  String _semanticLabel(DistanceUnit unit) {
     return 'Directional deviation: '
-        'left/right ${stats.formatLeftRight()}, '
-        'short/long ${stats.formatShortLong()}';
+        'left/right ${stats.formatLeftRight(unit)}, '
+        'short/long ${stats.formatShortLong(unit)}';
   }
 }
 

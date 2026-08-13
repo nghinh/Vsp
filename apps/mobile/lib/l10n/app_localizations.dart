@@ -3527,7 +3527,7 @@ abstract class AppLocalizations {
   /// No description provided for @clubCarryDistance.
   ///
   /// In en, this message translates to:
-  /// **'CARRY DISTANCE (METERS)'**
+  /// **'CARRY DISTANCE'**
   String get clubCarryDistance;
 
   /// No description provided for @clubCarryHelper.
@@ -3539,7 +3539,7 @@ abstract class AppLocalizations {
   /// No description provided for @clubTotalDistance.
   ///
   /// In en, this message translates to:
-  /// **'TOTAL DISTANCE (METERS)'**
+  /// **'TOTAL DISTANCE'**
   String get clubTotalDistance;
 
   /// No description provided for @clubTotalHelper.
@@ -4039,12 +4039,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.'**
   String get activeRoundConditionsNoLocationMessage;
-
-  /// No description provided for @activeRoundLengthMeters.
-  ///
-  /// In en, this message translates to:
-  /// **'{meters} m'**
-  String activeRoundLengthMeters(int meters);
 
   /// No description provided for @activeRoundTabSemantics.
   ///

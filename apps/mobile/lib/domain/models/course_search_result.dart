@@ -5,6 +5,9 @@
 
 import 'package:equatable/equatable.dart';
 import 'data_freshness.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Course search result — returned from /courses/search and /courses/nearby.
 ///
@@ -108,14 +111,14 @@ class CourseSearchResult extends Equatable {
   /// Display name — prefers courseName, falls back to facilityName.
   String get displayName => courseName ?? facilityName;
 
-  /// Formatted distance string (meters or km).
-  String get formattedDistance {
-    if (distanceMeters == null) return '';
-    if (distanceMeters! >= 1000) {
-      return '${(distanceMeters! / 1000).toStringAsFixed(1)} km';
-    }
-    return '${distanceMeters!.round()} m';
-  }
+  /// How far the golfer is from the course, in their own unit.
+  ///
+  /// Rolls over to kilometres — or miles, for a yards golfer — past the point
+  /// where a number of metres stops being readable. [MeasureUnits] owns that
+  /// threshold so the map and this list agree on where it sits.
+  String formattedDistance(DistanceUnit unit) => distanceMeters == null
+      ? ''
+      : MeasureUnits.format(distanceMeters!, unit, rollOverAt: 1000);
 
   /// True if this course has official/verified data.
   bool get isVerified => dataFreshness?.isVerified ?? false;

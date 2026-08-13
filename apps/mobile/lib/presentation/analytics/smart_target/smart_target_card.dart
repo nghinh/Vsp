@@ -14,6 +14,10 @@ import 'package:flutter/material.dart';
 import '../../../domain/analytics/smart_target/models/strategy_option.dart';
 import '../../../domain/analytics/smart_target/models/strategy_type.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Smart Target strategy detail card.
 ///
@@ -44,7 +48,7 @@ class SmartTargetCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: _semanticLabel,
+      label: _semanticLabelIn(context.distanceUnit),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -88,13 +92,13 @@ class SmartTargetCard extends StatelessWidget {
     );
   }
 
-  String get _semanticLabel {
+  String _semanticLabelIn(DistanceUnit unit) {
     final club = option.clubName;
-    final carry = option.carryMeters.round();
-    final remaining = option.remainingMeters.round();
+    final carry = MeasureUnits.format(option.carryMeters, unit);
+    final remaining = MeasureUnits.format(option.remainingMeters, unit);
     final risk = option.riskScore;
     final confidence = (option.confidenceScore * 100).round();
-    return '$club, carry $carry meters, $remaining meters to pin, '
+    return '$club, carry $carry, $remaining to pin, '
         'risk $risk out of 100, confidence $confidence percent. '
         '${option.explanation}';
   }
@@ -137,9 +141,9 @@ class SmartTargetCard extends StatelessWidget {
           child: _MetricTile(
             icon: Icons.straighten,
             label: AppLocalizations.of(context).smartTargetCarry,
-            value: '${option.carryMeters.round()}m',
+            value: context.formatDistance(option.carryMeters),
             semanticLabel:
-                'Carry distance: ${option.carryMeters.round()} meters',
+                'Carry distance: ${context.formatDistance(option.carryMeters)}',
           ),
         ),
         const SizedBox(width: 12),
@@ -147,9 +151,9 @@ class SmartTargetCard extends StatelessWidget {
           child: _MetricTile(
             icon: Icons.flag,
             label: AppLocalizations.of(context).smartTargetToPin,
-            value: '${option.remainingMeters.round()}m',
+            value: context.formatDistance(option.remainingMeters),
             semanticLabel:
-                'Distance to pin: ${option.remainingMeters.round()} meters',
+                'Distance to pin: ${context.formatDistance(option.remainingMeters)}',
           ),
         ),
       ],

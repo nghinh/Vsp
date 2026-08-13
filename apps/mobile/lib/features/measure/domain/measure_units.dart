@@ -44,8 +44,13 @@ abstract final class MeasureUnits {
   /// indistinguishable from a broken calculation. It was in fact exactly right,
   /// which is the problem: a correct number nobody can read teaches the golfer
   /// to distrust the ones they can.
-  static String format(double meters, DistanceUnit unit) {
-    if (isOffCourse(meters)) {
+  ///
+  /// [rollOverAt] overrides where the switch to kilometres or miles happens,
+  /// in metres. The default suits a distance on a hole; a travel distance to a
+  /// course wants a lower one, because "1523 m away" is a number a golfer has
+  /// to divide before it means anything, while "1.5 km" is a drive.
+  static String format(double meters, DistanceUnit unit, {double? rollOverAt}) {
+    if (meters.abs() >= (rollOverAt ?? offCourseThresholdMeters)) {
       // Stay in the golfer's own system of units — a yards user reading
       // kilometres has to convert twice to picture the distance.
       final large = unit == DistanceUnit.yards
@@ -56,6 +61,16 @@ abstract final class MeasureUnits {
     }
     return '${displayValue(meters, unit)} ${suffix(unit)}';
   }
+
+  /// Formats a value that is already in yards, for the golfer's own unit.
+  ///
+  /// The shot-analytics models come off the API in yards — `averageDistanceYards`
+  /// and its neighbours — so they cannot go through [format] without first
+  /// coming back to canonical metres. Naming that round trip here keeps the
+  /// factor in one place; the alternative was each chart dividing by 1.09361
+  /// inline, which is how three of them ended up not converting at all.
+  static String formatYards(double yards, DistanceUnit unit) =>
+      format(yards / metersToYards, unit);
 
   /// Formats an uncertainty as a signed tolerance, e.g. `±12 m`.
   ///

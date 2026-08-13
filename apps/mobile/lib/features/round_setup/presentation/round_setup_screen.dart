@@ -39,6 +39,7 @@ import 'widgets/player_card.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/domain/models/course_selection.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Which configured round the setup form should draw, for any bloc state.
 ///
@@ -940,7 +941,7 @@ class _TeeSelector extends StatelessWidget {
           .map((t) => DropdownMenuItem(
                 value: t.id,
                 child: Text(
-                  teeLabel(t),
+                  teeLabel(t, context.distanceUnit),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -67,19 +67,16 @@ class DistanceRingPresets {
   static const ring100 = DistanceRingEntity(
     id: 'ring_100',
     radiusMeters: 100,
-    label: '100m',
   );
 
   static const ring150 = DistanceRingEntity(
     id: 'ring_150',
     radiusMeters: 150,
-    label: '150m',
   );
 
   static const ring200 = DistanceRingEntity(
     id: 'ring_200',
     radiusMeters: 200,
-    label: '200m',
   );
 
   static List<DistanceRingEntity> standardSet({

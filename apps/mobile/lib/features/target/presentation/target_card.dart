@@ -11,7 +11,7 @@
 // Story 6.5 — Slice 1: Tap-to-Place Target
 
 import 'package:flutter/material.dart';
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../domain/target_model.dart';
 import 'target_state.dart';

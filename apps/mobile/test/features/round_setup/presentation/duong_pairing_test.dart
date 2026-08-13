@@ -10,6 +10,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vsp_mobile/features/round_setup/presentation/round_setup_state.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 void main() {
   const duongA = LayoutOption(id: 21, name: 'Đường A', holeCount: 9);
@@ -108,21 +110,22 @@ void main() {
     test('carries the distance and the rating when the club published them', () {
       expect(
         teeLabel(const TeeOption(
-          id: 1, name: 'GOLD', totalDistance: 7313,
+          id: 1, name: 'GOLD', totalDistance: 6688,
           courseRating: 74.1, slopeRating: 141,
-        )),
-        'GOLD · 7.313y · 74.1/141',
+        ), DistanceUnit.meters),
+        'GOLD · 6.688 m · 74.1/141',
       );
     });
 
     test('a tee with no card behind it is still offered, by name', () {
-      expect(teeLabel(const TeeOption(id: 2, name: 'Black Tee')), 'Black Tee');
+      expect(teeLabel(const TeeOption(id: 2, name: 'Black Tee'), DistanceUnit.meters), 'Black Tee');
     });
 
     test('distance without a rating shows the distance', () {
       expect(
-        teeLabel(const TeeOption(id: 3, name: 'Blue', totalDistance: 6614)),
-        'Blue · 6.614y',
+        teeLabel(const TeeOption(id: 3, name: 'Blue', totalDistance: 6048),
+            DistanceUnit.yards),
+        'Blue · 6.614 yd',
       );
     });
   });

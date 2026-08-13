@@ -8,6 +8,10 @@
 
 import 'package:equatable/equatable.dart';
 
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
+
 // ─── Club Type Enum ───────────────────────────────────────────────────────────
 
 /// Golf club type classification.
@@ -158,24 +162,21 @@ class ClubDTO extends Equatable {
   /// a state the app handles.
   bool get hasMinimumData => carryDistance != null;
 
-  /// Format carry distance for display (applies unit conversion if needed).
-  /// [displayUnit] should be 'yards' or 'meters'.
-  String formatCarryDistance({String displayUnit = 'meters'}) {
-    if (carryDistance == null) return '—';
-    if (displayUnit == 'yards') {
-      return '${bagToYards(carryDistance!).round()} yd';
-    }
-    return '${carryDistance!.round()} m';
-  }
+  /// Carry distance in the golfer's own unit, e.g. `220 m` / `241 yd`.
+  ///
+  /// Takes the unit rather than a `'meters'`/`'yards'` string. The string
+  /// version defaulted to metres, so every caller that forgot to pass one
+  /// silently showed metres — which is how the bag came to print metres for a
+  /// golfer who had saved yards, while the shot-entry club picker printed
+  /// yards for the same club by passing the literal `'yards'`.
+  String formatCarryDistance(DistanceUnit unit) => carryDistance == null
+      ? '—'
+      : MeasureUnits.format(carryDistance!, unit);
 
-  /// Format total distance for display.
-  String formatTotalDistance({String displayUnit = 'meters'}) {
-    if (totalDistance == null) return '—';
-    if (displayUnit == 'yards') {
-      return '${bagToYards(totalDistance!).round()} yd';
-    }
-    return '${totalDistance!.round()} m';
-  }
+  /// Total distance in the golfer's own unit.
+  String formatTotalDistance(DistanceUnit unit) => totalDistance == null
+      ? '—'
+      : MeasureUnits.format(totalDistance!, unit);
 
   ClubDTO copyWith({
     int? id,

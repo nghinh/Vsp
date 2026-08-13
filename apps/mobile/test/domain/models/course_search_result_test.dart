@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/domain/models/course_search_result.dart';
 import 'package:vsp_mobile/domain/models/data_freshness.dart';
 import 'package:vsp_mobile/data/api/course_search_api.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 void main() {
   group('CourseSearchResult', () {
@@ -222,9 +224,9 @@ void main() {
           hasPackage: false, updateAvailable: false,
         );
 
-        expect(withMeters.formattedDistance, '523 m');
-        expect(withKm.formattedDistance, '1.5 km');
-        expect(noDistance.formattedDistance, '');
+        expect(withMeters.formattedDistance(DistanceUnit.meters), '523 m');
+        expect(withKm.formattedDistance(DistanceUnit.meters), '1.5 km');
+        expect(noDistance.formattedDistance(DistanceUnit.meters), '');
       });
 
       test('isVerified delegates to dataFreshness.isVerified', () {

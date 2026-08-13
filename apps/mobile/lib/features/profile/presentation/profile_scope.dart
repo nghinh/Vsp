@@ -19,6 +19,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
 import '../../../core/network/api_client.dart';
+import '../../auth/presentation/auth_bloc.dart';
 import '../../../core/storage/profile_sync_store.dart';
 import '../data/profile_repository.dart';
 import '../data/profile_service.dart';
@@ -74,6 +75,43 @@ class ProfileScope extends StatelessWidget {
       create: (_) =>
           ProfileBloc(profileRepository: sharedRepository)
             ..add(const LoadProfile()),
+      child: _ReloadsOnSignIn(child: child),
+    );
+  }
+}
+
+/// Refetches the profile whenever a golfer signs in.
+///
+/// This scope now sits above the Navigator and so lives as long as the app
+/// does. That is what makes the unit preference reach every route, and it is
+/// also why this is needed: the bloc used to be rebuilt on every screen that
+/// wanted it, which refetched by accident. One long-lived bloc keeps the
+/// profile of whoever signed in first, so the second golfer to use the phone
+/// would see the first golfer's units — and their handicap, and their home
+/// club.
+///
+/// Does nothing where no [AuthBloc] is in scope, which is the case in the
+/// widget tests that build a screen on its own.
+class _ReloadsOnSignIn extends StatelessWidget {
+  const _ReloadsOnSignIn({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final AuthBloc auth;
+    try {
+      auth = context.read<AuthBloc>();
+    } on ProviderNotFoundException {
+      return child;
+    }
+
+    return BlocListener<AuthBloc, AuthState>(
+      bloc: auth,
+      listenWhen: (_, current) =>
+          current is AuthSuccess || current is SessionRestored,
+      listener: (listenerContext, _) =>
+          listenerContext.read<ProfileBloc>().add(const LoadProfile()),
       child: child,
     );
   }

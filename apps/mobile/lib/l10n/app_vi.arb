@@ -575,9 +575,9 @@
   "commonSynced": "Đã đồng bộ",
   "clubType": "LOẠI GẬY",
   "clubLoft": "ĐỘ LOFT (ĐỘ)",
-  "clubCarryDistance": "KHOẢNG CÁCH CARRY (MÉT)",
+  "clubCarryDistance": "KHOẢNG CÁCH CARRY",
   "clubCarryHelper": "Quãng đường bóng bay trên không",
-  "clubTotalDistance": "TỔNG KHOẢNG CÁCH (MÉT)",
+  "clubTotalDistance": "TỔNG KHOẢNG CÁCH",
   "clubTotalHelper": "Tổng quãng đường tính cả bóng lăn",
   "clubDispersion": "ĐỘ PHÂN TÁN (ĐỘ)",
   "clubShaft": "CÁN GẬY",
@@ -661,14 +661,6 @@
   "activeRoundConditionsLocating": "Đang xác định vị trí của bạn…",
   "activeRoundConditionsNoLocationHeading": "Cần vị trí để xem điều kiện",
   "activeRoundConditionsNoLocationMessage": "Gió và thời tiết được lấy theo toạ độ nơi bạn đang đứng. Hãy bật định vị cho vòng đấu này để xem.",
-  "activeRoundLengthMeters": "{meters} m",
-  "@activeRoundLengthMeters": {
-    "placeholders": {
-      "meters": {
-        "type": "int"
-      }
-    }
-  },
   "activeRoundTabSemantics": "Thẻ {label}",
   "@activeRoundTabSemantics": {
     "placeholders": {

@@ -6,6 +6,9 @@
 import 'package:equatable/equatable.dart';
 
 import 'hole_data_provenance.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Hole summary for course detail display.
 class HoleSummary extends Equatable {
@@ -51,11 +54,15 @@ class HoleSummary extends Equatable {
   /// verified. False means it must be presented as unverified.
   bool get isSurveyed => provenance.isSurveyed;
 
-  /// Formatted length string.
-  String? get formattedLength {
-    if (playingLengthMeters == null) return null;
-    return '${playingLengthMeters}m';
-  }
+  /// Formatted length in [unit], or null when the hole has no length on file.
+  ///
+  /// Takes the unit rather than baking in `m`. A model has no way to reach the
+  /// golfer's profile, so the old getter answered the only way it could — in
+  /// metres, on a screen where the tee-set chip directly above it was already
+  /// honouring the preference. Two units, one screen, no explanation.
+  String? formattedLength(DistanceUnit unit) => playingLengthMeters == null
+      ? null
+      : MeasureUnits.format(playingLengthMeters!.toDouble(), unit);
 
   @override
   List<Object?> get props => [holeNumber, par, playingLengthMeters, provenance];

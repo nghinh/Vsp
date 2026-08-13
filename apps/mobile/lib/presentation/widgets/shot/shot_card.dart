@@ -12,6 +12,7 @@ import '../../../domain/models/shot.dart';
 import '../../../domain/models/sync_status.dart';
 import '../sync_status_badge.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Card widget for displaying a shot.
 class ShotCard extends StatelessWidget {
@@ -129,10 +130,10 @@ class ShotCard extends StatelessWidget {
               Row(
                 children: [
                   // Distance
-                  if (shot.distanceYards != null) ...[
+                  if (shot.canonicalDistanceMeters != null) ...[
                     _InfoChip(
                       icon: Icons.straighten,
-                      label: '${shot.distanceYards!.round()} yd',
+                      label: context.formatDistance(shot.canonicalDistanceMeters),
                     ),
                     const SizedBox(width: VspSpacing.sm),
                   ],

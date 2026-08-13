@@ -95,8 +95,8 @@ void main() {
 
     await _pump(tester, course);
 
-    expect(find.text('362m'), findsOneWidget);
-    expect(find.text('377m'), findsOneWidget);
+    expect(find.text('362 m'), findsOneWidget);
+    expect(find.text('377 m'), findsOneWidget);
 
     // One marker on the row, one in the notice above the table. The row marker
     // is what matters: a golfer reading a single line must not have to have
@@ -118,7 +118,7 @@ void main() {
 
     await _pump(tester, course);
 
-    expect(find.text('362m'), findsOneWidget);
+    expect(find.text('362 m'), findsOneWidget);
     expect(find.byType(NotSurveyedChip), findsNothing);
   });
 

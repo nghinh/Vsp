@@ -37,28 +37,24 @@ class ClubPerformanceLoading extends PerformanceState {
 class ClubPerformanceLoaded extends PerformanceState {
   final ClubPerformanceStats stats;
   final bool isFromCache;
-  final String? displayUnit;
 
   const ClubPerformanceLoaded({
     required this.stats,
     this.isFromCache = false,
-    this.displayUnit = 'meters',
   });
 
   ClubPerformanceLoaded copyWith({
     ClubPerformanceStats? stats,
     bool? isFromCache,
-    String? displayUnit,
   }) {
     return ClubPerformanceLoaded(
       stats: stats ?? this.stats,
       isFromCache: isFromCache ?? this.isFromCache,
-      displayUnit: displayUnit ?? this.displayUnit,
     );
   }
 
   @override
-  List<Object?> get props => [stats, isFromCache, displayUnit];
+  List<Object?> get props => [stats, isFromCache];
 }
 
 /// Loading bag performance.

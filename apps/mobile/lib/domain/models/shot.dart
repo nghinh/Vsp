@@ -243,6 +243,16 @@ class Shot extends Equatable {
   /// Shot distance in meters.
   final double? distanceMeters;
 
+  /// The shot's length in canonical metres, whichever field carries it.
+  ///
+  /// Both are written at capture time from the same measurement, but the
+  /// display layer reached for [distanceYards] and printed a bare `yd`, so
+  /// every shot in the app was in yards while the same golfer's clubs were in
+  /// metres. Prefers [distanceMeters] and falls back to converting, because
+  /// rows written before both fields existed carry only the yards.
+  double? get canonicalDistanceMeters =>
+      distanceMeters ?? (distanceYards == null ? null : distanceYards! / 1.09361);
+
   /// Conditions snapshot at shot time (JSON string with wind, temp, humidity).
   final String? conditions;
 

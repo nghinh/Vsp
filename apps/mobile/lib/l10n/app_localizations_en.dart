@@ -1888,13 +1888,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clubLoft => 'LOFT (DEGREES)';
 
   @override
-  String get clubCarryDistance => 'CARRY DISTANCE (METERS)';
+  String get clubCarryDistance => 'CARRY DISTANCE';
 
   @override
   String get clubCarryHelper => 'Distance the ball travels in the air';
 
   @override
-  String get clubTotalDistance => 'TOTAL DISTANCE (METERS)';
+  String get clubTotalDistance => 'TOTAL DISTANCE';
 
   @override
   String get clubTotalHelper => 'Full distance including roll';
@@ -2182,11 +2182,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get activeRoundConditionsNoLocationMessage =>
       'Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.';
-
-  @override
-  String activeRoundLengthMeters(int meters) {
-    return '$meters m';
-  }
 
   @override
   String activeRoundTabSemantics(String label) {

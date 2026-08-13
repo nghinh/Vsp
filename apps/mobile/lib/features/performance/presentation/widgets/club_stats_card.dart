@@ -10,18 +10,20 @@ import 'package:flutter/material.dart';
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'sample_size_badge.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Card showing club distance statistics.
 /// Per NFR-4: semantic labels for accessibility.
 class ClubStatsCard extends StatelessWidget {
   final ClubPerformanceStats stats;
-  final String displayUnit;
   final VoidCallback? onViewDispersion;
 
   const ClubStatsCard({
     super.key,
     required this.stats,
-    this.displayUnit = 'meters',
     this.onViewDispersion,
   });
 
@@ -29,9 +31,10 @@ class ClubStatsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final unit = context.distanceUnit;
 
     return Semantics(
-      label: _semanticLabel(),
+      label: _semanticLabel(unit),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -50,14 +53,14 @@ class ClubStatsCard extends StatelessWidget {
             _buildDistanceSection(
               context,
               title: AppLocalizations.of(context).performanceCarryDistance,
-              avg: stats.formatCarryAvg(unit: displayUnit),
-              median: stats.formatCarryMedian(unit: displayUnit),
-              variability: stats.formatVariability(unit: displayUnit),
+              avg: stats.formatCarryAvg(unit),
+              median: stats.formatCarryMedian(unit),
+              variability: stats.formatVariability(unit),
               min: stats.carryMin != null
-                  ? '${displayUnit == 'yards' ? (stats.carryMin! * 1.09361).round() : stats.carryMin!.round()} ${displayUnit == 'yards' ? 'yd' : 'm'}'
+                  ? MeasureUnits.format(stats.carryMin!, unit)
                   : '—',
               max: stats.carryMax != null
-                  ? '${displayUnit == 'yards' ? (stats.carryMax! * 1.09361).round() : stats.carryMax!.round()} ${displayUnit == 'yards' ? 'yd' : 'm'}'
+                  ? MeasureUnits.format(stats.carryMax!, unit)
                   : '—',
             ),
 
@@ -69,16 +72,16 @@ class ClubStatsCard extends StatelessWidget {
             _buildDistanceSection(
               context,
               title: AppLocalizations.of(context).performanceTotalDistance,
-              avg: stats.formatTotalAvg(unit: displayUnit),
-              median: stats.formatTotalMedian(unit: displayUnit),
+              avg: stats.formatTotalAvg(unit),
+              median: stats.formatTotalMedian(unit),
               variability: stats.totalStdDev != null
-                  ? '±${displayUnit == 'yards' ? (stats.totalStdDev! * 1.09361).round() : stats.totalStdDev!.round()} ${displayUnit == 'yards' ? 'yd' : 'm'}'
+                  ? MeasureUnits.formatTolerance(stats.totalStdDev!, unit)
                   : '—',
               min: stats.totalMin != null
-                  ? '${displayUnit == 'yards' ? (stats.totalMin! * 1.09361).round() : stats.totalMin!.round()} ${displayUnit == 'yards' ? 'yd' : 'm'}'
+                  ? MeasureUnits.format(stats.totalMin!, unit)
                   : '—',
               max: stats.totalMax != null
-                  ? '${displayUnit == 'yards' ? (stats.totalMax! * 1.09361).round() : stats.totalMax!.round()} ${displayUnit == 'yards' ? 'yd' : 'm'}'
+                  ? MeasureUnits.format(stats.totalMax!, unit)
                   : '—',
             ),
 
@@ -195,11 +198,11 @@ class ClubStatsCard extends StatelessWidget {
     return 'Computed ${diff.inDays}d ago';
   }
 
-  String _semanticLabel() {
+  String _semanticLabel(DistanceUnit unit) {
     return 'Club performance: ${stats.sampleSize} shots, '
-        'carry average ${stats.formatCarryAvg()}, '
-        'total average ${stats.formatTotalAvg()}, '
-        'variability ${stats.formatVariability()}';
+        'carry average ${stats.formatCarryAvg(unit)}, '
+        'total average ${stats.formatTotalAvg(unit)}, '
+        'variability ${stats.formatVariability(unit)}';
   }
 }
 

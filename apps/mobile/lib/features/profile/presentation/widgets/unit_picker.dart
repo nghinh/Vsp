@@ -10,7 +10,7 @@
 // AC-2: Unit changes update displayed distances without corrupting canonical.
 
 import 'package:flutter/material.dart';
-import 'package:mobile_theme/mobile_theme.dart' hide DistanceUnit;
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/profile_dto.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';

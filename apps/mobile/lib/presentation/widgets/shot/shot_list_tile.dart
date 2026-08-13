@@ -19,6 +19,10 @@ import '../../../domain/models/sync_status.dart';
 import '../detection_confidence_indicator.dart';
 import '../sync_status_badge.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Widget for displaying a shot in a list.
 class ShotListTile extends StatelessWidget {
@@ -56,7 +60,7 @@ class ShotListTile extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: _semanticLabel,
+      label: _semanticLabelIn(context.distanceUnit),
       button: true,
       child: Material(
         color: colorScheme.surface,
@@ -134,9 +138,9 @@ class ShotListTile extends StatelessWidget {
                       // Distance and result row
                       Row(
                         children: [
-                          if (shot.distanceYards != null) ...[
+                          if (shot.canonicalDistanceMeters != null) ...[
                             Text(
-                              '${shot.distanceYards!.round()} yd',
+                              context.formatDistance(shot.canonicalDistanceMeters),
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w500,
                               ),
@@ -218,13 +222,13 @@ class ShotListTile extends StatelessWidget {
     );
   }
 
-  String get _semanticLabel {
+  String _semanticLabelIn(DistanceUnit unit) {
     final parts = <String>[];
     parts.add('Shot ${shot.shotNumber}');
     if (clubName != null) parts.add(clubName!);
     if (shot.lie != null) parts.add('lie: ${shot.lie!.name}');
-    if (shot.distanceYards != null) {
-      parts.add('${shot.distanceYards!.round()} yards');
+    if (shot.canonicalDistanceMeters != null) {
+      parts.add(MeasureUnits.format(shot.canonicalDistanceMeters!, unit));
     }
     if (shot.result != null) parts.add('result: ${shot.result!.name}');
     if (shot.isPenalty) parts.add('penalty');

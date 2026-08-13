@@ -15,6 +15,7 @@ import 'features/auth/presentation/auth_bloc.dart';
 import 'features/auth/presentation/home_screen.dart';
 import 'features/auth/presentation/login_screen.dart';
 import 'features/basemap/data/basemap_config_service.dart';
+import 'features/profile/presentation/profile_scope.dart';
 import 'l10n/app_messages.dart';
 
 class VspApp extends StatefulWidget {
@@ -154,6 +155,21 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
               locale: locale,
               supportedLocales: kSupportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
+              // Above the Navigator, so every pushed route inherits it.
+              //
+              // A route pushed with Navigator.push is a child of the Navigator,
+              // not of the widget that pushed it, so wrapping HomeScreen would
+              // leave the bag, the club form, the shot list and the statistics
+              // screens with no ProfileBloc in scope — which is exactly where
+              // they were. DistanceUnitScope falls back to metres when it finds
+              // none, so a golfer who saved yards saw yards on the map and
+              // metres everywhere else, with nothing on screen to explain why.
+              //
+              // The bloc is created on first read, so the login screen — which
+              // reads no distances and has no session to fetch a profile with —
+              // never builds one.
+              builder: (context, child) =>
+                  ProfileScope(child: child ?? const SizedBox.shrink()),
               home: const AuthStartupGate(),
             );
           },

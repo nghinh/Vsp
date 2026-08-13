@@ -9,19 +9,18 @@ import 'package:flutter/material.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'sample_size_badge.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Mini card showing club performance summary for bag-level list view.
 class ClubPerformanceMiniCard extends StatelessWidget {
   final ClubPerformanceStats stats;
   final String clubName;
-  final String displayUnit;
   final VoidCallback? onTap;
 
   const ClubPerformanceMiniCard({
     super.key,
     required this.stats,
     required this.clubName,
-    this.displayUnit = 'meters',
     this.onTap,
   });
 
@@ -32,7 +31,7 @@ class ClubPerformanceMiniCard extends StatelessWidget {
 
     return Semantics(
       label:
-          '$clubName: ${stats.sampleSize} shots, carry ${stats.formatCarryAvg(unit: displayUnit)}',
+          '$clubName: ${stats.sampleSize} shots, carry ${stats.formatCarryAvg(context.distanceUnit)}',
       button: true,
       child: InkWell(
         onTap: onTap,
@@ -76,7 +75,7 @@ class ClubPerformanceMiniCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          stats.formatCarryAvg(unit: displayUnit),
+                          stats.formatCarryAvg(context.distanceUnit),
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w500,
                             color: colorScheme.primary,
@@ -91,7 +90,7 @@ class ClubPerformanceMiniCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          '±${stats.carryStdDev != null ? (displayUnit == 'yards' ? (stats.carryStdDev! * 1.09361).round() : stats.carryStdDev!.round()) : '—'} ${displayUnit == 'yards' ? 'yd' : 'm'}',
+                          stats.formatVariability(context.distanceUnit),
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),

@@ -14,6 +14,10 @@ import 'package:flutter/material.dart';
 import '../../../domain/analytics/smart_target/models/strategy_option.dart';
 import '../../../domain/analytics/smart_target/models/strategy_type.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Strategy option tile for Smart Target selection.
 ///
@@ -47,7 +51,7 @@ class StrategyOptionTile extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: _semanticLabel,
+      label: _semanticLabelIn(context.distanceUnit),
       button: true,
       selected: isSelected,
       child: GestureDetector(
@@ -93,7 +97,8 @@ class StrategyOptionTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${option.clubName} · ${option.carryMeters.round()}m carry',
+                      '${option.clubName} · '
+                      '${context.formatDistance(option.carryMeters)} carry',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -132,13 +137,13 @@ class StrategyOptionTile extends StatelessWidget {
     );
   }
 
-  String get _semanticLabel {
+  String _semanticLabelIn(DistanceUnit unit) {
     final type = option.strategyType.displayName;
     final club = option.clubName;
-    final carry = option.carryMeters.round();
+    final carry = MeasureUnits.format(option.carryMeters, unit);
     final risk = option.riskScore;
     final selected = isSelected ? 'selected' : 'not selected';
-    return '$type strategy, $club club, $carry meters carry, '
+    return '$type strategy, $club club, $carry carry, '
         'risk $risk out of 100. $selected.';
   }
 

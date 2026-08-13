@@ -4,6 +4,9 @@
 // Per Story 11.1 AC-1: all statistical fields plus sample quality and lock state.
 
 import 'package:equatable/equatable.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Sample size labels per Story 11.1 Slice 1.
 /// Used to display insufficient/limited/moderate/robust badges.
@@ -96,59 +99,43 @@ class ClubPerformanceStats extends Equatable {
     this.basedOnShotAt,
   });
 
-  /// Format carry average for display in the given unit.
-  String formatCarryAvg({String unit = 'meters'}) {
-    if (carryAvg == null) return '—';
-    return _formatDistance(carryAvg!, unit);
-  }
+  /// Carry average in [unit], or an em dash where there is nothing to average.
+  ///
+  /// These took a `'meters'`/`'yards'` string that defaulted to metres, and
+  /// nothing in the app ever passed one: `PerformanceBloc` emits its state
+  /// without a unit, so every statistic on every screen printed metres no
+  /// matter what the golfer had saved. Taking [DistanceUnit] means the compiler
+  /// asks the caller the question the default used to answer wrongly.
+  String formatCarryAvg(DistanceUnit unit) => _format(carryAvg, unit);
 
-  /// Format carry median for display in the given unit.
-  String formatCarryMedian({String unit = 'meters'}) {
-    if (carryMedian == null) return '—';
-    return _formatDistance(carryMedian!, unit);
-  }
+  /// Carry median in [unit].
+  String formatCarryMedian(DistanceUnit unit) => _format(carryMedian, unit);
 
-  /// Format total average for display in the given unit.
-  String formatTotalAvg({String unit = 'meters'}) {
-    if (totalAvg == null) return '—';
-    return _formatDistance(totalAvg!, unit);
-  }
+  /// Total average in [unit].
+  String formatTotalAvg(DistanceUnit unit) => _format(totalAvg, unit);
 
-  /// Format total median for display in the given unit.
-  String formatTotalMedian({String unit = 'meters'}) {
-    if (totalMedian == null) return '—';
-    return _formatDistance(totalMedian!, unit);
-  }
+  /// Total median in [unit].
+  String formatTotalMedian(DistanceUnit unit) => _format(totalMedian, unit);
 
-  /// Format variability (stdDev) for display.
-  String formatVariability({String unit = 'meters'}) {
-    if (carryStdDev == null) return '—';
-    return '±${_formatDistance(carryStdDev!, unit)}';
-  }
+  /// Carry spread in [unit], as a signed tolerance.
+  String formatVariability(DistanceUnit unit) => carryStdDev == null
+      ? '—'
+      : MeasureUnits.formatTolerance(carryStdDev!, unit);
 
-  /// Format left/right deviation.
-  String formatLeftRight() {
-    if (leftRightAvg == null) return '—';
-    final sign = leftRightAvg! >= 0 ? '+' : '';
-    return '$sign${_formatMeters(leftRightAvg!)}';
-  }
+  /// Average miss left (negative) or right (positive), in [unit].
+  String formatLeftRight(DistanceUnit unit) => _signed(leftRightAvg, unit);
 
-  /// Format short/long deviation.
-  String formatShortLong() {
-    if (shortLongAvg == null) return '—';
-    final sign = shortLongAvg! >= 0 ? '+' : '';
-    return '$sign${_formatMeters(shortLongAvg!)}';
-  }
+  /// Average miss short (negative) or long (positive), in [unit].
+  String formatShortLong(DistanceUnit unit) => _signed(shortLongAvg, unit);
 
-  String _formatDistance(double meters, String unit) {
-    if (unit == 'yards') {
-      return '${(meters * 1.09361).round()} yd';
-    }
-    return '${meters.round()} m';
-  }
+  String _format(double? meters, DistanceUnit unit) =>
+      meters == null ? '—' : MeasureUnits.format(meters, unit);
 
-  String _formatMeters(double meters) {
-    return '${meters.round()} m';
+  /// A miss is a direction as much as a distance, so the sign is kept.
+  String _signed(double? meters, DistanceUnit unit) {
+    if (meters == null) return '—';
+    final sign = meters >= 0 ? '+' : '';
+    return '$sign${MeasureUnits.format(meters, unit)}';
   }
 
   /// Parse SampleSizeLabel from API string value.

@@ -7,6 +7,8 @@ import 'package:vsp_mobile/domain/models/tee_set_summary.dart';
 import 'package:vsp_mobile/domain/models/condition_entry.dart';
 import 'package:vsp_mobile/domain/models/data_freshness.dart';
 import 'package:vsp_mobile/domain/models/data_quality.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 void main() {
   group('CourseDetail', () {
@@ -220,14 +222,15 @@ void main() {
       expect(hole.holeNumber, 5);
       expect(hole.par, 3);
       expect(hole.playingLengthMeters, 150);
-      expect(hole.formattedLength, '150m');
+      expect(hole.formattedLength(DistanceUnit.meters), '150 m');
+      expect(hole.formattedLength(DistanceUnit.yards), '164 yd');
     });
 
     test('fromJson handles null playingLengthMeters', () {
       final json = {'holeNumber': 5, 'par': 3};
       final hole = HoleSummary.fromJson(json);
       expect(hole.playingLengthMeters, isNull);
-      expect(hole.formattedLength, isNull);
+      expect(hole.formattedLength(DistanceUnit.meters), isNull);
     });
   });
 

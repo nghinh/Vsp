@@ -1055,9 +1055,9 @@
   "commonSynced": "Synced",
   "clubType": "CLUB TYPE",
   "clubLoft": "LOFT (DEGREES)",
-  "clubCarryDistance": "CARRY DISTANCE (METERS)",
+  "clubCarryDistance": "CARRY DISTANCE",
   "clubCarryHelper": "Distance the ball travels in the air",
-  "clubTotalDistance": "TOTAL DISTANCE (METERS)",
+  "clubTotalDistance": "TOTAL DISTANCE",
   "clubTotalHelper": "Full distance including roll",
   "clubDispersion": "DISPERSION (DEGREES)",
   "clubShaft": "SHAFT",
@@ -1253,14 +1253,6 @@
   "activeRoundConditionsLocating": "Finding your position…",
   "activeRoundConditionsNoLocationHeading": "Conditions need your position",
   "activeRoundConditionsNoLocationMessage": "Wind and weather are read for the coordinates you are standing on. Turn location on for this round to see them.",
-  "activeRoundLengthMeters": "{meters} m",
-  "@activeRoundLengthMeters": {
-    "placeholders": {
-      "meters": {
-        "type": "int"
-      }
-    }
-  },
   "activeRoundTabSemantics": "{label} tab",
   "@activeRoundTabSemantics": {
     "placeholders": {

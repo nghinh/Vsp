@@ -87,9 +87,6 @@ class _ClubPerformanceScreenState extends State<ClubPerformanceScreen> {
             clubName: widget.clubName,
             stats: stats,
             isFromCache: state is ClubPerformanceLoaded && state.isFromCache,
-            displayUnit: state is ClubPerformanceLoaded
-                ? state.displayUnit ?? 'meters'
-                : 'meters',
           );
         }
 
@@ -107,7 +104,6 @@ class _ClubPerformanceBody extends StatelessWidget {
   final String clubName;
   final ClubPerformanceStats stats;
   final bool isFromCache;
-  final String displayUnit;
 
   const _ClubPerformanceBody({
     required this.bagId,
@@ -115,7 +111,6 @@ class _ClubPerformanceBody extends StatelessWidget {
     required this.clubName,
     required this.stats,
     required this.isFromCache,
-    required this.displayUnit,
   });
 
   @override
@@ -188,7 +183,6 @@ class _ClubPerformanceBody extends StatelessWidget {
             // Main stats card
             ClubStatsCard(
               stats: stats,
-              displayUnit: displayUnit,
               onViewDispersion: () => _navigateToDispersion(context),
             ),
 

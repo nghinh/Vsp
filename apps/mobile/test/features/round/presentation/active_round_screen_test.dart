@@ -383,7 +383,7 @@ void main() {
 
           _expectRendered(l10n.activeRoundTargetUnsurveyedHeading);
           _expectRendered(l10n.activeRoundTargetUnsurveyedMessage);
-          _expectRendered(l10n.activeRoundLengthMeters(_yardage));
+          _expectRendered('$_yardage m');
         },
       );
 

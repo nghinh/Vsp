@@ -10,6 +10,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/features/bag/data/bag_dto.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 void main() {
   group('ClubDTO', () {
@@ -132,17 +134,17 @@ void main() {
     });
 
     group('display helpers', () {
-      test('formatCarryDistance returns meters by default', () {
+      test('formatCarryDistance reads in metres for a metric golfer', () {
         final dto = ClubDTO(
           id: 1,
           golfBagId: 5,
           clubType: ClubType.driver,
           carryDistance: 220.0,
         );
-        expect(dto.formatCarryDistance(), '220 m');
+        expect(dto.formatCarryDistance(DistanceUnit.meters), '220 m');
       });
 
-      test('formatCarryDistance converts to yards when isYards=true', () {
+      test('formatCarryDistance converts for a golfer who reads yards', () {
         final dto = ClubDTO(
           id: 1,
           golfBagId: 5,
@@ -150,25 +152,25 @@ void main() {
           carryDistance: 220.0,
         );
         // 220 * 1.09361 = ~240.59 → rounded to 241
-        expect(dto.formatCarryDistance(displayUnit: 'yards'), '241 yd');
+        expect(dto.formatCarryDistance(DistanceUnit.yards), '241 yd');
       });
 
       test('formatCarryDistance returns — for null', () {
         final dto = ClubDTO(id: 1, golfBagId: 5, clubType: ClubType.driver);
-        expect(dto.formatCarryDistance(), '—');
+        expect(dto.formatCarryDistance(DistanceUnit.meters), '—');
       });
 
-      test('formatTotalDistance returns meters by default', () {
+      test('formatTotalDistance reads in metres for a metric golfer', () {
         final dto = ClubDTO(
           id: 1,
           golfBagId: 5,
           clubType: ClubType.iron,
           totalDistance: 160.0,
         );
-        expect(dto.formatTotalDistance(), '160 m');
+        expect(dto.formatTotalDistance(DistanceUnit.meters), '160 m');
       });
 
-      test('formatTotalDistance converts to yards when isYards=true', () {
+      test('formatTotalDistance converts for a golfer who reads yards', () {
         final dto = ClubDTO(
           id: 1,
           golfBagId: 5,
@@ -176,7 +178,7 @@ void main() {
           totalDistance: 160.0,
         );
         // 160 * 1.09361 = ~174.98 → rounded to 175
-        expect(dto.formatTotalDistance(displayUnit: 'yards'), '175 yd');
+        expect(dto.formatTotalDistance(DistanceUnit.yards), '175 yd');
       });
     });
 

@@ -6,6 +6,9 @@
 // Aggregates shot data by club for usage patterns and distance distributions.
 
 import 'package:equatable/equatable.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 /// Distance distribution bucket for a club.
 class DistanceBucket extends Equatable {
@@ -21,7 +24,10 @@ class DistanceBucket extends Equatable {
     required this.percentage,
   });
 
-  String get label => '${minYards.round()}-${maxYards.round()} yds';
+  /// Axis label for the bucket, in the golfer's unit, e.g. `180-200 yd`.
+  String labelIn(DistanceUnit unit) =>
+      '${MeasureUnits.displayValue(minYards / MeasureUnits.metersToYards, unit)}'
+      '-${MeasureUnits.format(maxYards / MeasureUnits.metersToYards, unit)}';
 
   @override
   List<Object?> get props => [minYards, maxYards, shotCount, percentage];

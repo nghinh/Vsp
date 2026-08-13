@@ -181,7 +181,6 @@ class _BagDetailBody extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: VspSpacing.sm),
                 child: ClubCard(
                   club: club,
-                  displayUnit: 'meters', // TODO: pull from profile preference
                   onTap: () => _navigateToClubForm(context, bag.id, club),
                   onDelete: () => context.read<BagBloc>().add(
                     DeleteClub(bagId: bag.id, clubId: club.id),

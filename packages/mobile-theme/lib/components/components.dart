@@ -16,5 +16,4 @@ export 'vsp_card.dart';
 export 'vsp_text_field.dart';
 export 'vsp_icon.dart';
 export 'vsp_loading_indicator.dart';
-export 'vsp_distance_display.dart';
 export 'vsp_payment_status_badge.dart';

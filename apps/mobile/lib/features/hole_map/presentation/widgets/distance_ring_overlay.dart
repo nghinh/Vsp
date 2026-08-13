@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import 'package:vsp_mobile/features/hole_map/domain/distance_ring_entity.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Legend widget showing the active distance rings and their labels.
 class DistanceRingOverlay extends StatelessWidget {
@@ -64,7 +65,9 @@ class DistanceRingOverlay extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      ring.label ?? '${ring.radiusMeters}m',
+                      ring.label ??
+                          context.formatDistance(
+                              ring.radiusMeters.toDouble()),
                       style: const TextStyle(
                         color: Color(0xFFF8FAFC),
                         fontSize: 10,

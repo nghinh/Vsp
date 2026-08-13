@@ -7,6 +7,10 @@
 
 import 'package:equatable/equatable.dart';
 
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
+
 import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
 import '../../../domain/models/player.dart';
@@ -323,14 +327,22 @@ class TeeOption extends Equatable {
       [id, name, gender, courseRating, slopeRating, totalDistance];
 }
 
-/// "GOLD · 7.313y · 74.1/141" — as much of it as the club published.
+/// "GOLD · 6.688 m · 74.1/141" — as much of it as the club published.
 ///
 /// Lives here rather than in the screen so it can be tested without building
 /// a widget: what this string says is the whole of the tee decision.
-String teeLabel(TeeOption t) {
+///
+/// [unit] is the golfer's own, and [TeeOption.totalDistance] is metres — named
+/// yardage the whole way down from the OpenAPI contract, whose own description
+/// says metres. Suffixing it `y` did not overstate the number, it mislabelled
+/// it: a 6.000 m course was printed as "6.000y", which is a different course.
+String teeLabel(TeeOption t, DistanceUnit unit) {
   final parts = <String>[t.name];
   if (t.totalDistance != null) {
-    parts.add('${_grouped(t.totalDistance!)}y');
+    parts.add('${_grouped(MeasureUnits.displayValue(
+      t.totalDistance!.toDouble(),
+      unit,
+    ))} ${MeasureUnits.suffix(unit)}');
   }
   if (t.courseRating != null && t.slopeRating != null) {
     parts.add('${t.courseRating}/${t.slopeRating!.toInt()}');

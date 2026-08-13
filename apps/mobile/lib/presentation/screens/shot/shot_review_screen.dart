@@ -24,6 +24,7 @@ import '../../widgets/sync_status_badge.dart';
 import '../../sheets/shot_edit_sheet.dart';
 import '../../widgets/shot/shot_card.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// Screen for reviewing all shots for a round.
 ///
@@ -139,10 +140,17 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
   Widget _buildSummaryHeader(ThemeData theme, ColorScheme colorScheme) {
     // Calculate stats
     final totalShots = _shots.length;
-    final totalDistance = _shots
-        .where((s) => s.distanceYards != null)
-        .fold<double>(0, (sum, s) => sum + s.distanceYards!);
-    final avgDistance = totalShots > 0 ? totalDistance / totalShots : 0.0;
+    // Averaged over the shots that have a distance, not over every shot: a
+    // putt with no measurement used to be counted in the divisor and not in
+    // the sum, which dragged the average down by however many shots the GPS
+    // never resolved.
+    final measured = _shots
+        .map((s) => s.canonicalDistanceMeters)
+        .whereType<double>()
+        .toList();
+    final avgDistance = measured.isEmpty
+        ? 0.0
+        : measured.reduce((a, b) => a + b) / measured.length;
     final penaltyCount = _shots.where((s) => s.isPenalty).length;
 
     return Container(
@@ -161,7 +169,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
           ),
           _StatItem(
             label: AppLocalizations.of(context).shotAvgDistance,
-            value: '${avgDistance.round()} yd',
+            value: context.formatDistance(avgDistance),
             icon: Icons.straighten,
           ),
           _StatItem(
@@ -559,8 +567,9 @@ class _MergeShotSelector extends StatelessWidget {
                           subtitle: shot.lie != null
                               ? Text(_lieLabel(shot.lie!))
                               : null,
-                          trailing: shot.distanceYards != null
-                              ? Text('${shot.distanceYards!.round()} yd')
+                          trailing: shot.canonicalDistanceMeters != null
+                              ? Text(context.formatDistance(
+                                  shot.canonicalDistanceMeters))
                               : null,
                           onTap: () => Navigator.of(context).pop(shot),
                         );

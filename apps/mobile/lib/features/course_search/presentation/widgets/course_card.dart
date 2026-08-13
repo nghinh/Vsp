@@ -14,6 +14,7 @@ import 'download_state_badge.dart';
 import 'freshness_badge.dart';
 import 'verification_badge.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 /// A card displaying course search result with all AC-3 status indicators.
 class CourseCard extends StatelessWidget {
@@ -172,7 +173,7 @@ class CourseCard extends StatelessWidget {
                       const SizedBox(width: VspSpacing.sm),
                       _InfoChip(
                         icon: Icons.near_me,
-                        label: course.formattedDistance,
+                        label: course.formattedDistance(context.distanceUnit),
                         iconColor: colorScheme.primary,
                       ),
                     ],

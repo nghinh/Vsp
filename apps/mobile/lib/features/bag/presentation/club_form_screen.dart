@@ -15,6 +15,10 @@ import '../data/bag_dto.dart';
 import 'bag_bloc.dart';
 import 'widgets/club_type_picker.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -70,11 +74,56 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
     super.dispose();
   }
 
+  /// The unit the two distance fields currently hold.
+  ///
+  /// Seeded from the club's canonical metres, then re-typed once the profile
+  /// says what the golfer reads in. Tracking it is what makes [_save] able to
+  /// convert back: a field labelled `yd` whose number is stored unconverted is
+  /// a club that is ten percent wrong for as long as it exists, and nothing on
+  /// screen would ever show it.
+  DistanceUnit _fieldUnit = DistanceUnit.meters;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _retypeDistanceFields(context.distanceUnit);
+  }
+
+  /// Rewrites whatever is in the distance fields into [to].
+  ///
+  /// Converts rather than reseeds, so a golfer half-way through typing keeps
+  /// their number when the profile finishes loading and the unit flips under
+  /// them — which it does, because opening a screen is what triggers the fetch.
+  void _retypeDistanceFields(DistanceUnit to) {
+    if (to == _fieldUnit) return;
+    for (final controller in [_carryController, _totalController]) {
+      final typed = double.tryParse(controller.text);
+      if (typed == null) continue;
+      final meters = _fieldUnit == DistanceUnit.yards
+          ? typed / MeasureUnits.metersToYards
+          : typed;
+      controller.text = MeasureUnits.displayValue(meters, to).toString();
+    }
+    _fieldUnit = to;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    return DistanceUnitScope.listen(
+      context: context,
+      onUnit: (_, unit) => setState(() => _retypeDistanceFields(unit)),
+      child: _buildForm(context, theme, colorScheme),
+    );
+  }
+
+  Widget _buildForm(
+    BuildContext context,
+    ThemeData theme,
+    ColorScheme colorScheme,
+  ) {
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditMode ? 'Edit Club' : 'Add Club'),
@@ -134,7 +183,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           _NumberField(
             controller: _carryController,
             hint: 'e.g. 220',
-            suffix: 'm',
+            suffix: MeasureUnits.suffix(_fieldUnit),
             helperText: AppLocalizations.of(context).clubCarryHelper,
             onChanged: (_) => setState(() {}),
           ),
@@ -146,7 +195,7 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           _NumberField(
             controller: _totalController,
             hint: 'e.g. 235',
-            suffix: 'm',
+            suffix: MeasureUnits.suffix(_fieldUnit),
             helperText: AppLocalizations.of(context).clubTotalHelper,
             onChanged: (_) => setState(() {}),
           ),
@@ -221,13 +270,22 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
     return _selectedClubType != null;
   }
 
+  double? _toMeters(double? typed) {
+    if (typed == null) return null;
+    return _fieldUnit == DistanceUnit.yards
+        ? typed / MeasureUnits.metersToYards
+        : typed;
+  }
+
   void _save() {
     final clubType = _selectedClubType;
     if (clubType == null) return;
 
     final loft = double.tryParse(_loftController.text);
-    final carry = double.tryParse(_carryController.text);
-    final total = double.tryParse(_totalController.text);
+    // Back to canonical metres. Everything below the display layer — the API,
+    // the shot analysis, the smart-target carry comparison — reads metres.
+    final carry = _toMeters(double.tryParse(_carryController.text));
+    final total = _toMeters(double.tryParse(_totalController.text));
     // Dispersion stored but not used in MVP (Phase 2)
     final dispersion = double.tryParse(_dispersionController.text);
     final shaft = _shaftController.text.trim();
