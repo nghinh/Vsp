@@ -96,6 +96,10 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
+      // Moving to another tab is done with the search, so the keyboard goes
+      // away with it — otherwise it stays up over the bottom navigation while
+      // the golfer looks at a list they are no longer searching.
+      FocusManager.instance.primaryFocus?.unfocus();
       context.read<CourseSearchBloc>().add(TabSwitched(_tabController.index));
     }
   }
@@ -220,7 +224,19 @@ class _SearchBar extends StatelessWidget {
           child: TextField(
             controller: controller,
             onChanged: onChanged,
-            onSubmitted: onSubmitted,
+            // Put the keyboard away once the search has been asked for.
+            // Leaving it up hid the bottom navigation behind it with nothing
+            // on screen to dismiss it, so a golfer who tapped the field by
+            // accident could not reach any other part of the app.
+            onSubmitted: (query) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              onSubmitted(query);
+            },
+            // Tapping anywhere else — the results, the tabs, the map — closes
+            // it too. This is the escape that was missing entirely: the field
+            // sits in the app bar, so there was no empty space below it that
+            // could have absorbed a tap.
+            onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
             decoration: InputDecoration(
               hintText: AppLocalizations.of(context).courseSearchHint,
               prefixIcon: const Icon(Icons.search),
@@ -480,6 +496,10 @@ class _FavoritesTab extends StatelessWidget {
               );
             },
             child: ListView.separated(
+              // Dragging the list puts the keyboard away. The search field
+              // lives in the app bar, so without this the only thing a golfer
+              // could do with the keyboard up was type.
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
               itemCount: state.favorites.length,
               separatorBuilder: (_, __) =>
@@ -564,6 +584,10 @@ class _RecentTab extends StatelessWidget {
               );
             },
             child: ListView.separated(
+              // Dragging the list puts the keyboard away. The search field
+              // lives in the app bar, so without this the only thing a golfer
+              // could do with the keyboard up was type.
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
               itemCount: state.recentCourses.length,
               separatorBuilder: (_, __) =>
@@ -628,6 +652,7 @@ class _ResultsList extends StatelessWidget {
       },
       child: ListView.separated(
         controller: scrollController,
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
         itemCount: results.length + (isLoadingMore ? 1 : 0),
         separatorBuilder: (_, __) => const SizedBox(height: VspSpacing.sm),

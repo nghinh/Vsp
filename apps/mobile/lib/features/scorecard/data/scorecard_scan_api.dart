@@ -224,12 +224,21 @@ class ScannedCard {
     required this.holes,
     required this.tees,
     required this.checks,
+    this.photoUrl,
   });
 
   final String? name;
   final List<ScannedLine> holes;
   final List<ScannedTee> tees;
   final ScanChecks checks;
+
+  /// Where the server kept the photograph this card was read from.
+  ///
+  /// Carried straight through to the submission as its evidence, so the
+  /// reviewer decides on the card rather than on the typing. Null when the
+  /// deployment keeps no photographs — then the submission goes without one,
+  /// exactly as it did before, rather than pointing at a URL that would 404.
+  final String? photoUrl;
 
   factory ScannedCard.fromJson(Map<String, dynamic> json) => ScannedCard(
     name: json['name'] as String?,
@@ -243,6 +252,7 @@ class ScannedCard {
     checks: ScanChecks.fromJson(
       (json['checks'] as Map<String, dynamic>?) ?? const {},
     ),
+    photoUrl: json['photoUrl'] as String?,
   );
 }
 
