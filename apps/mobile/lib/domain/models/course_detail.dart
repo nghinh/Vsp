@@ -223,6 +223,7 @@ class FacilityCourse extends Equatable {
     required this.name,
     required this.holesCount,
     this.parTotal,
+    this.playable = true,
   });
 
   final int courseId;
@@ -230,13 +231,26 @@ class FacilityCourse extends Equatable {
   final int holesCount;
   final int? parTotal;
 
+  /// Whether this đường has pars behind it yet.
+  ///
+  /// False means the club's structure is known and its card is not, so there
+  /// is nothing to score a round against. [holesCount] says 9 or 18 either
+  /// way — the club really does have that many — so this is the only thing
+  /// that tells the two apart. Round setup hides these; the scorecard screen
+  /// shows them, because that is where a golfer's photograph fills them in.
+  ///
+  /// Defaults to true so an older server that does not send the field is read
+  /// as it always was, rather than as a facility with nothing playable in it.
+  final bool playable;
+
   factory FacilityCourse.fromJson(Map<String, dynamic> json) => FacilityCourse(
     courseId: json['courseId'] as int,
     name: json['name'] as String? ?? '',
     holesCount: json['holesCount'] as int? ?? 18,
     parTotal: json['parTotal'] as int?,
+    playable: json['playable'] as bool? ?? true,
   );
 
   @override
-  List<Object?> get props => [courseId, name, holesCount, parTotal];
+  List<Object?> get props => [courseId, name, holesCount, parTotal, playable];
 }

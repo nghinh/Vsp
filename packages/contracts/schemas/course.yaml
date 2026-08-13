@@ -1718,6 +1718,18 @@ FacilityCourseDto:
       type: integer
       description: Par for this đường (null when unknown)
       example: 36
+    playable:
+      type: boolean
+      description: >-
+        Whether this đường has hole rows behind it, and so pars to score a
+        round against. False means the club's structure is known and its card
+        is not — the name came from the club, the pars are waiting on a golfer
+        to photograph what is printed at the first tee. holesCount says 9 or 18
+        either way, because the club really does have that many, so this is the
+        only field that tells the two apart. Round setup must not offer a false
+        one; scorecard submission must, since that screen is where a card is
+        attached to the đường it was printed for.
+      example: true
 
 # ─── Published scorecards (GET /facilities/{facilityId}/scorecards) ─────────────
 

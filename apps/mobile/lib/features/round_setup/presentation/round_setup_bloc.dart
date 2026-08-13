@@ -260,7 +260,16 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       // The đường this club has. A facility with one course yields one entry
       // and the picker stays hidden, exactly as before; Long Biên yields A, B
       // and C, and the golfer pairs two of them.
-      final layouts = detail.facilityCourses.isEmpty
+      // Only the ones with pars behind them. An đường whose name the club gave
+      // us but whose card nobody has photographed yet reports holeCount 9 or
+      // 18 all the same — the club does have that many — so offering it here
+      // sends the golfer to a scorecard with nothing on it, and the promised
+      // hole count is exactly why they trusted it. The scorecard screen still
+      // lists them; that is where the photograph that fills them in arrives.
+      final playable = detail.facilityCourses
+          .where((c) => c.playable)
+          .toList();
+      final layouts = playable.isEmpty
           ? [
               LayoutOption(
                 id: courseId,
@@ -268,7 +277,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
                 holeCount: detail.holesCount,
               ),
             ]
-          : detail.facilityCourses
+          : playable
                 .map(
                   (c) => LayoutOption(
                     id: c.courseId,

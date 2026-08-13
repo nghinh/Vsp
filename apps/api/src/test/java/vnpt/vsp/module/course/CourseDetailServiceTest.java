@@ -470,16 +470,16 @@ class CourseDetailServiceTest {
     }
 
     @Test
-    void getCourseDetail_aDuongWithNoHolesYet_isNotOfferedAsSomethingToPlay() {
+    void getCourseDetail_aDuongWithNoHolesYet_isListedButNotPlayable() {
         // Splitting a facility into its real đường writes the names and no hole
         // rows: a hole needs a par, and a par nobody read off the club's card
         // is invented. Until a scorecard arrives, đường B is a name.
         //
         // Its `holes_count` says 9 the whole time, because the club does have
-        // nine — which is exactly what makes an unfiltered list dangerous. The
-        // golfer would be shown "Đường B · 9 holes", pick it, and land on an
-        // empty scorecard, with the promised hole count the reason they trusted
-        // it.
+        // nine, so nothing on the row itself separates "ready" from "named
+        // only". It is still listed — the scorecard screen needs it there, to
+        // attach a photographed card to the đường it was printed for — and
+        // `playable` is what stops round setup offering it.
         Course duongB = new Course();
         duongB.setId(22L);
         duongB.setFacility(testFacility);
@@ -501,17 +501,21 @@ class CourseDetailServiceTest {
 
         CourseDetailDto dto = service.getCourseDetail(21L);
 
-        assertEquals(1, dto.getFacilityCourses().size());
+        assertEquals(2, dto.getFacilityCourses().size());
         assertEquals("Đường A", dto.getFacilityCourses().get(0).getName());
+        assertTrue(dto.getFacilityCourses().get(0).isPlayable());
+        assertEquals("Đường B", dto.getFacilityCourses().get(1).getName());
+        assertFalse(dto.getFacilityCourses().get(1).isPlayable(),
+                "đường B has no hole rows, so there is nothing to score a round against");
     }
 
     @Test
-    void getCourseDetail_theCourseBeingLookedAt_isListedEvenWithNoHoles() {
-        // The one exception. A golfer who has navigated to đường B should see
-        // it named on the screen they are standing on; dropping it there would
-        // leave the picker empty and the screen looking broken rather than
-        // unready. What it must not do is appear in the list of *other* things
-        // to play — which is the case above.
+    void getCourseDetail_aFacilityWhoseCardHasNeverArrived_marksEveryDuongUnplayable() {
+        // The bootstrap case, and the one a filter here would deadlock. Every
+        // đường of this club is a name and nothing more; the golfer standing at
+        // the first tee with the club's card is the only way that changes, and
+        // the screen they submit it on reads this same list. Reporting them as
+        // absent would leave the nines that need a card unable to receive one.
         Course duongB = new Course();
         duongB.setId(22L);
         duongB.setFacility(testFacility);
@@ -527,6 +531,7 @@ class CourseDetailServiceTest {
 
         assertEquals(1, dto.getFacilityCourses().size());
         assertEquals(22L, dto.getFacilityCourses().get(0).getCourseId());
+        assertFalse(dto.getFacilityCourses().get(0).isPlayable());
     }
 
     @Test
