@@ -26,8 +26,25 @@ Where only some tees disagree, `--drop` leaves those out and takes the rest: a
 Red column that misses its total by ten yards says one Red cell is wrong and
 gives no way to find it, but it says nothing about Black.
 
-WHAT IS CHECKED
----------------
+THE CHECK THAT MATTERS MOST
+---------------------------
+No two courses may share a par sequence and a stroke index sequence.
+
+Everything else here tests a table against itself, and that is exactly what a
+generated table passes: the generator computes the totals from the numbers it
+invented, so they agree perfectly. Twelve of the tables supplied for this
+project carried the same eighteen pars AND the same eighteen stroke indexes as
+each other — Corn Hill, Yên Bái Star, Silk Path, FLC's Ocean Dunes, ANARA,
+Tuần Châu, Xuân Thành, Yên Dũng, Vinpearl Nha Trang and more. Two real courses
+do not agree on all thirty-six of those numbers. Nine had already been loaded
+before anyone compared them to each other.
+
+So this compares every incoming card against every card already stored. It is
+the only check here that cannot be satisfied by a table that is internally
+tidy, because it asks a question about the world rather than about the table.
+
+WHAT ELSE IS CHECKED
+--------------------
   * par sums to the stated OUT, IN and TOTAL
   * every tee sums to its stated OUT, IN and TOTAL
   * stroke indexes are n distinct values inside 1..2n
