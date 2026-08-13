@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import vnpt.vsp.module.course.entity.Course;
 import vnpt.vsp.module.course.entity.GolfFacility;
+import vnpt.vsp.module.course.entity.Hole;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +41,33 @@ class CourseSearchRepositoryTest {
         return facilityRepository.save(f);
     }
 
+    /**
+     * A course a golfer could actually play — so, one with holes on it.
+     *
+     * <p>These fixtures used to write the course row alone, which is not a
+     * state search should ever return: a course with no hole rows has no pars,
+     * and a golfer who picks it out of a result list arrives at an empty
+     * scorecard. {@link #createNamedCourseWithoutHoles} covers that state
+     * deliberately.
+     */
     private Course createCourse(GolfFacility facility, String name) {
+        Course c = createNamedCourseWithoutHoles(facility, name);
+        Hole hole = new Hole();
+        hole.getMetadata().setPublisher("TEST");
+        hole.setCourse(c);
+        hole.setHoleNumber(1);
+        hole.setPar(4);
+        em.persist(hole);
+        return c;
+    }
+
+    /**
+     * The other state a course row can be in: named by the club, and with no
+     * card behind it yet. Splitting a facility into its real sân or đường
+     * writes exactly this, on purpose — a hole needs a par, and a par nobody
+     * read off the club's card is invented.
+     */
+    private Course createNamedCourseWithoutHoles(GolfFacility facility, String name) {
         Course c = new Course();
         c.getMetadata().setPublisher("TEST");
         c.setFacility(facility);
@@ -48,6 +75,38 @@ class CourseSearchRepositoryTest {
         c.setHolesCount(18);
         c.setParTotal(72);
         return repository.save(c);
+    }
+
+    @Test
+    void searchByText_aDuongWithNoCardYet_isNotSomethingToPlay() {
+        // Long Biên's three nines are named by the club and have no pars until
+        // a golfer photographs the card. Search is where someone goes looking
+        // for a round, and holesCount reads 18 on these rows the same as on any
+        // other — the club really does have that many — so a result list gives
+        // no warning before they pick one and land on an empty scorecard.
+        GolfFacility facility = createFacility("Long Bien Golf Course", "Long Bien, Ha Noi");
+        createCourse(facility, "Long Bien Golf Course — Championship");
+        createNamedCourseWithoutHoles(facility, "Duong A");
+        createNamedCourseWithoutHoles(facility, "Duong B");
+        em.flush();
+
+        Page<Course> results = repository.searchByText("Long Bien", PageRequest.of(0, 10));
+
+        assertEquals(1, results.getTotalElements(),
+                "only the course with holes on it is something a golfer can play");
+        assertEquals("Long Bien Golf Course — Championship",
+                results.getContent().get(0).getName());
+    }
+
+    @Test
+    void searchByText_matchingTheDuongsOwnName_stillFindsNothingToPlay() {
+        // Searching the đường by name is the same trap from the other side: the
+        // name matches, and there is still nothing behind it to score against.
+        GolfFacility facility = createFacility("Long Bien Golf Course", "Long Bien, Ha Noi");
+        createNamedCourseWithoutHoles(facility, "Duong C");
+        em.flush();
+
+        assertEquals(0, repository.searchByText("Duong C", PageRequest.of(0, 10)).getTotalElements());
     }
 
     @Test

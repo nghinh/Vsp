@@ -16,6 +16,20 @@ import java.util.List;
  *
  * <p>Text search via JPQL across facility name, course name, and facility address.
  * Nearby search via native PostGIS query using ST_DWithin with GIST-indexed location column.</p>
+ *
+ * <p>All three queries require the course to have hole rows. A course can exist
+ * without them: splitting a facility into the sân or đường it really has writes
+ * the names a club signs and no holes, because a hole needs a par and a par
+ * nobody read off the club's card is invented. Search is where a golfer goes
+ * looking for something to play, and a result that cannot be played is worse
+ * than no result — its {@code holesCount} says 9 or 18 like every other, since
+ * the club does have that many, so nothing on the card they are shown warns
+ * them. They arrive at an empty scorecard.</p>
+ *
+ * <p>Those courses are still reachable, by design: the course detail of a
+ * sibling carries the whole facility's list, marked with what is playable, and
+ * the scorecard screen reads it so a golfer can attach the card in their hand
+ * to the đường it was printed for. That is the path that fills the holes in.</p>
  */
 @Repository
 public interface CourseSearchRepository extends JpaRepository<Course, Long> {
@@ -30,9 +44,12 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
     @Query("""
         SELECT c FROM Course c
         JOIN FETCH c.facility f
-        WHERE LOWER(f.name) LIKE LOWER(CONCAT('%', :query, '%'))
-           OR LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
-           OR LOWER(f.address) LIKE LOWER(CONCAT('%', :query, '%'))
+        WHERE EXISTS (SELECT 1 FROM Hole h WHERE h.course.id = c.id)
+          AND (
+            LOWER(f.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            OR LOWER(f.address) LIKE LOWER(CONCAT('%', :query, '%'))
+          )
         """)
     Page<Course> searchByText(@Param("query") String query, Pageable pageable);
 
@@ -55,7 +72,8 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                ) AS distance_meters
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
-        WHERE ST_DWithin(
+        WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+        AND ST_DWithin(
             CAST(f.location AS geography),
             CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
             :radiusMeters
@@ -85,7 +103,8 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                ) AS distance_meters
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
-        WHERE ST_DWithin(
+        WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+        AND ST_DWithin(
             CAST(f.location AS geography),
             CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
             :radiusMeters
