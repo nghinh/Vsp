@@ -36,9 +36,12 @@
 --   the numbers are good, the map is still absent — and `source` names the page
 --   so this is never confused with the seed's invention.
 --
---   Stroke index either: `holes` has no column for it. It belongs to the card,
---   not to the đường — hole 3 of A is a different index on the A+B card than on
---   A+C — so it lives in scorecard_holes. Load it with a scorecard, not here.
+--   Stroke index does not go on `holes`: that table has no column for it, and
+--   rightly, because the index belongs to the card and not to the đường — hole
+--   3 of A is a different index on the A+B card than on A+C. So this also
+--   publishes a scorecard for the unit, one segment long, carrying the pars
+--   and the indexes the club prints. Replacing the card of the same name, so a
+--   re-run corrects rather than duplicates.
 --
 -- USAGE
 --
@@ -77,6 +80,9 @@ DECLARE
     v_count       int := 0;
     v_indexes     int[] := ARRAY[]::int[];
     v_deleted     int;
+    v_facility_id bigint;
+    v_course_name text;
+    v_scorecard_id bigint;
 BEGIN
     IF v_course_id IS NULL OR v_rows IS NULL OR v_source IS NULL
        OR v_par_total IS NULL OR v_yards_total IS NULL THEN
@@ -147,10 +153,27 @@ BEGIN
         ) THEN
             RAISE EXCEPTION 'A stroke index is printed twice. Every hole gets its own.';
         END IF;
-        IF (SELECT min(i) FROM unnest(v_indexes) i) <> 1
-           OR (SELECT max(i) FROM unnest(v_indexes) i) <> v_count THEN
-            RAISE EXCEPTION 'Stroke indexes must run 1..%, and they do not.', v_count;
+        -- 1..n for a card scored on its own, but a nine belonging to a 27-hole
+        -- rotation carries its indexes from the eighteen it is played as half
+        -- of: Sông Bé's Lotus runs 1,3,5..17 and Palm the evens. Both are the
+        -- club's own numbering. So: n distinct values inside 1..2n.
+        IF (SELECT min(i) FROM unnest(v_indexes) i) < 1
+           OR (SELECT max(i) FROM unnest(v_indexes) i) > v_count * 2 THEN
+            RAISE EXCEPTION 'Stroke indexes fall outside 1..%, which no card numbers past.',
+                v_count * 2;
         END IF;
+    END IF;
+
+    -- A real card is not eighteen identical holes. Golfify carries placeholder
+    -- rows for courses it has no card for — every hole par 4 and 300 yards,
+    -- which sums to 72 over 5,400 and passes every check above because it is
+    -- perfectly self-consistent. That is the same invention this script exists
+    -- to replace, arriving from a different direction.
+    IF (SELECT count(DISTINCT yards) FROM card) = 1
+       AND (SELECT count(DISTINCT par) FROM card) = 1 THEN
+        RAISE EXCEPTION
+            'Every hole is par % over % yards. That is a placeholder, not a card.',
+            (SELECT min(par) FROM card), (SELECT min(yards) FROM card);
     END IF;
 
     DELETE FROM holes WHERE course_id = v_course_id;
@@ -174,7 +197,33 @@ BEGIN
     SET holes_count = v_count, par_total = v_par_total, updated_at = now()
     WHERE id = v_course_id;
 
-    RAISE NOTICE '% : % hole(s) written, par %, % yards (% invented hole(s) replaced). Source %.',
-        v_publisher, v_count, v_par_total, v_yards_total, v_deleted, v_source;
+    -- The card itself, so the stroke indexes have somewhere to live. Named for
+    -- the unit rather than for a pairing: this is the nine as the club prints
+    -- it, and a golfer pairing two of them gets a card per pairing later, from
+    -- a photograph, with the indexes renumbered 1..18 the way the club does it.
+    SELECT facility_id, name INTO v_facility_id, v_course_name FROM courses WHERE id = v_course_id;
+
+    DELETE FROM scorecards WHERE facility_id = v_facility_id AND name = v_course_name;
+
+    INSERT INTO scorecards (
+        facility_id, name, holes_count, par_total,
+        source, publisher, license, accuracy_class, verification_status,
+        effective_date, created_at, updated_at)
+    VALUES (
+        v_facility_id, v_course_name, v_count, v_par_total,
+        v_source, v_publisher, 'club-published',
+        'D_UNVERIFIED_COMMUNITY', 'UNVERIFIED',
+        CURRENT_DATE, now(), now())
+    RETURNING id INTO v_scorecard_id;
+
+    INSERT INTO scorecard_segments (scorecard_id, position, course_id)
+    VALUES (v_scorecard_id, 1, v_course_id);
+
+    INSERT INTO scorecard_holes (scorecard_id, hole_number, par, stroke_index)
+    SELECT v_scorecard_id, c.hole, c.par, NULLIF(c.stroke_index, 0) FROM card c;
+
+    RAISE NOTICE '% / % : % hole(s), par %, % yards (% invented hole(s) replaced), card #%. Source %.',
+        v_publisher, v_course_name, v_count, v_par_total, v_yards_total,
+        v_deleted, v_scorecard_id, v_source;
 END
 $$;
