@@ -80,103 +80,102 @@ def get(path):
 
 
 # ─── extraction ──────────────────────────────────────────────────────────────
-# Three shapes, tried in order. The first that yields holes wins.
+#
+# The page draws itself with one call per point:
+#
+#     addMarker(hole, poi, location, sideFW, new google.maps.LatLng(lat, lng));
+#
+# and defines the two lookups it indexes into, so nothing here is guesswork:
+#
+#     strPoi      = ["", "Green", "Green Bunker", "Fairway Bunker", "Water",
+#                    "Trees", "100 Marker", "150 Marker", "200 Marker",
+#                    "Dogleg", "Road", "Front Tee", "Back Tee"]
+#     strLocation = ["", "Front", "Middle", "Back"]
+#
+# So addMarker(1, 1, 3, 2, ...) is hole 1's green, back edge, and
+# addMarker(1, 12, 2, 2, ...) is hole 1's back tee. Read by index rather than
+# by the order the calls happen to appear: a club that never placed a back tee
+# leaves a gap, and counting positions would shift every hole after it onto the
+# wrong coordinates — plausible on a map, wrong on the card.
 
-LABELS = {
-    "green (front)": "greenFront",
-    "green (middle)": "greenMiddle",
-    "green (back)": "greenBack",
-    "front tee": "frontTee",
-    "back tee": "backTee",
-}
+POI = ["", "Green", "Green Bunker", "Fairway Bunker", "Water", "Trees",
+       "100 Marker", "150 Marker", "200 Marker", "Dogleg", "Road",
+       "Front Tee", "Back Tee"]
+LOCATION = ["", "Front", "Middle", "Back"]
+SIDE = ["", "Left", "Middle", "Right"]
 
-
-def from_js_arrays(page):
-    """Whole-course data sitting in a script tag.
-
-    "Show all holes" draws every marker at once, so the page almost certainly
-    carries all eighteen holes rather than fetching them one at a time.
-    """
-    out = {}
-    # e.g.  holes[3] = {greenFront: {lat: 21.03, lng: 105.89}, ...}
-    for m in re.finditer(
-            r'(?:hole|holes)\s*\[\s*(\d+)\s*\]\s*=\s*(\{.{0,600}?\})\s*[;\n]',
-            page, re.S):
-        n = int(m.group(1))
-        pairs = re.findall(
-            r'(\w+)\s*:\s*\{[^}]*?lat\w*\s*:\s*"?(-?\d+\.\d+)"?[^}]*?'
-            r'(?:lng|lon)\w*\s*:\s*"?(-?\d+\.\d+)"?', m.group(2))
-        if pairs:
-            out[n] = {k: {"lat": float(a), "lng": float(b)} for k, a, b in pairs}
-    return out
-
-
-def from_marker_calls(page):
-    """Markers pushed one call at a time, carrying a hole number and a label."""
-    out = {}
-    for m in re.finditer(
-            r'(-?\d{1,2}\.\d{4,})\s*,\s*(\d{2,3}\.\d{4,})[^)]{0,120}?'
-            r'(?:hole|title|label)\D{0,12}(\d{1,2})',
-            page, re.I):
-        n = int(m.group(3))
-        out.setdefault(n, {}).setdefault("points", []).append(
-            {"lat": float(m.group(1)), "lng": float(m.group(2))})
-    return out
+ADD_MARKER = re.compile(
+    r"addMarker\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,"
+    r"\s*new\s+google\.maps\.LatLng\(\s*(-?\d+\.?\d*)\s*,"
+    r"\s*(-?\d+\.?\d*)\s*\)")
 
 
-def from_inputs(page):
-    """The labelled Lat/Lon boxes down the left of the editor, for one hole."""
-    text = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", page)))
-    found = {}
-    for label, key in LABELS.items():
-        m = re.search(re.escape(label) + r"\s*Lat:?\s*(-?\d+\.\d+)\s*Lon:?\s*(-?\d+\.\d+)",
-                      text, re.I)
-        if m:
-            found[key] = {"lat": float(m.group(1)), "lng": float(m.group(2))}
-    if found:
-        return found
-    # value="21.035128" pairs in document order, five points to a hole
-    vals = [float(v) for v in re.findall(r'value="(-?\d{1,3}\.\d{4,})"', page)]
-    pairs = list(zip(vals[0::2], vals[1::2]))
-    if pairs:
-        return {list(LABELS.values())[i]: {"lat": a, "lng": b}
-                for i, (a, b) in enumerate(pairs[:len(LABELS)])}
-    return {}
+def name(table, i):
+    return table[i] if 0 < i < len(table) else str(i)
 
 
 def coordinates(cid):
     page = get(f"/coordinates.php?cid={cid}")
-    for extract in (from_js_arrays, from_marker_calls):
-        holes = extract(page)
-        if holes:
-            return {"holes": holes, "how": extract.__name__}, page
-    single = from_inputs(page)
-    if single:
-        return {"holes": {1: single}, "how": "from_inputs (hole 1 only)"}, page
-    return None, page
+    m = re.search(r"var\s+numHoles\s*=\s*(\d+)", page)
+    hole_count = int(m.group(1)) if m else None
+
+    holes = {}
+    for hole, poi, loc, side, lat, lng in ADD_MARKER.findall(page):
+        holes.setdefault(int(hole), []).append({
+            "poi": name(POI, int(poi)),
+            "location": name(LOCATION, int(loc)),
+            "side": name(SIDE, int(side)),
+            "lat": float(lat),
+            "lng": float(lng),
+        })
+    if not holes:
+        return None, page
+    return {"numHoles": hole_count, "holes": holes}, page
 
 
 def inspect(cid):
+    """Print the assignment code, not a guess at it.
+
+    The first pass showed the shape of the page — numHoles, a strPoi table of
+    point types, a marker array of 19 — and that the coordinates appear in a
+    fixed order per hole: green back, green middle, green front, front tee,
+    back tee. But the count came out odd, 95 numbers where nine holes of five
+    points would be 90, so something else in the page is also a decimal. Order
+    alone is not safe to parse on: one stray pair shifts every hole after it.
+
+    So this dumps the lines that actually assign the values.
+    """
     print(f"fetching coordinates.php?cid={cid}\n", file=sys.stderr)
-    result, page = coordinates(cid)
+    _, page = coordinates(cid)
     print(f"page length: {len(page)}")
-    print(f"'Lat' appears {page.count('Lat')}x, 'Lon' {page.count('Lon')}x, "
-          f"'marker' {page.lower().count('marker')}x")
-    nums = re.findall(r"-?\d{1,3}\.\d{4,}", page)
-    print(f"decimal numbers that look like coordinates: {len(nums)}")
-    print(f"first few: {nums[:12]}")
-    if result:
-        print(f"\nEXTRACTED via {result['how']}: {len(result['holes'])} hole(s)")
-        first = sorted(result["holes"])[0]
-        print(json.dumps({str(first): result["holes"][first]}, indent=1))
-    else:
-        print("\nNOTHING EXTRACTED — the samples below are what to write against.")
-    for needle in ("Lat", "greenFront", "marker", "LatLng"):
-        i = page.find(needle)
-        if i > 0:
-            print(f"\n--- around {needle!r} ---")
-            print(page[max(0, i - 300):i + 500])
-            break
+
+    m = re.search(r"var\s+numHoles\s*=\s*(\d+)", page)
+    print(f"numHoles: {m.group(1) if m else '?'}")
+
+    coord = re.compile(r"-?\d{1,3}\.\d{4,}")
+    nums = coord.findall(page)
+    print(f"coordinate-looking numbers: {len(nums)}")
+
+    # Every line carrying two of them: that is where a point is set.
+    lines = [l.strip() for l in page.splitlines() if len(coord.findall(l)) >= 2]
+    print(f"\nlines with two or more coordinates: {len(lines)}")
+    for l in lines[:14]:
+        print("   ", l[:190])
+
+    # And any line that mentions a marker slot, whether or not it has numbers,
+    # so the indexing is visible: marker[hole][poi][location] or otherwise.
+    slots = [l.strip() for l in page.splitlines()
+             if re.search(r"marker\s*\[", l) and "=" in l]
+    print(f"\nlines assigning into marker[...]: {len(slots)}")
+    for l in slots[:14]:
+        print("   ", l[:190])
+
+    # The first coordinate in context, in case it lives in an attribute
+    # rather than on a line of its own.
+    i = coord.search(page)
+    if i:
+        print("\n--- 600 chars around the first coordinate ---")
+        print(page[max(0, i.start() - 300):i.start() + 300])
 
 
 def save(out):
