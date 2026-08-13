@@ -51,6 +51,9 @@
           <div class="tee-head">
             <span class="tee-name">{{ tee.name || '—' }}</span>
             <span v-if="tee.dropped" class="tee-drop-flag">sẽ không lưu</span>
+            <span v-else-if="tee.totals.contradicted" class="tee-mismatch-flag">
+              lệch tổng in trên card
+            </span>
           </div>
 
           <div class="tee-ratings">
@@ -65,10 +68,29 @@
           </div>
 
           <div class="tee-totals">
-            <span><span class="meta-label">OUT</span> {{ tee.totals.front ?? '—' }}</span>
-            <span><span class="meta-label">IN</span> {{ tee.totals.back ?? '—' }}</span>
-            <span><span class="meta-label">Tổng</span> {{ tee.totals.total ?? '—' }}</span>
+            <span :class="{ 'total-off': isOff(tee.totals.front, tee.totals.printedFront) }">
+              <span class="meta-label">OUT</span> {{ tee.totals.front ?? '—' }}
+              <span v-if="isOff(tee.totals.front, tee.totals.printedFront)" class="printed">
+                / trên card {{ tee.totals.printedFront }}
+              </span>
+            </span>
+            <span :class="{ 'total-off': isOff(tee.totals.back, tee.totals.printedBack) }">
+              <span class="meta-label">IN</span> {{ tee.totals.back ?? '—' }}
+              <span v-if="isOff(tee.totals.back, tee.totals.printedBack)" class="printed">
+                / trên card {{ tee.totals.printedBack }}
+              </span>
+            </span>
+            <span :class="{ 'total-off': isOff(tee.totals.total, tee.totals.printedTotal) }">
+              <span class="meta-label">Tổng</span> {{ tee.totals.total ?? '—' }}
+              <span v-if="isOff(tee.totals.total, tee.totals.printedTotal)" class="printed">
+                / trên card {{ tee.totals.printedTotal }}
+              </span>
+            </span>
           </div>
+
+          <p v-if="!tee.totals.checked" class="tee-unchecked">
+            Card không có tổng cho hàng này — không đối chiếu được, phải soi ảnh.
+          </p>
         </div>
       </div>
     </div>
@@ -184,6 +206,12 @@ const tees = computed(() => {
     dropped: dropped.has(index),
   }));
 });
+
+/// True only when both numbers exist and differ — an absent printed sum is a
+/// nine the photograph did not catch, not a row that is wrong.
+function isOff(read: number | null, printed: number | null): boolean {
+  return read !== null && printed !== null && read !== printed;
+}
 </script>
 
 <style scoped>
@@ -264,6 +292,31 @@ const tees = computed(() => {
   font-weight: 700;
   font-size: 0.85rem;
   letter-spacing: 0.03em;
+}
+
+.tee-mismatch-flag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  border-radius: 0.25rem;
+  padding: 0.05rem 0.35rem;
+}
+
+.total-off {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.printed {
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.tee-unchecked {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: #64748b;
 }
 
 .tee-drop-flag {

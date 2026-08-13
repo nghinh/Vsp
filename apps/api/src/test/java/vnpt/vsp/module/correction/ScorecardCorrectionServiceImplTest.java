@@ -121,6 +121,7 @@ class ScorecardCorrectionServiceImplTest {
                 name,
                 rating == null ? null : new java.math.BigDecimal(rating),
                 slope,
+                null, null, null,
                 java.util.stream.IntStream.rangeClosed(1, holes)
                         .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))
                         .toList());

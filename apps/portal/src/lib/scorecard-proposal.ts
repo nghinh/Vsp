@@ -35,6 +35,12 @@ export interface ProposedTee {
   name: string;
   courseRating: number | null;
   slopeRating: number | null;
+  /** What the card prints in this row's OUT, IN and TOTAL columns. Absent on
+   *  cards submitted before these were read, and on rows whose sums did not
+   *  make it into the photograph. */
+  yardsOut?: number | null;
+  yardsIn?: number | null;
+  yardsTotal?: number | null;
   yardages: ProposedYardage[];
 }
 
@@ -125,11 +131,20 @@ export function yardsByHole(tee: ProposedTee): Map<number, number> {
 }
 
 export interface TeeTotals {
-  /** Holes 1–9, printed OUT on the card. */
+  /** Holes 1–9, added up from the yardages submitted. */
   front: number | null;
-  /** Holes 10–18, printed IN. */
+  /** Holes 10–18. */
   back: number | null;
   total: number | null;
+  /** The same three as the club printed them, where the card showed them. */
+  printedFront: number | null;
+  printedBack: number | null;
+  printedTotal: number | null;
+  /** True where a printed sum disagrees with what was read — a digit is wrong
+   *  somewhere in that row, and the reviewer has the photograph. */
+  contradicted: boolean;
+  /** False where the card printed no sums, so nothing here was checked. */
+  checked: boolean;
 }
 
 /**
@@ -158,11 +173,34 @@ export function yardageTotals(tee: ProposedTee): TeeTotals {
     }
   }
 
+  const printedFront = numberOrNull(tee.yardsOut);
+  const printedBack = numberOrNull(tee.yardsIn);
+  const printedTotal = numberOrNull(tee.yardsTotal);
+
+  // Only the halves the photograph shows are judged. A back nine outside the
+  // frame is absent, not wrong, and calling it wrong would flag every
+  // nine-hole card in the country.
+  const frontWrong = hasFront && printedFront !== null && printedFront !== front;
+  const backWrong = hasBack && printedBack !== null && printedBack !== back;
+  const totalWrong =
+    (hasFront || hasBack) &&
+    printedTotal !== null &&
+    printedTotal !== front + back;
+
   return {
     front: hasFront ? front : null,
     back: hasBack ? back : null,
     total: hasFront || hasBack ? front + back : null,
+    printedFront,
+    printedBack,
+    printedTotal,
+    contradicted: frontWrong || backWrong || totalWrong,
+    checked: printedFront !== null || printedBack !== null || printedTotal !== null,
   };
+}
+
+function numberOrNull(value: number | null | undefined): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
 }
 
 /**

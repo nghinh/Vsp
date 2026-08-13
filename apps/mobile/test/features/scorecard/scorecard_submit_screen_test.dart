@@ -411,6 +411,111 @@ void main() {
       ]);
     });
 
+    testWidgets('a tee row that contradicts its own printed sum is named', (
+      tester,
+    ) async {
+      // Ninety three-digit cells on a five-tee card, against par's eighteen
+      // single digits, and until now nothing compared any of them to
+      // anything. The golfer cannot check ninety numbers at the tee; they can
+      // check whether one row adds up to the figure printed beside it, which
+      // is one glance and tells them which row to look at.
+      final scan = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+          tees: const [
+            ScannedTee(
+              name: 'GOLD',
+              yardages: {1: 450, 2: 400},
+              checks: TeeChecks(
+                yardsOutRead: 850,
+                yardsInRead: 0,
+                yardsOutPrinted: 800,
+                yardsAgree: false,
+                yardsChecked: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: _RecordingApi(),
+            scanApi: scan,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(scan.card);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.textContaining(RegExp(r'GOLD.*850.*800')),
+        findsOneWidget,
+        reason: 'the warning names the row, the sum read and the sum printed',
+      );
+    });
+
+    testWidgets('a tee row that adds up raises nothing', (tester) async {
+      final scan = _FakeScanApi(
+        cardWith(
+          holes: [
+            for (var hole = 1; hole <= 9; hole++)
+              ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+          ],
+          tees: const [
+            ScannedTee(
+              name: 'GOLD',
+              yardages: {1: 400, 2: 400},
+              checks: TeeChecks(
+                yardsOutRead: 800,
+                yardsInRead: 0,
+                yardsOutPrinted: 800,
+                yardsAgree: true,
+                yardsChecked: true,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('vi'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: ScorecardSubmitScreen(
+            courseId: 21,
+            facilityCourses: const [duongA],
+            defaultName: '',
+            api: _RecordingApi(),
+            scanApi: scan,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      tester
+          .state<ScorecardSubmitScreenState>(find.byType(ScorecardSubmitScreen))
+          .applyScannedCard(scan.card);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('GOLD'), findsNothing);
+    });
+
     testWidgets('a card photographed without its tee table sends no tees', (
       tester,
     ) async {

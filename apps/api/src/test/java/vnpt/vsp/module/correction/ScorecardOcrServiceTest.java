@@ -116,6 +116,97 @@ class ScorecardOcrServiceTest {
     }
 
     @Test
+    @DisplayName("a tee row is checked against the sums the club printed beside it")
+    void checksYardagesAgainstTheCardsOwnSums() throws Exception {
+        // The par row has always had this test. The yardage rows had none,
+        // while being ten times the cells: five tees over eighteen holes is
+        // ninety three-digit numbers against par's eighteen single digits.
+        // A hole read 450 instead of 400 now contradicts the club's own OUT.
+        String misread = """
+                {"name": "A + B", "parTotal": 8,
+                 "holes": [{"hole": 1, "par": 4}, {"hole": 2, "par": 4}],
+                 "tees": [{"name": "GOLD", "yardsOut": 800, "yardsTotal": 800,
+                           "yardages": [{"hole": 1, "yards": 450},
+                                        {"hole": 2, "yards": 400}]}]}
+                """;
+        serve("/v1/chat/completions", 200, openAiAnswer(misread));
+
+        var tee = objectMapper.readTree(
+                service(baseUrl()).extractCourse(new byte[]{1}, "image/jpeg"))
+                .get("tees").get(0).get("checks");
+
+        assertThat(tee.get("yardsOutRead").asInt()).isEqualTo(850);
+        assertThat(tee.get("yardsOutPrinted").asInt()).isEqualTo(800);
+        assertThat(tee.get("yardsAgree").asBoolean()).isFalse();
+        assertThat(tee.get("yardsChecked").asBoolean()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a tee row that adds up says so, quietly")
+    void agreesWhenTheYardagesAddUp() throws Exception {
+        String clean = """
+                {"name": "A + B", "parTotal": 8,
+                 "holes": [{"hole": 1, "par": 4}, {"hole": 2, "par": 4}],
+                 "tees": [{"name": "GOLD", "yardsOut": 800, "yardsTotal": 800,
+                           "yardages": [{"hole": 1, "yards": 400},
+                                        {"hole": 2, "yards": 400}]}]}
+                """;
+        serve("/v1/chat/completions", 200, openAiAnswer(clean));
+
+        var tee = objectMapper.readTree(
+                service(baseUrl()).extractCourse(new byte[]{1}, "image/jpeg"))
+                .get("tees").get(0).get("checks");
+
+        assertThat(tee.get("yardsAgree").asBoolean()).isTrue();
+        assertThat(tee.get("yardsChecked").asBoolean()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a card that prints no sums is unchecked, not approved")
+    void saysWhenNothingCouldBeChecked() throws Exception {
+        // Silence and a green tick are different answers. Plenty of cards
+        // print no per-tee totals, and calling those verified would put a
+        // reviewer's trust behind a check that never ran.
+        String noSums = """
+                {"name": "A + B", "parTotal": 8,
+                 "holes": [{"hole": 1, "par": 4}, {"hole": 2, "par": 4}],
+                 "tees": [{"name": "GOLD",
+                           "yardages": [{"hole": 1, "yards": 400}]}]}
+                """;
+        serve("/v1/chat/completions", 200, openAiAnswer(noSums));
+
+        var tee = objectMapper.readTree(
+                service(baseUrl()).extractCourse(new byte[]{1}, "image/jpeg"))
+                .get("tees").get(0).get("checks");
+
+        assertThat(tee.get("yardsChecked").isNull()).isTrue();
+        assertThat(tee.get("yardsAgree").asBoolean()).isTrue();
+    }
+
+    @Test
+    @DisplayName("a back nine outside the frame is absent, not a contradiction")
+    void doesNotFlagANineThePhotographNeverCaught() throws Exception {
+        // A front-nine photograph of an eighteen-hole card still shows the
+        // card's TOTAL. Judging the back nine against it would flag every
+        // half-card anyone submits.
+        String frontOnly = """
+                {"name": "A", "parTotal": 8,
+                 "holes": [{"hole": 1, "par": 4}, {"hole": 2, "par": 4}],
+                 "tees": [{"name": "GOLD", "yardsOut": 800,
+                           "yardages": [{"hole": 1, "yards": 400},
+                                        {"hole": 2, "yards": 400}]}]}
+                """;
+        serve("/v1/chat/completions", 200, openAiAnswer(frontOnly));
+
+        var tee = objectMapper.readTree(
+                service(baseUrl()).extractCourse(new byte[]{1}, "image/jpeg"))
+                .get("tees").get(0).get("checks");
+
+        assertThat(tee.get("yardsAgree").asBoolean()).isTrue();
+        assertThat(tee.get("yardsInRead").asInt()).isZero();
+    }
+
+    @Test
     @DisplayName("reads a card out of an Anthropic-shaped answer on the same path")
     void readsAnthropicShapeOnChatPath() throws Exception {
         // The router normalises nothing: it answered a chat-completions

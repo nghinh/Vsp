@@ -1193,6 +1193,7 @@
   "scorecardScanning": "Đang đọc card…",
   "scorecardScanFilled": "Đã điền {count} hố từ ảnh. Đối chiếu lại với card trước khi gửi.",
   "scorecardScanCheckPar": "Tổng par đọc được là {read}, card in {printed} — kiểm tra lại hàng par.",
+  "scorecardScanCheckYardage": "{tee}: khoảng cách đọc được cộng lại là {read}, card in {printed} — kiểm tra lại hàng này.",
   "scorecardScanCheckIndex": "Chỉ số gậy đọc được {count}/{total} ô và chưa đủ 1–18 — kiểm tra lại hàng chỉ số.",
   "scorecardScanSource": "Chụp ảnh",
   "scorecardScanGallery": "Chọn từ thư viện",

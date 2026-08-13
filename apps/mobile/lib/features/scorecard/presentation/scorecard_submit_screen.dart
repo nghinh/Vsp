@@ -171,7 +171,11 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
   /// Silence here is not a clean bill of health — a swapped pair of pars keeps
   /// the total, and a shifted index row is still 1-18 — so these appear as
   /// prompts to check a row, never as a verdict on the card.
-  List<String> _warningsFrom(ScanChecks checks, AppLocalizations l10n) {
+  List<String> _warningsFrom(
+    ScanChecks checks,
+    List<ScannedTee> tees,
+    AppLocalizations l10n,
+  ) {
     final warnings = <String>[];
     if (!checks.parTotalAgrees && checks.parTotalPrinted != null) {
       warnings.add(
@@ -188,6 +192,36 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
           checks.holesRead,
         ),
       );
+    }
+    // One line per tee that disagrees with its own printed sum, naming the tee:
+    // "check that row" is only actionable if the golfer knows which of the five
+    // rows it is.
+    for (final tee in tees) {
+      final teeChecks = tee.checks;
+      if (teeChecks == null || !teeChecks.contradictsTheCard) {
+        continue;
+      }
+      // Whichever sum the card printed — total where it has one, otherwise the
+      // nine that is in frame. Quoting a total the card never showed would
+      // send the golfer looking for a number that is not there.
+      final (read, printed) = switch (teeChecks) {
+        TeeChecks(:final yardsTotalPrinted?) => (
+          teeChecks.yardsTotalRead,
+          yardsTotalPrinted,
+        ),
+        TeeChecks(:final yardsOutPrinted?)
+            when yardsOutPrinted != teeChecks.yardsOutRead =>
+          (teeChecks.yardsOutRead, yardsOutPrinted),
+        TeeChecks(:final yardsInPrinted?) => (
+          teeChecks.yardsInRead,
+          yardsInPrinted,
+        ),
+        _ => (0, 0),
+      };
+      if (printed == 0) {
+        continue;
+      }
+      warnings.add(l10n.scorecardScanCheckYardage(tee.name, read, printed));
     }
     return warnings;
   }
@@ -243,8 +277,12 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
       // decide a handicap — course rating and slope — are printed in their own
       // small table. They travel with the card to the admin, who has the
       // photograph in front of them.
+      //
+      // What the golfer does get is the arithmetic: a tee row that does not
+      // add up to the sum printed beside it is one line to look at, which is
+      // a question anyone can answer at the tee even when ninety cells are not.
       _scannedTees = card.tees;
-      _scanWarnings = _warningsFrom(card.checks, l10n);
+      _scanWarnings = _warningsFrom(card.checks, card.tees, l10n);
     });
   }
 

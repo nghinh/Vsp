@@ -138,6 +138,11 @@ describe('the tee rows approval writes', () => {
       front: null,
       back: null,
       total: null,
+      printedFront: null,
+      printedBack: null,
+      printedTotal: null,
+      contradicted: false,
+      checked: false,
     });
   });
 });
@@ -153,7 +158,59 @@ describe('checking eighteen yardages against a photograph', () => {
       front: 9 * 400,
       back: 9 * 400,
       total: 18 * 400,
+      printedFront: null,
+      printedBack: null,
+      printedTotal: null,
+      contradicted: false,
+      checked: false,
     });
+  });
+
+  it('calls out a row that does not add up to the sum printed beside it', () => {
+    // The point of asking the card for its own sums. Until this, the totals
+    // were added up from the very yardages in question, so a 3 misread as an
+    // 8 produced a total in perfect agreement with itself — and there are
+    // ninety of those cells on a five-tee card against par's eighteen.
+    const misread = tee('GOLD', {
+      yardages: Array.from({ length: 18 }, (_, i) => ({
+        hole: i + 1,
+        yards: i === 0 ? 450 : 400,
+      })),
+      yardsOut: 3600,
+      yardsIn: 3600,
+      yardsTotal: 7200,
+    });
+
+    const totals = yardageTotals(teeRows(parseProposedCard(cardWithTees([misread])))[0]);
+
+    expect(totals.front).toBe(3650);
+    expect(totals.printedFront).toBe(3600);
+    expect(totals.contradicted).toBe(true);
+    expect(totals.checked).toBe(true);
+  });
+
+  it('agrees quietly when the row adds up', () => {
+    const clean = tee('GOLD', { yardsOut: 3600, yardsIn: 3600, yardsTotal: 7200 });
+
+    const totals = yardageTotals(teeRows(parseProposedCard(cardWithTees([clean])))[0]);
+
+    expect(totals.contradicted).toBe(false);
+    expect(totals.checked).toBe(true);
+  });
+
+  it('does not call a nine outside the frame a contradiction', () => {
+    // A card photographed front-nine-only prints a TOTAL for eighteen. The
+    // back nine is absent, not wrong, and flagging it would put a warning on
+    // every such card.
+    const frontOnly = tee('GOLD', {
+      yardages: Array.from({ length: 9 }, (_, i) => ({ hole: i + 1, yards: 400 })),
+      yardsOut: 3600,
+    });
+
+    const totals = yardageTotals(teeRows(parseProposedCard(cardWithTees([frontOnly])))[0]);
+
+    expect(totals.contradicted).toBe(false);
+    expect(totals.checked).toBe(true);
   });
 
   it('reports no back nine for a card that only carries a front one', () => {
@@ -166,7 +223,16 @@ describe('checking eighteen yardages against a photograph', () => {
 
     const rows = teeRows(parseProposedCard(cardWithTees([front])));
 
-    expect(yardageTotals(rows[0])).toEqual({ front: 3600, back: null, total: 3600 });
+    expect(yardageTotals(rows[0])).toEqual({
+      front: 3600,
+      back: null,
+      total: 3600,
+      printedFront: null,
+      printedBack: null,
+      printedTotal: null,
+      contradicted: false,
+      checked: false,
+    });
   });
 
   it('shows the reading that will be stored when a hole is measured twice', () => {

@@ -3340,6 +3340,11 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String scorecardScanCheckYardage(String tee, int read, int printed) {
+    return '$tee: khoảng cách đọc được cộng lại là $read, card in $printed — kiểm tra lại hàng này.';
+  }
+
+  @override
   String scorecardScanCheckIndex(int count, int total) {
     return 'Chỉ số gậy đọc được $count/$total ô và chưa đủ 1–18 — kiểm tra lại hàng chỉ số.';
   }

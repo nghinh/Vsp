@@ -80,12 +80,60 @@ class ScannedLine {
 /// and the numbers that matter for a handicap — course rating and slope — are
 /// two per tee and printed in their own small table. They go to the admin as
 /// part of the same submission, and the admin has the photograph.
+/// A tee row against the OUT, IN and TOTAL the club printed beside it.
+///
+/// The same test the par row has always had, applied to the row that needed it
+/// far more: five tees over eighteen holes is ninety three-digit numbers,
+/// against par's eighteen single digits, and until now nothing compared any of
+/// them to anything. The portal's per-tee total was summed from what the model
+/// had just read, so a 3 misread as an 8 produced a total in perfect agreement
+/// with itself.
+class TeeChecks {
+  const TeeChecks({
+    required this.yardsOutRead,
+    required this.yardsInRead,
+    this.yardsOutPrinted,
+    this.yardsInPrinted,
+    this.yardsTotalPrinted,
+    required this.yardsAgree,
+    required this.yardsChecked,
+  });
+
+  final int yardsOutRead;
+  final int yardsInRead;
+  final int? yardsOutPrinted;
+  final int? yardsInPrinted;
+  final int? yardsTotalPrinted;
+
+  /// False only when a printed sum disagrees with what was read.
+  final bool yardsAgree;
+
+  /// Null when the card printed no sums, so nothing could be checked.
+  final bool? yardsChecked;
+
+  int get yardsTotalRead => yardsOutRead + yardsInRead;
+
+  /// True when a sum was checked and came out wrong — the case worth a warning.
+  bool get contradictsTheCard => yardsChecked == true && !yardsAgree;
+
+  factory TeeChecks.fromJson(Map<String, dynamic> json) => TeeChecks(
+    yardsOutRead: json['yardsOutRead'] as int? ?? 0,
+    yardsInRead: json['yardsInRead'] as int? ?? 0,
+    yardsOutPrinted: json['yardsOutPrinted'] as int?,
+    yardsInPrinted: json['yardsInPrinted'] as int?,
+    yardsTotalPrinted: json['yardsTotalPrinted'] as int?,
+    yardsAgree: json['yardsAgree'] as bool? ?? true,
+    yardsChecked: json['yardsChecked'] as bool?,
+  );
+}
+
 class ScannedTee {
   const ScannedTee({
     required this.name,
     this.courseRating,
     this.slopeRating,
     required this.yardages,
+    this.checks,
   });
 
   final String name;
@@ -95,6 +143,9 @@ class ScannedTee {
   /// hole number → yards.
   final Map<int, int> yardages;
 
+  /// What this row adds up to against what the card says it should.
+  final TeeChecks? checks;
+
   factory ScannedTee.fromJson(Map<String, dynamic> json) => ScannedTee(
     name: (json['name'] as String? ?? '').trim(),
     courseRating: (json['courseRating'] as num?)?.toDouble(),
@@ -103,12 +154,22 @@ class ScannedTee {
       for (final entry in (json['yardages'] as List<dynamic>? ?? []))
         (entry as Map<String, dynamic>)['hole'] as int: entry['yards'] as int,
     },
+    checks: json['checks'] == null
+        ? null
+        : TeeChecks.fromJson(json['checks'] as Map<String, dynamic>),
   );
 
   Map<String, dynamic> toJson() => {
     'name': name,
     if (courseRating != null) 'courseRating': courseRating,
     if (slopeRating != null) 'slopeRating': slopeRating,
+    // The club's own sums travel with the row. They are not stored — the
+    // yardages are the data — but without them the reviewer sees only a total
+    // the portal added up from the numbers being questioned.
+    if (checks?.yardsOutPrinted != null) 'yardsOut': checks!.yardsOutPrinted,
+    if (checks?.yardsInPrinted != null) 'yardsIn': checks!.yardsInPrinted,
+    if (checks?.yardsTotalPrinted != null)
+      'yardsTotal': checks!.yardsTotalPrinted,
     'yardages': [
       for (final entry in yardages.entries)
         {'hole': entry.key, 'yards': entry.value},

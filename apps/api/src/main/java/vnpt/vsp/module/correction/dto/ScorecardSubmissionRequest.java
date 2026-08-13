@@ -61,6 +61,20 @@ public record ScorecardSubmissionRequest(
 
             @Min(55) @Max(155) Integer slopeRating,
 
+            /// What the card prints in this row's OUT, IN and TOTAL columns.
+            ///
+            /// Not stored — the yardages are the data, these are the club's own
+            /// arithmetic for checking them against. They travel with the card
+            /// so the reviewer sees the contradiction rather than a total the
+            /// portal computed from the very numbers in question: a 3 misread
+            /// as an 8 sums to a figure in perfect agreement with itself.
+            ///
+            /// A nine is 60-700 a hole, so 540 to 6,300; a card's total is two
+            /// of those.
+            @Min(540) @Max(6300) Integer yardsOut,
+            @Min(540) @Max(6300) Integer yardsIn,
+            @Min(1080) @Max(12600) Integer yardsTotal,
+
             @Size(max = 18) List<Yardage> yardages) {}
 
     public record Yardage(

@@ -2067,6 +2067,20 @@
       }
     }
   },
+  "scorecardScanCheckYardage": "{tee}: the yardages read add up to {read}; the card prints {printed} — check that row.",
+  "@scorecardScanCheckYardage": {
+    "placeholders": {
+      "tee": {
+        "type": "String"
+      },
+      "read": {
+        "type": "int"
+      },
+      "printed": {
+        "type": "int"
+      }
+    }
+  },
   "scorecardScanCheckIndex": "Read {count} of {total} stroke indexes, and they are not 1-18 — check the index row.",
   "@scorecardScanCheckIndex": {
     "placeholders": {

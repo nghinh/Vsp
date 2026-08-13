@@ -97,6 +97,13 @@ public class ScorecardOcrService {
             own, one column per tee. Course rating is a decimal near par \
             (68.0-77.0); slope rating is a whole number between 55 and 155.
 
+            Give each tee row's own OUT, IN and TOTAL as printed, the same way \
+            you gave them for par. These are the numbers in the OUT, IN and \
+            TOTAL columns of that tee's row — four digits for the total, \
+            usually — and they are what makes a misread yardage findable: a \
+            row of nine yardages that does not add up to the OUT beside it has \
+            a digit wrong somewhere.
+
             Return only a JSON object, with no prose around it and no markdown \
             fences:
 
@@ -104,6 +111,7 @@ public class ScorecardOcrService {
              "parOut": 36, "parIn": 36, "parTotal": 72,
              "holes": [{"hole": 1, "par": 4, "strokeIndex": 7}, ...],
              "tees": [{"name": "GOLD", "courseRating": 75.5, "slopeRating": 138,
+                       "yardsOut": 3520, "yardsIn": 3480, "yardsTotal": 7000,
                        "yardages": [{"hole": 1, "yards": 416}, ...]}, ...]}
             """;
 
@@ -825,6 +833,10 @@ public class ScorecardOcrService {
 
             var yardages = objectMapper.createArrayNode();
             var seenHoles = new java.util.HashSet<Integer>();
+            int readOut = 0;
+            int readIn = 0;
+            boolean anyFront = false;
+            boolean anyBack = false;
             var printed = tee.get("yardages");
             if (printed != null && printed.isArray()) {
                 for (var yardage : printed) {
@@ -837,12 +849,76 @@ public class ScorecardOcrService {
                     line.put("hole", hole);
                     line.put("yards", yards);
                     yardages.add(line);
+                    if (hole <= 9) {
+                        readOut += yards;
+                        anyFront = true;
+                    } else {
+                        readIn += yards;
+                        anyBack = true;
+                    }
                 }
             }
             entry.set("yardages", yardages);
+            entry.set("checks", yardageChecks(tee, readOut, readIn, anyFront, anyBack));
             result.add(entry);
         }
         return result;
+    }
+
+    /**
+     * A tee row against the sums the club printed beside it.
+     *
+     * <p>The par row has had this from the start — read the eighteen cells,
+     * add them, compare with the printed total — and it is the check that
+     * catches a misread, because a card contradicting itself is visible in a
+     * way a plausible wrong number is not.
+     *
+     * <p>The yardage rows had nothing, while being ten times the cells: five
+     * tees over eighteen holes is ninety numbers of three digits each, against
+     * par's eighteen of one digit. The portal showed a total, but it summed
+     * what the model had just read, so a 3 read as an 8 produced a total that
+     * agreed with itself perfectly.
+     *
+     * <p>Reported per nine as well as per card. A card photographed in two
+     * halves, or one whose back nine sits outside the frame, gives a front nine
+     * that adds up and a back nine that is simply absent — worth telling apart
+     * from a row with a digit wrong in it.
+     */
+    private com.fasterxml.jackson.databind.JsonNode yardageChecks(
+            com.fasterxml.jackson.databind.JsonNode tee,
+            int readOut, int readIn, boolean anyFront, boolean anyBack) {
+        var checks = objectMapper.createObjectNode();
+
+        // A nine is 60-700 a hole, so 540 to 6,300; a card's total is two of
+        // those. Anything outside is a column read from the wrong row.
+        Integer printedOut = intInRange(tee.get("yardsOut"), 540, 6300);
+        Integer printedIn = intInRange(tee.get("yardsIn"), 540, 6300);
+        Integer printedTotal = intInRange(tee.get("yardsTotal"), 1080, 12600);
+
+        checks.put("yardsOutRead", readOut);
+        checks.put("yardsInRead", readIn);
+        checks.set("yardsOutPrinted", nullable(printedOut));
+        checks.set("yardsInPrinted", nullable(printedIn));
+        checks.set("yardsTotalPrinted", nullable(printedTotal));
+
+        // Only the halves the photograph actually shows are judged. Absent is
+        // not the same as wrong, and calling it wrong would put a warning on
+        // every nine-hole card in the country.
+        boolean outAgrees = !anyFront || printedOut == null || printedOut == readOut;
+        boolean inAgrees = !anyBack || printedIn == null || printedIn == readIn;
+        boolean totalAgrees = printedTotal == null
+                || (!anyFront && !anyBack)
+                || printedTotal == readOut + readIn;
+
+        checks.put("yardsAgree", outAgrees && inAgrees && totalAgrees);
+        // Null where the card printed no sums at all: nothing was checked, and
+        // saying so beats a green tick nobody earned.
+        checks.set("yardsChecked", printedOut == null && printedIn == null
+                && printedTotal == null
+                ? objectMapper.nullNode()
+                : objectMapper.getNodeFactory().booleanNode(true));
+
+        return checks;
     }
 
     private com.fasterxml.jackson.databind.JsonNode decimalInRange(

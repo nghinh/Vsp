@@ -3340,6 +3340,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String scorecardScanCheckYardage(String tee, int read, int printed) {
+    return '$tee: the yardages read add up to $read; the card prints $printed — check that row.';
+  }
+
+  @override
   String scorecardScanCheckIndex(int count, int total) {
     return 'Read $count of $total stroke indexes, and they are not 1-18 — check the index row.';
   }

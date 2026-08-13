@@ -5990,6 +5990,12 @@ abstract class AppLocalizations {
   /// **'The pars read add up to {read}; the card prints {printed} — check the par row.'**
   String scorecardScanCheckPar(int read, int printed);
 
+  /// No description provided for @scorecardScanCheckYardage.
+  ///
+  /// In en, this message translates to:
+  /// **'{tee}: the yardages read add up to {read}; the card prints {printed} — check that row.'**
+  String scorecardScanCheckYardage(String tee, int read, int printed);
+
   /// No description provided for @scorecardScanCheckIndex.
   ///
   /// In en, this message translates to:
