@@ -99,10 +99,14 @@ public class ScorecardController {
         Long reporterId = (Long) authentication.getPrincipal();
         String mediaType = image.getContentType();
 
-        validateImage(image);
+        // Logged before it is judged. This used to run after validateImage, so
+        // a refused photograph left no trace at all: the phone was sending
+        // application/octet-stream for months and the only evidence anywhere
+        // was a golfer looking at "Request validation failed" on a screen.
+        log.info("POST /courses/{}/scorecard-corrections/extract - reporterId={}, {} bytes, type={}",
+                courseId, reporterId, image.getSize(), mediaType);
 
-        log.info("POST /courses/{}/scorecard-corrections/extract - reporterId={}, {} bytes",
-                courseId, reporterId, image.getSize());
+        validateImage(image);
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)
@@ -126,6 +130,10 @@ public class ScorecardController {
             @RequestPart("image") MultipartFile image) throws IOException {
 
         Long accountId = (Long) authentication.getPrincipal();
+
+        log.info("POST /rounds/{}/scores/extract - accountId={}, {} bytes, type={}",
+                roundId, accountId, image.getSize(), image.getContentType());
+
         String mediaType = validateImage(image);
 
         // The round is checked before the photograph is sent anywhere. Reading
@@ -133,9 +141,6 @@ public class ScorecardController {
         // an id nobody owns has to stop here rather than after the bill.
         roundRepository.findByIdAndGolferAccountIdAndDeletedAtIsNull(roundId, accountId)
                 .orElseThrow(() -> new VspApiException(VspErrorCode.ROUND_001));
-
-        log.info("POST /rounds/{}/scores/extract - accountId={}, {} bytes",
-                roundId, accountId, image.getSize());
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON)

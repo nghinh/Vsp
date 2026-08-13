@@ -14,6 +14,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart' show MediaType;
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/vsp_endpoints.dart';
@@ -292,7 +293,18 @@ class ScorecardScanApi {
     if (token != null) {
       request.headers['Authorization'] = 'Bearer $token';
     }
-    request.files.add(await http.MultipartFile.fromPath('image', image.path));
+    // Say what the part is. MultipartFile.fromPath does not infer a type and
+    // falls back to application/octet-stream, which the server refuses — it
+    // only accepts JPEG, PNG and WebP, because it pays a model per image and
+    // an accidental video frame is not worth sending. So every scan failed
+    // validation before the photograph was ever looked at, whatever its size.
+    request.files.add(
+      await http.MultipartFile.fromPath(
+        'image',
+        image.path,
+        contentType: _mediaTypeOf(image.path),
+      ),
+    );
 
     // Reading a card takes the model ten to twenty seconds; the default
     // client timeout would give up while the answer is still being written.
@@ -307,14 +319,34 @@ class ScorecardScanApi {
     return jsonDecode(body) as Map<String, dynamic>;
   }
 
+  /// What the file is, from what it is called.
+  ///
+  /// The picker re-encodes to JPEG whenever an imageQuality is set, which is
+  /// every call site here, so that is the answer nearly always and the right
+  /// default when a name says nothing. The others are listed because a photo
+  /// chosen from the library arrives as whatever it was saved as.
+  static MediaType _mediaTypeOf(String path) {
+    final name = path.toLowerCase();
+    if (name.endsWith('.png')) return MediaType('image', 'png');
+    if (name.endsWith('.webp')) return MediaType('image', 'webp');
+    return MediaType('image', 'jpeg');
+  }
+
   /// The server's own words where it has them — "no scorecard could be read in
   /// this photograph" tells the golfer to retake it; a status code does not.
   String _messageFrom(String body, int statusCode) {
     try {
       final json = jsonDecode(body) as Map<String, dynamic>;
-      final fields = json['fieldErrors'];
-      if (fields is Map && fields['image'] != null) {
-        return fields['image'].toString();
+      // `details` is what the server sends. This read `fieldErrors`, a name
+      // nothing produces, so every per-field explanation was skipped and the
+      // golfer got the generic "Request validation failed" instead of being
+      // told what was wrong with the photograph. `fieldErrors` is still read
+      // second, in case an older server is on the other end.
+      for (final key in const ['details', 'fieldErrors']) {
+        final fields = json[key];
+        if (fields is Map && fields['image'] != null) {
+          return fields['image'].toString();
+        }
       }
       final message = json['message'];
       if (message is String && message.isNotEmpty) {

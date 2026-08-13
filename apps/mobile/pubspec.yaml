@@ -21,6 +21,10 @@ dependencies:
   equatable: ^2.0.5
   # HTTP client
   http: ^1.2.2
+  # MediaType, for stating what a multipart part actually contains. http pulls
+  # this in anyway; it is named here because the scorecard upload imports it
+  # directly, and a part sent without a content type is rejected by the server.
+  http_parser: ^4.0.2
 
   # Photographing the club's scorecard. The golfer holding the card is the
   # app's only source of stroke index, and typing eighteen numbers at the
