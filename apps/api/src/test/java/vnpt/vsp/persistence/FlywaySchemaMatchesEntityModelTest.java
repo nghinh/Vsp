@@ -76,13 +76,33 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class FlywaySchemaMatchesEntityModelTest {
 
     /**
-     * Number of versioned migrations in {@code db/migration}. Bump this when you
-     * add one — the point is that a new migration is a deliberate act, and that
-     * a migration silently not running (which is precisely what happened to
-     * {@code 001_baseline.sql}) shows up here as a number, not as a log line at
-     * INFO that nobody read.
+     * Every {@code .sql} file in {@code db/migration}, whatever it is called.
+     *
+     * <p>Counted rather than written down. It used to be the literal 39, with
+     * an instruction to bump it, and by the time anything ran this test there
+     * were 42 — so the first thing it reported was its own staleness, three
+     * migrations after the fact, and a reader had to work out whether that
+     * meant a real defect. A number nobody can forget to update says more.
+     *
+     * <p>Counting <em>all</em> the files is what makes it an assertion. Flyway
+     * skips a file whose name does not match {@code V<version>__} with one
+     * INFO line and no error — which is exactly how {@code 001_baseline.sql},
+     * and the {@code CREATE EXTENSION postgis} inside it, went missing. A file
+     * counted here and not applied there is that defect, by construction.
      */
-    private static final int EXPECTED_MIGRATIONS = 39;
+    private static int expectedMigrations() {
+        try {
+            var resources = new org.springframework.core.io.support.PathMatchingResourcePatternResolver()
+                    .getResources("classpath:db/migration/*.sql");
+            if (resources.length == 0) {
+                throw new IllegalStateException(
+                        "No migrations found on the classpath — this test would pass vacuously.");
+            }
+            return resources.length;
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException("Could not read db/migration", e);
+        }
+    }
 
     private static final String SCRATCH_DB = "vsp_flyway_schema_check";
 
@@ -133,7 +153,7 @@ class FlywaySchemaMatchesEntityModelTest {
         // out loud what the context proved silently.
         Integer applied = jdbc.queryForObject(
                 "SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class);
-        assertEquals(EXPECTED_MIGRATIONS, applied,
+        assertEquals(expectedMigrations(), applied,
                 "every migration in db/migration must apply to an empty database; "
                         + "a file that does not match Flyway's V<version>__ naming is skipped "
                         + "with only an INFO line, which is how CREATE EXTENSION postgis went missing");

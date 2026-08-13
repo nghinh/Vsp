@@ -187,6 +187,32 @@ void main() {
     });
   });
 
+  group('FacilityCourse', () {
+    test('reads playable off the wire', () {
+      final duong = FacilityCourse.fromJson({
+        'courseId': 21, 'name': 'Đường A', 'holesCount': 9,
+        'parTotal': 36, 'playable': false,
+      });
+
+      // holesCount says nine either way — the club really does have nine — so
+      // this flag is the only thing separating an đường with a card behind it
+      // from one that is a name and nothing else.
+      expect(duong.holesCount, 9);
+      expect(duong.playable, isFalse);
+    });
+
+    test('an older server that omits it is read as playable', () {
+      // The field arrived after the phones did. Reading its absence as "not
+      // playable" would empty the round-setup picker at every club at once,
+      // which is a worse failure than the one the flag exists to prevent.
+      final duong = FacilityCourse.fromJson({
+        'courseId': 21, 'name': 'Đường A', 'holesCount': 9,
+      });
+
+      expect(duong.playable, isTrue);
+    });
+  });
+
   group('HoleSummary', () {
     test('fromJson parses fields correctly', () {
       final json = {'holeNumber': 5, 'par': 3, 'playingLengthMeters': 150};
