@@ -14,7 +14,9 @@ import org.springframework.test.context.TestPropertySource;
 
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
-import java.sql.DriverManager;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import vnpt.vsp.persistence.PostgresTestSupport;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,9 +46,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @TestPropertySource(properties = {
-        "spring.datasource.url=jdbc:postgresql://localhost:5432/vsp",
-        "spring.datasource.username=vsp",
-        "spring.datasource.password=vsp_dev_password",
         "spring.datasource.driver-class-name=org.postgresql.Driver",
         "spring.jpa.hibernate.ddl-auto=none",
         "spring.jpa.properties.hibernate.hbm2ddl.auto=none",
@@ -59,16 +58,31 @@ class GeospatialServicePostgisTest {
     private static final GeometryFactory GF = new GeometryFactory();
     private static final int SRID = 4326;
 
+    /**
+     * Where the database is, taken from the environment like every other
+     * PostgreSQL-backed test here.
+     *
+     * <p>This class used to write {@code localhost:5432/vsp} and the dev
+     * password into both its datasource and its own reachability check, which
+     * made "is PostGIS reachable" mean "is the dev stack running on this
+     * machine". Thirteen tests that consequently ran on a developer laptop and
+     * nowhere else — not in CI, which provisions a service container on another
+     * host, and not in any container run. They reported themselves skipped,
+     * which reads as "no database here" rather than "this test cannot see the
+     * database you gave it".
+     */
+    @DynamicPropertySource
+    static void datasource(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", PostgresTestSupport::jdbcUrl);
+        registry.add("spring.datasource.username",
+                () -> PostgresTestSupport.env("POSTGRES_USER", "vsp"));
+        registry.add("spring.datasource.password",
+                () -> PostgresTestSupport.env("POSTGRES_PASSWORD", "vsp_dev_password"));
+    }
+
     /** Evaluated by JUnit before Spring builds a context, so an absent database skips rather than errors. */
     static boolean postgisIsReachable() {
-        try (var c = DriverManager.getConnection(
-                "jdbc:postgresql://localhost:5432/vsp?connectTimeout=2", "vsp", "vsp_dev_password");
-             var st = c.createStatement()) {
-            st.execute("SELECT postgis_version()");
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
+        return PostgresTestSupport.postgisAvailable();
     }
 
     @org.springframework.beans.factory.annotation.Autowired
