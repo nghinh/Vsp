@@ -301,17 +301,47 @@ class TeeOption extends Equatable {
   final double? courseRating;
   final double? slopeRating;
 
+  /// What the whole course measures from this tee, or null when the club has
+  /// published no card and the yardages with it.
+  ///
+  /// The name on its own does not decide anything. GOLD and WHITE at Sky Lake
+  /// are 7,313 and 6,119 — a different golf course, and the number is the
+  /// reason a golfer picks one.
+  final int? totalDistance;
+
   const TeeOption({
     required this.id,
     required this.name,
     this.gender,
     this.courseRating,
     this.slopeRating,
+    this.totalDistance,
   });
 
   @override
-  List<Object?> get props => [id, name, gender, courseRating, slopeRating];
+  List<Object?> get props =>
+      [id, name, gender, courseRating, slopeRating, totalDistance];
 }
+
+/// "GOLD · 7.313y · 74.1/141" — as much of it as the club published.
+///
+/// Lives here rather than in the screen so it can be tested without building
+/// a widget: what this string says is the whole of the tee decision.
+String teeLabel(TeeOption t) {
+  final parts = <String>[t.name];
+  if (t.totalDistance != null) {
+    parts.add('${_grouped(t.totalDistance!)}y');
+  }
+  if (t.courseRating != null && t.slopeRating != null) {
+    parts.add('${t.courseRating}/${t.slopeRating!.toInt()}');
+  }
+  return parts.join(' · ');
+}
+
+String _grouped(int n) => n.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+$)'),
+      (m) => '${m[1]}.',
+    );
 
 /// Bag option for selection.
 class BagOption extends Equatable {

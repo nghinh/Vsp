@@ -918,7 +918,10 @@ class _TeeSelector extends StatelessWidget {
         ),
       ),
       items: state.tees
-          .map((t) => DropdownMenuItem(value: t.id, child: Text(t.name)))
+          .map((t) => DropdownMenuItem(
+                value: t.id,
+                child: Text(teeLabel(t)),
+              ))
           .toList(),
       onChanged: (value) {
         if (value != null) {

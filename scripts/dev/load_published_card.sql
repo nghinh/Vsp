@@ -137,7 +137,14 @@ BEGIN
             v_par_sum, v_par_total;
     END IF;
 
-    IF v_yard_sum <> v_yards_total THEN
+    -- Zero everywhere means the club published pars and stroke indexes and no
+    -- distances, which happens: Legend Valley's card on mscorecard has all
+    -- eighteen indexes and not one yardage. The index is the number that
+    -- decides a net score and exists nowhere else, so a card is worth loading
+    -- without distances. A missing length reads as NULL, not as zero.
+    IF v_yard_sum = 0 THEN
+        RAISE NOTICE '  no distances on this card — pars and stroke indexes only.';
+    ELSIF v_yard_sum <> v_yards_total THEN
         RAISE EXCEPTION 'Yardages sum to % but the club states %. The card was read wrong.',
             v_yard_sum, v_yards_total;
     END IF;
@@ -170,6 +177,7 @@ BEGIN
     -- perfectly self-consistent. That is the same invention this script exists
     -- to replace, arriving from a different direction.
     IF (SELECT count(DISTINCT yards) FROM card) = 1
+       AND (SELECT min(yards) FROM card) > 0
        AND (SELECT count(DISTINCT par) FROM card) = 1 THEN
         RAISE EXCEPTION
             'Every hole is par % over % yards. That is a placeholder, not a card.',
@@ -186,7 +194,8 @@ BEGIN
         source, publisher, license, effective_date, version,
         created_at, updated_at)
     SELECT
-        v_course_id, c.hole, c.par, round(c.yards * 0.9144, 2),
+        v_course_id, c.hole, c.par,
+        CASE WHEN c.yards > 0 THEN round(c.yards * 0.9144, 2) END,
         NULL, NULL,
         'D_UNVERIFIED_COMMUNITY', 'UNVERIFIED', 60.0,
         v_source, v_publisher, 'club-published', CURRENT_DATE, 1,

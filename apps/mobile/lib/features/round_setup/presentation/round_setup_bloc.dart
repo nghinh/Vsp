@@ -255,7 +255,17 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       final detail = await _courseDetailApi.getCourseDetail(courseId);
 
       final tees = detail.teeSets
-          .map((t) => TeeOption(id: t.id, name: t.name))
+          // The distance comes along. It is what the choice is actually about,
+          // and it was being dropped here while the server had it all along.
+          .map((t) => TeeOption(
+                id: t.id,
+                name: t.name,
+                courseRating: t.rating,
+                slopeRating: t.slope?.toDouble(),
+                totalDistance: t.yardages.isEmpty
+                    ? null
+                    : t.yardages.values.fold<int>(0, (a, b) => a + b),
+              ))
           .toList();
       // The đường this club has. A facility with one course yields one entry
       // and the picker stays hidden, exactly as before; Long Biên yields A, B

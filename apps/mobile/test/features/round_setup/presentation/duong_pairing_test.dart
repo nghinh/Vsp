@@ -97,4 +97,33 @@ void main() {
     expect(changed.selectedSecondLayoutId, isNull);
     expect(changed.segmentCourseIds, [22]);
   });
+
+  // What the tee dropdown actually says.
+  //
+  // The picker offered "GOLD" and "WHITE" and nothing else. Those are 7,313
+  // and 6,119 yards at Sky Lake — a different golf course — and the number is
+  // the reason a golfer picks one. The server had it all along; the bloc threw
+  // it away building TeeOption.
+  group('tee label', () {
+    test('carries the distance and the rating when the club published them', () {
+      expect(
+        teeLabel(const TeeOption(
+          id: 1, name: 'GOLD', totalDistance: 7313,
+          courseRating: 74.1, slopeRating: 141,
+        )),
+        'GOLD · 7.313y · 74.1/141',
+      );
+    });
+
+    test('a tee with no card behind it is still offered, by name', () {
+      expect(teeLabel(const TeeOption(id: 2, name: 'Black Tee')), 'Black Tee');
+    });
+
+    test('distance without a rating shows the distance', () {
+      expect(
+        teeLabel(const TeeOption(id: 3, name: 'Blue', totalDistance: 6614)),
+        'Blue · 6.614y',
+      );
+    });
+  });
 }
