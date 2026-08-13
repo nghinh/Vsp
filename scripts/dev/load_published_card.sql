@@ -1,0 +1,180 @@
+-- Write a club's published card onto one sân or đường.
+--
+-- WHAT THIS IS FOR
+--
+--   Every hole in this database was invented: `synthetic:seed-arithmetic`, the
+--   same par card copied onto fifty-eight courses and a length computed from a
+--   coordinate that was itself a guess. A club that publishes its own card —
+--   hole, par, stroke index, yardage — is a better source than that by a wide
+--   margin, and it is a source anyone can check by opening the page.
+--
+--   This writes such a card. It is not the scorecard correction queue and does
+--   not pretend to be: that queue exists for a golfer standing at the tee with
+--   the card in their hand, and what it produces is reviewed by an admin. This
+--   is an operator loading a published table, with the URL recorded on every
+--   row it writes.
+--
+-- WHAT IT CHECKS BEFORE WRITING
+--
+--   Three things, all of which the club's own page states independently, so a
+--   transcription error shows up as a contradiction rather than as a wrong
+--   number nobody notices:
+--
+--     * the pars sum to the par the club states for the nine or the eighteen
+--     * the yardages sum to the total the club states
+--     * the stroke indexes are a complete 1..n with no repeats
+--
+--   Any of these failing aborts the transaction. A card that does not add up
+--   is a card that was read wrong.
+--
+-- WHAT IT DOES NOT WRITE
+--
+--   Geometry. `teeing_ground_location` and `green_location` stay null, because
+--   a published card says what a hole measures and not where it is, and a tee
+--   invented from a clubhouse point is exactly the thing being replaced here.
+--   The rows are stamped D_UNVERIFIED_COMMUNITY / UNVERIFIED for that reason —
+--   the numbers are good, the map is still absent — and `source` names the page
+--   so this is never confused with the seed's invention.
+--
+--   Stroke index either: `holes` has no column for it. It belongs to the card,
+--   not to the đường — hole 3 of A is a different index on the A+B card than on
+--   A+C — so it lives in scorecard_holes. Load it with a scorecard, not here.
+--
+-- USAGE
+--
+--   Rows are hole:par:index:yards, comma separated. Index may be 0 when the
+--   club does not print one.
+--
+--     SET vsp.course_id = '1351';
+--     SET vsp.source = 'club-website:longbiengolf.vn/san-golf.html';
+--     SET vsp.rows = '1:4:3:473,2:4:5:449,3:4:7:381,4:3:8:188,5:5:2:543,
+--                     6:3:6:199,7:4:9:383,8:4:1:480,9:5:4:539';
+--     SET vsp.par_total = '36';
+--     SET vsp.yards_total = '3635';
+--     \i scripts/dev/load_published_card.sql
+--
+--   Existing holes on that course are replaced, so re-running with a corrected
+--   card fixes it rather than duplicating it.
+
+\set ON_ERROR_STOP on
+
+DO $$
+DECLARE
+    v_course_id   bigint := current_setting('vsp.course_id', true)::bigint;
+    v_source      text   := current_setting('vsp.source', true);
+    v_rows        text   := current_setting('vsp.rows', true);
+    v_par_total   int    := current_setting('vsp.par_total', true)::int;
+    v_yards_total int    := current_setting('vsp.yards_total', true)::int;
+    v_publisher   text;
+    v_entry       text;
+    v_parts       text[];
+    v_hole        int;
+    v_par         int;
+    v_index       int;
+    v_yards       int;
+    v_par_sum     int := 0;
+    v_yard_sum    int := 0;
+    v_count       int := 0;
+    v_indexes     int[] := ARRAY[]::int[];
+    v_deleted     int;
+BEGIN
+    IF v_course_id IS NULL OR v_rows IS NULL OR v_source IS NULL
+       OR v_par_total IS NULL OR v_yards_total IS NULL THEN
+        RAISE EXCEPTION
+            'Set vsp.course_id, vsp.source, vsp.rows, vsp.par_total and vsp.yards_total first.';
+    END IF;
+
+    SELECT f.name INTO v_publisher
+    FROM courses c JOIN golf_facilities f ON f.id = c.facility_id
+    WHERE c.id = v_course_id;
+
+    IF v_publisher IS NULL THEN
+        RAISE EXCEPTION 'No course with id %.', v_course_id;
+    END IF;
+
+    -- Dropped first, not just on commit: loading several cards in one
+    -- transaction is the normal case, and ON COMMIT DROP alone leaves this
+    -- standing for the second call, which then fails on "card already exists"
+    -- after the first has already written its holes.
+    DROP TABLE IF EXISTS card;
+    CREATE TEMP TABLE card(hole int, par int, stroke_index int, yards int) ON COMMIT DROP;
+
+    FOREACH v_entry IN ARRAY string_to_array(replace(replace(v_rows, E'\n', ''), ' ', ''), ',')
+    LOOP
+        CONTINUE WHEN btrim(v_entry) = '';
+        v_parts := string_to_array(btrim(v_entry), ':');
+        IF array_length(v_parts, 1) <> 4 THEN
+            RAISE EXCEPTION 'Row "%" is not hole:par:index:yards.', v_entry;
+        END IF;
+        v_hole  := v_parts[1]::int;
+        v_par   := v_parts[2]::int;
+        v_index := v_parts[3]::int;
+        v_yards := v_parts[4]::int;
+
+        IF v_par < 3 OR v_par > 6 THEN
+            RAISE EXCEPTION 'Hole % says par %. A hole is a 3, 4, 5 or 6.', v_hole, v_par;
+        END IF;
+
+        INSERT INTO card VALUES (v_hole, v_par, v_index, v_yards);
+        v_par_sum  := v_par_sum + v_par;
+        v_yard_sum := v_yard_sum + v_yards;
+        v_count    := v_count + 1;
+        IF v_index > 0 THEN
+            v_indexes := v_indexes || v_index;
+        END IF;
+    END LOOP;
+
+    -- The club states each of these separately on the same page, so a
+    -- transcription slip contradicts the club rather than passing silently.
+    IF v_par_sum <> v_par_total THEN
+        RAISE EXCEPTION 'Pars sum to % but the club states %. The card was read wrong.',
+            v_par_sum, v_par_total;
+    END IF;
+
+    IF v_yard_sum <> v_yards_total THEN
+        RAISE EXCEPTION 'Yardages sum to % but the club states %. The card was read wrong.',
+            v_yard_sum, v_yards_total;
+    END IF;
+
+    IF array_length(v_indexes, 1) IS NOT NULL THEN
+        IF array_length(v_indexes, 1) <> v_count THEN
+            RAISE EXCEPTION 'Some holes have a stroke index and some do not — % of %.',
+                array_length(v_indexes, 1), v_count;
+        END IF;
+        IF EXISTS (
+            SELECT 1 FROM (SELECT unnest(v_indexes) AS i) t
+            GROUP BY i HAVING count(*) > 1
+        ) THEN
+            RAISE EXCEPTION 'A stroke index is printed twice. Every hole gets its own.';
+        END IF;
+        IF (SELECT min(i) FROM unnest(v_indexes) i) <> 1
+           OR (SELECT max(i) FROM unnest(v_indexes) i) <> v_count THEN
+            RAISE EXCEPTION 'Stroke indexes must run 1..%, and they do not.', v_count;
+        END IF;
+    END IF;
+
+    DELETE FROM holes WHERE course_id = v_course_id;
+    GET DIAGNOSTICS v_deleted = ROW_COUNT;
+
+    INSERT INTO holes (
+        course_id, hole_number, par, playing_length_meters,
+        teeing_ground_location, green_location,
+        accuracy_class, verification_status, confidence,
+        source, publisher, license, effective_date, version,
+        created_at, updated_at)
+    SELECT
+        v_course_id, c.hole, c.par, round(c.yards * 0.9144, 2),
+        NULL, NULL,
+        'D_UNVERIFIED_COMMUNITY', 'UNVERIFIED', 60.0,
+        v_source, v_publisher, 'club-published', CURRENT_DATE, 1,
+        now(), now()
+    FROM card c;
+
+    UPDATE courses
+    SET holes_count = v_count, par_total = v_par_total, updated_at = now()
+    WHERE id = v_course_id;
+
+    RAISE NOTICE '% : % hole(s) written, par %, % yards (% invented hole(s) replaced). Source %.',
+        v_publisher, v_count, v_par_total, v_yards_total, v_deleted, v_source;
+END
+$$;
