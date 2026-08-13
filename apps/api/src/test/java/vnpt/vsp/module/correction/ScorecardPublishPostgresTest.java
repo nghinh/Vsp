@@ -111,7 +111,7 @@ class ScorecardPublishPostgresTest {
                 .mapToObj(i -> new ScorecardSubmissionRequest.HoleLine(i, i % 3 == 0 ? 3 : 4, i))
                 .toList();
         return new ScorecardSubmissionRequest(
-                "Probe card", List.of(courseId), holes, tees, null, null);
+                "Probe card", List.of(courseId), holes, null, null, null, tees, null, null);
     }
 
     private ScorecardSubmissionRequest.TeeLine tee(String name, String rating, Integer slope, int holes) {

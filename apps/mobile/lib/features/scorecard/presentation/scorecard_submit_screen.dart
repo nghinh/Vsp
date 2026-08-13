@@ -61,6 +61,16 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
 
   /// The tee rows the last scan read, sent with the card when it is submitted.
   List<ScannedTee> _scannedTees = const [];
+
+  /// What the club printed in the par row's OUT, IN and TOTAL columns, as the
+  /// reader saw them. Sent on with the card so the server can check the pars
+  /// against the club's own arithmetic instead of only against themselves —
+  /// the one independent fact a photograph carries. Null for a card typed by
+  /// hand, or one whose sums were outside the frame.
+  ScanChecks? _scanChecks;
+
+  /// Where the server kept the photograph the card was read from.
+  String? _scanPhotoUrl;
   bool _sending = false;
 
   TextEditingController _indexController(int hole) =>
@@ -290,6 +300,8 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
       // add up to the sum printed beside it is one line to look at, which is
       // a question anyone can answer at the tee even when ninety cells are not.
       _scannedTees = card.tees;
+      _scanChecks = card.checks;
+      _scanPhotoUrl = card.photoUrl;
       _scanWarnings = _warningsFrom(card.checks, card.tees, l10n);
     });
   }
@@ -321,8 +333,15 @@ class ScorecardSubmitScreenState extends State<ScorecardSubmitScreen> {
         segmentCourseIds: _segments,
         holes: _draft.toLines(),
         tees: _scannedTees.map((tee) => tee.toJson()).toList(),
+        parOut: _scanChecks?.parOutPrinted,
+        parIn: _scanChecks?.parInPrinted,
+        parTotal: _scanChecks?.parTotalPrinted,
         idempotencyKey: const Uuid().v4(),
-        evidenceUrl: _evidenceController.text.trim(),
+        // The photograph the reader kept, unless the golfer typed a URL of
+        // their own. Either way the reviewer gets something to look at.
+        evidenceUrl: _evidenceController.text.trim().isNotEmpty
+            ? _evidenceController.text.trim()
+            : _scanPhotoUrl,
         note: _noteController.text.trim(),
       );
       if (!mounted) return;

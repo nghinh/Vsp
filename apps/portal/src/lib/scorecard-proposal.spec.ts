@@ -21,6 +21,7 @@ import {
   duplicateYardageHoles,
   hasLadiesIndex,
   holesMissingStrokeIndex,
+  parComparison,
   parseProposedCard,
   parTotal,
   scorecardProblems,
@@ -348,5 +349,60 @@ describe('tee rows approval will quietly leave out', () => {
 
     expect(scorecardProblems(parsed)[0]).toContain('Chỉ số bị trùng');
     expect(scorecardProblems(parsed)[1]).toContain('Hàng tee');
+  });
+});
+
+describe('the par row against what the club printed beside it', () => {
+  // Every other check here compares the card to itself. The printed sums are
+  // the one independent fact a photograph carries, and until the submission
+  // could carry them there was nothing to compare the pars against at all.
+  const eighteen = (): ProposedLine[] =>
+    Array.from({ length: 18 }, (_, i) => ({
+      hole: i + 1,
+      par: i % 3 === 2 ? 3 : 4,
+      strokeIndex: i + 1,
+    }));
+
+  const card = (extra: Record<string, unknown>) =>
+    parseProposedCard(
+      JSON.stringify({ name: 'A + B', segmentCourseIds: [1], holes: eighteen(), ...extra }),
+    );
+
+  it('reports each nine as well as the whole card', () => {
+    const par = parComparison(card({ parOut: 33, parIn: 33, parTotal: 66 }));
+
+    expect(par.out.read).toBe(33);
+    expect(par.in.read).toBe(33);
+    expect(par.total.read).toBe(66);
+    expect(par.out.off || par.in.off || par.total.off).toBe(false);
+  });
+
+  it('catches a total the pars do not reach', () => {
+    const par = parComparison(card({ parTotal: 72 }));
+
+    expect(par.total.off).toBe(true);
+    expect(scorecardProblems(card({ parTotal: 72 }))).toContainEqual(
+      expect.stringContaining('66'),
+    );
+  });
+
+  // A total alone cannot see this: reading the front nine's par onto the back
+  // and the back's onto the front leaves the total exactly where it was.
+  it('catches a swap between the nines that the total hides', () => {
+    const par = parComparison(card({ parOut: 30, parIn: 36, parTotal: 66 }));
+
+    expect(par.total.off).toBe(false);
+    expect(par.out.off).toBe(true);
+    expect(par.in.off).toBe(true);
+  });
+
+  // Most cards ever submitted carry none of these, and a photograph can cut
+  // the sums off. Absent is not wrong.
+  it('says nothing about sums the card does not carry', () => {
+    const par = parComparison(card({}));
+
+    expect(par.out.printed).toBeNull();
+    expect(par.out.off).toBe(false);
+    expect(scorecardProblems(card({}))).toEqual([]);
   });
 });

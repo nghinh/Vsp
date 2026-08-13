@@ -30,6 +30,20 @@ public record ScorecardSubmissionRequest(
         /// Every numbered line on the card.
         @NotEmpty @Size(min = 9, max = 18) List<HoleLine> holes,
 
+        /// What the card prints in the par row's OUT, IN and TOTAL columns.
+        ///
+        /// The reader has always read these and the app has always shown them,
+        /// but there was no field to send them in, so they stopped at the
+        /// screen. That left the server with no independent check on the pars
+        /// at all: eighteen numbers typed off a photograph, and the only thing
+        /// to compare them against was themselves.
+        ///
+        /// Optional, because a nine prints one total and some cards print
+        /// none. Whatever is sent is checked; what is not sent is not invented.
+        @Min(9) @Max(45) Integer parOut,
+        @Min(9) @Max(45) Integer parIn,
+        @Min(27) @Max(80) Integer parTotal,
+
         /// The tee rows, when the card prints them and the golfer kept them.
         /// Optional: a card photographed with its rating table outside the
         /// frame is still a card worth having, and holding one back for the
@@ -86,11 +100,19 @@ public record ScorecardSubmissionRequest(
 
             /// What the card prints in this row's OUT, IN and TOTAL columns.
             ///
-            /// Not stored — the yardages are the data, these are the club's own
-            /// arithmetic for checking them against. They travel with the card
-            /// so the reviewer sees the contradiction rather than a total the
-            /// portal computed from the very numbers in question: a 3 misread
-            /// as an 8 sums to a figure in perfect agreement with itself.
+            /// Not stored as rows — the yardages are the data, these are the
+            /// club's own arithmetic for checking them against. They travel
+            /// with the card so the reviewer sees the contradiction rather than
+            /// a total the portal computed from the very numbers in question: a
+            /// 3 misread as an 8 sums to a figure in perfect agreement with
+            /// itself.
+            ///
+            /// They are now also checked at submission rather than only shown.
+            /// They were carried here for a reviewer to notice and nothing
+            /// compared them to anything, so a row that missed its own printed
+            /// total went through in silence — and with trusted reporters
+            /// publishing on submission there is no reviewer downstream to
+            /// notice it.
             ///
             /// A nine is 60-700 a hole, so 540 to 6,300; a card's total is two
             /// of those.

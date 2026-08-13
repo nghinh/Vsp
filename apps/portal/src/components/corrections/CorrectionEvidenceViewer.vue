@@ -4,18 +4,24 @@
 
     <!-- Photo evidence -->
     <div class="evidence-photo">
-      <div v-if="!detail.reporterEvidenceUrl" class="no-photo">
+      <div v-if="!photoUrl" class="no-photo">
         <span aria-hidden="true">📷</span>
         <span>Không có ảnh kèm theo</span>
       </div>
       <figure v-else class="photo-figure">
-        <img
-          :src="detail.reporterEvidenceUrl"
-          :alt="`Ảnh minh chứng cho hiệu chỉnh #${detail.id}`"
-          class="evidence-img"
-          loading="lazy"
-        />
-        <figcaption class="photo-caption">Ảnh do người báo gửi kèm</figcaption>
+        <!-- Opens full size: the reviewer's job is to read eighteen stroke
+             indexes off it, which a thumbnail cannot support. -->
+        <a :href="photoUrl" target="_blank" rel="noopener noreferrer">
+          <img
+            :src="photoUrl"
+            :alt="`Ảnh minh chứng cho hiệu chỉnh #${detail.id}`"
+            class="evidence-img"
+            loading="lazy"
+          />
+        </a>
+        <figcaption class="photo-caption">
+          Ảnh do người báo gửi kèm — bấm để xem cỡ đầy đủ
+        </figcaption>
       </figure>
     </div>
 
@@ -47,12 +53,30 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue';
 import type { CorrectionDetailResponse } from '@/types/correction';
 import { formatInstant } from '@/lib/datetime';
+import { API_BASE } from '@/api/base';
 
-defineProps<{
+const props = defineProps<{
   detail: CorrectionDetailResponse;
 }>();
+
+/**
+ * Where the photograph actually lives.
+ *
+ * A card read by the scorecard reader is stored by the API and comes back as
+ * `/scorecard-photos/<hash>.jpg` — a path under the API, not under the portal.
+ * Rendering it as-is would ask nginx for it, and nginx answers unknown paths
+ * with index.html, so the reviewer would get a broken image rather than the
+ * card. Anything absolute is a URL a golfer typed themselves and is left
+ * alone.
+ */
+const photoUrl = computed<string | null>(() => {
+  const url = props.detail.reporterEvidenceUrl;
+  if (!url) return null;
+  return url.startsWith('/') ? `${API_BASE}${url}` : url;
+});
 
 function formatDate(iso: string): string {
   if (!iso) return '—';

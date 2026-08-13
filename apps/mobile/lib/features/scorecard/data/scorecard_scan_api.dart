@@ -35,6 +35,8 @@ class ScanChecks {
     this.parTotalPrinted,
     required this.parTotalAgrees,
     required this.strokeIndexComplete,
+    this.parOutPrinted,
+    this.parInPrinted,
   });
 
   final int holesRead;
@@ -45,6 +47,14 @@ class ScanChecks {
   final bool parTotalAgrees;
   final bool strokeIndexComplete;
 
+  /// What the club printed in the par row's OUT and IN columns.
+  ///
+  /// Sent on with the card, because the total alone cannot see a swap between
+  /// the nines: reading the front nine's par onto the back and the back's onto
+  /// the front leaves the total exactly where it was.
+  final int? parOutPrinted;
+  final int? parInPrinted;
+
   factory ScanChecks.fromJson(Map<String, dynamic> json) => ScanChecks(
     holesRead: json['holesRead'] as int? ?? 0,
     parCellsRead: json['parCellsRead'] as int? ?? 0,
@@ -53,6 +63,8 @@ class ScanChecks {
     parTotalPrinted: json['parTotalPrinted'] as int?,
     parTotalAgrees: json['parTotalAgrees'] as bool? ?? false,
     strokeIndexComplete: json['strokeIndexComplete'] as bool? ?? false,
+    parOutPrinted: json['parOutPrinted'] as int?,
+    parInPrinted: json['parInPrinted'] as int?,
   );
 }
 

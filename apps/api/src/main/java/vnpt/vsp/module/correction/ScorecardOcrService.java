@@ -794,13 +794,28 @@ public class ScorecardOcrService {
         var checks = objectMapper.createObjectNode();
 
         int parRead = 0;
+        int parOutRead = 0;
+        int parInRead = 0;
         int parCells = 0;
         int indexCells = 0;
+        boolean outComplete = true;
+        boolean inComplete = true;
         var indexes = new java.util.ArrayList<Integer>();
         for (var line : lines) {
+            int hole = line.get("hole").asInt();
             if (line.hasNonNull("par")) {
-                parRead += line.get("par").asInt();
+                int par = line.get("par").asInt();
+                parRead += par;
                 parCells++;
+                if (hole <= 9) {
+                    parOutRead += par;
+                } else {
+                    parInRead += par;
+                }
+            } else if (hole <= 9) {
+                outComplete = false;
+            } else {
+                inComplete = false;
             }
             if (line.hasNonNull("strokeIndex")) {
                 indexes.add(line.get("strokeIndex").asInt());
@@ -812,10 +827,26 @@ public class ScorecardOcrService {
         checks.put("parCellsRead", parCells);
         checks.put("strokeIndexCellsRead", indexCells);
         checks.put("parTotalRead", parRead);
+        checks.put("parOutRead", parOutRead);
+        checks.put("parInRead", parInRead);
 
         Integer printed = intInRange(node.get("parTotal"), 27, 80);
         checks.set("parTotalPrinted", nullable(printed));
         checks.put("parTotalAgrees", printed != null && printed == parRead);
+
+        // The nines separately, because the total alone cannot see a swap
+        // between them: reading the front nine's par onto the back and the
+        // back's onto the front leaves the total exactly where it was. The
+        // model was already being asked for these two numbers and nothing
+        // compared them to anything.
+        Integer printedOut = intInRange(node.get("parOut"), 9, 45);
+        Integer printedIn = intInRange(node.get("parIn"), 9, 45);
+        checks.set("parOutPrinted", nullable(printedOut));
+        checks.set("parInPrinted", nullable(printedIn));
+        checks.put("parOutAgrees",
+                outComplete && printedOut != null && printedOut == parOutRead);
+        checks.put("parInAgrees",
+                inComplete && printedIn != null && printedIn == parInRead);
 
         var sorted = new java.util.ArrayList<>(indexes);
         java.util.Collections.sort(sorted);

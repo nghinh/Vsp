@@ -22,6 +22,10 @@ class _RecordingApi extends ScorecardApi {
   List<int>? segmentCourseIds;
   List<ScorecardLine>? holes;
   List<Map<String, dynamic>>? tees;
+  int? parOut;
+  int? parIn;
+  int? parTotal;
+  String? evidenceUrl;
   int calls = 0;
 
   @override
@@ -32,6 +36,9 @@ class _RecordingApi extends ScorecardApi {
     required List<ScorecardLine> holes,
     required String idempotencyKey,
     List<Map<String, dynamic>> tees = const [],
+    int? parOut,
+    int? parIn,
+    int? parTotal,
     String? evidenceUrl,
     String? note,
   }) async {
@@ -41,6 +48,10 @@ class _RecordingApi extends ScorecardApi {
     this.segmentCourseIds = segmentCourseIds;
     this.holes = holes;
     this.tees = tees;
+    this.parOut = parOut;
+    this.parIn = parIn;
+    this.parTotal = parTotal;
+    this.evidenceUrl = evidenceUrl;
     return 1;
   }
 }
@@ -189,10 +200,14 @@ void main() {
       int? parPrinted = 36,
       int indexCells = 9,
       List<ScannedTee> tees = const [],
+      int? parOutPrinted,
+      int? parInPrinted,
+      String? photoUrl,
     }) => ScannedCard(
       name: 'Đường A',
       holes: holes,
       tees: tees,
+      photoUrl: photoUrl,
       checks: ScanChecks(
         holesRead: holes.length,
         parCellsRead: holes.length,
@@ -201,6 +216,8 @@ void main() {
         parTotalPrinted: parPrinted,
         parTotalAgrees: parAgrees,
         strokeIndexComplete: indexComplete,
+        parOutPrinted: parOutPrinted,
+        parInPrinted: parInPrinted,
       ),
     );
 
@@ -344,6 +361,67 @@ void main() {
         isNull,
       );
     });
+
+    testWidgets(
+      "what the club printed, and the photograph, travel with the card",
+      (tester) async {
+        // The reader has always read the par row's printed sums and the app
+        // has always shown them, but there was no field to send them in, so
+        // they stopped at this screen. That left the server with no
+        // independent check on eighteen hand-copied pars at all — only the
+        // pars against themselves. The photograph went the same way: the only
+        // means of attaching one was a URL typed by hand.
+        final recording = _RecordingApi();
+        final scan = _FakeScanApi(
+          cardWith(
+            holes: [
+              for (var hole = 1; hole <= 9; hole++)
+                ScannedLine(hole: hole, par: 4, strokeIndex: hole),
+            ],
+            parOutPrinted: 36,
+            parInPrinted: 36,
+            parPrinted: 72,
+            photoUrl: '/scorecard-photos/abc.jpg',
+          ),
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('vi'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            home: ScorecardSubmitScreen(
+              courseId: 21,
+              facilityCourses: const [duongA],
+              defaultName: '',
+              api: recording,
+              scanApi: scan,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        tester
+            .state<ScorecardSubmitScreenState>(
+              find.byType(ScorecardSubmitScreen),
+            )
+            .applyScannedCard(scan.card);
+        await tester.pumpAndSettle();
+
+        await tester.scrollUntilVisible(
+          find.byKey(const Key('scorecard_submit')),
+          200,
+          scrollable: list,
+        );
+        await tester.tap(find.byKey(const Key('scorecard_submit')));
+        await tester.pumpAndSettle();
+
+        expect(recording.parOut, 36);
+        expect(recording.parIn, 36);
+        expect(recording.parTotal, 72);
+        expect(recording.evidenceUrl, '/scorecard-photos/abc.jpg');
+      },
+    );
 
     testWidgets('the tee rows the scan read travel with the card', (
       tester,

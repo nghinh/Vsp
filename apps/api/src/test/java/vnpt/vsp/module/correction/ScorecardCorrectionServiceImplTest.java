@@ -97,13 +97,17 @@ class ScorecardCorrectionServiceImplTest {
     }
 
     private Course duong(Long id, Long facilityId) {
+        return duong(id, facilityId, 9);
+    }
+
+    private Course duong(Long id, Long facilityId, int holesCount) {
         GolfFacility facility = new GolfFacility();
         facility.setId(facilityId);
         Course course = new Course();
         course.setId(id);
         course.setFacility(facility);
         course.setName("Đường " + id);
-        course.setHolesCount(9);
+        course.setHolesCount(holesCount);
         return course;
     }
 
@@ -115,7 +119,7 @@ class ScorecardCorrectionServiceImplTest {
             List<ScorecardSubmissionRequest.HoleLine> holes,
             List<ScorecardSubmissionRequest.TeeLine> tees) {
         return new ScorecardSubmissionRequest(
-                "A + B", List.of(DUONG_A, DUONG_B), holes, tees,
+                "A + B", List.of(DUONG_A, DUONG_B), holes, null, null, null, tees,
                 "https://example/card.jpg", "chụp ở tee 1");
     }
 
@@ -203,6 +207,99 @@ class ScorecardCorrectionServiceImplTest {
         var account = new vnpt.vsp.module.identity.entity.GolferAccount();
         account.setEmail(email);
         return account;
+    }
+
+    // ─── The card against what the club printed beside it ────────────────────
+
+    private ScorecardSubmissionRequest cardWithTotals(
+            Integer parOut, Integer parIn, Integer parTotal,
+            List<ScorecardSubmissionRequest.TeeLine> tees) {
+        return new ScorecardSubmissionRequest(
+                "A + B", List.of(DUONG_A, DUONG_B), eighteen(),
+                parOut, parIn, parTotal, tees, null, null);
+    }
+
+    /// eighteen() is par 4 except every third hole, which is a 3 — six of
+    /// them, three on each nine. So 33 out, 33 in, 66 total.
+    @Test
+    void aParRowThatMissesItsPrintedTotalIsRefused() {
+        assertThatThrownBy(() -> service.submit(DUONG_A, 11L,
+                cardWithTotals(33, 33, 72, null)))
+                .isInstanceOf(VspApiException.class);
+        verify(correctionRepository, never()).save(any());
+    }
+
+    @Test
+    void aParRowThatAgreesWithEveryPrintedTotalIsTaken() {
+        CourseCorrection saved = service.submit(DUONG_A, 11L,
+                cardWithTotals(33, 33, 66, null));
+
+        assertThat(saved.getProposedScorecard()).contains("\"parTotal\":66");
+    }
+
+    /// The check that earns its place: ninety yardages, and the club's own
+    /// arithmetic is the only thing that can find the one that is wrong.
+    @Test
+    void aTeeRowThatMissesItsPrintedTotalIsRefused() {
+        // 301..309 is 2745, 310..318 is 2826, so the row totals 5571.
+        // Claim a total the row does not reach.
+        var wrong = new ScorecardSubmissionRequest.TeeLine(
+                "BLACK", null, null, null, 2745, 2826, 6000,
+                java.util.stream.IntStream.rangeClosed(1, 18)
+                        .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))
+                        .toList());
+
+        assertThatThrownBy(() -> service.submit(DUONG_A, 11L,
+                cardWithTotals(33, 33, 66, List.of(wrong))))
+                .isInstanceOf(VspApiException.class);
+    }
+
+    /// A photograph that cut the back nine off gives a row that adds up to
+    /// less than its printed OUT without a digit being wrong anywhere.
+    @Test
+    void aHalfPhotographedTeeRowIsNotJudgedAgainstTheClubsSums() {
+        var half = new ScorecardSubmissionRequest.TeeLine(
+                "BLACK", null, null, null, 2745, 2826, 5571,
+                java.util.stream.IntStream.rangeClosed(1, 9)
+                        .mapToObj(i -> new ScorecardSubmissionRequest.Yardage(i, 300 + i))
+                        .toList());
+
+        CourseCorrection saved = service.submit(DUONG_A, 11L,
+                cardWithTotals(33, 33, 66, List.of(half)));
+
+        assertThat(saved).isNotNull();
+    }
+
+    /// A card that prints no totals is still a card worth having.
+    @Test
+    void aCardWithNoPrintedTotalsIsStillTaken() {
+        CourseCorrection saved = service.submit(DUONG_A, 11L,
+                cardWithTotals(null, null, null, null));
+
+        assertThat(saved).isNotNull();
+    }
+
+    // ─── The đường a card covers have to add up to the card ──────────────────
+
+    /// Kings Island's photographed card is attached to the eighteen-hole
+    /// Championship course AND to the eighteen-hole Kings Course, so an
+    /// eighteen-hole card claims thirty-six holes and its pars match neither.
+    @Test
+    void aCardSpanningMoreHolesThanItHasIsRefused() {
+        when(courseRepository.findById(DUONG_A)).thenReturn(Optional.of(duong(DUONG_A, FACILITY_ID, 18)));
+        when(courseRepository.findById(DUONG_B)).thenReturn(Optional.of(duong(DUONG_B, FACILITY_ID, 18)));
+
+        assertThatThrownBy(() -> service.submit(DUONG_A, 11L, card(eighteen())))
+                .isInstanceOf(VspApiException.class);
+        verify(correctionRepository, never()).save(any());
+    }
+
+    /// Two nines carrying one eighteen-hole card is what segments are for.
+    @Test
+    void aCardPrintedAcrossTwoNinesIsTaken() {
+        CourseCorrection saved = service.submit(DUONG_A, 11L, card(eighteen()));
+
+        assertThat(saved.getProposedScorecard()).contains("\"segmentCourseIds\":[21,22]");
     }
 
     @Test

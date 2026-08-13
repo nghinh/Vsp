@@ -67,6 +67,9 @@ class ScorecardApi {
     required List<ScorecardLine> holes,
     required String idempotencyKey,
     List<Map<String, dynamic>> tees = const [],
+    int? parOut,
+    int? parIn,
+    int? parTotal,
     String? evidenceUrl,
     String? note,
   }) async {
@@ -81,6 +84,12 @@ class ScorecardApi {
         // table outside the frame has no tee rows, and an empty list would
         // read as "this club prints none".
         if (tees.isNotEmpty) 'tees': tees,
+        // What the club printed beside the par row. Omitted rather than sent
+        // null: the server checks whatever arrives and invents nothing, and a
+        // card whose sums were outside the photograph has none to send.
+        if (parOut != null) 'parOut': parOut,
+        if (parIn != null) 'parIn': parIn,
+        if (parTotal != null) 'parTotal': parTotal,
         if (evidenceUrl != null && evidenceUrl.isNotEmpty)
           'evidenceUrl': evidenceUrl,
         if (note != null && note.isNotEmpty) 'note': note,

@@ -59,6 +59,54 @@ export interface ProposedCard {
   /** Absent on cards submitted before tee rows were read, and on cards whose
    *  rating table did not make it into the photograph. */
   tees?: ProposedTee[];
+  /**
+   * What the club printed in the par row's OUT, IN and TOTAL columns.
+   *
+   * The tee rows have been checked against their printed sums for a while;
+   * the par row was not, because there was no field to send its totals in and
+   * they stopped at the golfer's screen. Absent on every card submitted before
+   * that, and on cards whose sums were outside the photograph.
+   */
+  parOut?: number | null;
+  parIn?: number | null;
+  parTotal?: number | null;
+}
+
+/** A row read off the card, against the sum the club printed beside it. */
+export interface PrintedComparison {
+  read: number;
+  printed: number | null;
+  /** True only when both exist and differ — absent is not wrong. */
+  off: boolean;
+}
+
+/**
+ * The par row against the club's own arithmetic.
+ *
+ * Reported per nine as well as per card: a read that swaps the two nines
+ * leaves the total exactly where it was, so a card can agree on TOTAL and
+ * still be wrong in a way only OUT and IN can show.
+ */
+export function parComparison(card: ProposedCard | null): {
+  out: PrintedComparison;
+  in: PrintedComparison;
+  total: PrintedComparison;
+} {
+  const holes = card?.holes ?? [];
+  const readOut = holes.filter((h) => h.hole <= 9).reduce((sum, h) => sum + (h.par ?? 0), 0);
+  const readIn = holes.filter((h) => h.hole > 9).reduce((sum, h) => sum + (h.par ?? 0), 0);
+
+  const compare = (read: number, printed: number | null | undefined): PrintedComparison => ({
+    read,
+    printed: printed ?? null,
+    off: printed !== null && printed !== undefined && printed !== read,
+  });
+
+  return {
+    out: compare(readOut, card?.parOut),
+    in: compare(readIn, card?.parIn),
+    total: compare(readOut + readIn, card?.parTotal),
+  };
 }
 
 /** The stored payload, or null when it is absent or unreadable. */
@@ -269,6 +317,24 @@ export function scorecardProblems(card: ProposedCard | null): string[] {
   }
   if (missing.length > 0) {
     problems.push(`Hố chưa có chỉ số: ${missing.join(', ')}`);
+  }
+
+  // The par row against the sum the club printed beside it. This is the one
+  // independent fact on the card — everything else compares the card to
+  // itself — so it goes at the top, where the reviewer looks first.
+  const par = parComparison(card);
+  const parRows: Array<[string, PrintedComparison]> = [
+    ['OUT', par.out],
+    ['IN', par.in],
+    ['TOTAL', par.total],
+  ];
+  for (const [column, comparison] of parRows) {
+    if (comparison.off) {
+      problems.push(
+        `Par cộng ra ${comparison.read} nhưng thẻ in ${comparison.printed}` +
+          ` ở cột ${column} — một ô par đọc sai`,
+      );
+    }
   }
 
   // Tee faults come after the pars because the pars are why the item is in

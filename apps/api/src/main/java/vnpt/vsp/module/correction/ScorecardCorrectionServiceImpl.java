@@ -143,6 +143,63 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
     }
 
     /**
+     * Refuses a card that carries another course's pars and stroke indexes.
+     *
+     * <p>No two real courses agree on all thirty-six of those numbers. Twelve
+     * of the tables supplied for this project agreed on every one, because they
+     * came off one template, and nine were published before anyone compared
+     * them to each other. Every other check passed all twelve: a generated
+     * table computes its totals from the numbers it invented, so it agrees with
+     * itself perfectly. This is the only question here asked about the world
+     * rather than about the card.
+     *
+     * <p>A card with no stroke index row is not judged on this. Par alone is
+     * far too weak — real courses share par sequences, and Kings Island's
+     * photographed card and Sky Lake's do — so a card that prints no index row
+     * would be condemned for a coincidence.
+     *
+     * <p>The card being rewritten is excluded, so a club reprinting its own
+     * card under its own name does not collide with the copy it replaces.
+     */
+    private void refuseIfAnotherCourseAlreadyCarriesThisCard(
+            Long cardBeingWritten, ScorecardSubmissionRequest proposed) {
+
+        List<ScorecardSubmissionRequest.HoleLine> holes = proposed.holes().stream()
+                .sorted(java.util.Comparator.comparingInt(ScorecardSubmissionRequest.HoleLine::hole))
+                .toList();
+        if (holes.stream().anyMatch(line -> line.strokeIndex() == null)) {
+            return;
+        }
+
+        String pars = holes.stream()
+                .map(line -> String.valueOf(line.par()))
+                .collect(Collectors.joining(","));
+        String indexes = holes.stream()
+                .map(line -> String.valueOf(line.strokeIndex()))
+                .collect(Collectors.joining(","));
+
+        // -1 is never written here — every hole has an index by the check
+        // above — but it is what the query coalesces a null to, so the two
+        // sides are built the same way.
+        List<Long> clashes = scorecardRepository.findIdsWithSameParAndStrokeIndex(
+                cardBeingWritten == null ? -1L : cardBeingWritten, pars, indexes);
+        if (clashes.isEmpty()) {
+            return;
+        }
+
+        String named = clashes.stream()
+                .map(id -> scorecardRepository.findById(id).map(Scorecard::getName).orElse("#" + id))
+                .collect(Collectors.joining(", "));
+        log.warn("Refused a card carrying the same {} pars and stroke indexes as {}",
+                holes.size(), named);
+        throw VspApiException.forField(VspErrorCode.VALIDATION_001, "holes",
+                Map.of("holes", "this card has the same " + holes.size() + " pars AND the same "
+                        + holes.size() + " stroke indexes as " + named
+                        + ". Two real courses do not agree on all " + (2 * holes.size())
+                        + " of those numbers — check the card is the right club's."));
+    }
+
+    /**
      * The photograph this card should be reviewed against.
      *
      * <p>What the app sent, when it sent anything. An app that reads
@@ -199,6 +256,8 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                     Map.of("strokeIndex", "two holes share a stroke index"));
         }
 
+        int declared = 0;
+        boolean everySegmentKnowsItsSize = true;
         for (Long segmentCourseId : request.segmentCourseIds()) {
             Course segment = courseRepository.findById(segmentCourseId)
                     .orElseThrow(() -> new VspApiException(VspErrorCode.COURSE_001));
@@ -206,7 +265,99 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
                 throw VspApiException.forField(VspErrorCode.VALIDATION_001, "segmentCourseIds",
                         Map.of("segmentCourseIds", "đường " + segmentCourseId + " belongs to another club"));
             }
+            Integer size = segment.getHolesCount();
+            if (size == null || size <= 0) {
+                everySegmentKnowsItsSize = false;
+            } else {
+                declared += size;
+            }
         }
+
+        // The đường this card covers have to add up to the card. Two segments
+        // are for a card printed across two nines — "A + B" — and nothing said
+        // so: Kings Island's photographed card is attached to the eighteen-hole
+        // Championship course AND to the eighteen-hole Kings Course, so an
+        // eighteen-hole card claims to span thirty-six holes, and its pars
+        // match neither. Only judged where every segment knows its own size.
+        if (everySegmentKnowsItsSize && declared != numbers.size()) {
+            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "segmentCourseIds",
+                    Map.of("segmentCourseIds", "this card has " + numbers.size()
+                            + " holes but the đường chosen add up to " + declared
+                            + " — pick the đường this card was printed for"));
+        }
+
+        checkAgainstPrintedTotals(request);
+    }
+
+    /**
+     * The card against the sums the club printed beside it.
+     *
+     * <p>Everything else here tests the card against itself. These are the one
+     * independent fact a photograph carries: eighteen holes over five tees is
+     * ninety numbers, and a row that adds up to the OUT, IN and TOTAL printed
+     * next to it was not misread. It is the check the offline loader has had
+     * since nine fabricated cards got published, and the live path — the one
+     * actual golfers use — had nothing of the kind.
+     *
+     * <p>It refuses rather than warns. A row that misses its own printed total
+     * has a digit wrong in it and the card does not say which, so there is
+     * nothing to publish; and the golfer is holding the card, which is the one
+     * moment the wrong cell can still be found. Now that a trusted reporter's
+     * cards publish on submission there is also no reviewer downstream who
+     * would otherwise have caught it.
+     *
+     * <p>Only what was sent is judged. A card that prints no totals, or a
+     * photograph that cut them off, is still a card worth having.
+     */
+    private void checkAgainstPrintedTotals(ScorecardSubmissionRequest request) {
+        int holes = request.holes().size();
+
+        int parOut = request.holes().stream()
+                .filter(line -> line.hole() <= 9)
+                .mapToInt(ScorecardSubmissionRequest.HoleLine::par).sum();
+        int parIn = request.holes().stream()
+                .filter(line -> line.hole() > 9)
+                .mapToInt(ScorecardSubmissionRequest.HoleLine::par).sum();
+
+        requireAgrees("par", "OUT", request.parOut(), parOut);
+        requireAgrees("par", "IN", request.parIn(), parIn);
+        requireAgrees("par", "TOTAL", request.parTotal(), parOut + parIn);
+
+        if (request.tees() == null) {
+            return;
+        }
+        for (ScorecardSubmissionRequest.TeeLine tee : request.tees()) {
+            if (tee.yardages() == null || tee.yardages().isEmpty()) {
+                continue;
+            }
+            // A nine that is only half photographed sums to less than its
+            // printed OUT without a single digit being wrong, so a row that
+            // does not carry every hole is not judged against the club's sums.
+            if (tee.yardages().size() != holes) {
+                continue;
+            }
+            int out = tee.yardages().stream()
+                    .filter(y -> y.hole() <= 9)
+                    .mapToInt(ScorecardSubmissionRequest.Yardage::yards).sum();
+            int in = tee.yardages().stream()
+                    .filter(y -> y.hole() > 9)
+                    .mapToInt(ScorecardSubmissionRequest.Yardage::yards).sum();
+
+            String name = tee.name() == null ? "this tee" : tee.name();
+            requireAgrees(name, "OUT", tee.yardsOut(), out);
+            requireAgrees(name, "IN", tee.yardsIn(), in);
+            requireAgrees(name, "TOTAL", tee.yardsTotal(), out + in);
+        }
+    }
+
+    private void requireAgrees(String row, String column, Integer printed, int read) {
+        if (printed == null || printed == read) {
+            return;
+        }
+        throw VspApiException.forField(VspErrorCode.VALIDATION_001, "holes",
+                Map.of("holes", row + " adds up to " + read + " but the card prints "
+                        + printed + " in its " + column + " column — one number in that"
+                        + " row is wrong, and the card does not say which"));
     }
 
     @Override
@@ -228,6 +379,8 @@ public class ScorecardCorrectionServiceImpl implements ScorecardCorrectionServic
         Scorecard card = scorecardRepository
                 .findByFacilityIdAndName(facilityId, proposed.name())
                 .orElseGet(Scorecard::new);
+
+        refuseIfAnotherCourseAlreadyCarriesThisCard(card.getId(), proposed);
 
         card.setFacilityId(facilityId);
         card.setName(proposed.name());

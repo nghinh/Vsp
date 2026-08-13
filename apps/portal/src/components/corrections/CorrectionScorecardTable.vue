@@ -15,6 +15,22 @@
         <span class="meta-label">Tổng par</span>
         <span class="meta-value">{{ parTotal }}</span>
       </div>
+      <!--
+        What the club printed, beside what the pars add up to. Shown only when
+        the card carries it: the sums stopped at the golfer's screen until the
+        submission could carry them, so most cards in the queue have none, and
+        an empty field here would read as a card that failed rather than one
+        submitted before the field existed.
+      -->
+      <div v-if="par.total.printed !== null" class="meta-item">
+        <span class="meta-label">Thẻ in</span>
+        <span class="meta-value" :class="{ 'value-off': par.total.off }">
+          {{ par.out.printed ?? '—' }} / {{ par.in.printed ?? '—' }} /
+          {{ par.total.printed }}
+          <span v-if="par.total.off" class="off-note">✕ lệch</span>
+          <span v-else class="ok-note">✓ khớp</span>
+        </span>
+      </div>
     </div>
 
     <!--
@@ -172,6 +188,7 @@ import {
   droppedTeeIndexes,
   duplicateStrokeIndexes,
   hasLadiesIndex,
+  parComparison,
   parseProposedCard,
   parTotal as sumPar,
   scorecardProblems,
@@ -190,6 +207,7 @@ const card = computed(() =>
 );
 
 const parTotal = computed(() => sumPar(card.value));
+const par = computed(() => parComparison(card.value));
 const duplicateIndexes = computed(() => duplicateStrokeIndexes(card.value));
 const problems = computed(() => scorecardProblems(card.value));
 
@@ -326,6 +344,27 @@ function isOff(read: number | null, printed: number | null): boolean {
 .total-off {
   color: #b45309;
   font-weight: 600;
+}
+
+/* The par row against the club's own sums. Same amber as the tee rows use
+   for the same fault, so a reviewer learns one colour rather than two. */
+.value-off {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.off-note {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #b45309;
+  margin-left: 0.35rem;
+}
+
+.ok-note {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #15803d;
+  margin-left: 0.35rem;
 }
 
 .printed {
