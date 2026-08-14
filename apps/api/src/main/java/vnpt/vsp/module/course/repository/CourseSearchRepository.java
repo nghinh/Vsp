@@ -44,21 +44,70 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
     // ─── Text Search ────────────────────────────────────────────────────────
 
     /**
-     * Text search across facility name, course name, and facility address.
-     * Case-insensitive partial match on all fields.
-     * Per Story 3.2 AC-1.
+     * Text search across facility name, course name and address.
+     *
+     * <h2>Diacritics</h2>
+     *
+     * <p>This matched {@code LOWER(name) LIKE '%query%'}, so "Long Biên" found
+     * the club and "Long Bien" found nothing at all. On a phone most people
+     * type without diacritics or get half of them, which is why the same club
+     * appeared and disappeared depending on how it was typed. Both sides are
+     * folded through {@code unaccent} now, which handles đ → d as well.
+     *
+     * <h2>Word by word, in any order</h2>
+     *
+     * <p>The old query needed the whole phrase as one substring, so "golf long
+     * bien" and "bien long" both found nothing while "long bien" worked. Every
+     * word must now appear somewhere in the club's name, the course's name or
+     * the address — and where is not important, which is what makes "long bien
+     * golf" and "golf long bien" the same search.
+     *
+     * <h2>Best match first</h2>
+     *
+     * <p>A club whose name starts with what was typed comes before one that
+     * merely contains it, which comes before a match on the course name, which
+     * comes before a match only in the address. Without this, searching a
+     * province returned its clubs in id order and the one being looked for was
+     * as likely to be last as first.
+     *
+     * <p>An empty query matches everything, which is what the app asks for when
+     * it opens the list.
      */
-    @Query("""
-        SELECT c FROM Course c
-        JOIN FETCH c.facility f
-        WHERE EXISTS (SELECT 1 FROM Hole h WHERE h.course.id = c.id)
-          AND (c.metadata.expiryDate IS NULL OR c.metadata.expiryDate > CURRENT_DATE)
-          AND (
-            LOWER(f.name) LIKE LOWER(CONCAT('%', :query, '%'))
-            OR LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
-            OR LOWER(f.address) LIKE LOWER(CONCAT('%', :query, '%'))
-          )
-        """)
+    @Query(value = """
+        SELECT c.* FROM courses c
+        JOIN golf_facilities f ON f.id = c.facility_id
+        WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+          AND (c.expiry_date IS NULL OR c.expiry_date > CURRENT_DATE)
+          AND NOT EXISTS (
+                SELECT 1 FROM unnest(
+                    string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
+                WHERE token <> ''
+                  AND unaccent(lower(f.name || ' ' || c.name || ' '
+                                     || coalesce(f.address, ''))) NOT LIKE '%' || token || '%'
+              )
+        ORDER BY
+          CASE
+            WHEN unaccent(lower(f.name)) LIKE unaccent(lower(CAST(:query AS text))) || '%' THEN 0
+            WHEN unaccent(lower(f.name)) LIKE '%' || unaccent(lower(CAST(:query AS text))) || '%' THEN 1
+            WHEN unaccent(lower(c.name)) LIKE '%' || unaccent(lower(CAST(:query AS text))) || '%' THEN 2
+            ELSE 3
+          END,
+          f.name, c.name
+        """,
+        countQuery = """
+        SELECT count(*) FROM courses c
+        JOIN golf_facilities f ON f.id = c.facility_id
+        WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+          AND (c.expiry_date IS NULL OR c.expiry_date > CURRENT_DATE)
+          AND NOT EXISTS (
+                SELECT 1 FROM unnest(
+                    string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
+                WHERE token <> ''
+                  AND unaccent(lower(f.name || ' ' || c.name || ' '
+                                     || coalesce(f.address, ''))) NOT LIKE '%' || token || '%'
+              )
+        """,
+        nativeQuery = true)
     Page<Course> searchByText(@Param("query") String query, Pageable pageable);
 
     // ─── Nearby Search ──────────────────────────────────────────────────────
