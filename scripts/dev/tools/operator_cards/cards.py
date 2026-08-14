@@ -313,4 +313,97 @@ CARDS = {
             "Red": {"UNSPECIFIED": (67.1, 116)},
         },
     },
+
+    # Long Biên Golf Course, sân A / B / C — the Sacombank printing, which the
+    # operator photographed and which reconciles on every printed TOTAL: four
+    # tees on A and B, three on C, and par on all three.
+    #
+    # WHICH CLUB THIS IS
+    #
+    #   It arrived labelled Đồng Mô, which is Kings Island. It is not. Two
+    #   photographs of an A/B/C card were supplied, one of them branded LONG
+    #   BIÊN GOLF COURSE, and they carry the same eighteen numbers where it
+    #   matters: sân A par 4,4,4,3,5,3,4,4,5 and index 3,5,7,8,2,6,9,1,4 on
+    #   both, sân C likewise, and White and Red totalling 2,956 and 2,678 on
+    #   both. Those same pars and indexes are already stored for Long Biên from
+    #   longbiengolf.vn, the club's own website.
+    #
+    #   Kings Island is three eighteens — Kings, Mountain View, Lakeside — and
+    #   none carries these pars. Two real clubs do not agree on thirty-six
+    #   numbers; one club printing its card twice does. Only Gold and Blue
+    #   differ between the two printings, which is a tee re-measured.
+    #
+    # WHAT IT ADDS
+    #
+    #   The yardages. Long Biên had par and stroke index and not one tee
+    #   distance, so a golfer could not pick a tee or have a handicap computed
+    #   against one.
+    #
+    # THE ONE CELL PAIR NOT TAKEN FROM THE PHOTOGRAPH
+    #
+    #   Sân B's index reads 5,7,8,9,6,4,2,3,1 off this photograph against the
+    #   website's 5,7,8,9,6,3,2,4,1 — holes 6 and 8 swapped. A and C agree with
+    #   the website exactly, which is what makes the website credible here, and
+    #   one uncertain read of two cells is not enough to overturn it. The
+    #   website's order is kept and the disagreement is recorded rather than
+    #   resolved by guessing.
+    "LONG_BIEN_A": {
+        "club": "Long Biên Golf Course",
+        "name": "Sân A",
+        "source": "club card photographed at the course",
+        "tees": ["Gold", "Blue", "White", "Red"],
+        "holes": [
+            (1, 4, 3, 481, 473, 375, 350),
+            (2, 4, 5, 449, 422, 368, 326),
+            (3, 4, 7, 381, 360, 319, 275),
+            (4, 3, 8, 208, 188, 121, 104),
+            (5, 5, 2, 543, 513, 440, 437),
+            (6, 3, 6, 199, 186, 148, 136),
+            (7, 4, 9, 383, 350, 317, 284),
+            (8, 4, 1, 480, 470, 406, 349),
+            (9, 5, 4, 539, 515, 462, 417),
+        ],
+        "totals": {"par": 36, "Gold": 3663, "Blue": 3477,
+                   "White": 2956, "Red": 2678},
+    },
+
+    "LONG_BIEN_B": {
+        "club": "Long Biên Golf Course",
+        "name": "Sân B",
+        "source": "club card photographed at the course",
+        "tees": ["Gold", "Blue", "White", "Red"],
+        "holes": [
+            (1, 5, 5, 515, 506, 439, 423),
+            (2, 3, 7, 190, 176, 126, 101),
+            (3, 4, 8, 402, 379, 339, 279),
+            (4, 4, 9, 344, 323, 271, 245),
+            (5, 3, 6, 189, 168, 126, 106),
+            (6, 4, 3, 385, 373, 326, 277),
+            (7, 4, 2, 370, 355, 302, 257),
+            (8, 5, 4, 615, 594, 545, 515),
+            (9, 4, 1, 447, 424, 360, 330),
+        ],
+        "totals": {"par": 36, "Gold": 3457, "Blue": 3298,
+                   "White": 2834, "Red": 2533},
+    },
+
+    # Sân C prints no Gold row.
+    "LONG_BIEN_C": {
+        "club": "Long Biên Golf Course",
+        "name": "Sân C",
+        "source": "club card photographed at the course",
+        "tees": ["Blue", "White", "Red"],
+        "holes": [
+            (1, 4, 5, 381, 306, 252),
+            (2, 4, 2, 381, 336, 266),
+            (3, 4, 8, 350, 309, 267),
+            (4, 4, 9, 385, 349, 312),
+            (5, 3, 3, 141, 118, 96),
+            (6, 4, 7, 335, 293, 236),
+            (7, 4, 1, 422, 353, 305),
+            (8, 5, 6, 521, 466, 436),
+            (9, 3, 4, 167, 119, 100),
+        ],
+        "totals": {"par": 35, "Blue": 3083, "White": 2649, "Red": 2270},
+    },
 }
