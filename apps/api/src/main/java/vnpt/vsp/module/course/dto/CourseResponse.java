@@ -1,6 +1,7 @@
 package vnpt.vsp.module.course.dto;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -20,6 +21,21 @@ public class CourseResponse {
     private List<TeeSetSummaryDto> teeSets;
     private Instant createdAt;
     private Instant updatedAt;
+
+    /**
+     * The day this course stopped being offered, or null while it still is.
+     *
+     * <p>Retiring a course does not delete it and does not delete its holes —
+     * some of them carry measured coordinates that exist on no other course.
+     * It stops appearing in search and in the round-setup picker, and keeps
+     * everything else.
+     *
+     * <p>Admin-only, and deliberately not on DataQualityDto: that one is read
+     * by the mobile badge, and this is not a statement about accuracy. Without
+     * it an operator looking at Kings Island sees four courses and no reason
+     * why golfers are offered three.
+     */
+    private LocalDate retiredOn;
 
     // ─── Getters / Setters ──────────────────────────────────────────────────
 
@@ -49,6 +65,9 @@ public class CourseResponse {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public LocalDate getRetiredOn() { return retiredOn; }
+    public void setRetiredOn(LocalDate retiredOn) { this.retiredOn = retiredOn; }
 
     public Instant getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }

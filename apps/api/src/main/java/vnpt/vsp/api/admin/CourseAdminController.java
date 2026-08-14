@@ -191,6 +191,7 @@ public class CourseAdminController {
                 return dto;
             }).collect(Collectors.toList()));
         }
+        r.setRetiredOn(c.getMetadata() != null ? c.getMetadata().getExpiryDate() : null);
         r.setCreatedAt(c.getMetadata() != null ? c.getMetadata().getCreatedAt() : null);
         r.setUpdatedAt(c.getMetadata() != null ? c.getMetadata().getUpdatedAt() : null);
         return r;

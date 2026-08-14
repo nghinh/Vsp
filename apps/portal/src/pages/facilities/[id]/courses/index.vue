@@ -100,7 +100,19 @@
         @click="navigateToHoles(course.id)"
       >
         <div class="course-header">
-          <span class="course-name">{{ course.name }}</span>
+          <span class="course-name" :class="{ retired: course.retiredOn }">{{ course.name }}</span>
+          <!--
+            An operator looking at Kings Island sees four courses while golfers
+            are offered three. Without this there is nothing on screen that
+            says why, and the missing one reads as a bug.
+          -->
+          <span
+            v-if="course.retiredOn"
+            class="retired-badge"
+            :title="`Ngừng phục vụ từ ${course.retiredOn}. Sân và các hố vẫn được giữ — chỉ ẩn khỏi tìm kiếm và khỏi màn chọn sân khi mở vòng.`"
+          >
+            Ngừng phục vụ
+          </span>
           <span v-if="course.dataQuality" class="quality-badge" :class="qualityClass(course.dataQuality)">
             {{ course.dataQuality.accuracyClass ?? '?' }}
           </span>
@@ -215,6 +227,21 @@ onMounted(() => loadCourses());
 </script>
 
 <style scoped>
+.retired-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.4rem;
+  margin-left: 0.5rem;
+}
+
+.course-name.retired {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
 .courses-page {
   font-family: system-ui, -apple-system, sans-serif;
   padding: 1.5rem;

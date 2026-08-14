@@ -30,6 +30,14 @@ export interface CourseResponse {
   teeSets: TeeSetSummary[];
   createdAt: string; // ISO-8601
   updatedAt: string; // ISO-8601
+  /**
+   * The day this course stopped being offered, or null while it still is.
+   *
+   * Retired is not deleted: the course and its holes stay, because some of
+   * those holes carry measured coordinates that exist on no other course. It
+   * simply stops appearing in golfer search and in the round-setup picker.
+   */
+  retiredOn: string | null;
 }
 
 /** Request to create a new course under a facility. */
