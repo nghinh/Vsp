@@ -3505,4 +3505,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holeAdviceOpen => 'Hole info & advice';
+
+  @override
+  String get holeAdviceStrokes => 'Shots received';
+
+  @override
+  String holeAdviceStrokesValue(int strokes, int netPar) {
+    return '+$strokes · net par $netPar';
+  }
+
+  @override
+  String get holeAdviceStrokesNone => 'No shot received on this hole';
+
+  @override
+  String get holeAdviceNoIndex =>
+      'This course has no stroke index yet, so shots cannot be allocated.';
+
+  @override
+  String get holeAdviceClubs => 'Club for each shot';
+
+  @override
+  String get holeAdviceClubsEmpty =>
+      'Add carry distances to your bag to get club suggestions.';
+
+  @override
+  String holeAdviceClubShot(String label, int meters) {
+    return '$label · ${meters}m left';
+  }
+
+  @override
+  String get holeAdviceClubNone => 'nothing reaches';
 }

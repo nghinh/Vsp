@@ -24,6 +24,9 @@ class HoleAdvice {
     this.bestStrokes,
     this.fairwaysHit,
     this.greensInRegulation,
+    this.strokesReceived,
+    this.netPar,
+    this.clubs = const [],
     this.advice,
     this.cached = false,
   });
@@ -46,6 +49,20 @@ class HoleAdvice {
   final int? fairwaysHit;
   final int? greensInRegulation;
 
+  /// How many shots this golfer receives here, from their handicap and the
+  /// hole's stroke index. Null when either is unknown — half the country's
+  /// cards publish no index, and guessing one hands out shots on the wrong
+  /// holes.
+  final int? strokesReceived;
+
+  /// Par plus the shots received: what this golfer is really playing it in.
+  final int? netPar;
+
+  /// Which club covers each shot the hole asks for, from the carry distances
+  /// in this golfer's own bag. Empty when the bag has none — there is no table
+  /// of averages, because a 7-iron is not a distance.
+  final List<ClubForShot> clubs;
+
   /// Null when the server has no model configured. Never a placeholder.
   final String? advice;
 
@@ -66,8 +83,40 @@ class HoleAdvice {
     bestStrokes: json['bestStrokes'] as int?,
     fairwaysHit: json['fairwaysHit'] as int?,
     greensInRegulation: json['greensInRegulation'] as int?,
+    strokesReceived: json['strokesReceived'] as int?,
+    netPar: json['netPar'] as int?,
+    clubs: (json['clubs'] as List<dynamic>? ?? [])
+        .map((e) => ClubForShot.fromJson(e as Map<String, dynamic>))
+        .toList(),
     advice: json['advice'] as String?,
     cached: json['cached'] as bool? ?? false,
+  );
+}
+
+/// One shot of the hole, and the club that covers it.
+class ClubForShot {
+  const ClubForShot({
+    required this.shot,
+    required this.label,
+    required this.remainingMeters,
+    this.club,
+    this.carryMeters,
+  });
+
+  final int shot;
+  final String label;
+  final int remainingMeters;
+
+  /// Null where nothing in the bag reaches — which is itself the answer.
+  final String? club;
+  final int? carryMeters;
+
+  factory ClubForShot.fromJson(Map<String, dynamic> json) => ClubForShot(
+    shot: json['shot'] as int? ?? 0,
+    label: json['label'] as String? ?? '',
+    remainingMeters: json['remainingMeters'] as int? ?? 0,
+    club: json['club'] as String?,
+    carryMeters: json['carryMeters'] as int?,
   );
 }
 

@@ -80,34 +80,48 @@ public class HoleAdviceService {
 
         History history = history(courseId, holeNumber, golferId);
         Golfer golfer = golfer(golferId);
-        List<String> bag = bag(golferId);
+        List<Club> bag = bag(golferId);
+
+        Integer strokes = strokesReceived(
+                golfer == null ? null : golfer.handicap, hole.strokeIndex, 18);
+        Integer netPar = strokes == null ? null : hole.par + strokes;
+        var clubs = clubs(hole, bag);
 
         String cacheKey = "hole-advice:" + courseId + ":" + holeNumber + ":"
                 + (teeName == null ? "-" : teeName) + ":" + golferId + ":" + history.rounds;
         String cached = cached(cacheKey);
         if (cached != null) {
-            return new HoleAdviceResponse(hole.par, hole.strokeIndex, hole.yards, hole.meters,
-                    hole.tee, history.rounds, history.average, history.best,
-                    history.fairways, history.girs, cached, true);
+            return response(hole, history, strokes,
+                    golfer == null ? null : golfer.handicap, netPar, clubs, cached, true);
         }
 
         if (!gateway.isEnabled()) {
             // The facts are worth serving without the model: the screen still
             // has a hole to draw, and the golfer still has their own record on
             // it. Only the sentence is missing.
-            return new HoleAdviceResponse(hole.par, hole.strokeIndex, hole.yards, hole.meters,
-                    hole.tee, history.rounds, history.average, history.best,
-                    history.fairways, history.girs, null, false);
+            return response(hole, history, strokes,
+                    golfer == null ? null : golfer.handicap, netPar, clubs, null, false);
         }
 
-        String advice = gateway.ask(prompt(hole, history, golfer, bag), MAX_TOKENS).trim();
+        String advice = gateway.ask(
+                prompt(hole, history, golfer, bag, strokes, netPar, clubs), MAX_TOKENS).trim();
         remember(cacheKey, advice);
 
-        log.info("Advised golfer {} on course {} hole {} ({} rounds of history)",
-                golferId, courseId, holeNumber, history.rounds);
-        return new HoleAdviceResponse(hole.par, hole.strokeIndex, hole.yards, hole.meters,
-                hole.tee, history.rounds, history.average, history.best,
-                history.fairways, history.girs, advice, false);
+        log.info("Advised golfer {} on course {} hole {} ({} rounds of history, {} shot(s) received)",
+                golferId, courseId, holeNumber, history.rounds, strokes);
+        return response(hole, history, strokes,
+                golfer == null ? null : golfer.handicap, netPar, clubs, advice, false);
+    }
+
+    private HoleAdviceResponse response(
+            Hole hole, History history, Integer strokes, BigDecimal handicap,
+            Integer netPar, List<HoleAdviceResponse.ClubForShot> clubs,
+            String advice, boolean cached) {
+        return new HoleAdviceResponse(
+                hole.par, hole.strokeIndex, hole.yards, hole.meters, hole.tee,
+                history.rounds, history.average, history.best,
+                history.fairways, history.girs,
+                strokes, handicap, netPar, clubs, advice, cached);
     }
 
     /**
@@ -118,7 +132,9 @@ public class HoleAdviceService {
      * bunker on the right, and there is no bunker on file for any hole in this
      * database.
      */
-    private String prompt(Hole hole, History history, Golfer golfer, List<String> bag) {
+    private String prompt(Hole hole, History history, Golfer golfer, List<Club> bag,
+                          Integer strokes, Integer netPar,
+                          List<HoleAdviceResponse.ClubForShot> clubs) {
         var facts = new StringBuilder();
         facts.append("Hố ").append(hole.number)
                 .append(", par ").append(hole.par);
@@ -173,9 +189,28 @@ public class HoleAdviceService {
             facts.append("Người này chưa có dữ liệu vòng nào ở hố này.\n");
         }
 
+        if (strokes != null) {
+            facts.append("Chia gậy: người này được ").append(strokes)
+                    .append(" gậy handicap ở hố này, nên par thực tế của họ là ")
+                    .append(netPar).append(".\n");
+        }
+
         if (!bag.isEmpty()) {
             facts.append("Gậy trong túi và cự ly carry: ")
-                    .append(String.join(", ", bag)).append(".\n");
+                    .append(bag.stream()
+                            .map(c -> c.type + " " + c.carryMeters + "m")
+                            .collect(java.util.stream.Collectors.joining(", ")))
+                    .append(".\n");
+        }
+
+        if (!clubs.isEmpty()) {
+            facts.append("Gậy đã chọn sẵn cho từng cú (tính từ cự ly carry của họ): ");
+            for (var c : clubs) {
+                facts.append(c.label()).append(" còn ").append(c.remainingMeters())
+                        .append("m → ").append(c.club() == null ? "không đủ gậy" : c.club())
+                        .append("; ");
+            }
+            facts.append("\n");
         }
 
         return """
@@ -188,7 +223,9 @@ public class HoleAdviceService {
                 - Chỉ dựa vào số liệu ở trên. Nếu người chơi có lịch sử ở hố này, \
                 nói thẳng con số đó và điều chỉnh lời khuyên theo nó.
                 - Nếu biết cự ly gậy của họ, gọi tên gậy cụ thể nên dùng.
-                - Nêu một mục tiêu điểm số thực tế cho riêng người này, không phải par mặc định.
+                - Nêu mục tiêu điểm số theo PAR THỰC TẾ của họ ở trên nếu có, không phải par của hố.
+                - Không nhắc lại nguyên văn danh sách gậy đã chọn — nó đã hiển thị riêng \
+                trên màn hình. Chỉ nói khi có lý do đổi so với lựa chọn đó.
 
                 TUYỆT ĐỐI KHÔNG:
                 - Không mô tả bunker, hồ nước, dogleg, gió hay bất cứ chi tiết địa hình nào. \
@@ -314,20 +351,104 @@ public class HoleAdviceService {
         return golfer;
     }
 
-    private List<String> bag(Long golferId) {
+    private List<Club> bag(Long golferId) {
         var rows = em.createNativeQuery("""
                 SELECT c.club_type, c.carry_distance
                 FROM clubs c JOIN golf_bags b ON b.id = c.golf_bag_id
                 WHERE b.golfer_account_id = :golfer AND c.carry_distance IS NOT NULL
                 ORDER BY c.carry_distance DESC
                 """).setParameter("golfer", golferId).getResultList();
-        var bag = new ArrayList<String>();
+        var bag = new ArrayList<Club>();
         for (Object row : rows) {
             Object[] r = (Object[]) row;
-            bag.add(r[0] + " " + Math.round(((Number) r[1]).doubleValue()) + "m");
+            bag.add(new Club((String) r[0],
+                    (int) Math.round(((Number) r[1]).doubleValue())));
         }
         return bag;
     }
+
+    /**
+     * How many shots this golfer receives on this hole.
+     *
+     * <p>The Rules define it exactly: a handicap of 20 over eighteen holes is
+     * one shot everywhere and a second on the four hardest, which is what the
+     * stroke index ranks. So it is arithmetic, and it is computed here rather
+     * than asked of a model — a model that got it wrong would be wrong in a way
+     * that changes a net score, silently, for everyone playing off that card.
+     *
+     * <p>Null when the golfer has no handicap on file or the club published no
+     * index row. Half the country's cards have no index, and guessing one would
+     * hand out shots on the wrong holes.
+     */
+    private Integer strokesReceived(BigDecimal handicap, Integer strokeIndex, int holes) {
+        if (handicap == null || strokeIndex == null) {
+            return null;
+        }
+        int playing = handicap.setScale(0, java.math.RoundingMode.HALF_UP).intValue();
+        // A plus handicap gives shots back, on the easiest holes first.
+        if (playing < 0) {
+            int given = (-playing) / holes;
+            int remainder = (-playing) % holes;
+            return -(given + (strokeIndex > holes - remainder ? 1 : 0));
+        }
+        return playing / holes + (strokeIndex <= playing % holes ? 1 : 0);
+    }
+
+    /**
+     * The clubs the hole asks for, from this golfer's own carry distances.
+     *
+     * <p>A par 3 is one shot at the flag. Anything longer is a tee shot with
+     * the longest club in the bag and then whatever covers what is left; a par
+     * 5 gets a third if the second cannot reach.
+     *
+     * <p>The club chosen is the shortest one that still carries the distance —
+     * a golfer who takes the club that only just reaches on a good strike
+     * comes up short on an average one. Nothing is suggested for a bag with no
+     * carry distances in it: there is no table of averages here, because a
+     * 7-iron is not a distance.
+     */
+    private List<HoleAdviceResponse.ClubForShot> clubs(Hole hole, List<Club> bag) {
+        if (bag.isEmpty() || hole.lengthMeters() == null) {
+            return List.of();
+        }
+        var plan = new ArrayList<HoleAdviceResponse.ClubForShot>();
+        int remaining = hole.lengthMeters();
+        int shotsAllowed = Math.max(1, hole.par - 2);   // par 3 → 1, par 5 → 3
+
+        for (int shot = 1; shot <= shotsAllowed && remaining > 0; shot++) {
+            boolean lastShot = shot == shotsAllowed;
+            Club pick = lastShot ? shortestThatCarries(bag, remaining) : bag.get(0);
+            String label = shotsAllowed == 1 ? "Cú vào green"
+                    : shot == 1 ? "Cú phát bóng"
+                    : lastShot ? "Cú vào green" : "Cú tiếp theo";
+
+            plan.add(new HoleAdviceResponse.ClubForShot(
+                    shot, label, remaining,
+                    pick == null ? null : pick.type,
+                    pick == null ? null : pick.carryMeters));
+
+            if (pick == null) {
+                break;
+            }
+            remaining -= pick.carryMeters;
+        }
+        return plan;
+    }
+
+    /// The shortest club that still covers the distance, or the longest in the
+    /// bag when nothing does — which is the honest answer to "I cannot reach".
+    private Club shortestThatCarries(List<Club> bag, int metres) {
+        Club best = null;
+        for (Club club : bag) {
+            if (club.carryMeters >= metres
+                    && (best == null || club.carryMeters < best.carryMeters)) {
+                best = club;
+            }
+        }
+        return best != null ? best : bag.get(0);
+    }
+
+    private record Club(String type, int carryMeters) {}
 
     // ─── Cache ───────────────────────────────────────────────────────────────
 
@@ -351,6 +472,16 @@ public class HoleAdviceService {
     }
 
     private static final class Hole {
+        /// The hole's length in metres, from the tee's yardage where the card
+        /// has one and from the measured coordinates otherwise.
+        Integer lengthMeters() {
+            if (yards != null) {
+                return (int) Math.round(yards * 0.9144);
+            }
+            return meters == null ? null : meters.setScale(0,
+                    java.math.RoundingMode.HALF_UP).intValue();
+        }
+
         int number;
         int par;
         Integer strokeIndex;

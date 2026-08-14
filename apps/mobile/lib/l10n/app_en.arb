@@ -2233,5 +2233,33 @@
   "holeAdviceNoHistory": "You have not played this hole before — no record of your own to advise from yet.",
   "holeAdviceCaddie": "CADDIE SUGGESTS",
   "holeAdviceFailed": "This hole's information could not be loaded.",
-  "holeAdviceOpen": "Hole info & advice"
+  "holeAdviceOpen": "Hole info & advice",
+  "holeAdviceStrokes": "Shots received",
+  "holeAdviceStrokesValue": "+{strokes} · net par {netPar}",
+  "@holeAdviceStrokesValue": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "netPar": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceStrokesNone": "No shot received on this hole",
+  "holeAdviceNoIndex": "This course has no stroke index yet, so shots cannot be allocated.",
+  "holeAdviceClubs": "Club for each shot",
+  "holeAdviceClubsEmpty": "Add carry distances to your bag to get club suggestions.",
+  "holeAdviceClubShot": "{label} · {meters}m left",
+  "@holeAdviceClubShot": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceClubNone": "nothing reaches"
 }

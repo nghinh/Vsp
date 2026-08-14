@@ -63,6 +63,7 @@ import '../../weather/presentation/widgets/weather_conditions_panel.dart';
 import '../../weather/presentation/widgets/weather_empty_view.dart';
 import '../../weather/presentation/widgets/weather_error_view.dart';
 import '../../weather/presentation/widgets/weather_loading_placeholder.dart';
+import 'package:vsp_mobile/features/hole_map/presentation/widgets/hole_advice_sheet.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Bottom tab index constants for the active round screen.
@@ -595,6 +596,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
           // More tab — with correction submission entry point
           _MoreTab(
             courseId: widget.courseId,
+            holeNumber: _currentHoleNumber,
             // Null rather than the hole number when the package cannot tell us
             // the real id: a correction with no hole attached can still be
             // placed by its coordinates, one attached to the wrong hole cannot.
@@ -947,8 +949,13 @@ class _MoreTab extends StatelessWidget {
   final LocationService locationService;
   final VoidCallback onEndRound;
 
+  /// The hole the round says the golfer is on, so the advice sheet opens on it
+  /// rather than on the first.
+  final int holeNumber;
+
   const _MoreTab({
     required this.courseId,
+    required this.holeNumber,
     this.holeId,
     required this.locationService,
     required this.onEndRound,
@@ -986,6 +993,19 @@ class _MoreTab extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+            // Hole info, shots received and club for each shot. A labelled
+            // tile because the map header's icon is one glyph among five and
+            // nobody found it.
+            if (int.tryParse(courseId) != null)
+              _MoreMenuTile(
+                icon: Icons.tips_and_updates_outlined,
+                label: l10n.holeAdviceOpen,
+                onTap: () => HoleAdviceSheet.show(
+                  context,
+                  courseId: int.parse(courseId),
+                  holeNumber: holeNumber,
+                ),
+              ),
             // Report Correction — opens CorrectionSubmissionScreen
             _MoreMenuTile(
               icon: Icons.flag_outlined,

@@ -50,7 +50,8 @@ class HoleAdvicePromptTest {
 
     @Test
     void namesTheClubsTheGolferActuallyCarries() throws Exception {
-        String prompt = prompt(hole(), history(0), null, List.of("DRIVER 230m", "IRON_7 145m"));
+        String prompt = prompt(hole(), history(0), null,
+                List.of(club("DRIVER", 230), club("IRON_7", 145)));
 
         assertThat(prompt).contains("DRIVER 230m", "IRON_7 145m");
     }
@@ -69,12 +70,35 @@ class HoleAdvicePromptTest {
 
     // ─── Reaching the private prompt builder ─────────────────────────────────
 
-    private String prompt(Object hole, Object history, Object golfer, List<String> bag)
+    private String prompt(Object hole, Object history, Object golfer, List<Object> bag)
             throws Exception {
+        return prompt(hole, history, golfer, bag, null, null, List.of());
+    }
+
+    private String prompt(Object hole, Object history, Object golfer, List<Object> bag,
+                          Integer strokes, Integer netPar, List<?> clubs) throws Exception {
         Method m = HoleAdviceService.class.getDeclaredMethod("prompt",
-                inner("Hole"), inner("History"), inner("Golfer"), List.class);
+                inner("Hole"), inner("History"), inner("Golfer"), List.class,
+                Integer.class, Integer.class, List.class);
         m.setAccessible(true);
-        return (String) m.invoke(service, hole, history, golfer, bag);
+        return (String) m.invoke(service, hole, history, golfer, bag, strokes, netPar, clubs);
+    }
+
+    /// A club is named by what it carries for this golfer, not by a table.
+    private Object club(String type, int carry) throws Exception {
+        var c = Class.forName("vnpt.vsp.module.ai.HoleAdviceService$Club");
+        var ctor = c.getDeclaredConstructors()[0];
+        ctor.setAccessible(true);
+        return ctor.newInstance(type, carry);
+    }
+
+    /// The shots a golfer receives change what a good score is, so the prompt
+    /// has to carry net par or the model aims at the wrong number.
+    @Test
+    void carriesTheNetParTheGolferIsActuallyPlayingTo() throws Exception {
+        String prompt = prompt(hole(), history(0), null, List.of(), 2, 6, List.of());
+
+        assertThat(prompt).contains("được 2 gậy handicap", "par thực tế của họ là 6");
     }
 
     private static Class<?> inner(String name) throws Exception {

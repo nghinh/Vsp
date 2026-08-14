@@ -3502,4 +3502,34 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holeAdviceOpen => 'Thông tin hố & gợi ý';
+
+  @override
+  String get holeAdviceStrokes => 'Chia gậy';
+
+  @override
+  String holeAdviceStrokesValue(int strokes, int netPar) {
+    return '+$strokes gậy · par thực tế $netPar';
+  }
+
+  @override
+  String get holeAdviceStrokesNone => 'Không được gậy nào ở hố này';
+
+  @override
+  String get holeAdviceNoIndex =>
+      'Sân chưa có chỉ số gậy nên chưa chia được gậy.';
+
+  @override
+  String get holeAdviceClubs => 'Gợi ý gậy';
+
+  @override
+  String get holeAdviceClubsEmpty =>
+      'Thêm cự ly gậy vào túi gậy để được gợi ý gậy.';
+
+  @override
+  String holeAdviceClubShot(String label, int meters) {
+    return '$label · còn ${meters}m';
+  }
+
+  @override
+  String get holeAdviceClubNone => 'không đủ gậy';
 }

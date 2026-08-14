@@ -6247,6 +6247,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hole info & advice'**
   String get holeAdviceOpen;
+
+  /// No description provided for @holeAdviceStrokes.
+  ///
+  /// In en, this message translates to:
+  /// **'Shots received'**
+  String get holeAdviceStrokes;
+
+  /// No description provided for @holeAdviceStrokesValue.
+  ///
+  /// In en, this message translates to:
+  /// **'+{strokes} · net par {netPar}'**
+  String holeAdviceStrokesValue(int strokes, int netPar);
+
+  /// No description provided for @holeAdviceStrokesNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No shot received on this hole'**
+  String get holeAdviceStrokesNone;
+
+  /// No description provided for @holeAdviceNoIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'This course has no stroke index yet, so shots cannot be allocated.'**
+  String get holeAdviceNoIndex;
+
+  /// No description provided for @holeAdviceClubs.
+  ///
+  /// In en, this message translates to:
+  /// **'Club for each shot'**
+  String get holeAdviceClubs;
+
+  /// No description provided for @holeAdviceClubsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Add carry distances to your bag to get club suggestions.'**
+  String get holeAdviceClubsEmpty;
+
+  /// No description provided for @holeAdviceClubShot.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} · {meters}m left'**
+  String holeAdviceClubShot(String label, int meters);
+
+  /// No description provided for @holeAdviceClubNone.
+  ///
+  /// In en, this message translates to:
+  /// **'nothing reaches'**
+  String get holeAdviceClubNone;
 }
 
 class _AppLocalizationsDelegate

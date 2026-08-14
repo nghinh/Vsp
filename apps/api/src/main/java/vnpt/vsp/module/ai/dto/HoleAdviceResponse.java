@@ -1,6 +1,7 @@
 package vnpt.vsp.module.ai.dto;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * One hole, as this golfer should see it before they play it.
@@ -32,9 +33,41 @@ public record HoleAdviceResponse(
         Integer fairwaysHit,
         Integer greensInRegulation,
 
+        /// How many shots this golfer receives on this hole, from their
+        /// handicap and the hole's stroke index. Null when either is unknown.
+        ///
+        /// Computed, not asked of a model: it is arithmetic the Rules define
+        /// exactly, and a model that got it wrong would be wrong in a way that
+        /// changes a net score.
+        Integer strokesReceived,
+        BigDecimal handicapUsed,
+
+        /// Net par — what this golfer is really playing the hole in.
+        Integer netPar,
+
+        /// Which club to hit, for each shot the hole asks for, from the carry
+        /// distances in this golfer's own bag. Empty when the bag has none.
+        List<ClubForShot> clubs,
+
         /// Null when no model is configured. Never a placeholder sentence.
         String advice,
 
         /// True when the sentence came from the cache rather than the model.
         /// Surfaced so a "làm mới" control can exist without guessing.
-        boolean cached) {}
+        boolean cached) {
+
+    /**
+     * One shot of the hole, and the club that covers it.
+     *
+     * <p>{@code remainingMeters} is what is left standing at the ball, so the
+     * first entry of a par 4 is the tee shot and the second is the approach.
+     * A club is named only when the golfer's bag says how far it carries —
+     * there is no table of averages here, because a 7-iron is not a distance.
+     */
+    public record ClubForShot(
+            int shot,
+            String label,
+            int remainingMeters,
+            String club,
+            Integer carryMeters) {}
+}

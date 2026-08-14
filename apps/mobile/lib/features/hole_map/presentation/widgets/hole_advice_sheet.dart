@@ -195,6 +195,70 @@ class _Loaded extends StatelessWidget {
         ),
         const SizedBox(height: VspSpacing.md),
 
+        // ─── Chia gậy — the shots this golfer receives here ───────────────
+        //
+        // Computed by the server from handicap and stroke index, not asked of
+        // a model: it is arithmetic the Rules define, and a wrong answer would
+        // change a net score without anything on screen saying why.
+        _Band(
+          title: l10n.holeAdviceStrokes,
+          child: advice.strokesReceived == null
+              ? Text(l10n.holeAdviceNoIndex, style: _muted(theme))
+              : advice.strokesReceived == 0
+                  ? Text(l10n.holeAdviceStrokesNone, style: _muted(theme))
+                  : Text(
+                      l10n.holeAdviceStrokesValue(
+                        advice.strokesReceived!,
+                        advice.netPar ?? advice.par,
+                      ),
+                      style: const TextStyle(
+                        fontFamily: 'Fira Code',
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+        ),
+
+        // ─── Chọn gậy — from this golfer's own carry distances ────────────
+        _Band(
+          title: l10n.holeAdviceClubs,
+          child: advice.clubs.isEmpty
+              ? Text(l10n.holeAdviceClubsEmpty, style: _muted(theme))
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final shot in advice.clubs)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: VspSpacing.xs),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                l10n.holeAdviceClubShot(
+                                  shot.label,
+                                  shot.remainingMeters,
+                                ),
+                                style: _muted(theme),
+                              ),
+                            ),
+                            Text(
+                              shot.club ?? l10n.holeAdviceClubNone,
+                              style: TextStyle(
+                                fontFamily: 'Fira Code',
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: shot.club == null
+                                    ? theme.colorScheme.onSurfaceVariant
+                                    : theme.colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+        ),
+
         // ─── What this golfer has done here ───────────────────────────────
         if (advice.hasHistory) ...[
           Text(
@@ -281,6 +345,35 @@ class _Loaded extends StatelessWidget {
       return MeasureUnits.format(advice.meters!, unit);
     }
     return null;
+  }
+}
+
+TextStyle? _muted(ThemeData theme) => theme.textTheme.bodySmall?.copyWith(
+  color: theme.colorScheme.onSurfaceVariant,
+);
+
+/// A titled block. The sheet is read standing on a tee, so each answer gets its
+/// own heading rather than being one paragraph to scan.
+class _Band extends StatelessWidget {
+  const _Band({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: VspSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: theme.textTheme.labelLarge),
+          const SizedBox(height: VspSpacing.xs),
+          child,
+        ],
+      ),
+    );
   }
 }
 

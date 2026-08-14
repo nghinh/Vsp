@@ -44,6 +44,9 @@ HoleAdvice card({
   int? fairways,
   int? gir,
   String? advice,
+  int? strokesReceived,
+  int? netPar,
+  List<ClubForShot> clubs = const [],
 }) => HoleAdvice(
   par: par,
   strokeIndex: strokeIndex,
@@ -55,6 +58,9 @@ HoleAdvice card({
   fairwaysHit: fairways,
   greensInRegulation: gir,
   advice: advice,
+  strokesReceived: strokesReceived,
+  netPar: netPar,
+  clubs: clubs,
 );
 
 Future<void> pumpSheet(WidgetTester tester, HoleAdviceApi api) async {
@@ -146,6 +152,60 @@ void main() {
 
       expect(find.text('4.5'), findsOneWidget);
       expect(find.byKey(const Key('hole_advice_retry')), findsNothing);
+    });
+
+    // ─── Chia gậy ────────────────────────────────────────────────────────
+
+    testWidgets('shows the shots this golfer receives and their net par', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        _FakeApi(card(strokesReceived: 2, netPar: 6)),
+      );
+
+      expect(find.textContaining('+2'), findsOneWidget);
+      expect(find.textContaining('6'), findsWidgets);
+    });
+
+    // Half the country's cards publish no index row, and guessing one hands
+    // out shots on the wrong holes.
+    testWidgets('says why when the course has no stroke index', (tester) async {
+      await pumpSheet(tester, _FakeApi(card(strokeIndex: null)));
+
+      expect(find.textContaining('chưa có chỉ số gậy'), findsOneWidget);
+    });
+
+    testWidgets('says plainly when no shot is received here', (tester) async {
+      await pumpSheet(tester, _FakeApi(card(strokesReceived: 0, netPar: 4)));
+
+      expect(find.textContaining('Không được gậy nào'), findsOneWidget);
+    });
+
+    // ─── Chọn gậy ────────────────────────────────────────────────────────
+
+    testWidgets('names a club for each shot the hole asks for', (tester) async {
+      await pumpSheet(
+        tester,
+        _FakeApi(card(clubs: const [
+          ClubForShot(shot: 1, label: 'Cú phát bóng', remainingMeters: 370,
+              club: 'DRIVER', carryMeters: 230),
+          ClubForShot(shot: 2, label: 'Cú vào green', remainingMeters: 140,
+              club: 'IRON_7', carryMeters: 145),
+        ])),
+      );
+
+      expect(find.text('DRIVER'), findsOneWidget);
+      expect(find.text('IRON_7'), findsOneWidget);
+      expect(find.textContaining('370m'), findsOneWidget);
+    });
+
+    /// There is no table of averages to fall back on, so an empty bag is told
+    /// what to do rather than shown someone else's numbers.
+    testWidgets('asks for carry distances when the bag has none', (tester) async {
+      await pumpSheet(tester, _FakeApi(card()));
+
+      expect(find.textContaining('Thêm cự ly gậy'), findsOneWidget);
     });
   });
 }

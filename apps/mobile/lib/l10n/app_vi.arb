@@ -1253,5 +1253,33 @@
   "holeAdviceNoHistory": "Bạn chưa chơi hố này lần nào — chưa có số liệu riêng để tư vấn.",
   "holeAdviceCaddie": "CADDIE GỢI Ý",
   "holeAdviceFailed": "Không tải được thông tin hố này.",
-  "holeAdviceOpen": "Thông tin hố & gợi ý"
+  "holeAdviceOpen": "Thông tin hố & gợi ý",
+  "holeAdviceStrokes": "Chia gậy",
+  "holeAdviceStrokesValue": "+{strokes} gậy · par thực tế {netPar}",
+  "@holeAdviceStrokesValue": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "netPar": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceStrokesNone": "Không được gậy nào ở hố này",
+  "holeAdviceNoIndex": "Sân chưa có chỉ số gậy nên chưa chia được gậy.",
+  "holeAdviceClubs": "Gợi ý gậy",
+  "holeAdviceClubsEmpty": "Thêm cự ly gậy vào túi gậy để được gợi ý gậy.",
+  "holeAdviceClubShot": "{label} · còn {meters}m",
+  "@holeAdviceClubShot": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceClubNone": "không đủ gậy"
 }
