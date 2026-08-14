@@ -1270,14 +1270,14 @@
   "holeAdviceNoIndex": "Sân chưa có chỉ số gậy nên chưa chia được gậy.",
   "holeAdviceClubs": "Gợi ý gậy",
   "holeAdviceClubsEmpty": "Thêm cự ly gậy vào túi gậy để được gợi ý gậy.",
-  "holeAdviceClubShot": "{label} · còn {meters}m",
+  "holeAdviceClubShot": "{label} · còn {distance}",
   "@holeAdviceClubShot": {
     "placeholders": {
       "label": {
         "type": "String"
       },
-      "meters": {
-        "type": "int"
+      "distance": {
+        "type": "String"
       }
     }
   },

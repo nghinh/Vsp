@@ -6287,8 +6287,8 @@ abstract class AppLocalizations {
   /// No description provided for @holeAdviceClubShot.
   ///
   /// In en, this message translates to:
-  /// **'{label} · {meters}m left'**
-  String holeAdviceClubShot(String label, int meters);
+  /// **'{label} · {distance} left'**
+  String holeAdviceClubShot(String label, String distance);
 
   /// No description provided for @holeAdviceClubNone.
   ///

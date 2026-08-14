@@ -3529,8 +3529,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add carry distances to your bag to get club suggestions.';
 
   @override
-  String holeAdviceClubShot(String label, int meters) {
-    return '$label · ${meters}m left';
+  String holeAdviceClubShot(String label, String distance) {
+    return '$label · $distance left';
   }
 
   @override

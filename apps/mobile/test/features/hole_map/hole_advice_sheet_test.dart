@@ -10,6 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/features/hole_map/data/hole_advice_api.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/hole_advice_sheet.dart';
+import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
+    show DistanceUnit;
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 class _FakeApi extends HoleAdviceApi {
@@ -65,14 +67,23 @@ HoleAdvice card({
   clubsAreStandard: clubsAreStandard,
 );
 
-Future<void> pumpSheet(WidgetTester tester, HoleAdviceApi api) async {
+Future<void> pumpSheet(
+  WidgetTester tester,
+  HoleAdviceApi api, {
+  DistanceUnit unit = DistanceUnit.meters,
+}) async {
   await tester.pumpWidget(
     MaterialApp(
       locale: const Locale('vi'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       home: Scaffold(
-        body: HoleAdviceSheet(courseId: 1387, holeNumber: 7, api: api),
+        body: HoleAdviceSheet(
+          courseId: 1387,
+          holeNumber: 7,
+          api: api,
+          distanceUnit: unit,
+        ),
       ),
     ),
   );
@@ -211,7 +222,23 @@ void main() {
 
       expect(find.text('DRIVER'), findsOneWidget);
       expect(find.text('IRON_7'), findsOneWidget);
-      expect(find.textContaining('370m'), findsOneWidget);
+      expect(find.textContaining('370 m'), findsOneWidget);
+    });
+
+    /// The band printed the API's metres beside a hole length reading yards —
+    /// three lines of it on a par 5.
+    testWidgets('shows what is left in the golfer\'s own unit', (tester) async {
+      await pumpSheet(
+        tester,
+        _FakeApi(card(clubs: const [
+          ClubForShot(shot: 1, label: 'Cú phát bóng', remainingMeters: 370,
+              club: 'Driver', carryMeters: 200),
+        ])),
+        unit: DistanceUnit.yards,
+      );
+
+      expect(find.textContaining('405 yd'), findsOneWidget);
+      expect(find.textContaining('370 m'), findsNothing);
     });
 
     /// The seeded set is the useful half of the feature and the dangerous

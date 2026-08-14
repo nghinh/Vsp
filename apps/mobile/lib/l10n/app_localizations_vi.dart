@@ -3526,8 +3526,8 @@ class AppLocalizationsVi extends AppLocalizations {
       'Thêm cự ly gậy vào túi gậy để được gợi ý gậy.';
 
   @override
-  String holeAdviceClubShot(String label, int meters) {
-    return '$label · còn ${meters}m';
+  String holeAdviceClubShot(String label, String distance) {
+    return '$label · còn $distance';
   }
 
   @override

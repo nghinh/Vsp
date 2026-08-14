@@ -257,6 +257,12 @@ class _HoleMapBody extends StatelessWidget {
                       context,
                       courseId: int.parse(courseId),
                       holeNumber: hole,
+                      // The unit this screen already resolved, so the sheet
+                      // cannot disagree with the header above it.
+                      distanceUnit: DistanceUnitScope.resolve(
+                        context,
+                        fallback: distanceUnit ?? DistanceUnit.meters,
+                      ),
                     ),
             ),
             Expanded(child: _content(context, state, hole)),

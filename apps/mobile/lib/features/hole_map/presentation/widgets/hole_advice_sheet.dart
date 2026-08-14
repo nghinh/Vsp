@@ -24,11 +24,17 @@ class HoleAdviceSheet extends StatefulWidget {
     required this.holeNumber,
     this.tee,
     this.api,
+    this.distanceUnit,
   });
 
   final int courseId;
   final int holeNumber;
   final String? tee;
+
+  /// The golfer's unit, where the caller has already resolved it. Null falls
+  /// back to reading the profile from context, which is what a caller that has
+  /// not resolved one should do — the same shape as HoleMapScreen.
+  final DistanceUnit? distanceUnit;
 
   /// Injectable for tests.
   final HoleAdviceApi? api;
@@ -40,6 +46,7 @@ class HoleAdviceSheet extends StatefulWidget {
     required int holeNumber,
     String? tee,
     HoleAdviceApi? api,
+    DistanceUnit? distanceUnit,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -50,6 +57,7 @@ class HoleAdviceSheet extends StatefulWidget {
         holeNumber: holeNumber,
         tee: tee,
         api: api,
+        distanceUnit: distanceUnit,
       ),
     );
   }
@@ -128,7 +136,7 @@ class _HoleAdviceSheetState extends State<HoleAdviceSheet> {
             else if (_error != null)
               _ErrorBand(onRetry: _load)
             else if (_advice != null)
-              _Loaded(advice: _advice!),
+              _Loaded(advice: _advice!, unitOverride: widget.distanceUnit),
           ],
         ),
       ),
@@ -160,15 +168,16 @@ class _ErrorBand extends StatelessWidget {
 }
 
 class _Loaded extends StatelessWidget {
-  const _Loaded({required this.advice});
+  const _Loaded({required this.advice, this.unitOverride});
 
   final HoleAdvice advice;
+  final DistanceUnit? unitOverride;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final unit = DistanceUnitScope.watch(context);
+    final unit = unitOverride ?? DistanceUnitScope.watch(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,9 +265,15 @@ class _Loaded extends StatelessWidget {
                           children: [
                             Expanded(
                               child: Text(
+                                // In the golfer's own unit. This band was
+                                // printing metres beside a hole length in
+                                // yards — three lines of it on a par 5.
                                 l10n.holeAdviceClubShot(
                                   shot.label,
-                                  shot.remainingMeters,
+                                  MeasureUnits.format(
+                                    shot.remainingMeters.toDouble(),
+                                    unit,
+                                  ),
                                 ),
                                 style: _muted(theme),
                               ),

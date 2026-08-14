@@ -2250,14 +2250,14 @@
   "holeAdviceNoIndex": "This course has no stroke index yet, so shots cannot be allocated.",
   "holeAdviceClubs": "Club for each shot",
   "holeAdviceClubsEmpty": "Add carry distances to your bag to get club suggestions.",
-  "holeAdviceClubShot": "{label} · {meters}m left",
+  "holeAdviceClubShot": "{label} · {distance} left",
   "@holeAdviceClubShot": {
     "placeholders": {
       "label": {
         "type": "String"
       },
-      "meters": {
-        "type": "int"
+      "distance": {
+        "type": "String"
       }
     }
   },
