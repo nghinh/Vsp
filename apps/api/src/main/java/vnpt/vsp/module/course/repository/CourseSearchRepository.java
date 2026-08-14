@@ -26,6 +26,13 @@ import java.util.List;
  * the club does have that many, so nothing on the card they are shown warns
  * them. They arrive at an empty scorecard.</p>
  *
+ * <p>A course that has been retired — the seed's invented "— Championship"
+ * where the club's real đường are now loaded — carries an expiry date and is
+ * excluded here too. Retiring by date rather than by deleting its holes is
+ * deliberate: those rows hold measured OpenStreetMap coordinates that exist on
+ * no other course, and an earlier retirement that deleted them would have
+ * thrown 46 surveyed points away to hide a course.</p>
+ *
  * <p>Those courses are still reachable, by design: the course detail of a
  * sibling carries the whole facility's list, marked with what is playable, and
  * the scorecard screen reads it so a golfer can attach the card in their hand
@@ -45,6 +52,7 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
         SELECT c FROM Course c
         JOIN FETCH c.facility f
         WHERE EXISTS (SELECT 1 FROM Hole h WHERE h.course.id = c.id)
+          AND (c.metadata.expiryDate IS NULL OR c.metadata.expiryDate > CURRENT_DATE)
           AND (
             LOWER(f.name) LIKE LOWER(CONCAT('%', :query, '%'))
             OR LOWER(c.name) LIKE LOWER(CONCAT('%', :query, '%'))
@@ -73,6 +81,7 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
         WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+        AND (c.expiry_date IS NULL OR c.expiry_date > CURRENT_DATE)
         AND ST_DWithin(
             CAST(f.location AS geography),
             CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
@@ -104,6 +113,7 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
         FROM courses c
         JOIN golf_facilities f ON c.facility_id = f.id
         WHERE EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+        AND (c.expiry_date IS NULL OR c.expiry_date > CURRENT_DATE)
         AND ST_DWithin(
             CAST(f.location AS geography),
             CAST(ST_SetSRID(ST_MakePoint(:lng, :lat), 4326) AS geography),
