@@ -1501,34 +1501,34 @@
   "correctionSavesOfflineHint": "Saves offline and syncs when connected",
   "correctionCapturingGps": "Capturing GPS…",
   "correctionAccuracyNoFix": "No GPS fix",
-  "correctionAccuracyHigh": "High ({meters} m)",
+  "correctionAccuracyHigh": "High ({accuracy})",
   "@correctionAccuracyHigh": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyGood": "Good ({meters} m)",
+  "correctionAccuracyGood": "Good ({accuracy})",
   "@correctionAccuracyGood": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyModerate": "Moderate ({meters} m)",
+  "correctionAccuracyModerate": "Moderate ({accuracy})",
   "@correctionAccuracyModerate": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyPoor": "Poor ({meters} m)",
+  "correctionAccuracyPoor": "Poor ({accuracy})",
   "@correctionAccuracyPoor": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }

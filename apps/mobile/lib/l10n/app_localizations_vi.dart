@@ -2685,23 +2685,23 @@ class AppLocalizationsVi extends AppLocalizations {
   String get correctionAccuracyNoFix => 'Chưa có tín hiệu GPS';
 
   @override
-  String correctionAccuracyHigh(String meters) {
-    return 'Cao ($meters m)';
+  String correctionAccuracyHigh(String accuracy) {
+    return 'Cao ($accuracy)';
   }
 
   @override
-  String correctionAccuracyGood(String meters) {
-    return 'Tốt ($meters m)';
+  String correctionAccuracyGood(String accuracy) {
+    return 'Tốt ($accuracy)';
   }
 
   @override
-  String correctionAccuracyModerate(String meters) {
-    return 'Trung bình ($meters m)';
+  String correctionAccuracyModerate(String accuracy) {
+    return 'Trung bình ($accuracy)';
   }
 
   @override
-  String correctionAccuracyPoor(String meters) {
-    return 'Kém ($meters m)';
+  String correctionAccuracyPoor(String accuracy) {
+    return 'Kém ($accuracy)';
   }
 
   @override

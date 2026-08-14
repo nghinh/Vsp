@@ -9,6 +9,9 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 import '../../../domain/value_objects/distance_measurement.dart';
@@ -74,7 +77,15 @@ class GpsAccuracyChip extends StatelessWidget {
             if (accuracyMeters != null) ...[
               const SizedBox(width: 4),
               Text(
-                '±${accuracyMeters!.round()}m',
+                // The golfer's own unit, like every other distance. A
+                // tolerance is a distance: showing "±5m" beside "152 yd" is
+                // the app disagreeing with itself on one line, and this screen
+                // already renders its measuring tolerances through
+                // MeasureUnits.formatTolerance a few widgets away.
+                MeasureUnits.formatTolerance(
+                  accuracyMeters!,
+                  DistanceUnitScope.watch(context),
+                ),
                 style: TextStyle(color: color.withOpacity(0.8), fontSize: 11),
               ),
             ],

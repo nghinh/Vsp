@@ -2683,23 +2683,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get correctionAccuracyNoFix => 'No GPS fix';
 
   @override
-  String correctionAccuracyHigh(String meters) {
-    return 'High ($meters m)';
+  String correctionAccuracyHigh(String accuracy) {
+    return 'High ($accuracy)';
   }
 
   @override
-  String correctionAccuracyGood(String meters) {
-    return 'Good ($meters m)';
+  String correctionAccuracyGood(String accuracy) {
+    return 'Good ($accuracy)';
   }
 
   @override
-  String correctionAccuracyModerate(String meters) {
-    return 'Moderate ($meters m)';
+  String correctionAccuracyModerate(String accuracy) {
+    return 'Moderate ($accuracy)';
   }
 
   @override
-  String correctionAccuracyPoor(String meters) {
-    return 'Poor ($meters m)';
+  String correctionAccuracyPoor(String accuracy) {
+    return 'Poor ($accuracy)';
   }
 
   @override

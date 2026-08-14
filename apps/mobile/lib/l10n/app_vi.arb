@@ -830,34 +830,34 @@
   "correctionSavesOfflineHint": "Lưu ngoại tuyến và tự đồng bộ khi có mạng",
   "correctionCapturingGps": "Đang lấy vị trí GPS…",
   "correctionAccuracyNoFix": "Chưa có tín hiệu GPS",
-  "correctionAccuracyHigh": "Cao ({meters} m)",
+  "correctionAccuracyHigh": "Cao ({accuracy})",
   "@correctionAccuracyHigh": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyGood": "Tốt ({meters} m)",
+  "correctionAccuracyGood": "Tốt ({accuracy})",
   "@correctionAccuracyGood": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyModerate": "Trung bình ({meters} m)",
+  "correctionAccuracyModerate": "Trung bình ({accuracy})",
   "@correctionAccuracyModerate": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }
   },
-  "correctionAccuracyPoor": "Kém ({meters} m)",
+  "correctionAccuracyPoor": "Kém ({accuracy})",
   "@correctionAccuracyPoor": {
     "placeholders": {
-      "meters": {
+      "accuracy": {
         "type": "String"
       }
     }

@@ -5,6 +5,9 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 
 /// Displays the golfer's current GPS position as a marker badge
@@ -50,7 +53,11 @@ class GolferPositionMarker extends StatelessWidget {
                 ),
                 if (position.accuracy != null)
                   Text(
-                    '±${position.accuracy!.toStringAsFixed(0)}m',
+                    // In the golfer's own unit; a tolerance is a distance.
+                    MeasureUnits.formatTolerance(
+                      position.accuracy!,
+                      DistanceUnitScope.watch(context),
+                    ),
                     style: const TextStyle(
                       color: Color(0xFF94A3B8),
                       fontSize: 10,

@@ -105,7 +105,10 @@ void main() {
 
     expect(find.textContaining('Weak GPS fix'), findsOneWidget);
     expect(find.textContaining('GPS Poor'), findsOneWidget);
-    expect(find.text('±30m'), findsOneWidget);
+    // Rendered through MeasureUnits like every other distance on this panel,
+    // which is where the space comes from — and what lets a yards golfer see
+    // "±33 yd" here instead of metres beside their yards.
+    expect(find.text('±30 m'), findsOneWidget);
   });
 
   testWidgets('warns when the fix is stale', (tester) async {

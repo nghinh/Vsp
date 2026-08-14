@@ -4949,26 +4949,26 @@ abstract class AppLocalizations {
   /// No description provided for @correctionAccuracyHigh.
   ///
   /// In en, this message translates to:
-  /// **'High ({meters} m)'**
-  String correctionAccuracyHigh(String meters);
+  /// **'High ({accuracy})'**
+  String correctionAccuracyHigh(String accuracy);
 
   /// No description provided for @correctionAccuracyGood.
   ///
   /// In en, this message translates to:
-  /// **'Good ({meters} m)'**
-  String correctionAccuracyGood(String meters);
+  /// **'Good ({accuracy})'**
+  String correctionAccuracyGood(String accuracy);
 
   /// No description provided for @correctionAccuracyModerate.
   ///
   /// In en, this message translates to:
-  /// **'Moderate ({meters} m)'**
-  String correctionAccuracyModerate(String meters);
+  /// **'Moderate ({accuracy})'**
+  String correctionAccuracyModerate(String accuracy);
 
   /// No description provided for @correctionAccuracyPoor.
   ///
   /// In en, this message translates to:
-  /// **'Poor ({meters} m)'**
-  String correctionAccuracyPoor(String meters);
+  /// **'Poor ({accuracy})'**
+  String correctionAccuracyPoor(String accuracy);
 
   /// No description provided for @correctionNeedsGpsFix.
   ///

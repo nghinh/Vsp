@@ -8,6 +8,9 @@
 // optional note. Saves offline and queues for sync.
 
 import 'package:flutter/material.dart';
+
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../domain/models/qualified_location.dart';
@@ -91,11 +94,19 @@ class _CorrectionSubmissionScreenState
   String _accuracyLabel(BuildContext context, double? accuracy) {
     final l10n = AppLocalizations.of(context);
     if (accuracy == null) return l10n.correctionAccuracyNoFix;
-    final meters = accuracy.toStringAsFixed(0);
-    if (accuracy <= 5) return l10n.correctionAccuracyHigh(meters);
-    if (accuracy <= 10) return l10n.correctionAccuracyGood(meters);
-    if (accuracy <= 20) return l10n.correctionAccuracyModerate(meters);
-    return l10n.correctionAccuracyPoor(meters);
+    // The unit is no longer baked into the string: a golfer who saved yards
+    // was told their fix was "Tốt (8 m)" on a screen whose every other
+    // distance was in yards. The bands stay in metres — that is what a GPS
+    // reports and what "good" is defined against — and only what is shown
+    // follows the preference.
+    final shown = MeasureUnits.formatTolerance(
+      accuracy,
+      DistanceUnitScope.watch(context),
+    );
+    if (accuracy <= 5) return l10n.correctionAccuracyHigh(shown);
+    if (accuracy <= 10) return l10n.correctionAccuracyGood(shown);
+    if (accuracy <= 20) return l10n.correctionAccuracyModerate(shown);
+    return l10n.correctionAccuracyPoor(shown);
   }
 
   // ─── Submit ───────────────────────────────────────────────────────────────
