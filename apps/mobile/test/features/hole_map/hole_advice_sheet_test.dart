@@ -176,6 +176,18 @@ void main() {
       expect(find.textContaining('chưa có chỉ số gậy'), findsOneWidget);
     });
 
+    /// The other reason shots cannot be worked out, and the one that applies
+    /// to a golfer who has never filled in a handicap. Blaming the course
+    /// would send them to fix something that is not broken.
+    testWidgets('blames the missing handicap, not the course, when the hole has an index', (
+      tester,
+    ) async {
+      await pumpSheet(tester, _FakeApi(card(strokeIndex: 4)));
+
+      expect(find.textContaining('Thêm handicap'), findsOneWidget);
+      expect(find.textContaining('chưa có chỉ số gậy'), findsNothing);
+    });
+
     testWidgets('says plainly when no shot is received here', (tester) async {
       await pumpSheet(tester, _FakeApi(card(strokesReceived: 0, netPar: 4)));
 

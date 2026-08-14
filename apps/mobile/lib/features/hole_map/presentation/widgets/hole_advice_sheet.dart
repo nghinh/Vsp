@@ -202,8 +202,17 @@ class _Loaded extends StatelessWidget {
         // change a net score without anything on screen saying why.
         _Band(
           title: l10n.holeAdviceStrokes,
+          // Two different absences, and blaming the wrong one sends the
+          // golfer to fix something that is not broken. The server returns
+          // null for either, so which is missing is read off the facts: a hole
+          // with an index means it is the handicap that is not on file.
           child: advice.strokesReceived == null
-              ? Text(l10n.holeAdviceNoIndex, style: _muted(theme))
+              ? Text(
+                  advice.strokeIndex == null
+                      ? l10n.holeAdviceNoIndex
+                      : l10n.holeAdviceNoHandicap,
+                  style: _muted(theme),
+                )
               : advice.strokesReceived == 0
                   ? Text(l10n.holeAdviceStrokesNone, style: _muted(theme))
                   : Text(

@@ -3532,4 +3532,8 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holeAdviceClubNone => 'không đủ gậy';
+
+  @override
+  String get holeAdviceNoHandicap =>
+      'Thêm handicap vào hồ sơ để app chia gậy cho bạn.';
 }
