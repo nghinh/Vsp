@@ -10,8 +10,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
@@ -226,6 +228,56 @@ public class ScorecardPhotoStore {
             log.warn("Could not recall which photograph course {} was read from: {}",
                     courseId, e.getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Every photograph currently held, with the moment it was written.
+     *
+     * <p>For the sweep that removes the ones nothing points at. Empty rather
+     * than throwing when the directory cannot be read: a sweep that cannot list
+     * must delete nothing, and losing a photograph is the failure this class
+     * exists to prevent.
+     */
+    public Map<String, Instant> stored() {
+        if (!enabled) {
+            return Map.of();
+        }
+        var found = new HashMap<String, Instant>();
+        try (var files = Files.list(directory)) {
+            for (Path file : files.toList()) {
+                String name = file.getFileName().toString();
+                if (!STORED_NAME.matcher(name).matches()) {
+                    continue;
+                }
+                found.put(name, Files.getLastModifiedTime(file).toInstant());
+            }
+        } catch (IOException e) {
+            log.error("Could not list the stored scorecard photographs", e);
+            return Map.of();
+        }
+        return found;
+    }
+
+    /**
+     * Removes one photograph. False when it was not there or could not go.
+     *
+     * <p>Only a name this store could have written is even looked at, so a
+     * caller cannot be talked into deleting something else.
+     */
+    public boolean delete(String name) {
+        if (!enabled || name == null || !STORED_NAME.matcher(name).matches()) {
+            return false;
+        }
+        Path target = directory.resolve(name).normalize();
+        if (!target.startsWith(directory)) {
+            return false;
+        }
+        try {
+            return Files.deleteIfExists(target);
+        } catch (IOException e) {
+            log.error("A stored scorecard photograph could not be removed: {}", name, e);
+            return false;
         }
     }
 

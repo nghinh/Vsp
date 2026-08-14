@@ -226,6 +226,23 @@ vsp:
   scorecard-photos:
     dir: "${VSP_SCORECARD_PHOTO_DIR:}"
 
+    # How long a photograph nothing points at is kept before the daily sweep
+    # removes it.
+    #
+    # Not every read becomes a submission: a golfer scans a card, reads the
+    # numbers and closes the app, and that image would otherwise be kept for
+    # ever by a directory that only grows.
+    #
+    # Longer than the seven days the server remembers which photograph a golfer
+    # last read for a course. That note is what lets an app too old to send
+    # photoUrl still be matched to its image, so sweeping inside that window
+    # would break the case the note exists for. Ten days leaves three days of
+    # margin.
+    #
+    # A photograph any correction names as evidence is never swept, at any age:
+    # an approved card's image is how it can still be checked a year later.
+    keep-unreferenced-for: "${VSP_SCORECARD_PHOTO_KEEP_UNREFERENCED:P10D}"
+
   corrections:
     # Golfers whose scorecards publish the moment they are submitted, by email,
     # comma-separated. Empty by default, and empty means every card is reviewed
