@@ -3461,4 +3461,45 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get scoreScanMatchedByBeingOnly =>
       'Card chỉ có một dòng và vòng này chỉ có mình bạn.';
+
+  @override
+  String holeAdviceTitle(int hole) {
+    return 'Hố $hole';
+  }
+
+  @override
+  String get holeAdviceStrokeIndex => 'Chỉ số gậy';
+
+  @override
+  String get holeAdviceLength => 'Chiều dài';
+
+  @override
+  String holeAdviceYourRecord(int rounds) {
+    return 'Thành tích của bạn ở hố này ($rounds vòng)';
+  }
+
+  @override
+  String get holeAdviceAverage => 'Trung bình';
+
+  @override
+  String get holeAdviceBest => 'Tốt nhất';
+
+  @override
+  String get holeAdviceFairways => 'Vào fairway';
+
+  @override
+  String get holeAdviceGir => 'Lên green đúng nhịp';
+
+  @override
+  String get holeAdviceNoHistory =>
+      'Bạn chưa chơi hố này lần nào — chưa có số liệu riêng để tư vấn.';
+
+  @override
+  String get holeAdviceCaddie => 'CADDIE GỢI Ý';
+
+  @override
+  String get holeAdviceFailed => 'Không tải được thông tin hố này.';
+
+  @override
+  String get holeAdviceOpen => 'Thông tin hố & gợi ý';
 }

@@ -12,6 +12,7 @@ import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
 import 'widgets/hole_map_view.dart';
 import 'widgets/map_loading_skeleton.dart';
+import 'widgets/hole_advice_sheet.dart';
 import 'widgets/map_error_view.dart';
 import 'widgets/unsurveyed_hole_view.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
@@ -94,6 +95,7 @@ class HoleMapScreen extends StatelessWidget {
               holeNumber: holeNumber,
               child: _HoleMapBody(
                 courseName: courseName,
+                courseId: courseId,
                 holeNumber: holeNumber,
                 holeNumbers: holeNumbers,
                 locationService: locationService,
@@ -195,6 +197,12 @@ class _HoleSyncState extends State<_HoleSync> {
 
 class _HoleMapBody extends StatelessWidget {
   final String courseName;
+
+  /// Needed to ask the server for this hole's facts and advice. A String
+  /// everywhere else in this screen because that is what the package layer
+  /// uses; the advice endpoint keys on the numeric course id.
+  final String courseId;
+
   final int holeNumber;
   final List<int> holeNumbers;
   final LocationService? locationService;
@@ -206,6 +214,7 @@ class _HoleMapBody extends StatelessWidget {
 
   const _HoleMapBody({
     required this.courseName,
+    required this.courseId,
     required this.holeNumber,
     required this.holeNumbers,
     this.locationService,
@@ -239,6 +248,16 @@ class _HoleMapBody extends StatelessWidget {
               distanceUnit: distanceUnit,
               onPrevious: _neighbour(context, hole, -1),
               onNext: _neighbour(context, hole, 1),
+              // Null where the course id is not a number the advice endpoint
+              // can take — the button then does not appear at all, rather
+              // than opening a sheet that can only fail.
+              onInfo: int.tryParse(courseId) == null
+                  ? null
+                  : () => HoleAdviceSheet.show(
+                      context,
+                      courseId: int.parse(courseId),
+                      holeNumber: hole,
+                    ),
             ),
             Expanded(child: _content(context, state, hole)),
           ],
@@ -355,6 +374,10 @@ class _HoleHeader extends StatelessWidget {
   /// Moves a hole on, or null at the end of the round.
   final VoidCallback? onNext;
 
+  /// Opens the hole's facts, this golfer's record on it, and the caddie note.
+  /// Null hides the control.
+  final VoidCallback? onInfo;
+
   const _HoleHeader({
     this.courseName,
     this.holeNumber,
@@ -364,6 +387,7 @@ class _HoleHeader extends StatelessWidget {
     this.distanceUnit,
     this.onPrevious,
     this.onNext,
+    this.onInfo,
   });
 
   @override
@@ -434,6 +458,16 @@ class _HoleHeader extends StatelessWidget {
               icon: Icons.chevron_right,
               label: l10n.holeMapNextHole,
               onPressed: onNext,
+            ),
+          if (onInfo != null)
+            IconButton(
+              key: const Key('hole_advice_open'),
+              onPressed: onInfo,
+              icon: const Icon(Icons.tips_and_updates_outlined),
+              color: const Color(0xFFF8FAFC),
+              iconSize: 20,
+              visualDensity: VisualDensity.compact,
+              tooltip: AppLocalizations.of(context).holeAdviceOpen,
             ),
           const Spacer(),
           if (courseName != null)

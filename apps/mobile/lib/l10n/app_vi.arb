@@ -156,7 +156,11 @@
   "roundSetupLayoutHoles": "{count} hố",
   "@roundSetupLayoutHoles": {
     "description": "Hole count beside a đường name in the round-setup pickers",
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "roundSetupSecondLayout": "Đường thứ hai",
   "roundSetupTee": "Điểm phát bóng",
@@ -1223,5 +1227,31 @@
   "scoreScanMatchedByName": "Nhận diện theo tên ghi trên card.",
   "scoreScanMatchedByInitial": "Nhận diện theo chữ cái đầu ghi trên card.",
   "scoreScanSavedForPlayers": "Đã lưu {holes} hố cho {players} người chơi.",
-  "scoreScanMatchedByBeingOnly": "Card chỉ có một dòng và vòng này chỉ có mình bạn."
+  "scoreScanMatchedByBeingOnly": "Card chỉ có một dòng và vòng này chỉ có mình bạn.",
+  "holeAdviceTitle": "Hố {hole}",
+  "@holeAdviceTitle": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceStrokeIndex": "Chỉ số gậy",
+  "holeAdviceLength": "Chiều dài",
+  "holeAdviceYourRecord": "Thành tích của bạn ở hố này ({rounds} vòng)",
+  "@holeAdviceYourRecord": {
+    "placeholders": {
+      "rounds": {
+        "type": "int"
+      }
+    }
+  },
+  "holeAdviceAverage": "Trung bình",
+  "holeAdviceBest": "Tốt nhất",
+  "holeAdviceFairways": "Vào fairway",
+  "holeAdviceGir": "Lên green đúng nhịp",
+  "holeAdviceNoHistory": "Bạn chưa chơi hố này lần nào — chưa có số liệu riêng để tư vấn.",
+  "holeAdviceCaddie": "CADDIE GỢI Ý",
+  "holeAdviceFailed": "Không tải được thông tin hố này.",
+  "holeAdviceOpen": "Thông tin hố & gợi ý"
 }

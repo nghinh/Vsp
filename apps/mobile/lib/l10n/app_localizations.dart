@@ -6175,6 +6175,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The only row on the card, and you are the only player in this round.'**
   String get scoreScanMatchedByBeingOnly;
+
+  /// No description provided for @holeAdviceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole}'**
+  String holeAdviceTitle(int hole);
+
+  /// No description provided for @holeAdviceStrokeIndex.
+  ///
+  /// In en, this message translates to:
+  /// **'Stroke index'**
+  String get holeAdviceStrokeIndex;
+
+  /// No description provided for @holeAdviceLength.
+  ///
+  /// In en, this message translates to:
+  /// **'Length'**
+  String get holeAdviceLength;
+
+  /// No description provided for @holeAdviceYourRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Your record on this hole ({rounds} rounds)'**
+  String holeAdviceYourRecord(int rounds);
+
+  /// No description provided for @holeAdviceAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get holeAdviceAverage;
+
+  /// No description provided for @holeAdviceBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get holeAdviceBest;
+
+  /// No description provided for @holeAdviceFairways.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairways hit'**
+  String get holeAdviceFairways;
+
+  /// No description provided for @holeAdviceGir.
+  ///
+  /// In en, this message translates to:
+  /// **'Greens in regulation'**
+  String get holeAdviceGir;
+
+  /// No description provided for @holeAdviceNoHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not played this hole before — no record of your own to advise from yet.'**
+  String get holeAdviceNoHistory;
+
+  /// No description provided for @holeAdviceCaddie.
+  ///
+  /// In en, this message translates to:
+  /// **'CADDIE SUGGESTS'**
+  String get holeAdviceCaddie;
+
+  /// No description provided for @holeAdviceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This hole\'s information could not be loaded.'**
+  String get holeAdviceFailed;
+
+  /// No description provided for @holeAdviceOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole info & advice'**
+  String get holeAdviceOpen;
 }
 
 class _AppLocalizationsDelegate

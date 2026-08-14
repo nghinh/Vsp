@@ -3463,4 +3463,46 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get scoreScanMatchedByBeingOnly =>
       'The only row on the card, and you are the only player in this round.';
+
+  @override
+  String holeAdviceTitle(int hole) {
+    return 'Hole $hole';
+  }
+
+  @override
+  String get holeAdviceStrokeIndex => 'Stroke index';
+
+  @override
+  String get holeAdviceLength => 'Length';
+
+  @override
+  String holeAdviceYourRecord(int rounds) {
+    return 'Your record on this hole ($rounds rounds)';
+  }
+
+  @override
+  String get holeAdviceAverage => 'Average';
+
+  @override
+  String get holeAdviceBest => 'Best';
+
+  @override
+  String get holeAdviceFairways => 'Fairways hit';
+
+  @override
+  String get holeAdviceGir => 'Greens in regulation';
+
+  @override
+  String get holeAdviceNoHistory =>
+      'You have not played this hole before — no record of your own to advise from yet.';
+
+  @override
+  String get holeAdviceCaddie => 'CADDIE SUGGESTS';
+
+  @override
+  String get holeAdviceFailed =>
+      'This hole\'s information could not be loaded.';
+
+  @override
+  String get holeAdviceOpen => 'Hole info & advice';
 }
