@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import jakarta.validation.ConstraintViolationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -31,7 +32,9 @@ import java.util.stream.Collectors;
  * Handles:
  * <ul>
  *   <li>{@link VspApiException} — domain-stable errors with optional field context</li>
- *   <li>{@link MethodArgumentNotValidException} — bean-validation failures</li>
+ *   <li>{@link MethodArgumentNotValidException} — bean-validation failures on a body</li>
+ *   <li>{@link ConstraintViolationException} — the same on a query parameter
+ *       or path variable, which Spring reports as a different type entirely</li>
  *   <li>{@link HttpMessageNotReadableException} — malformed JSON body</li>
  *   <li>{@link MissingServletRequestParameterException} — missing required query/path param</li>
  *   <li>{@link MethodArgumentTypeMismatchException} — wrong type for a request param</li>
@@ -102,6 +105,48 @@ public class GlobalExceptionHandler {
         String field = fieldError != null ? fieldError.getField() : null;
         String message = fieldError != null
                 ? fieldError.getDefaultMessage()
+                : VspErrorCode.VALIDATION_001.getDefaultMessage();
+
+        ErrorResponse body = ErrorResponse.builder()
+                .code(VspErrorCode.VALIDATION_001.getCode())
+                .message(message)
+                .correlationId(correlationId())
+                .field(field)
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    /**
+     * A query parameter or path variable that failed its own constraint.
+     *
+     * <p>Spring reports these as {@link ConstraintViolationException} rather
+     * than as {@link MethodArgumentNotValidException}, which only covers an
+     * annotated request <em>body</em>. Nothing handled it, so every controller
+     * annotated {@code @Validated} answered a caller's out-of-range parameter
+     * with 500 and a correlation id — telling them to contact support about
+     * their own typo, and putting a stack trace in the log for it.
+     *
+     * <p>Live before this: {@code /courses/search?lat=999} and {@code ?size=9999}
+     * were both 500. Those are the endpoints the app calls.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+            ConstraintViolationException ex,
+            HttpServletRequest request) {
+
+        var violation = ex.getConstraintViolations().stream().findFirst().orElse(null);
+
+        // The propertyPath reads "searchCourses.lat"; a caller sent "lat".
+        String field = null;
+        if (violation != null) {
+            String path = violation.getPropertyPath().toString();
+            int dot = path.lastIndexOf('.');
+            field = dot >= 0 ? path.substring(dot + 1) : path;
+        }
+
+        String message = violation != null
+                ? (field + " " + violation.getMessage())
                 : VspErrorCode.VALIDATION_001.getDefaultMessage();
 
         ErrorResponse body = ErrorResponse.builder()

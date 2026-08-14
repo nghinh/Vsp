@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -141,7 +142,7 @@ public class HoleAdviceService {
                 facts.append(" handicap ").append(golfer.handicap).append(";");
             }
             if (golfer.skill != null) {
-                facts.append(" trình độ ").append(golfer.skill).append(";");
+                facts.append(" trình độ ").append(skillInVietnamese(golfer.skill)).append(";");
             }
             if (golfer.driverDistance != null) {
                 facts.append(" cú phát bóng driver khoảng ").append(golfer.driverDistance)
@@ -199,8 +200,29 @@ public class HoleAdviceService {
                 """.formatted(facts);
     }
 
+    /// The skill level as a golfer would say it. The column holds an enum name,
+    /// and putting BEGINNER into a Vietnamese sentence produced "trình độ
+    /// intermediate" — the model repeats whatever it is handed.
+    private static String skillInVietnamese(String skill) {
+        return switch (skill == null ? "" : skill.toUpperCase(Locale.ROOT)) {
+            case "BEGINNER" -> "mới chơi";
+            case "INTERMEDIATE" -> "trung bình";
+            case "ADVANCED" -> "khá";
+            case "PROFESSIONAL", "PRO" -> "chuyên nghiệp";
+            default -> skill;
+        };
+    }
+
     // ─── The facts, each straight off a row ──────────────────────────────────
 
+    /**
+     * The hole, and the yardage of the tee the golfer is playing.
+     *
+     * <p>{@code :tee} is CAST to text on both sides of its null check. Without
+     * the cast Postgres cannot infer a bound null's type and answers 42P18,
+     * "could not determine data type of parameter" — which made every request
+     * that did not name a tee a 500. That is the default the app sends.
+     */
     private Hole hole(Long courseId, int holeNumber, String teeName) {
         var rows = em.createNativeQuery("""
                 SELECT h.par, h.playing_length_meters, c.name,
@@ -214,14 +236,14 @@ public class HoleAdviceService {
                           JOIN scorecard_tees t ON t.scorecard_id = s.id
                           JOIN scorecard_tee_yardages y ON y.scorecard_tee_id = t.id
                          WHERE g.course_id = c.id AND y.hole_number = h.hole_number
-                           AND (:tee IS NULL OR t.name = :tee)
+                           AND (CAST(:tee AS text) IS NULL OR t.name = CAST(:tee AS text))
                          ORDER BY y.yards DESC LIMIT 1),
                        (SELECT t.name FROM scorecards s
                           JOIN scorecard_segments g ON g.scorecard_id = s.id
                           JOIN scorecard_tees t ON t.scorecard_id = s.id
                           JOIN scorecard_tee_yardages y ON y.scorecard_tee_id = t.id
                          WHERE g.course_id = c.id AND y.hole_number = h.hole_number
-                           AND (:tee IS NULL OR t.name = :tee)
+                           AND (CAST(:tee AS text) IS NULL OR t.name = CAST(:tee AS text))
                          ORDER BY y.yards DESC LIMIT 1)
                 FROM holes h JOIN courses c ON c.id = h.course_id
                 WHERE h.course_id = :course AND h.hole_number = :hole

@@ -1,11 +1,14 @@
 package vnpt.vsp.api.course;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 import vnpt.vsp.module.ai.HoleAdviceService;
 import vnpt.vsp.module.ai.dto.HoleAdviceResponse;
@@ -18,6 +21,7 @@ import vnpt.vsp.module.ai.dto.HoleAdviceResponse;
  * there is no such thing as a shared answer to cache publicly.
  */
 @RestController
+@Validated
 public class HoleAdviceController {
 
     private static final Logger log = LoggerFactory.getLogger(HoleAdviceController.class);
@@ -32,7 +36,10 @@ public class HoleAdviceController {
     public HoleAdviceResponse advice(
             Authentication authentication,
             @PathVariable Long courseId,
-            @PathVariable int holeNumber,
+            // A course is nine or eighteen holes. Anything else is a
+            // mistyped URL, and it should say so rather than reach the
+            // database and come back as "course not found".
+            @PathVariable @Min(1) @Max(18) int holeNumber,
             @RequestParam(required = false) String tee) {
 
         Long golferId = (Long) authentication.getPrincipal();

@@ -82,11 +82,29 @@ public class LlmGateway {
         return ask(null, null, prompt, maxTokens);
     }
 
+    /**
+     * The field a failure is reported against.
+     *
+     * <p>Every error here used to name "image", because reading scorecards was
+     * the only caller. A hole-advice request that the gateway refused then came
+     * back telling the app its image was unreadable, having sent no image —
+     * which points whoever is debugging at the wrong half of the system.
+     */
+    private String field(String mediaType) {
+        return mediaType == null ? "advice" : "image";
+    }
+
     /** An answer to a prompt about an image. */
     public String ask(byte[] image, String mediaType, String prompt, int maxTokens) {
         if (!isEnabled()) {
-            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
-                    Map.of("image", "scorecard reading is not configured on this server"));
+            // Worded for whichever caller it is. "Scorecard reading is not
+            // configured" is the right sentence for a golfer photographing a
+            // card and the wrong one for a golfer opening a hole.
+            String field = field(mediaType);
+            throw VspApiException.forField(VspErrorCode.VALIDATION_001, field,
+                    Map.of(field, mediaType == null
+                            ? "no language model is configured on this server"
+                            : "scorecard reading is not configured on this server"));
         }
 
         String base64 = image == null ? null : Base64.getEncoder().encodeToString(image);
@@ -277,8 +295,7 @@ public class LlmGateway {
                 || node.path("choices").path(0).path("delta").hasNonNull("refusal");
         if (refused) {
             log.warn("The model refused a {} request of {} bytes", mediaType, bytes);
-            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
-                    Map.of("image", "this image could not be read"));
+            throw unreadable(mediaType);
         }
     }
 
@@ -351,7 +368,14 @@ public class LlmGateway {
     }
 
     private VspApiException unreadable() {
-        return VspApiException.forField(VspErrorCode.VALIDATION_001, "image",
-                Map.of("image", "this image could not be read"));
+        return unreadable("image/*");
+    }
+
+    private VspApiException unreadable(String mediaType) {
+        String field = field(mediaType);
+        return VspApiException.forField(VspErrorCode.VALIDATION_001, field,
+                mediaType == null
+                        ? Map.of(field, "the model could not answer")
+                        : Map.of(field, "this image could not be read"));
     }
 }
