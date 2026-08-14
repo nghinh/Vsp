@@ -217,10 +217,16 @@ BEGIN
     -- ratings and slopes that are printed on the card and exist nowhere else,
     -- and mine from Golfify with neither. Both had a segment on the same
     -- đường, so the tee picker offered nine tees for a course that has five.
+    --
+    -- The club card the operator photographs is the same evidence arriving by
+    -- another door, and outranks a website for the same reasons, so it is
+    -- refused here too.
     IF EXISTS (
         SELECT 1 FROM scorecards s
         JOIN scorecard_segments g ON g.scorecard_id = s.id
-        WHERE g.course_id = v_course_id AND s.source = 'golfer-submitted-scorecard'
+        WHERE g.course_id = v_course_id
+          AND (s.source = 'golfer-submitted-scorecard'
+               OR s.source LIKE '%photographed at the course%')
     ) THEN
         RAISE NOTICE '% / % : holes written; card left alone, a golfer already published one.',
             v_publisher, v_course_name;

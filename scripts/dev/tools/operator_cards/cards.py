@@ -267,4 +267,50 @@ CARDS = {
         ],
         "totals": {"par": 36, "Gold": 3505},
     },
+
+    # FLC Golf Club Hạ Long, photographed at the club. Par 71, not the 72 a
+    # seed assumes. All fifteen printed sums reconcile.
+    #
+    # White hole 6 reads 232 against Blue's 395 — a 163-yard drop that looks
+    # like a misread and is not: White sums to its printed 2,615 with 232 and
+    # to 2,715 with 332. The card's own arithmetic settles it.
+    "FLC_HA_LONG": {
+        "club": "FLC Golf Club Hạ Long",
+        "name": "Championship",
+        "source": "club card photographed at the course",
+        "tees": ["Black", "Blue", "White", "Red"],
+        "holes": [
+            (1, 4, 16, 358, 341, 323, 255),
+            (2, 5, 18, 472, 432, 412, 359),
+            (3, 4, 6, 345, 293, 271, 234),
+            (4, 5, 10, 530, 506, 440, 400),
+            (5, 3, 8, 200, 194, 147, 107),
+            (6, 4, 2, 423, 395, 232, 195),
+            (7, 4, 4, 415, 373, 307, 269),
+            (8, 3, 12, 192, 181, 166, 149),
+            (9, 4, 14, 383, 344, 317, 291),
+            (10, 4, 11, 358, 327, 306, 240),
+            (11, 4, 1, 457, 412, 332, 239),
+            (12, 3, 17, 119, 109, 96, 73),
+            (13, 3, 15, 164, 150, 138, 100),
+            (14, 5, 7, 634, 604, 556, 489),
+            (15, 5, 3, 553, 480, 453, 432),
+            (16, 3, 13, 204, 175, 156, 131),
+            (17, 4, 5, 441, 423, 358, 294),
+            (18, 4, 9, 411, 353, 332, 268),
+        ],
+        "totals": {
+            "par": (36, 35, 71),
+            "Black": (3318, 3341, 6659),
+            "Blue": (3059, 3033, 6092),
+            "White": (2615, 2727, 5342),
+            "Red": (2259, 2266, 4525),
+        },
+        "ratings": {
+            "Black": {"UNSPECIFIED": (72.5, 136)},
+            "Blue": {"UNSPECIFIED": (69.6, 128)},
+            "White": {"UNSPECIFIED": (65.7, 120)},
+            "Red": {"UNSPECIFIED": (67.1, 116)},
+        },
+    },
 }

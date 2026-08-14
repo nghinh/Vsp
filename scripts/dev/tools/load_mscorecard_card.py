@@ -138,15 +138,26 @@ def main():
     out.append(f"-- Longest tee: {longest[0]} at {sum(longest[1].values())} yards")
     out.append("\n\\set ON_ERROR_STOP on\n\nBEGIN;\n")
 
-    out.append(f"""-- A card a golfer photographed carries ratings that exist nowhere else.
--- Refuse rather than overwrite one.
+    out.append(f"""-- A PHOTOGRAPH OUTRANKS THIS, ALWAYS.
+--
+-- A directory is a transcription of a transcription; a photograph is the club's
+-- own printing, and it is the only source that carries stroke index, course
+-- rating and slope at all. It has already been proved right against this one:
+-- Hilltop's card showed the mscorecard export had copied Blue's hole 4 into
+-- White's, and Phoenix's showed a whole stroke index row invented as
+-- 1,3,5..17. Overwriting either would have put the wrong numbers back.
+--
+-- Both spellings are refused — the golfer-submitted card the app publishes,
+-- and the club card the operator photographs — because they are the same kind
+-- of evidence arriving by two doors.
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM scorecards s
                JOIN scorecard_segments g ON g.scorecard_id = s.id
                WHERE g.course_id = {course_id}
-                 AND s.source = 'golfer-submitted-scorecard') THEN
-        RAISE EXCEPTION 'Course {course_id} already carries a golfer-submitted card.';
+                 AND (s.source = 'golfer-submitted-scorecard'
+                      OR s.source LIKE '%photographed at the course%')) THEN
+        RAISE EXCEPTION 'Course {course_id} already carries a photographed card, which outranks this one.';
     END IF;
 END $$;
 """)
