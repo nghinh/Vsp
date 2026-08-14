@@ -6307,6 +6307,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Using standard distances. Edit your bag so these fit your own clubs.'**
   String get holeAdviceClubsStandard;
+
+  /// No description provided for @clubResolvedName.
+  ///
+  /// In en, this message translates to:
+  /// **'This club reads as: {name}'**
+  String clubResolvedName(String name);
 }
 
 class _AppLocalizationsDelegate

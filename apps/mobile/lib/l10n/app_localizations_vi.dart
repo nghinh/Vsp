@@ -3540,4 +3540,9 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get holeAdviceClubsStandard =>
       'Đang dùng cự ly tiêu chuẩn. Vào Túi gậy sửa lại cho đúng gậy của bạn.';
+
+  @override
+  String clubResolvedName(String name) {
+    return 'Gậy này là: $name';
+  }
 }

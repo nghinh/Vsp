@@ -19,6 +19,7 @@ import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
     show DistanceUnit;
+import 'package:vsp_mobile/features/bag/domain/club_naming.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -171,10 +172,28 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
           const SizedBox(height: VspSpacing.sm),
           _NumberField(
             controller: _loftController,
-            hint: 'e.g. 10.5',
+            hint: 'e.g. 34 → Sắt 7',
             suffix: '°',
             onChanged: (_) => setState(() {}),
           ),
+          // The loft is what the app stores, but a golfer thinks in the number
+          // on the sole. Naming the club back as they type is what connects
+          // the two — without it, "34" is a number they have to trust.
+          if (_selectedClubType != null &&
+              double.tryParse(_loftController.text) != null) ...[
+            const SizedBox(height: VspSpacing.xs),
+            Text(
+              AppLocalizations.of(context).clubResolvedName(
+                ClubNaming.name(
+                  _selectedClubType!,
+                  double.parse(_loftController.text),
+                ),
+              ),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
           const SizedBox(height: VspSpacing.lg),
 
           // ─── Carry Distance ─────────────────────────────────────────────────

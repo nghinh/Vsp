@@ -9,6 +9,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import '../../data/bag_dto.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/features/bag/domain/club_naming.dart';
 
 /// A card displaying a single club with its key data.
 class ClubCard extends StatelessWidget {
@@ -30,7 +31,7 @@ class ClubCard extends StatelessWidget {
 
     return Semantics(
       label:
-          '${club.clubType.displayName}, loft ${club.loft ?? "not set"} degrees, '
+          '${club.displayName}, loft ${club.loft ?? "not set"} degrees, '
           'carry ${club.formatCarryDistance(context.distanceUnit)}',
       button: true,
       child: Dismissible(
@@ -84,7 +85,8 @@ class ClubCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        club.clubType.displayName,
+                        // "Sắt 7", not "Iron" for all eight of them.
+                        club.displayName,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -174,7 +176,7 @@ class ClubCard extends StatelessWidget {
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context).clubDeleteTitle),
             content: Text(
-              'Are you sure you want to delete this ${club.clubType.displayName}?',
+              'Are you sure you want to delete this ${club.displayName}?',
             ),
             actions: [
               TextButton(

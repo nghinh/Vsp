@@ -3543,4 +3543,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get holeAdviceClubsStandard =>
       'Using standard distances. Edit your bag so these fit your own clubs.';
+
+  @override
+  String clubResolvedName(String name) {
+    return 'This club reads as: $name';
+  }
 }
