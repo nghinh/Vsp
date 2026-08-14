@@ -49,6 +49,14 @@ public record HoleAdviceResponse(
         /// distances in this golfer's own bag. Empty when the bag has none.
         List<ClubForShot> clubs,
 
+        /// True when every club distance behind {@code clubs} is still the
+        /// seeded standard rather than something this golfer measured.
+        ///
+        /// The screen says so. A seeded 128 m is indistinguishable from a
+        /// measured one once written, and advice built on it is advice for
+        /// somebody else's swing — worth acting on, worth knowing about.
+        boolean clubsAreStandard,
+
         /// Null when no model is configured. Never a placeholder sentence.
         String advice,
 

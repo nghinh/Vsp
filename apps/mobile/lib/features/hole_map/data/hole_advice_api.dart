@@ -27,6 +27,7 @@ class HoleAdvice {
     this.strokesReceived,
     this.netPar,
     this.clubs = const [],
+    this.clubsAreStandard = false,
     this.advice,
     this.cached = false,
   });
@@ -63,6 +64,11 @@ class HoleAdvice {
   /// of averages, because a 7-iron is not a distance.
   final List<ClubForShot> clubs;
 
+  /// True while every club distance behind [clubs] is still the seeded
+  /// standard rather than something this golfer measured. Worth acting on,
+  /// worth knowing about.
+  final bool clubsAreStandard;
+
   /// Null when the server has no model configured. Never a placeholder.
   final String? advice;
 
@@ -88,6 +94,7 @@ class HoleAdvice {
     clubs: (json['clubs'] as List<dynamic>? ?? [])
         .map((e) => ClubForShot.fromJson(e as Map<String, dynamic>))
         .toList(),
+    clubsAreStandard: json['clubsAreStandard'] as bool? ?? false,
     advice: json['advice'] as String?,
     cached: json['cached'] as bool? ?? false,
   );

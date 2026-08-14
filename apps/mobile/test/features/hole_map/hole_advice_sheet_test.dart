@@ -47,6 +47,7 @@ HoleAdvice card({
   int? strokesReceived,
   int? netPar,
   List<ClubForShot> clubs = const [],
+  bool clubsAreStandard = false,
 }) => HoleAdvice(
   par: par,
   strokeIndex: strokeIndex,
@@ -61,6 +62,7 @@ HoleAdvice card({
   strokesReceived: strokesReceived,
   netPar: netPar,
   clubs: clubs,
+  clubsAreStandard: clubsAreStandard,
 );
 
 Future<void> pumpSheet(WidgetTester tester, HoleAdviceApi api) async {
@@ -210,6 +212,38 @@ void main() {
       expect(find.text('DRIVER'), findsOneWidget);
       expect(find.text('IRON_7'), findsOneWidget);
       expect(find.textContaining('370m'), findsOneWidget);
+    });
+
+    /// The seeded set is the useful half of the feature and the dangerous
+    /// half: the club named is only as right as the number behind it, and a
+    /// standard distance looks exactly like a measured one on screen.
+    testWidgets('says when the clubs are still on standard distances', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        _FakeApi(card(clubsAreStandard: true, clubs: const [
+          ClubForShot(shot: 1, label: 'Cú vào green', remainingMeters: 130,
+              club: 'Sắt 7', carryMeters: 128),
+        ])),
+      );
+
+      expect(find.textContaining('cự ly tiêu chuẩn'), findsOneWidget);
+      expect(find.text('Sắt 7'), findsOneWidget);
+    });
+
+    testWidgets('says nothing extra once the golfer has measured their own', (
+      tester,
+    ) async {
+      await pumpSheet(
+        tester,
+        _FakeApi(card(clubs: const [
+          ClubForShot(shot: 1, label: 'Cú vào green', remainingMeters: 130,
+              club: 'Sắt 7', carryMeters: 128),
+        ])),
+      );
+
+      expect(find.textContaining('cự ly tiêu chuẩn'), findsNothing);
     });
 
     /// There is no table of averages to fall back on, so an empty bag is told

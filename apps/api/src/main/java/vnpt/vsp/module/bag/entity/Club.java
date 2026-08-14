@@ -39,6 +39,20 @@ public class Club {
     @Column(name = "total_distance")
     private Double totalDistance; // canonical: meters
 
+    /**
+     * True while {@link #carryDistance} is the seeded standard rather than this
+     * golfer's own measurement.
+     *
+     * <p>A bag starts filled with a standard fourteen so a golfer gets club
+     * advice on their first round instead of typing fourteen numbers first.
+     * Once written, a seeded 128 m looks exactly like a measured 128 m — and
+     * the advice built on it is only as good as the number. This is what lets
+     * the app say which is which, and it is cleared the moment the golfer edits
+     * the carry, because from then on the number is theirs.
+     */
+    @Column(name = "carry_is_default", nullable = false)
+    private boolean carryIsDefault = false;
+
     @Column
     private Double dispersion; // degrees — Phase 2 scope
 
@@ -81,6 +95,14 @@ public class Club {
 
     public void setGolfBag(GolfBag golfBag) {
         this.golfBag = golfBag;
+    }
+
+    public boolean isCarryIsDefault() {
+        return carryIsDefault;
+    }
+
+    public void setCarryIsDefault(boolean carryIsDefault) {
+        this.carryIsDefault = carryIsDefault;
     }
 
     public ClubType getClubType() {

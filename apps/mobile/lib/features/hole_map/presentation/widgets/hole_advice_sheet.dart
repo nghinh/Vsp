@@ -236,6 +236,19 @@ class _Loaded extends StatelessWidget {
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Said out loud rather than left to be discovered. A
+                    // seeded distance is indistinguishable from a measured one
+                    // on screen, and the club named below is only as right as
+                    // the number behind it.
+                    if (advice.clubsAreStandard) ...[
+                      Text(
+                        l10n.holeAdviceClubsStandard,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.tertiary,
+                        ),
+                      ),
+                      const SizedBox(height: VspSpacing.xs),
+                    ],
                     for (final shot in advice.clubs)
                       Padding(
                         padding: const EdgeInsets.only(bottom: VspSpacing.xs),

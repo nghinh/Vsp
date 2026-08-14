@@ -3536,4 +3536,8 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get holeAdviceNoHandicap =>
       'Thêm handicap vào hồ sơ để app chia gậy cho bạn.';
+
+  @override
+  String get holeAdviceClubsStandard =>
+      'Đang dùng cự ly tiêu chuẩn. Vào Túi gậy sửa lại cho đúng gậy của bạn.';
 }

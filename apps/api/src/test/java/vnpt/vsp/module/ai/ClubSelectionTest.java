@@ -40,12 +40,14 @@ class ClubSelectionTest {
         var c = Class.forName("vnpt.vsp.module.ai.HoleAdviceService$Club");
         var ctor = c.getDeclaredConstructors()[0];
         ctor.setAccessible(true);
-        return ctor.newInstance(type, carry);
+        // The third argument says whether the carry is the seeded
+        // standard; these are a golfer's own measurements.
+        return ctor.newInstance(type, carry, false, "DRIVER".equals(type));
     }
 
     private List<Object> bag() throws Exception {
-        return List.of(club("DRIVER", 230), club("IRON_5", 170),
-                       club("IRON_7", 145), club("WEDGE", 95));
+        return List.of(club("DRIVER", 230), club("WOOD_3", 185),
+                       club("IRON_5", 170), club("IRON_7", 145), club("WEDGE", 95));
     }
 
     private static void set(Object target, String field, Object value) throws Exception {
@@ -86,10 +88,33 @@ class ClubSelectionTest {
     void aParFiveGetsAThirdShotWhenTheSecondCannotReach() throws Exception {
         var plan = plan(5, 520, bag());
 
+        // 520 − driver 230 = 290, − wood 185 = 105 left. The wedge carries 95
+        // and would come up ten short, so the 7-iron is the club.
         assertThat(plan).hasSize(3);
         assertThat(plan.get(0).club()).isEqualTo("DRIVER");
-        assertThat(plan.get(2).remainingMeters()).isEqualTo(60);
-        assertThat(plan.get(2).club()).isEqualTo("WEDGE");
+        assertThat(plan.get(1).club()).isEqualTo("WOOD_3");
+        assertThat(plan.get(2).remainingMeters()).isEqualTo(105);
+        assertThat(plan.get(2).club()).isEqualTo("IRON_7");
+    }
+
+    /// A driver is hit off a tee peg. Recommending one for the second shot of
+    /// a par 5 — which this did, off the fairway, at 240 m — is not a club
+    /// choice any golfer would recognise.
+    @Test
+    void neverRecommendsTheDriverOffTheFairway() throws Exception {
+        var plan = plan(5, 520, bag());
+
+        assertThat(plan.get(0).club()).isEqualTo("DRIVER");
+        assertThat(plan.subList(1, plan.size()))
+                .extracting(c -> c.club())
+                .doesNotContain("DRIVER");
+    }
+
+    /// The tee shot of a par 3 is still a tee shot, so the longest club is
+    /// still allowed there — some par 3s are 200 metres.
+    @Test
+    void allowsTheDriverOnALongParThree() throws Exception {
+        assertThat(plan(3, 225, bag()).get(0).club()).isEqualTo("DRIVER");
     }
 
     /// There is no table of averages to fall back on, so a bag with no carry

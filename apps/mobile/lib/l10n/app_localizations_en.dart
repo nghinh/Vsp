@@ -3539,4 +3539,8 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get holeAdviceNoHandicap =>
       'Add your handicap to your profile and shots can be allocated.';
+
+  @override
+  String get holeAdviceClubsStandard =>
+      'Using standard distances. Edit your bag so these fit your own clubs.';
 }

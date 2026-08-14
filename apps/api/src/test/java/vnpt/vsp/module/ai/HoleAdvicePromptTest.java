@@ -89,7 +89,9 @@ class HoleAdvicePromptTest {
         var c = Class.forName("vnpt.vsp.module.ai.HoleAdviceService$Club");
         var ctor = c.getDeclaredConstructors()[0];
         ctor.setAccessible(true);
-        return ctor.newInstance(type, carry);
+        // The last two say whether the carry is the seeded standard — these
+        // are the golfer's own — and whether it is a driver.
+        return ctor.newInstance(type, carry, false, "DRIVER".equals(type));
     }
 
     /// The shots a golfer receives change what a good score is, so the prompt

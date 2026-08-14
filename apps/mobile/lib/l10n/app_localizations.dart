@@ -6301,6 +6301,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add your handicap to your profile and shots can be allocated.'**
   String get holeAdviceNoHandicap;
+
+  /// No description provided for @holeAdviceClubsStandard.
+  ///
+  /// In en, this message translates to:
+  /// **'Using standard distances. Edit your bag so these fit your own clubs.'**
+  String get holeAdviceClubsStandard;
 }
 
 class _AppLocalizationsDelegate

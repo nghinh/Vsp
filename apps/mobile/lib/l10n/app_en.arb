@@ -2262,5 +2262,6 @@
     }
   },
   "holeAdviceClubNone": "nothing reaches",
-  "holeAdviceNoHandicap": "Add your handicap to your profile and shots can be allocated."
+  "holeAdviceNoHandicap": "Add your handicap to your profile and shots can be allocated.",
+  "holeAdviceClubsStandard": "Using standard distances. Edit your bag so these fit your own clubs."
 }

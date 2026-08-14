@@ -297,13 +297,43 @@ public class BagServiceImpl implements BagService {
 
     // ─── Private helpers ────────────────────────────────────────────────────
 
+    /**
+     * A new bag, with the standard fourteen already in it.
+     *
+     * <p>An empty bag produces no club advice at all, and asking a golfer to
+     * type fourteen carry distances before the app is any use is a wall most
+     * people do not climb. Starting from the standard set and correcting what
+     * is wrong is a much shorter path.
+     *
+     * <p>Every seeded carry is flagged, and the flag is what makes this safe:
+     * a 128 m from a table is indistinguishable from a 128 m off a range
+     * without it, and the advice built on it would be advice for somebody
+     * else's swing with nothing on screen to say so.
+     */
     private GolfBag createDefaultBag(Long golferAccountId) {
         log.info("Auto-creating default bag for golferAccountId={}", golferAccountId);
         GolfBag bag = new GolfBag();
         bag.setGolferAccountId(golferAccountId);
         bag.setName("My Bag");
         bag.setIsActive(true);
-        return bagRepository.save(bag);
+        GolfBag saved = bagRepository.save(bag);
+
+        for (StandardBag.Standard standard : StandardBag.clubs()) {
+            Club club = new Club();
+            club.setGolfBag(saved);
+            club.setClubType(standard.type());
+            club.setLoft(standard.loft());
+            // A putter carries nothing, and giving it a distance would put it
+            // in the running for an approach shot.
+            if (standard.carryMeters() > 0) {
+                club.setCarryDistance(standard.carryMeters());
+                club.setCarryIsDefault(true);
+            }
+            clubRepository.save(club);
+        }
+        log.info("Seeded {} standard clubs into bag {} — all carries flagged as defaults",
+                StandardBag.clubs().size(), saved.getId());
+        return saved;
     }
 
     private void setActiveBagInternal(Long golferAccountId, GolfBag targetBag) {
@@ -316,7 +346,13 @@ public class BagServiceImpl implements BagService {
     private void applyClubRequest(Club club, CreateClubRequest request) {
         club.setClubType(Club.ClubType.valueOf(request.getClubType()));
         if (request.getLoft() != null) club.setLoft(request.getLoft());
-        if (request.getCarryDistance() != null) club.setCarryDistance(request.getCarryDistance());
+        // A golfer typing a carry makes it theirs, whatever it was before. This
+        // is the whole safety of seeding a standard set: the flag survives only
+        // as long as nobody has looked at the number.
+        if (request.getCarryDistance() != null) {
+            club.setCarryDistance(request.getCarryDistance());
+            club.setCarryIsDefault(false);
+        }
         if (request.getTotalDistance() != null) club.setTotalDistance(request.getTotalDistance());
         if (request.getDispersion() != null) club.setDispersion(request.getDispersion());
         if (request.getShaft() != null) club.setShaft(request.getShaft());
@@ -332,7 +368,13 @@ public class BagServiceImpl implements BagService {
     private void applyClubUpdate(Club club, UpdateClubRequest request) {
         if (request.getClubType() != null) club.setClubType(Club.ClubType.valueOf(request.getClubType()));
         if (request.getLoft() != null) club.setLoft(request.getLoft());
-        if (request.getCarryDistance() != null) club.setCarryDistance(request.getCarryDistance());
+        // A golfer typing a carry makes it theirs, whatever it was before. This
+        // is the whole safety of seeding a standard set: the flag survives only
+        // as long as nobody has looked at the number.
+        if (request.getCarryDistance() != null) {
+            club.setCarryDistance(request.getCarryDistance());
+            club.setCarryIsDefault(false);
+        }
         if (request.getTotalDistance() != null) club.setTotalDistance(request.getTotalDistance());
         if (request.getDispersion() != null) club.setDispersion(request.getDispersion());
         if (request.getShaft() != null) club.setShaft(request.getShaft());

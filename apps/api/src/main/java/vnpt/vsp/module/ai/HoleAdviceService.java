@@ -86,13 +86,15 @@ public class HoleAdviceService {
                 golfer == null ? null : golfer.handicap, hole.strokeIndex, 18);
         Integer netPar = strokes == null ? null : hole.par + strokes;
         var clubs = clubs(hole, bag);
+        boolean clubsAreStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
 
         String cacheKey = "hole-advice:" + courseId + ":" + holeNumber + ":"
                 + (teeName == null ? "-" : teeName) + ":" + golferId + ":" + history.rounds;
         String cached = cached(cacheKey);
         if (cached != null) {
             return response(hole, history, strokes,
-                    golfer == null ? null : golfer.handicap, netPar, clubs, cached, true);
+                    golfer == null ? null : golfer.handicap, netPar, clubs,
+                    clubsAreStandard, cached, true);
         }
 
         if (!gateway.isEnabled()) {
@@ -100,7 +102,8 @@ public class HoleAdviceService {
             // has a hole to draw, and the golfer still has their own record on
             // it. Only the sentence is missing.
             return response(hole, history, strokes,
-                    golfer == null ? null : golfer.handicap, netPar, clubs, null, false);
+                    golfer == null ? null : golfer.handicap, netPar, clubs,
+                    clubsAreStandard, null, false);
         }
 
         String advice = gateway.ask(
@@ -110,18 +113,19 @@ public class HoleAdviceService {
         log.info("Advised golfer {} on course {} hole {} ({} rounds of history, {} shot(s) received)",
                 golferId, courseId, holeNumber, history.rounds, strokes);
         return response(hole, history, strokes,
-                golfer == null ? null : golfer.handicap, netPar, clubs, advice, false);
+                golfer == null ? null : golfer.handicap, netPar, clubs,
+                clubsAreStandard, advice, false);
     }
 
     private HoleAdviceResponse response(
             Hole hole, History history, Integer strokes, BigDecimal handicap,
             Integer netPar, List<HoleAdviceResponse.ClubForShot> clubs,
-            String advice, boolean cached) {
+            boolean clubsAreStandard, String advice, boolean cached) {
         return new HoleAdviceResponse(
                 hole.par, hole.strokeIndex, hole.yards, hole.meters, hole.tee,
                 history.rounds, history.average, history.best,
                 history.fairways, history.girs,
-                strokes, handicap, netPar, clubs, advice, cached);
+                strokes, handicap, netPar, clubs, clubsAreStandard, advice, cached);
     }
 
     /**
@@ -193,6 +197,12 @@ public class HoleAdviceService {
             facts.append("Chia gậy: người này được ").append(strokes)
                     .append(" gậy handicap ở hố này, nên par thực tế của họ là ")
                     .append(netPar).append(".\n");
+        }
+
+        boolean allStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
+        if (allStandard) {
+            facts.append("LƯU Ý: người này chưa sửa cự ly gậy nào, nên các cự ly dưới đây "
+                    + "là số tiêu chuẩn chung chứ không phải của họ.\n");
         }
 
         if (!bag.isEmpty()) {
@@ -353,16 +363,24 @@ public class HoleAdviceService {
 
     private List<Club> bag(Long golferId) {
         var rows = em.createNativeQuery("""
-                SELECT c.club_type, c.carry_distance
+                SELECT c.club_type, c.carry_distance, c.loft, c.carry_is_default
                 FROM clubs c JOIN golf_bags b ON b.id = c.golf_bag_id
-                WHERE b.golfer_account_id = :golfer AND c.carry_distance IS NOT NULL
+                WHERE b.golfer_account_id = :golfer
+                  AND c.carry_distance IS NOT NULL AND c.carry_distance > 0
                 ORDER BY c.carry_distance DESC
                 """).setParameter("golfer", golferId).getResultList();
         var bag = new ArrayList<Club>();
         for (Object row : rows) {
             Object[] r = (Object[]) row;
-            bag.add(new Club((String) r[0],
-                    (int) Math.round(((Number) r[1]).doubleValue())));
+            var type = vnpt.vsp.module.bag.entity.Club.ClubType.valueOf((String) r[0]);
+            Double loft = r[2] == null ? null : ((Number) r[2]).doubleValue();
+            bag.add(new Club(
+                    // Named from the loft, because ClubType stops at IRON and
+                    // eight irons all reading "IRON" tells a golfer nothing.
+                    vnpt.vsp.module.bag.StandardBag.nameFor(type, loft),
+                    (int) Math.round(((Number) r[1]).doubleValue()),
+                    Boolean.TRUE.equals(r[3]),
+                    type == vnpt.vsp.module.bag.entity.Club.ClubType.DRIVER));
         }
         return bag;
     }
@@ -417,7 +435,18 @@ public class HoleAdviceService {
 
         for (int shot = 1; shot <= shotsAllowed && remaining > 0; shot++) {
             boolean lastShot = shot == shotsAllowed;
-            Club pick = lastShot ? shortestThatCarries(bag, remaining) : bag.get(0);
+            // A driver is hit off a tee peg. Recommending one for the second
+            // shot of a par 5 — which this did, off the fairway, at 240 m — is
+            // not a club choice any golfer would recognise.
+            List<Club> playable = shot == 1
+                    ? bag
+                    : bag.stream().filter(c -> !c.driver()).toList();
+            if (playable.isEmpty()) {
+                break;
+            }
+            Club pick = lastShot
+                    ? shortestThatCarries(playable, remaining)
+                    : playable.get(0);
             String label = shotsAllowed == 1 ? "Cú vào green"
                     : shot == 1 ? "Cú phát bóng"
                     : lastShot ? "Cú vào green" : "Cú tiếp theo";
@@ -435,8 +464,9 @@ public class HoleAdviceService {
         return plan;
     }
 
-    /// The shortest club that still covers the distance, or the longest in the
-    /// bag when nothing does — which is the honest answer to "I cannot reach".
+    /// The shortest club that still covers the distance, or the longest
+    /// available when nothing does — which is the honest answer to "I cannot
+    /// reach from here".
     private Club shortestThatCarries(List<Club> bag, int metres) {
         Club best = null;
         for (Club club : bag) {
@@ -448,7 +478,11 @@ public class HoleAdviceService {
         return best != null ? best : bag.get(0);
     }
 
-    private record Club(String type, int carryMeters) {}
+    /// @param standard true while the carry is the seeded default rather than
+    ///                 something this golfer measured
+    /// @param driver   a driver is hit off a tee peg and nowhere else, which
+    ///                 is why it is excluded from every shot after the first
+    private record Club(String type, int carryMeters, boolean standard, boolean driver) {}
 
     // ─── Cache ───────────────────────────────────────────────────────────────
 
