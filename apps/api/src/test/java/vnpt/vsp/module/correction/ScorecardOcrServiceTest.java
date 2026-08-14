@@ -85,7 +85,8 @@ class ScorecardOcrServiceTest {
     }
 
     private ScorecardOcrService service(String baseUrl) {
-        return new ScorecardOcrService(objectMapper, "sk-test-key", baseUrl, "image");
+        return new ScorecardOcrService(objectMapper,
+                new vnpt.vsp.module.ai.LlmGateway(objectMapper, "sk-test-key", baseUrl, "image"));
     }
 
     private String openAiAnswer(String content) throws Exception {
@@ -440,7 +441,8 @@ class ScorecardOcrServiceTest {
     @Test
     @DisplayName("no key configured is a field error, not a call to nowhere")
     void staysOffWithoutAKey() {
-        var off = new ScorecardOcrService(objectMapper, "  ", baseUrl(), "image");
+        var off = new ScorecardOcrService(objectMapper,
+                new vnpt.vsp.module.ai.LlmGateway(objectMapper, "  ", baseUrl(), "image"));
 
         assertThat(off.isEnabled()).isFalse();
         assertThatThrownBy(() -> off.extractCourse(new byte[]{1}, "image/jpeg"))
