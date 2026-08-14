@@ -328,7 +328,16 @@ BEGIN
 END $$;
 """)
 
-    out.append(f"DELETE FROM holes WHERE course_id = {course_id};")
+    out.append(f"""-- Upserted, never deleted. `holes` carries the measured tee and green
+-- coordinates as well as the par, and a card has nothing to say about
+-- geometry. Deleting the rows first — which is what this did — throws the
+-- coordinates away as a side effect of loading a scorecard. That is not
+-- hypothetical: 04e32a0 had to restore twenty-six measured points from a
+-- backup after exactly this, on KN Links and Sono Belle's Hill.
+--
+-- ON CONFLICT touches only the columns a card is evidence for. Anything
+-- surveyed on that row stays where it is.
+DELETE FROM holes WHERE course_id = {course_id} AND hole_number > {n};""")
     out.append("INSERT INTO holes (course_id, hole_number, par, playing_length_meters,")
     out.append("    accuracy_class, verification_status, confidence,")
     out.append("    source, publisher, license, effective_date, version, created_at, updated_at)")
@@ -341,7 +350,17 @@ END $$;
                     f"'D_UNVERIFIED_COMMUNITY', 'UNVERIFIED', 60.0, "
                     f"'{quote(source)}', '{quote(club)}', 'club-published', "
                     f"CURRENT_DATE, 1, now(), now())")
-    out.append(",\n".join(rows) + ";")
+    out.append(",\n".join(rows))
+    out.append("""ON CONFLICT (course_id, hole_number) DO UPDATE SET
+    par                   = EXCLUDED.par,
+    playing_length_meters = COALESCE(EXCLUDED.playing_length_meters,
+                                     holes.playing_length_meters),
+    source                = EXCLUDED.source,
+    publisher             = EXCLUDED.publisher,
+    license               = EXCLUDED.license,
+    effective_date        = EXCLUDED.effective_date,
+    version               = holes.version + 1,
+    updated_at            = now();""")
 
     out.append(f"""
 UPDATE courses SET holes_count = {n}, par_total = {par_total}, updated_at = now()
