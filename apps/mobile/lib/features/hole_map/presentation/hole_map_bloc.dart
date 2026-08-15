@@ -13,6 +13,7 @@ import '../data/hole_map_repository.dart';
 import 'package:vsp_mobile/data/services/round_telemetry_recorder.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
+import 'package:vsp_mobile/features/hole_map/data/course_pin_api.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/wind_relative_entity.dart';
@@ -66,13 +67,19 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   /// against this to know whether it has to say so.
   int? get loadedHoleNumber => _currentHoleNumber;
 
+  /// Reads the club's published flag positions. Null in tests and wherever
+  /// the network has no business being reached.
+  final CoursePinApi? _pinApi;
+
   HoleMapBloc({
     required HoleMapRepository repository,
     LocationService? locationService,
     RoundTelemetryRecorder? telemetry,
+    CoursePinApi? pinApi,
   }) : _repository = repository,
        _locationService = locationService,
        _telemetry = telemetry,
+       _pinApi = pinApi,
        super(const HoleMapInitial()) {
     on<LoadHoleMap>(_onLoadHoleMap);
     on<UpdateGolferPosition>(_onUpdateGolferPosition);
@@ -199,6 +206,12 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       _recordMapLoad(event.holeNumber);
       // Build initial state — windRelative will be computed after position/target
       emit(HoleMapReady(holeMap: holeMap, layerVisibility: layerVisibility));
+
+      // Then today's flag, if the club publishes one. After the map is on
+      // screen and after the latency is recorded, on purpose: the pin is a
+      // network read, and making the drawn hole wait for it would turn an
+      // offline round's map into a spinner.
+      await _applyTodaysPin(emit, event.courseId, event.holeNumber);
     } catch (e) {
       // A load that failed is not a load time. Recording it would put the
       // duration of an error next to the durations of successes and drag the
@@ -212,6 +225,31 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
           holeNumber: event.holeNumber,
         ),
       );
+    }
+  }
+
+  /// Puts the club's published flag on the hole, when there is one.
+  ///
+  /// Quiet about every failure. A course with no greenkeeper on the portal,
+  /// a phone with no signal on the 7th, and a pin whose window has closed are
+  /// all the same answer — the hole draws with its geometry, as it did before
+  /// any of this existed.
+  Future<void> _applyTodaysPin(
+    Emitter<HoleMapState> emit,
+    String courseId,
+    int holeNumber,
+  ) async {
+    final api = _pinApi;
+    if (api == null) return;
+    try {
+      final pins = await api.forCourse(courseId);
+      final pin = pins[holeNumber];
+      if (pin == null || pin.isExpired || emit.isDone) return;
+      final current = state;
+      if (current is! HoleMapReady) return;
+      emit(current.copyWith(holeMap: current.holeMap.copyWith(pin: pin)));
+    } catch (_) {
+      // Offline, or the course is not on the server. Nothing to say.
     }
   }
 

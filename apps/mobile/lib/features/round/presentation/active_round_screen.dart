@@ -32,6 +32,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../hole_map/hole_map.dart';
+import '../../hole_map/data/course_pin_api.dart';
 import '../../basemap/domain/satellite_imagery_config.dart';
 import 'active_round_target_view.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
@@ -513,6 +514,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             repository: context.read<HoleMapRepository>(),
             locationService: widget.locationService,
             telemetry: _telemetry,
+            pinApi: CoursePinApi(),
           )..add(
             LoadHoleMap(
               packageId: widget.packageId,

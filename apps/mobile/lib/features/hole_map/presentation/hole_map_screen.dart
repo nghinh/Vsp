@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../data/course_pin_api.dart';
 import '../../hole_map/presentation/hole_map_bloc.dart';
 import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
@@ -140,6 +141,8 @@ class HoleMapScreen extends StatelessWidget {
           HoleMapBloc(
             repository: context.read(),
             locationService: locationService,
+            // Today's flag, where the club's greenkeeper publishes one.
+            pinApi: CoursePinApi(),
           )..add(
             LoadHoleMap(
               packageId: packageId,
