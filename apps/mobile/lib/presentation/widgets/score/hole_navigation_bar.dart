@@ -37,8 +37,12 @@ class HoleNavigationBar extends StatelessWidget {
     this.onCompleteRound,
   });
 
-  bool get canGoBack => currentHoleIndex > 0;
-  bool get canGoForward => currentHoleIndex < totalHoles - 1;
+  /// Both controls stay live at the ends: the round wraps, so the 18th steps
+  /// onto the 1st and the 1st steps back onto the 18th. Greying them out was
+  /// what made a golfer on the 1st press forward seventeen times to see the
+  /// 18th.
+  bool get canGoBack => totalHoles > 1;
+  bool get canGoForward => totalHoles > 1;
   bool get isLastHole => currentHoleIndex == totalHoles - 1;
 
   @override

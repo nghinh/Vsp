@@ -316,15 +316,24 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
   }
 
   /// Navigate to the previous hole.
+  /// Back one hole, wrapping from the first to the last.
+  ///
+  /// A round is a loop. A golfer on the 1st who wants to check what they wrote
+  /// on the 18th should not have to press forward seventeen times, and one who
+  /// has just holed out on the 18th steps naturally onto the 1st.
   void navigateToPreviousHole() {
-    if (!state.canGoBack) return;
-    emit(state.copyWith(currentHoleIndex: state.currentHoleIndex - 1));
+    if (state.totalHoles == 0) return;
+    emit(state.copyWith(
+        currentHoleIndex:
+            (state.currentHoleIndex - 1 + state.totalHoles) % state.totalHoles));
   }
 
   /// Navigate to the next hole.
+  /// Forward one hole, wrapping from the last to the first.
   void navigateToNextHole() {
-    if (!state.canGoForward) return;
-    emit(state.copyWith(currentHoleIndex: state.currentHoleIndex + 1));
+    if (state.totalHoles == 0) return;
+    emit(state.copyWith(
+        currentHoleIndex: (state.currentHoleIndex + 1) % state.totalHoles));
   }
 
   /// Navigate to a specific hole index.

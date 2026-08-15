@@ -316,16 +316,21 @@ class _HoleMapBody extends StatelessWidget {
     return const SizedBox.shrink();
   }
 
-  /// Moves [step] holes along the round's own hole list, or null at the ends.
+  /// Moves [step] holes along the round's own hole list, wrapping at the ends.
   ///
-  /// Null disables the control rather than hiding it, so the header does not
-  /// change width on the 1st and the 18th.
+  /// Next on the 18th is the 1st and back on the 1st is the 18th, because a
+  /// round is a loop: a golfer checking the 1st while standing on the 18th
+  /// green should not have to press back seventeen times. It wraps the round's
+  /// own list rather than 1..18, so a nine wraps at the 9th.
+  ///
+  /// Null only when the hole is not in the list at all — which disables the
+  /// control rather than hiding it, so the header does not change width.
   VoidCallback? _neighbour(BuildContext context, int hole, int step) {
+    if (holeNumbers.isEmpty) return null;
     final index = holeNumbers.indexOf(hole);
     if (index < 0) return null;
-    final next = index + step;
-    if (next < 0 || next >= holeNumbers.length) return null;
-    final target = holeNumbers[next];
+    final count = holeNumbers.length;
+    final target = holeNumbers[(index + step) % count];
     return () {
       context.read<HoleMapBloc>().add(NavigateToHole(holeNumber: target));
       // The round owns which hole is being played; the map is one view of it.

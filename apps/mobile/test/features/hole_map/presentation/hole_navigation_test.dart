@@ -260,38 +260,35 @@ void main() {
       expect(repo.requested, [10, 11]);
     });
 
-    testWidgets('stops at both ends of the round', (tester) async {
+    /// A round is a loop. Stepping past the last hole comes round to the
+    /// first, and back from the first comes round to the last — a golfer on
+    /// the 18th green checking the 1st should not press back seventeen times.
+    testWidgets('comes round at both ends of the round', (tester) async {
       final l10n = await _pumpMap(
         tester,
         holeNumber: 7,
         holeNumbers: const [7, 8, 9],
       );
 
-      // Disabled rather than hidden, so the header does not change width on
-      // the first hole and the last.
+      // Both controls stay live at the ends, because both go somewhere.
       expect(
         tester
             .widget<IconButton>(_stepButton(l10n.holeMapPreviousHole))
             .onPressed,
-        isNull,
-      );
-      expect(
-        tester.widget<IconButton>(_stepButton(l10n.holeMapNextHole)).onPressed,
         isNotNull,
       );
 
-      await tester.tap(find.byTooltip(l10n.holeMapNextHole));
+      // Back from the first wraps to the last.
+      await tester.tap(find.byTooltip(l10n.holeMapPreviousHole));
       await tester.pump();
       await tester.pump();
-      await tester.tap(find.byTooltip(l10n.holeMapNextHole));
-      await tester.pump();
-      await tester.pump();
-
       expect(find.text(l10n.holeNumberLabel('9')), findsOneWidget);
-      expect(
-        tester.widget<IconButton>(_stepButton(l10n.holeMapNextHole)).onPressed,
-        isNull,
-      );
+
+      // And forward from the last wraps to the first.
+      await tester.tap(find.byTooltip(l10n.holeMapNextHole));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text(l10n.holeNumberLabel('7')), findsOneWidget);
     });
 
     testWidgets('offers no navigation when opened on a single hole', (
