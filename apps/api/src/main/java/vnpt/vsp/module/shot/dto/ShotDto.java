@@ -17,7 +17,7 @@ public record ShotDto(
         Long playerId,
         Integer holeNumber,
         Integer shotNumber,
-        UUID clubId,
+        Long clubId,
         Instant startedAt,
         Instant endedAt,
         String startLocation,

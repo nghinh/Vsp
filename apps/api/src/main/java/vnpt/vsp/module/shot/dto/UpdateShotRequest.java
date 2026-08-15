@@ -10,7 +10,7 @@ import java.util.UUID;
  * Per Story 10.3 Slice 1.
  */
 public record UpdateShotRequest(
-        UUID clubId,
+        Long clubId,
         Instant endedAt,
         GeoJSONPointDto endLocation,
         ShotDto.Lie lie,

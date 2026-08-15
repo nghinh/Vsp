@@ -71,7 +71,9 @@ class ShotServiceImplTest {
         stubSaveEchoesWithId();
 
         CreateShotRequest req = new CreateShotRequest(
-                1, 1, null, UUID.randomUUID(), Instant.now(),
+                // A club id is the club's own bigint now — it was a UUID,
+                // which no club has ever had.
+                1, 1, null, 42L, Instant.now(),
                 GeoJSONPointDto.of(106.7, 10.8, null), null);
 
         ShotResponse resp = service.createShot(accountId, roundId, "k1", req);
@@ -141,7 +143,7 @@ class ShotServiceImplTest {
         stubSaveEchoesWithId();
 
         ShotDetectionRequest req = new ShotDetectionRequest(
-                5, 1, UUID.randomUUID(), Instant.now(),
+                5, 1, 42L, Instant.now(),
                 GeoJSONPointDto.of(106.7, 10.8, null), null,
                 new BigDecimal("0.90"),
                 java.util.List.of(new ShotSignalDto("gps", 0.9, 0.30)));

@@ -70,7 +70,7 @@ public class Shot {
     private Integer shotNumber;
 
     @Column(name = "club_id")
-    private UUID clubId;
+    private Long clubId;
 
     // ─── Temporal ──────────────────────────────────────────────────────────────
 
@@ -202,8 +202,8 @@ public class Shot {
     public Integer getShotNumber() { return shotNumber; }
     public void setShotNumber(Integer shotNumber) { this.shotNumber = shotNumber; }
 
-    public UUID getClubId() { return clubId; }
-    public void setClubId(UUID clubId) { this.clubId = clubId; }
+    public Long getClubId() { return clubId; }
+    public void setClubId(Long clubId) { this.clubId = clubId; }
 
     public Instant getStartedAt() { return startedAt; }
     public void setStartedAt(Instant startedAt) { this.startedAt = startedAt; }

@@ -11,7 +11,7 @@ public record CreateShotRequest(
         Integer holeNumber,
         Integer shotNumber,
         UUID playerId,
-        UUID clubId,
+        Long clubId,
         Instant startedAt,
         GeoJSONPointDto startLocation,
         ConditionsDto conditions

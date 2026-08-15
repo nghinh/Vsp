@@ -63,7 +63,11 @@ public class PerformanceServiceImpl implements PerformanceService {
     // ─── Per-Club Performance ────────────────────────────────────────────────
 
     @Override
-    @Transactional(readOnly = true)
+    // Not read-only. A miss computes the stats and caches them, so this reads
+    // and then writes — declaring it read-only made every uncached request
+    // fail with "cannot execute INSERT in a read-only transaction", which
+    // reached the golfer as an internal error and a correlation id.
+    @Transactional
     public ClubPerformanceResponse getClubPerformance(Long golferAccountId, Long bagId, Long clubId) {
         log.debug("getClubPerformance golferAccountId={} bagId={} clubId={}", golferAccountId, bagId, clubId);
 
@@ -93,7 +97,9 @@ public class PerformanceServiceImpl implements PerformanceService {
     // ─── Bag-Level Batch ─────────────────────────────────────────────────────
 
     @Override
-    @Transactional(readOnly = true)
+    // Not read-only, for the same reason as getClubPerformance: a cache miss
+    // writes.
+    @Transactional
     public BagPerformanceResponse getBagPerformance(Long golferAccountId, Long bagId) {
         log.debug("getBagPerformance golferAccountId={} bagId={}", golferAccountId, bagId);
 

@@ -20,7 +20,7 @@ import java.util.UUID;
 public record ShotDetectionRequest(
         @NotNull Integer holeNumber,
         @NotNull Integer shotNumber,
-        UUID clubId,
+        Long clubId,
         Instant detectedAt,
         GeoJSONPointDto location,
         ConditionsDto conditions,
