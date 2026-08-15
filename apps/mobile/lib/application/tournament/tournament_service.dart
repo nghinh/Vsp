@@ -7,42 +7,31 @@
 //
 // Story 12.1 Slice H
 
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
 import '../../domain/models/tournament/models.dart';
 import '../../domain/models/tournament_policy.dart';
 import '../../data/repositories/tournament_policy_repository.dart';
-import 'package:vsp_mobile/core/network/vsp_endpoints.dart';
-
-/// Tournament endpoints live on the same API as everything else.
-///
-/// This was `https://api.vsp.local` — not a define, a literal, and `.local` is
-/// the mDNS reserved TLD, so no build of this app could ever have reached it.
-String get _baseUrl => VspEndpoints.apiBaseUrl;
+import 'package:vsp_mobile/core/network/api_client.dart';
 
 /// Handles tournament-related API operations on mobile.
+///
+/// Goes through [ApiClient] rather than a bare HTTP client. Every tournament
+/// route except the leaderboard is authenticated, and a raw client sends no
+/// bearer token — so these calls answered 401 and this service, which
+/// swallows every failure into null, reported "no tournament" instead. A
+/// silent wrong answer is the worst shape a client can have.
 class TournamentService {
-  final http.Client _httpClient;
+  final ApiClient _apiClient;
 
-  TournamentService({http.Client? httpClient})
-    : _httpClient = httpClient ?? http.Client();
+  TournamentService({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient();
 
   // ─── Tournament ─────────────────────────────────────────────────────────
 
   /// Fetch a tournament by ID.
   Future<Tournament?> getTournament(String tournamentId) async {
     try {
-      final response = await _httpClient.get(
-        Uri.parse('$_baseUrl/tournaments/$tournamentId'),
-      );
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        return Tournament.fromJson(json);
-      }
-      return null;
+      final json = await _apiClient.get('/tournaments/$tournamentId');
+      return Tournament.fromJson(json as Map<String, dynamic>);
     } catch (_) {
       return null;
     }
@@ -58,19 +47,13 @@ class TournamentService {
       if (status != null) queryParams['status'] = status.name.toUpperCase();
       if (courseId != null) queryParams['courseId'] = courseId.toString();
 
-      final uri = Uri.parse(
-        '$_baseUrl/tournaments',
-      ).replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
-
-      final response = await _httpClient.get(uri);
-
-      if (response.statusCode == 200) {
-        final list = jsonDecode(response.body) as List<dynamic>;
-        return list
-            .map((e) => Tournament.fromJson(e as Map<String, dynamic>))
-            .toList();
-      }
-      return [];
+      final list = await _apiClient.get(
+        '/tournaments',
+        queryParams: queryParams.isNotEmpty ? queryParams : null,
+      );
+      return (list as List<dynamic>)
+          .map((e) => Tournament.fromJson(e as Map<String, dynamic>))
+          .toList();
     } catch (_) {
       return [];
     }
@@ -100,15 +83,9 @@ class TournamentService {
   /// Fetch current leaderboard for a tournament (polling fallback).
   Future<Leaderboard?> getLeaderboard(String tournamentId) async {
     try {
-      final response = await _httpClient.get(
-        Uri.parse('$_baseUrl/tournaments/$tournamentId/leaderboard'),
-      );
-
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        return Leaderboard.fromJson(json);
-      }
-      return null;
+      final json =
+          await _apiClient.get('/tournaments/$tournamentId/leaderboard');
+      return Leaderboard.fromJson(json as Map<String, dynamic>);
     } catch (_) {
       return null;
     }
