@@ -100,7 +100,10 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                 SELECT 1 FROM unnest(
                     string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
                 WHERE token <> ''
-                  AND unaccent(lower(f.name || ' ' || coalesce(f.address, '')))
+                  AND unaccent(lower(f.name || ' '
+                          || coalesce((SELECT string_agg(c3.name, ' ')
+                                       FROM courses c3 WHERE c3.facility_id = f.id), '')
+                          || ' ' || coalesce(f.address, '')))
                       NOT LIKE '%' || token || '%'
               )
           AND c.id = (
@@ -127,7 +130,10 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                 SELECT 1 FROM unnest(
                     string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
                 WHERE token <> ''
-                  AND unaccent(lower(f.name || ' ' || coalesce(f.address, '')))
+                  AND unaccent(lower(f.name || ' '
+                          || coalesce((SELECT string_agg(c3.name, ' ')
+                                       FROM courses c3 WHERE c3.facility_id = f.id), '')
+                          || ' ' || coalesce(f.address, '')))
                       NOT LIKE '%' || token || '%'
               )
           AND c.id = (
