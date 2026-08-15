@@ -678,14 +678,17 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
     final theme = Theme.of(context);
     final text = _query.text;
 
-    final nearby = widget.state.nearbyCourses
-        .where((c) => VietnameseSearch.matches(c.courseName, text))
-        .toList();
+    // Matched against the club and the đường both. The list used to filter
+    // on the đường alone, so typing "long" searched "Đường A" and missed
+    // Long Biên entirely — while finding FLC Hạ Long, whose đường happens
+    // to carry the club's name.
+    final nearby =
+        widget.state.nearbyCourses.where((c) => c.matchesQuery(text)).toList();
     // A course already listed as nearby is not repeated in the catalogue —
     // the same club twice, once with a distance and once without, reads as
     // two different places.
     final all = widget.state.catalogueBeyondNearby
-        .where((c) => VietnameseSearch.matches(c.courseName, text))
+        .where((c) => c.matchesQuery(text))
         .toList();
     final recent = widget.state.recentCourses
         .where((c) => VietnameseSearch.matches(c.courseName, text))
@@ -771,7 +774,7 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                             (c) => ListTile(
                               key: Key('picker_nearby_${c.courseId}'),
                               leading: const Icon(Icons.near_me),
-                              title: Text(c.courseName),
+                              title: Text(c.displayName),
                               subtitle: c.distanceKm != null
                                   ? Text(
                                       AppLocalizations.of(context).roundSetupKmAway(c.distanceKm!.toStringAsFixed(1)),
@@ -780,7 +783,7 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                               onTap: () => widget.onSelected(
                                 CourseSelected(
                                   courseId: c.courseId,
-                                  courseName: c.courseName,
+                                  courseName: c.displayName,
                                   packageId: c.packageId,
                                 ),
                               ),
@@ -797,11 +800,14 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                           ...all.map(
                             (c) => ListTile(
                               leading: const Icon(Icons.location_on),
-                              title: Text(c.courseName),
+                              title: Text(c.displayName),
+                              subtitle: c.subtitleName == null
+                                  ? null
+                                  : Text(c.subtitleName!),
                               onTap: () => widget.onSelected(
                                 CourseSelected(
                                   courseId: c.courseId,
-                                  courseName: c.courseName,
+                                  courseName: c.displayName,
                                   packageId: c.packageId,
                                 ),
                               ),

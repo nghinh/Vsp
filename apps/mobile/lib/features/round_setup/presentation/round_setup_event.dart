@@ -5,6 +5,7 @@
 //
 // Story 5.1 — Slice C: Round Setup BLoC
 
+import 'package:vsp_mobile/core/text/vietnamese_search.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../domain/models/round_format.dart';
@@ -193,7 +194,15 @@ class LastPlayedCoursesLoaded extends RoundSetupEvent {
 /// Nearby course suggestion model.
 class NearbyCourseSuggestion extends Equatable {
   final int courseId;
+
+  /// The name of the đường — "Đường A", "Kings Course". Useful as a subtitle
+  /// and useless as a title: nobody searches for it, and on its own it does
+  /// not say which club it belongs to.
   final String courseName;
+
+  /// The club. What a golfer types, and what the picker shows.
+  final int? facilityId;
+  final String? facilityName;
 
   /// Null where the facility has no established location. The picker shows
   /// the course either way — a golfer who knows the name should be able to
@@ -206,16 +215,44 @@ class NearbyCourseSuggestion extends Equatable {
   const NearbyCourseSuggestion({
     required this.courseId,
     required this.courseName,
+    this.facilityId,
+    this.facilityName,
     this.latitude,
     this.longitude,
     this.distanceKm,
     this.packageId,
   });
 
+  /// What the picker draws and matches against: the club where there is
+  /// one, the đường only as a fallback.
+  String get displayName =>
+      facilityName?.isNotEmpty == true ? facilityName! : courseName;
+
+  /// Whether this row answers what the golfer typed.
+  ///
+  /// The club and the đường both. Filtering on the đường alone is what made
+  /// "long" miss Long Biên — its đường are named A, B and C — while finding
+  /// FLC Hạ Long, whose đường carries the club's name.
+  bool matchesQuery(String query) =>
+      VietnameseSearch.matches(displayName, query) ||
+      VietnameseSearch.matches(courseName, query);
+
+  /// The đường, when it says something the club name does not.
+  String? get subtitleName {
+    if (facilityName == null || facilityName!.isEmpty) return null;
+    if (courseName.isEmpty || courseName == facilityName) return null;
+    // "Long Biên Golf Course — Championship" under "Long Biên Golf Course"
+    // is the same name twice.
+    if (courseName.startsWith(facilityName!)) return null;
+    return courseName;
+  }
+
   @override
   List<Object?> get props => [
     courseId,
     courseName,
+    facilityId,
+    facilityName,
     latitude,
     longitude,
     distanceKm,

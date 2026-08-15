@@ -183,9 +183,16 @@ class RoundSetupReady extends RoundSetupState {
   /// lists appears twice — once with a distance, once without — which reads
   /// as two different places rather than one listed twice.
   List<NearbyCourseSuggestion> get catalogueBeyondNearby {
-    final near = nearbyCourses.map((c) => c.courseId).toSet();
-    return allCourses.where((c) => !near.contains(c.courseId)).toList();
+    // Keyed on the club, not the đường. The two lists come from different
+    // queries and pick different courses of the same facility — nearby the
+    // closest, the catalogue the longest — so matching on courseId let Long
+    // Biên appear in both sections under two of its own đường.
+    final near = nearbyCourses.map(_clubKey).toSet();
+    return allCourses.where((c) => !near.contains(_clubKey(c))).toList();
   }
+
+  static int _clubKey(NearbyCourseSuggestion c) =>
+      c.facilityId ?? -c.courseId;
 
   /// True if a course is selected.
   bool get hasCourse => courseId != null && courseName != null;

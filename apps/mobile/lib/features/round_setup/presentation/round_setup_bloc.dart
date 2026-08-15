@@ -167,13 +167,19 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       List<NearbyCourseSuggestion> availableCourses = const [];
       try {
         final page = await _courseSearchApi.searchCourses(
-          const CourseSearchParams(page: 0, size: 50),
+          // One row per club, and the whole country fits: 62 clubs today
+          // against the server's page ceiling of 100. The picker filters
+          // this list locally, so a club left off the page is a club the
+          // golfer cannot find by typing — 50 left twelve of them off.
+          const CourseSearchParams(page: 0, size: 100),
         );
         availableCourses = page.content
             .map(
               (c) => NearbyCourseSuggestion(
                 courseId: c.courseId,
                 courseName: c.courseName ?? c.facilityName,
+                facilityId: c.facilityId,
+                facilityName: c.facilityName,
                 latitude: c.latitude,
                 longitude: c.longitude,
                 distanceKm: c.distanceMeters != null
@@ -630,27 +636,38 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       final page = await _courseSearchApi.findNearbyCourses(
         latitude: fix.latitude,
         longitude: fix.longitude,
-        // Wide enough to cover the drive a golfer makes to play — Hanoi's
-        // courses are an hour out — and narrow enough that "near you" still
-        // means something.
-        radiusMeters: 60000,
-        size: 10,
+        // The server refuses anything above 50 km, and a request it refuses
+        // is a 400 this method swallows — which is how "near you" spent a
+        // day showing nothing at all.
+        radiusMeters: 50000,
+        // Rows are per đường, not per club: Long Biên alone returns three.
+        // Ask for enough of them to still have ten clubs after collapsing.
+        size: 40,
       );
       if (isClosed) return;
-      add(NearbyCoursesLoaded(
-        page.content
-            .map((c) => NearbyCourseSuggestion(
-                  courseId: c.courseId,
-                  courseName: c.courseName ?? c.facilityName,
-                  latitude: c.latitude,
-                  longitude: c.longitude,
-                  distanceKm: c.distanceMeters == null
-                      ? null
-                      : c.distanceMeters! / 1000,
-                  packageId: null,
-                ))
-            .toList(),
-      ));
+
+      // One row per club, keeping the nearest — the list is ordered by
+      // distance, so the first of each facility is it. Three lines reading
+      // "Long Biên Golf Course" is a list that looks broken.
+      final seen = <int>{};
+      final nearby = <NearbyCourseSuggestion>[];
+      for (final c in page.content) {
+        final key = c.facilityId ?? -c.courseId;
+        if (!seen.add(key)) continue;
+        nearby.add(NearbyCourseSuggestion(
+          courseId: c.courseId,
+          courseName: c.courseName ?? c.facilityName,
+          facilityId: c.facilityId,
+          facilityName: c.facilityName,
+          latitude: c.latitude,
+          longitude: c.longitude,
+          distanceKm:
+              c.distanceMeters == null ? null : c.distanceMeters! / 1000,
+          packageId: null,
+        ));
+        if (nearby.length >= 10) break;
+      }
+      add(NearbyCoursesLoaded(nearby));
     } catch (_) {
       // No fix, no permission, no network, no courses. All the same answer.
     }

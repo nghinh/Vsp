@@ -14,10 +14,18 @@ import 'package:vsp_mobile/features/round_setup/presentation/round_setup_event.d
 import 'package:vsp_mobile/features/round_setup/presentation/round_setup_state.dart';
 
 void main() {
-  NearbyCourseSuggestion course(int id, String name, {double? km}) =>
+  NearbyCourseSuggestion course(
+    int id,
+    String name, {
+    double? km,
+    int? facilityId,
+    String? club,
+  }) =>
       NearbyCourseSuggestion(
         courseId: id,
         courseName: name,
+        facilityId: facilityId,
+        facilityName: club,
         distanceKm: km,
       );
 
@@ -69,6 +77,79 @@ void main() {
 
       expect(state.catalogueBeyondNearby, isEmpty);
       expect(state.nearbyCourses, hasLength(1));
+    });
+  });
+
+  group('what the picker calls a course', () {
+    test('the club is the title, not the đường', () {
+      // "Đường A" on its own says nothing about which club it belongs to,
+      // and nobody types it into a search box.
+      final duongA = course(21, 'Đường A', facilityId: 9, club: 'Long Biên Golf Course');
+
+      expect(duongA.displayName, 'Long Biên Golf Course');
+      expect(duongA.subtitleName, 'Đường A');
+    });
+
+    test('a course named after its club is not repeated underneath', () {
+      final champ = course(
+        1,
+        'ANARA Bình Tiên Golf Club — Championship',
+        facilityId: 3,
+        club: 'ANARA Bình Tiên Golf Club',
+      );
+
+      expect(champ.displayName, 'ANARA Bình Tiên Golf Club');
+      expect(champ.subtitleName, isNull);
+    });
+
+    test('falls back to the course name where no club came back', () {
+      expect(course(1, 'Kings Course').displayName, 'Kings Course');
+      expect(course(1, 'Kings Course').subtitleName, isNull);
+    });
+  });
+
+  group('finding a club by typing', () {
+    // The reported bug, in one assertion.
+    final duongA = course(21, 'Đường A', facilityId: 9, club: 'Long Biên Golf Course');
+
+    test('"long" finds Long Biên, whose đường are named A, B and C', () {
+      expect(duongA.matchesQuery('long'), isTrue);
+      expect(duongA.matchesQuery('Long Biên'), isTrue);
+      expect(duongA.matchesQuery('long bien'), isTrue);
+    });
+
+    test('the đường is still searchable for whoever knows it', () {
+      expect(duongA.matchesQuery('đường a'), isTrue);
+      expect(duongA.matchesQuery('duong a'), isTrue);
+    });
+
+    test('a club it is not still does not match', () {
+      expect(duongA.matchesQuery('đà nẵng'), isFalse);
+    });
+
+    test('an empty query matches everything, which is the whole list', () {
+      expect(duongA.matchesQuery(''), isTrue);
+    });
+  });
+
+  group('a club listed twice', () {
+    test('is removed from the catalogue even under a different đường', () {
+      // Nearby answers with the closest đường, the catalogue with the
+      // longest. Same club, two course ids.
+      final state = RoundSetupReady(
+        nearbyCourses: [
+          course(21, 'Đường A', km: 4.2, facilityId: 9, club: 'Long Biên Golf Course'),
+        ],
+        allCourses: [
+          course(23, 'Đường C', facilityId: 9, club: 'Long Biên Golf Course'),
+          course(1, 'ANARA Bình Tiên — Championship', facilityId: 3, club: 'ANARA Bình Tiên'),
+        ],
+      );
+
+      expect(
+        state.catalogueBeyondNearby.map((c) => c.displayName),
+        ['ANARA Bình Tiên'],
+      );
     });
   });
 }
