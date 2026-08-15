@@ -86,8 +86,22 @@ audit:
 security:
   jwt:
     secret: ${JWT_SECRET:}  # Must be set in environment; min 256 bits (32 bytes) for HS256
-    access-token-expiration-ms: 3600000    # 1 hour
-    refresh-token-expiration-ms: 604800000 # 7 days
+    # How long a golfer stays signed in.
+    #
+    # An access token lasted an hour and a refresh token a week, which should
+    # have meant a week of not signing in — the app refreshes at launch and
+    # again whenever a request comes back 401. What it meant in practice was
+    # signing in again all the time, because an hour is short enough that any
+    # gap in the refresh path shows up daily rather than weekly.
+    #
+    # A day and a month. The access token is still short enough to be worth
+    # revoking by expiry, and the refresh token now has enough margin that a
+    # golfer who opens the app once a month is never asked again.
+    #
+    # Both configurable, because the right answer differs between a phone in
+    # someone's pocket and a browser on a shared machine.
+    access-token-expiration-ms: ${VSP_ACCESS_TOKEN_TTL_MS:86400000}      # 1 day
+    refresh-token-expiration-ms: ${VSP_REFRESH_TOKEN_TTL_MS:2592000000}  # 30 days
   data:
     redis:
       host: ${REDIS_HOST:localhost}

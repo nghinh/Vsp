@@ -321,6 +321,14 @@ CourseSearchResultDto:
       format: double
       description: Distance from search point in meters (only set for nearby searches)
       example: 1523.5
+    courseCount:
+      type: integer
+      description: >-
+        How many playable courses this club has. Search returns one row per
+        club rather than one per đường — nobody searches for "Đường A" — so
+        this is what tells a client whether tapping the result opens a course
+        or has to ask which đường first.
+      example: 3
     hasPackage:
       type: boolean
       description: Whether a published data package exists for this course
