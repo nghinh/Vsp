@@ -193,7 +193,7 @@ class DetectionConfidenceDetailDialog extends StatelessWidget {
           ],
           const SizedBox(height: 8),
           Text(
-            _explainText(),
+            _explainText(context),
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -235,14 +235,12 @@ class DetectionConfidenceDetailDialog extends StatelessWidget {
     }
   }
 
-  String _explainText() {
+  String _explainText(BuildContext context) {
     switch (level) {
       case ConfidenceLevel.low:
-        return 'Low confidence means the app is not sure which hole you are on. '
-            'Please select your hole manually.';
+        return AppLocalizations.of(context).detectLowConfidence;
       case ConfidenceLevel.medium:
-        return 'Medium confidence means the app has a guess but is not certain. '
-            'Auto-switch is disabled. You can still select your hole manually.';
+        return AppLocalizations.of(context).detectMediumConfidence;
       case ConfidenceLevel.high:
         return 'High confidence means the app is fairly sure which hole you are on. '
             'Auto-switch is enabled.';

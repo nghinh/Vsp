@@ -176,7 +176,7 @@ class ClubCard extends StatelessWidget {
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context).clubDeleteTitle),
             content: Text(
-              'Are you sure you want to delete this ${club.displayName}?',
+              AppLocalizations.of(context).clubDeleteConfirm(club.displayName),
             ),
             actions: [
               TextButton(

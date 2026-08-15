@@ -65,6 +65,7 @@ import '../../weather/presentation/widgets/weather_error_view.dart';
 import '../../weather/presentation/widgets/weather_loading_placeholder.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/hole_advice_sheet.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Bottom tab index constants for the active round screen.
 enum ActiveRoundTab { map, score, target, conditions, more }
@@ -917,7 +918,9 @@ class _ConditionsBody extends StatelessWidget {
                 )
               : WeatherErrorView(
                   errorCode: state.code,
-                  message: state.message,
+                  // tr: the bloc emits message keys (weatherExpired), and
+                  // anything unknown passes through unchanged.
+                  message: context.tr(state.message),
                   onRetry: () => _refresh(context),
                 );
         } else {

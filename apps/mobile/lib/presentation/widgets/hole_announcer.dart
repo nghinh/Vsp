@@ -12,6 +12,7 @@
 
 import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Mixin for widgets that need to announce hole changes to screen readers.
 ///
@@ -46,7 +47,7 @@ mixin HoleAnnouncerMixin {
   /// Announce that auto-switch was blocked due to low confidence.
   void announceAutoSwitchBlocked(BuildContext context, String reason) {
     SemanticsService.announce(
-      'Auto hole switch blocked. $reason. Please select manually.',
+      AppLocalizations.of(context).holeAutoSwitchBlocked(reason),
       TextDirection.ltr,
     );
   }

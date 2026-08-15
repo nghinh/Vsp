@@ -238,7 +238,7 @@ class _NoWatchPairedTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Tap to start pairing',
+                    AppLocalizations.of(context).watchTapToPair,
                     style: TextStyle(
                       fontSize: 13,
                       color: CupertinoColors.secondaryLabel.resolveFrom(

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 
 import '../../../domain/models/incomplete_data_warning.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Banner/warning shown when underlying data is insufficient for reliable analytics.
 ///
@@ -69,13 +70,13 @@ class IncompleteDataBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    context.tr(warning.message),
+                    _localizedMessage(context),
                     style: TextStyle(fontSize: 13, color: textColor),
                   ),
-                  if (warning.recommendedAction != null) ...[
+                  if (_localizedAction(context) != null) ...[
                     const SizedBox(height: 8),
                     Text(
-                      '💡 ${warning.recommendedAction}',
+                      '💡 ${_localizedAction(context)}',
                       style: TextStyle(
                         fontSize: 12,
                         fontStyle: FontStyle.italic,
@@ -85,7 +86,10 @@ class IncompleteDataBanner extends StatelessWidget {
                   ],
                   const SizedBox(height: 4),
                   Text(
-                    '${warning.actualCount}/${warning.requiredMinimum} shots',
+                    AppLocalizations.of(context).warnShotsProgress(
+                      warning.actualCount,
+                      warning.requiredMinimum,
+                    ),
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
@@ -99,5 +103,44 @@ class IncompleteDataBanner extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// The warning, said in the golfer's language.
+  ///
+  /// The domain model carries English message strings — it has no
+  /// BuildContext, so it cannot localize — and this banner used to print them
+  /// straight onto a Vietnamese screen. The structured fields are enough to
+  /// say the same thing properly; the English strings stay for logs.
+  String _localizedMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (warning.category) {
+      InsufficientDataCategory.totalShots => l10n.warnShotsTotal(
+        warning.actualCount,
+        warning.requiredMinimum,
+      ),
+      InsufficientDataCategory.clubShots => l10n.warnShotsClub(
+        warning.subjectLabel ?? '',
+        warning.actualCount,
+        warning.requiredMinimum,
+      ),
+      InsufficientDataCategory.holeShots => l10n.warnShotsHole(
+        warning.subjectLabel ?? '',
+        warning.actualCount,
+        warning.requiredMinimum,
+      ),
+      _ => context.tr(warning.message),
+    };
+  }
+
+  String? _localizedAction(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return switch (warning.category) {
+      InsufficientDataCategory.totalShots => l10n.warnShotsTotalAction,
+      InsufficientDataCategory.clubShots =>
+        l10n.warnShotsClubAction(warning.subjectLabel ?? ''),
+      InsufficientDataCategory.holeShots =>
+        l10n.warnShotsHoleAction(warning.subjectLabel ?? ''),
+      _ => warning.recommendedAction,
+    };
   }
 }

@@ -4,6 +4,7 @@
 // Uses shimmer animation with dark theme high-contrast colors.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Skeleton loading UI displayed while the map and geometry load.
 class MapLoadingSkeleton extends StatefulWidget {
@@ -81,7 +82,7 @@ class _MapLoadingSkeletonState extends State<MapLoadingSkeleton>
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Loading hole ${widget.holeNumber ?? '…'}…',
+                  AppLocalizations.of(context).mapLoadingHole('${widget.holeNumber ?? "…"}'),
                   style: const TextStyle(
                     color: Color(0xFFF8FAFC),
                     fontSize: 16,

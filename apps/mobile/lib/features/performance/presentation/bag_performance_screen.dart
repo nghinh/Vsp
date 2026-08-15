@@ -422,12 +422,14 @@ class _ErrorScreen extends StatelessWidget {
               Icon(Icons.error_outline, size: 64, color: colorScheme.error),
               const SizedBox(height: VspSpacing.md),
               Text(
-                'Failed to load performance',
+                AppLocalizations.of(context).performanceLoadFailedTitle,
                 style: theme.textTheme.titleMedium,
               ),
               const SizedBox(height: VspSpacing.sm),
               Text(
-                message,
+                // tr: server text passes through; a message key turns
+                // Vietnamese instead of leaking English onto the screen.
+                context.tr(message),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

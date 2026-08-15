@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../domain/models/download_progress.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Progress bar with bytes/percent/file info for active downloads.
 class DownloadProgressIndicator extends StatelessWidget {
@@ -100,7 +101,7 @@ class DownloadProgressIndicator extends StatelessWidget {
               ),
               if (progress.retryCount > 0)
                 Text(
-                  'Retry ${progress.retryCount}',
+                  AppLocalizations.of(context).downloadRetryCount(progress.retryCount),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: brightness == Brightness.dark
                         ? VspColorDark.destructive

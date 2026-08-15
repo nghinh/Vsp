@@ -228,7 +228,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
         ),
         const SizedBox(height: VspSpacing.xs),
         _SelectorButton(
-          label: _clubLabel,
+          label: _clubLabel(context),
           icon: Icons.golf_course,
           onTap: () async {
             final club = await ClubSelector.show(
@@ -355,12 +355,13 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
     );
   }
 
-  String get _clubLabel {
-    if (_selectedClubId == null) return 'Select club';
+  String _clubLabel(BuildContext context) {
+    final fallback = AppLocalizations.of(context).commonSelectClub;
+    if (_selectedClubId == null) return fallback;
     final club = widget.clubs
         .where((c) => c.id.toString() == _selectedClubId)
         .firstOrNull;
-    return club?.clubType.displayName ?? 'Select club';
+    return club?.clubType.displayName ?? fallback;
   }
 
   Future<void> _save() async {
@@ -389,7 +390,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to save: $e';
+        _errorMessage = '${AppLocalizations.of(context).shotSaveFailed}: $e';
         _isSaving = false;
       });
     }
@@ -401,7 +402,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).shotDeleteTitle),
         content: Text(
-          'Are you sure you want to delete shot ${widget.shot.shotNumber}? This action cannot be undone.',
+          AppLocalizations.of(context).shotDeleteConfirmShort(widget.shot.shotNumber),
         ),
         actions: [
           TextButton(
@@ -430,7 +431,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to delete: $e';
+        _errorMessage = '${AppLocalizations.of(context).shotDeleteFailed}: $e';
         _isDeleting = false;
       });
     }
@@ -463,7 +464,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
         );
       }
     } catch (e) {
-      setState(() => _errorMessage = 'Failed to merge: $e');
+      setState(() => _errorMessage = '${AppLocalizations.of(context).shotMergeFailed}: $e');
     }
   }
 }

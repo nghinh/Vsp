@@ -63,7 +63,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
       });
     } catch (ex) {
       setState(() {
-        _error = 'Failed to load rounds. Please try again.';
+        _error = AppLocalizations.of(context).privacyRoundsLoadFailed;
         _isLoading = false;
       });
     }
@@ -100,7 +100,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Select Round to Delete',
+                      AppLocalizations.of(context).privacySelectRoundToDelete,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),

@@ -440,7 +440,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load bag details',
+              AppLocalizations.of(context).bagDetailLoadFailed,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: VspSpacing.sm),

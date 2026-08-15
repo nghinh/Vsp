@@ -21,6 +21,7 @@ import '../../../domain/services/location_service.dart';
 import '../../../data/services/location_service_impl.dart';
 import '../../../domain/models/qualified_location.dart';
 import '../../hole_map/domain/pin_entity.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Pin position used for target distance maths.
 ///
@@ -205,7 +206,7 @@ class TargetCubit extends Cubit<TargetState> {
       emit(
         state.copyWith(
           isLoading: false,
-          errorMessage: 'Failed to place target: $e',
+          errorMessage: AppMessages.targetActionFailed,
         ),
       );
     }
@@ -235,7 +236,7 @@ class TargetCubit extends Cubit<TargetState> {
       emit(
         state.copyWith(
           isLoading: false,
-          errorMessage: 'Failed to move target: $e',
+          errorMessage: AppMessages.targetActionFailed,
         ),
       );
     }
@@ -276,7 +277,7 @@ class TargetCubit extends Cubit<TargetState> {
       await _repository.deleteTarget(_roundId!, _holeNumber);
       emit(const TargetState.initial());
     } catch (e) {
-      emit(state.copyWith(errorMessage: 'Failed to clear target: $e'));
+      emit(state.copyWith(errorMessage: AppMessages.targetActionFailed));
     }
   }
 

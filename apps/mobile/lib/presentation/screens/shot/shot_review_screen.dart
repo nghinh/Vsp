@@ -248,7 +248,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            'No shots recorded',
+            AppLocalizations.of(context).shotNoneRecorded,
             style: theme.textTheme.titleMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -370,7 +370,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).shotDeleteTitle),
         content: Text(
-          'Are you sure you want to delete shot ${shot.shotNumber} on hole ${shot.holeNumber}?',
+          AppLocalizations.of(context).shotDeleteConfirm(shot.shotNumber, shot.holeNumber),
         ),
         actions: [
           TextButton(
@@ -529,7 +529,7 @@ class _MergeShotSelector extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Select the target shot. The current shot will be merged into it.',
+              AppLocalizations.of(context).shotMergeHint,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

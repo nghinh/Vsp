@@ -154,7 +154,7 @@ class BagCard extends StatelessWidget {
           builder: (context) => AlertDialog(
             title: Text(AppLocalizations.of(context).bagDeleteTitle),
             content: Text(
-              'Are you sure you want to delete "${bag.name}"? This cannot be undone.',
+              AppLocalizations.of(context).bagDeleteConfirm(bag.name),
             ),
             actions: [
               TextButton(

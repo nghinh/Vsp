@@ -123,6 +123,16 @@ abstract final class AppMessages {
 
   // Data-completeness and weather warnings
   static const insufficientShots = 'msg.insufficientShots';
+
+  // Emitted by blocs and services that used to carry English literals, which
+  // reached a Vietnamese golfer untranslated.
+  static const privacySubmitFailed = 'msg.privacySubmitFailed';
+  static const weatherExpired = 'msg.weatherExpired';
+  static const packageCorrupted = 'msg.packageCorrupted';
+  static const packageFilesMissing = 'msg.packageFilesMissing';
+  static const scorecardLoadFailed = 'msg.scorecardLoadFailed';
+  static const scorecardSaveFailed = 'msg.scorecardSaveFailed';
+  static const targetActionFailed = 'msg.targetActionFailed';
   static const limitedClubData = 'msg.limitedClubData';
   static const limitedHoleData = 'msg.limitedHoleData';
   static const weatherNoCache = 'msg.weatherNoCache';
@@ -229,6 +239,13 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.gpsReady => l10n.gpsReady,
     AppMessages.gpsReadyMessage => l10n.gpsReadyMessage,
     AppMessages.insufficientShots => l10n.msgInsufficientShots,
+    AppMessages.privacySubmitFailed => l10n.msgPrivacySubmitFailed,
+    AppMessages.weatherExpired => l10n.msgWeatherExpired,
+    AppMessages.packageCorrupted => l10n.msgPackageCorrupted,
+    AppMessages.packageFilesMissing => l10n.msgPackageFilesMissing,
+    AppMessages.scorecardLoadFailed => l10n.msgScorecardLoadFailed,
+    AppMessages.scorecardSaveFailed => l10n.msgScorecardSaveFailed,
+    AppMessages.targetActionFailed => l10n.msgTargetActionFailed,
     AppMessages.limitedClubData => l10n.msgLimitedClubData,
     AppMessages.limitedHoleData => l10n.msgLimitedHoleData,
     AppMessages.weatherNoCache => l10n.weatherNoCache,

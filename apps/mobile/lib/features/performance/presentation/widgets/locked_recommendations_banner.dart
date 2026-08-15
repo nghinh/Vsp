@@ -6,6 +6,7 @@
 // Shows lock icon, explanation, and guidance to add more shots.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Banner indicating that recommendations are locked due to insufficient sample size.
 class LockedRecommendationsBanner extends StatelessWidget {
@@ -32,9 +33,8 @@ class LockedRecommendationsBanner extends StatelessWidget {
 
     return Semantics(
       label:
-          'Recommendations locked. '
-          '$currentShots shots recorded. '
-          '$requiredShots shots required to unlock recommendations.',
+          '${AppLocalizations.of(context).lockedRecsTitle}. '
+          '${AppLocalizations.of(context).lockedRecsProgress(currentShots, requiredShots)}',
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -58,7 +58,7 @@ class LockedRecommendationsBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recommendations Locked',
+                    AppLocalizations.of(context).lockedRecsTitle,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: accentColor,
@@ -66,7 +66,7 @@ class LockedRecommendationsBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _buildMessage(),
+                    _buildMessage(context),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -80,11 +80,12 @@ class LockedRecommendationsBanner extends StatelessWidget {
     );
   }
 
-  String _buildMessage() {
+  String _buildMessage(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final shotsNeeded = requiredShots - currentShots;
     if (shotsNeeded <= 0) {
-      return 'Keep recording shots to unlock personalized recommendations.';
+      return l10n.lockedRecsKeepGoing;
     }
-    return 'Add $shotsNeeded more shot${shotsNeeded == 1 ? '' : 's'} to unlock club recommendations.';
+    return l10n.lockedRecsAddMore(shotsNeeded);
   }
 }

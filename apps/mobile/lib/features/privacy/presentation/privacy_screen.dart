@@ -1126,7 +1126,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load requests',
+              AppLocalizations.of(context).privacyRequestsLoadFailed,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),

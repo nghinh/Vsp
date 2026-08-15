@@ -17,6 +17,7 @@ import '../../../domain/models/weather_snapshot.dart';
 import '../../../domain/repositories/weather_repository.dart';
 import 'weather_event.dart';
 import 'weather_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// BLoC for weather data management.
 class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
@@ -142,7 +143,7 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
         emit(
           WeatherStale(
             snapshot: snapshot,
-            reason: 'Weather data has expired. Please refresh when online.',
+            reason: AppMessages.weatherExpired,
           ),
         );
         break;

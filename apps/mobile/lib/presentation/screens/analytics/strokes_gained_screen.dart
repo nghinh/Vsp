@@ -456,7 +456,7 @@ class _ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Calculation Error',
+              AppLocalizations.of(context).calcError,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.onSurface,
               ),

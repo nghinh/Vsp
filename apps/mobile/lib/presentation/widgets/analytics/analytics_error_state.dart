@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Error state shown when analytics loading fails.
 class AnalyticsErrorState extends StatelessWidget {
@@ -34,7 +35,7 @@ class AnalyticsErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Failed to Load Analytics',
+              AppLocalizations.of(context).analyticsLoadFailedTitle,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -42,7 +43,9 @@ class AnalyticsErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              message,
+              // Through tr: blocs emit message keys, and a server error passed
+              // through verbatim is better than a raw msg.* key on screen.
+              context.tr(message),
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: colorScheme.outline),

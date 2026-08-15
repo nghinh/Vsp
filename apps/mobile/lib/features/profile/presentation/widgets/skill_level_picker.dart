@@ -100,7 +100,7 @@ class _SkillLevelSheet extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
             child: Text(
-              'Select Skill Level',
+              AppLocalizations.of(context).skillSelectLevel,
               style: theme.textTheme.titleMedium,
             ),
           ),

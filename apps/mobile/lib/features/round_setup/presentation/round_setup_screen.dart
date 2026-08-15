@@ -741,7 +741,7 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                               title: Text(c.courseName),
                               subtitle: c.distanceKm != null
                                   ? Text(
-                                      '${c.distanceKm!.toStringAsFixed(1)} km away',
+                                      AppLocalizations.of(context).roundSetupKmAway(c.distanceKm!.toStringAsFixed(1)),
                                     )
                                   : null,
                               onTap: () => widget.onSelected(

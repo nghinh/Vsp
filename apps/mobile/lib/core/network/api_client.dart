@@ -38,9 +38,21 @@ class VspApiException implements Exception {
   factory VspApiException.fromResponse(http.Response response) {
     try {
       final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final code = body['code'] as String? ?? 'UNKNOWN';
+      // Known server codes map to message keys the UI translates. The server
+      // speaks English — "An unexpected error occurred. Please contact
+      // support with the correlation ID." reached a Vietnamese golfer
+      // verbatim, photographed, from the bag performance screen. Field-level
+      // validation messages still pass through: they name the field and the
+      // bound, which is better than a generic sentence.
+      final serverMessage = body['message'] as String?;
+      final message = switch (code) {
+        'VSP-ERR-INTERNAL-001' => AppMessages.serverError,
+        _ => serverMessage ?? AppMessages.serverError,
+      };
       return VspApiException(
-        code: body['code'] as String? ?? 'UNKNOWN',
-        message: body['message'] as String? ?? 'An error occurred',
+        code: code,
+        message: message,
         statusCode: response.statusCode,
         data: body['data'],
         field: body['field'] as String?,
@@ -241,17 +253,13 @@ class ApiClient {
       }
     } on SocketException catch (ex) {
       debugPrint('[ApiClient] Network error: $ex');
-      throw VspApiException.network(
-        'Check your internet connection and try again.',
-      );
+      throw VspApiException.network(AppMessages.networkError);
     } on http.ClientException catch (ex) {
       debugPrint('[ApiClient] HTTP error: $ex');
-      throw VspApiException.network(
-        'Unable to reach the server. Try again later.',
-      );
+      throw VspApiException.network(AppMessages.networkError);
     } catch (ex) {
       debugPrint('[ApiClient] Unexpected error: $ex');
-      throw VspApiException.network('An unexpected error occurred. Try again.');
+      throw VspApiException.network(AppMessages.serverError);
     }
 
     // The token lapsed mid-session. Refresh once and repeat the request, with

@@ -1872,7 +1872,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bagDeleted => 'Đã xoá túi gậy';
 
   @override
-  String get bagDetailLoadFailed => 'Không tải được chi tiết túi gậy.';
+  String get bagDetailLoadFailed => 'Không tải được túi gậy';
 
   @override
   String get clubDeleted => 'Đã xoá gậy';
@@ -1923,7 +1923,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get clubTotalTooltip => 'Tổng khoảng cách';
 
   @override
-  String get profileLoadFailed => 'Không tải được hồ sơ. Vui lòng thử lại.';
+  String get profileLoadFailed => 'Không tải được hồ sơ';
 
   @override
   String get profileSaveFailed => 'Lưu thất bại. Vui lòng thử lại.';
@@ -3545,4 +3545,242 @@ class AppLocalizationsVi extends AppLocalizations {
   String clubResolvedName(String name) {
     return 'Gậy này là: $name';
   }
+
+  @override
+  String get analyticsLoadFailedTitle => 'Không tải được thống kê';
+
+  @override
+  String get analyticsRecordShots => 'Ghi cú đánh';
+
+  @override
+  String get drivingZoneEmptySubtitle =>
+      'Ghi cú đánh trên sân để xem thống kê vùng phát bóng.';
+
+  @override
+  String get timeRangeLast30 => '30 ngày qua';
+
+  @override
+  String get timeRangeLast90 => '90 ngày qua';
+
+  @override
+  String get timeRangeYearToDate => 'Từ đầu năm';
+
+  @override
+  String get timeRangeAllTime => 'Toàn bộ';
+
+  @override
+  String warnShotsTotal(int actual, int required) {
+    return 'Mới ghi $actual cú. Cần ít nhất $required cú để thống kê đáng tin cậy.';
+  }
+
+  @override
+  String get warnShotsTotalAction =>
+      'Ghi thêm cú đánh để mở khoá vùng phát bóng và phân tích vòng đấu.';
+
+  @override
+  String warnShotsClub(String club, int actual, int required) {
+    return '$club mới có $actual cú — nên có $required cú để phân tích chính xác.';
+  }
+
+  @override
+  String warnShotsClubAction(String club) {
+    return 'Dùng $club thường xuyên hơn để có hồ sơ gậy đáng tin cậy.';
+  }
+
+  @override
+  String warnShotsHole(String hole, int actual, int required) {
+    return 'Hố $hole mới có $actual cú — nên có $required cú cho phân tích theo hố.';
+  }
+
+  @override
+  String warnShotsHoleAction(String hole) {
+    return 'Chơi hố $hole thêm vài lần để có gợi ý riêng.';
+  }
+
+  @override
+  String warnShotsProgress(int actual, int required) {
+    return '$actual/$required cú';
+  }
+
+  @override
+  String get performanceLoadFailedTitle => 'Không tải được hiệu suất';
+
+  @override
+  String get dispersionSelectHole => 'Chọn hố để xem độ phân tán cú đánh.';
+
+  @override
+  String get dispersionLoading => 'Đang tải dữ liệu phân tán…';
+
+  @override
+  String get dispersionLoadFailed => 'Không tải được dữ liệu phân tán';
+
+  @override
+  String get lockedRecsTitle => 'Chưa mở khoá gợi ý';
+
+  @override
+  String lockedRecsProgress(int current, int required) {
+    return 'Đã ghi $current/$required cú.';
+  }
+
+  @override
+  String lockedRecsAddMore(int count) {
+    return 'Ghi thêm $count cú nữa để mở khoá gợi ý chọn gậy.';
+  }
+
+  @override
+  String get lockedRecsKeepGoing =>
+      'Ghi thêm cú đánh để mở khoá gợi ý cá nhân hoá.';
+
+  @override
+  String get calcError => 'Lỗi tính toán';
+
+  @override
+  String get commonSelectClub => 'Chọn gậy';
+
+  @override
+  String get shotSelectClubFirst => 'Chọn gậy trước đã';
+
+  @override
+  String get shotNoneRecorded => 'Chưa ghi cú đánh nào';
+
+  @override
+  String shotDeleteConfirm(int number, int hole) {
+    return 'Xoá cú $number ở hố $hole? Việc này không hoàn tác được.';
+  }
+
+  @override
+  String shotDeleteConfirmShort(int number) {
+    return 'Xoá cú $number? Việc này không hoàn tác được.';
+  }
+
+  @override
+  String get shotMergeHint =>
+      'Chọn cú đích — cú hiện tại sẽ được gộp vào cú đó.';
+
+  @override
+  String get shotStartFailed => 'Không bắt đầu được cú đánh';
+
+  @override
+  String get shotEndFailed => 'Không kết thúc được cú đánh';
+
+  @override
+  String get shotSaveFailed => 'Không lưu được';
+
+  @override
+  String get shotDeleteFailed => 'Không xoá được';
+
+  @override
+  String get shotMergeFailed => 'Không gộp được';
+
+  @override
+  String get clubTypeSelect => 'Chọn loại gậy';
+
+  @override
+  String get clubSelectDate => 'Chọn ngày (không bắt buộc)';
+
+  @override
+  String get clubDispersionPhase2 =>
+      'Phân tích độ phân tán sẽ có trong bản cập nhật sau.';
+
+  @override
+  String clubDeleteConfirm(String name) {
+    return 'Xoá $name khỏi túi gậy?';
+  }
+
+  @override
+  String bagDeleteConfirm(String name) {
+    return 'Xoá túi \"$name\"? Việc này không hoàn tác được.';
+  }
+
+  @override
+  String get skillSelectLevel => 'Chọn trình độ';
+
+  @override
+  String signOutDeviceConfirm(String device) {
+    return 'Đăng xuất khỏi \"$device\"? Phiên này sẽ bị chấm dứt ngay.';
+  }
+
+  @override
+  String get privacyRequestsLoadFailed => 'Không tải được danh sách yêu cầu';
+
+  @override
+  String get privacyRoundsLoadFailed =>
+      'Không tải được danh sách vòng đấu. Vui lòng thử lại.';
+
+  @override
+  String get privacySelectRoundToDelete => 'Chọn vòng đấu cần xoá';
+
+  @override
+  String get watchTapToPair => 'Chạm để bắt đầu ghép nối';
+
+  @override
+  String mapLoadingHole(String hole) {
+    return 'Đang tải hố $hole…';
+  }
+
+  @override
+  String get mapRetryHint => 'Tải lại bản đồ hố';
+
+  @override
+  String roundSetupKmAway(String km) {
+    return 'cách $km km';
+  }
+
+  @override
+  String downloadRetryCount(int count) {
+    return 'Thử lại lần $count';
+  }
+
+  @override
+  String get syncPendingLabel => 'Chờ đồng bộ lên máy chủ';
+
+  @override
+  String get syncSyncingLabel => 'Đang đồng bộ lên máy chủ';
+
+  @override
+  String get syncFailedTapRetry => 'Đồng bộ thất bại. Chạm để thử lại';
+
+  @override
+  String holeAutoSwitchBlocked(String reason) {
+    return 'Tự chuyển hố bị chặn. $reason. Hãy tự chọn hố.';
+  }
+
+  @override
+  String get detectLowConfidence =>
+      'Độ tin cậy thấp — app chưa chắc bạn đang ở hố nào. Hãy tự chọn hố.';
+
+  @override
+  String get detectMediumConfidence =>
+      'Độ tin cậy trung bình — app có phỏng đoán nhưng chưa chắc chắn. Tự chuyển hố đang tắt; bạn vẫn có thể tự chọn.';
+
+  @override
+  String get msgPrivacySubmitFailed =>
+      'Không gửi được yêu cầu. Vui lòng thử lại.';
+
+  @override
+  String get msgWeatherExpired =>
+      'Dữ liệu thời tiết đã hết hạn. Làm mới khi có mạng.';
+
+  @override
+  String get msgPackageCorrupted => 'Dữ liệu sân bị hỏng — hãy tải lại.';
+
+  @override
+  String get msgPackageFilesMissing =>
+      'Thiếu một phần dữ liệu sân — hãy tải lại.';
+
+  @override
+  String get msgScorecardLoadFailed => 'Không tải được điểm';
+
+  @override
+  String get msgScorecardSaveFailed => 'Không lưu được điểm';
+
+  @override
+  String get msgTargetActionFailed =>
+      'Không thao tác được điểm mục tiêu. Thử lại.';
+
+  @override
+  String get shotClubChosen => 'Đã chọn gậy';
+
+  @override
+  String get shotStartLabel => 'Bắt đầu cú đánh';
 }

@@ -149,9 +149,8 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
           if (warning != null) IncompleteDataBanner(warning: warning),
           AnalyticsEmptyState(
             title: AppLocalizations.of(context).drivingZoneNoShotData,
-            subtitle:
-                'Record shots on the course to see your driving zone analytics.',
-            actionLabel: 'Record Shots',
+            subtitle: AppLocalizations.of(context).drivingZoneEmptySubtitle,
+            actionLabel: AppLocalizations.of(context).analyticsRecordShots,
             onAction: () {
               // Navigate to shot recording (Story 10.3)
             },

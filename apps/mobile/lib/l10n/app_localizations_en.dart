@@ -1873,7 +1873,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bagDeleted => 'Bag deleted';
 
   @override
-  String get bagDetailLoadFailed => 'Failed to load bag details.';
+  String get bagDetailLoadFailed => 'Failed to load the bag';
 
   @override
   String get clubDeleted => 'Club deleted';
@@ -1924,7 +1924,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get clubTotalTooltip => 'Total distance';
 
   @override
-  String get profileLoadFailed => 'Failed to load profile. Please try again.';
+  String get profileLoadFailed => 'Failed to load profile';
 
   @override
   String get profileSaveFailed => 'Failed to save. Please try again.';
@@ -3548,4 +3548,242 @@ class AppLocalizationsEn extends AppLocalizations {
   String clubResolvedName(String name) {
     return 'This club reads as: $name';
   }
+
+  @override
+  String get analyticsLoadFailedTitle => 'Failed to load analytics';
+
+  @override
+  String get analyticsRecordShots => 'Record shots';
+
+  @override
+  String get drivingZoneEmptySubtitle =>
+      'Record shots on the course to see your driving zone analytics.';
+
+  @override
+  String get timeRangeLast30 => 'Last 30 days';
+
+  @override
+  String get timeRangeLast90 => 'Last 90 days';
+
+  @override
+  String get timeRangeYearToDate => 'Year to date';
+
+  @override
+  String get timeRangeAllTime => 'All time';
+
+  @override
+  String warnShotsTotal(int actual, int required) {
+    return 'Only $actual shots recorded. At least $required are needed for reliable analytics.';
+  }
+
+  @override
+  String get warnShotsTotalAction =>
+      'Record more shots to unlock driving zone and round analytics.';
+
+  @override
+  String warnShotsClub(String club, int actual, int required) {
+    return '$club has only $actual shots — $required are recommended for accurate analytics.';
+  }
+
+  @override
+  String warnShotsClubAction(String club) {
+    return 'Use $club more often to build a reliable club profile.';
+  }
+
+  @override
+  String warnShotsHole(String hole, int actual, int required) {
+    return 'Hole $hole has only $actual shots — $required are recommended for hole analytics.';
+  }
+
+  @override
+  String warnShotsHoleAction(String hole) {
+    return 'Play hole $hole a few more times for personalised insights.';
+  }
+
+  @override
+  String warnShotsProgress(int actual, int required) {
+    return '$actual/$required shots';
+  }
+
+  @override
+  String get performanceLoadFailedTitle => 'Failed to load performance';
+
+  @override
+  String get dispersionSelectHole => 'Select a hole to view shot dispersion.';
+
+  @override
+  String get dispersionLoading => 'Loading dispersion data…';
+
+  @override
+  String get dispersionLoadFailed => 'Failed to load dispersion';
+
+  @override
+  String get lockedRecsTitle => 'Recommendations locked';
+
+  @override
+  String lockedRecsProgress(int current, int required) {
+    return '$current/$required shots recorded.';
+  }
+
+  @override
+  String lockedRecsAddMore(int count) {
+    return 'Add $count more shots to unlock club recommendations.';
+  }
+
+  @override
+  String get lockedRecsKeepGoing =>
+      'Keep recording shots to unlock personalised recommendations.';
+
+  @override
+  String get calcError => 'Calculation error';
+
+  @override
+  String get commonSelectClub => 'Select club';
+
+  @override
+  String get shotSelectClubFirst => 'Select a club first';
+
+  @override
+  String get shotNoneRecorded => 'No shots recorded';
+
+  @override
+  String shotDeleteConfirm(int number, int hole) {
+    return 'Delete shot $number on hole $hole? This cannot be undone.';
+  }
+
+  @override
+  String shotDeleteConfirmShort(int number) {
+    return 'Delete shot $number? This cannot be undone.';
+  }
+
+  @override
+  String get shotMergeHint =>
+      'Select the target shot — the current shot will be merged into it.';
+
+  @override
+  String get shotStartFailed => 'Could not start the shot';
+
+  @override
+  String get shotEndFailed => 'Could not end the shot';
+
+  @override
+  String get shotSaveFailed => 'Could not save';
+
+  @override
+  String get shotDeleteFailed => 'Could not delete';
+
+  @override
+  String get shotMergeFailed => 'Could not merge';
+
+  @override
+  String get clubTypeSelect => 'Select club type';
+
+  @override
+  String get clubSelectDate => 'Select date (optional)';
+
+  @override
+  String get clubDispersionPhase2 =>
+      'Dispersion analytics will arrive in a future update.';
+
+  @override
+  String clubDeleteConfirm(String name) {
+    return 'Delete $name from the bag?';
+  }
+
+  @override
+  String bagDeleteConfirm(String name) {
+    return 'Delete bag \"$name\"? This cannot be undone.';
+  }
+
+  @override
+  String get skillSelectLevel => 'Select skill level';
+
+  @override
+  String signOutDeviceConfirm(String device) {
+    return 'Sign out of \"$device\"? This session will be terminated immediately.';
+  }
+
+  @override
+  String get privacyRequestsLoadFailed => 'Failed to load requests';
+
+  @override
+  String get privacyRoundsLoadFailed =>
+      'Failed to load rounds. Please try again.';
+
+  @override
+  String get privacySelectRoundToDelete => 'Select the round to delete';
+
+  @override
+  String get watchTapToPair => 'Tap to start pairing';
+
+  @override
+  String mapLoadingHole(String hole) {
+    return 'Loading hole $hole…';
+  }
+
+  @override
+  String get mapRetryHint => 'Retry loading the hole map';
+
+  @override
+  String roundSetupKmAway(String km) {
+    return '$km km away';
+  }
+
+  @override
+  String downloadRetryCount(int count) {
+    return 'Retry $count';
+  }
+
+  @override
+  String get syncPendingLabel => 'Pending sync to server';
+
+  @override
+  String get syncSyncingLabel => 'Syncing to server';
+
+  @override
+  String get syncFailedTapRetry => 'Sync failed. Tap to retry';
+
+  @override
+  String holeAutoSwitchBlocked(String reason) {
+    return 'Auto hole switch blocked. $reason. Please select the hole yourself.';
+  }
+
+  @override
+  String get detectLowConfidence =>
+      'Low confidence — the app is not sure which hole you are on. Select it yourself.';
+
+  @override
+  String get detectMediumConfidence =>
+      'Medium confidence — the app has a guess but is not certain. Auto-switch is off; you can still select the hole yourself.';
+
+  @override
+  String get msgPrivacySubmitFailed =>
+      'The request could not be submitted. Please try again.';
+
+  @override
+  String get msgWeatherExpired =>
+      'Weather data has expired. Refresh when online.';
+
+  @override
+  String get msgPackageCorrupted =>
+      'Course data is corrupted — please re-download.';
+
+  @override
+  String get msgPackageFilesMissing =>
+      'Some course files are missing — please re-download.';
+
+  @override
+  String get msgScorecardLoadFailed => 'Could not load scores';
+
+  @override
+  String get msgScorecardSaveFailed => 'Could not save the score';
+
+  @override
+  String get msgTargetActionFailed => 'Could not update the target. Try again.';
+
+  @override
+  String get shotClubChosen => 'Club selected';
+
+  @override
+  String get shotStartLabel => 'Start shot';
 }

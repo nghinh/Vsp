@@ -11,6 +11,20 @@ import 'tee_filter_selector.dart';
 import 'wind_filter_selector.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
+/// The preset's label, in the golfer's language.
+///
+/// The enum carried English labels and the chips printed them straight onto a
+/// Vietnamese screen — "Last 30 Days" beside "Thời gian:".
+String _presetLabel(BuildContext context, TimeRangePreset preset) {
+  final l10n = AppLocalizations.of(context);
+  return switch (preset) {
+    TimeRangePreset.last30Days => l10n.timeRangeLast30,
+    TimeRangePreset.last90Days => l10n.timeRangeLast90,
+    TimeRangePreset.yearToDate => l10n.timeRangeYearToDate,
+    TimeRangePreset.allTime => l10n.timeRangeAllTime,
+  };
+}
+
 /// Time range preset options for the filter bar.
 enum TimeRangePreset {
   last30Days('Last 30 Days'),
@@ -153,7 +167,7 @@ class _TimeRangeSelectorRow extends StatelessWidget {
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
-                    label: Text(preset.label),
+                    label: Text(_presetLabel(context, preset)),
                     selected: isSelected,
                     onSelected: (_) => _applyPreset(preset),
                     visualDensity: VisualDensity.compact,

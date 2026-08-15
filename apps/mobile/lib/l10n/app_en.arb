@@ -1054,7 +1054,7 @@
   "bagDeleteTitle": "Delete Bag?",
   "bagLoadFailedRetry": "Failed to load bags. Please try again.",
   "bagDeleted": "Bag deleted",
-  "bagDetailLoadFailed": "Failed to load bag details.",
+  "bagDetailLoadFailed": "Failed to load the bag",
   "clubDeleted": "Club deleted",
   "commonSynced": "Synced",
   "clubType": "CLUB TYPE",
@@ -1071,7 +1071,7 @@
   "clubLoftTooltip": "Loft",
   "clubCarryTooltip": "Carry distance",
   "clubTotalTooltip": "Total distance",
-  "profileLoadFailed": "Failed to load profile. Please try again.",
+  "profileLoadFailed": "Failed to load profile",
   "profileSaveFailed": "Failed to save. Please try again.",
   "unitMeters": "Meters",
   "unitYards": "Yards",
@@ -2271,5 +2271,212 @@
         "type": "String"
       }
     }
-  }
+  },
+  "analyticsLoadFailedTitle": "Failed to load analytics",
+  "analyticsRecordShots": "Record shots",
+  "drivingZoneEmptySubtitle": "Record shots on the course to see your driving zone analytics.",
+  "timeRangeLast30": "Last 30 days",
+  "timeRangeLast90": "Last 90 days",
+  "timeRangeYearToDate": "Year to date",
+  "timeRangeAllTime": "All time",
+  "warnShotsTotal": "Only {actual} shots recorded. At least {required} are needed for reliable analytics.",
+  "@warnShotsTotal": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsTotalAction": "Record more shots to unlock driving zone and round analytics.",
+  "warnShotsClub": "{club} has only {actual} shots — {required} are recommended for accurate analytics.",
+  "@warnShotsClub": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      },
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsClubAction": "Use {club} more often to build a reliable club profile.",
+  "@warnShotsClubAction": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "warnShotsHole": "Hole {hole} has only {actual} shots — {required} are recommended for hole analytics.",
+  "@warnShotsHole": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      },
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsHoleAction": "Play hole {hole} a few more times for personalised insights.",
+  "@warnShotsHoleAction": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "warnShotsProgress": "{actual}/{required} shots",
+  "@warnShotsProgress": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "performanceLoadFailedTitle": "Failed to load performance",
+  "dispersionSelectHole": "Select a hole to view shot dispersion.",
+  "dispersionLoading": "Loading dispersion data…",
+  "dispersionLoadFailed": "Failed to load dispersion",
+  "lockedRecsTitle": "Recommendations locked",
+  "lockedRecsProgress": "{current}/{required} shots recorded.",
+  "@lockedRecsProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "lockedRecsAddMore": "Add {count} more shots to unlock club recommendations.",
+  "@lockedRecsAddMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lockedRecsKeepGoing": "Keep recording shots to unlock personalised recommendations.",
+  "calcError": "Calculation error",
+  "commonSelectClub": "Select club",
+  "shotSelectClubFirst": "Select a club first",
+  "shotNoneRecorded": "No shots recorded",
+  "shotDeleteConfirm": "Delete shot {number} on hole {hole}? This cannot be undone.",
+  "@shotDeleteConfirm": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "shotDeleteConfirmShort": "Delete shot {number}? This cannot be undone.",
+  "@shotDeleteConfirmShort": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "shotMergeHint": "Select the target shot — the current shot will be merged into it.",
+  "shotStartFailed": "Could not start the shot",
+  "shotEndFailed": "Could not end the shot",
+  "shotSaveFailed": "Could not save",
+  "shotDeleteFailed": "Could not delete",
+  "shotMergeFailed": "Could not merge",
+  "clubTypeSelect": "Select club type",
+  "clubSelectDate": "Select date (optional)",
+  "clubDispersionPhase2": "Dispersion analytics will arrive in a future update.",
+  "clubDeleteConfirm": "Delete {name} from the bag?",
+  "@clubDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bagDeleteConfirm": "Delete bag \"{name}\"? This cannot be undone.",
+  "@bagDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "skillSelectLevel": "Select skill level",
+  "signOutDeviceConfirm": "Sign out of \"{device}\"? This session will be terminated immediately.",
+  "@signOutDeviceConfirm": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyRequestsLoadFailed": "Failed to load requests",
+  "privacyRoundsLoadFailed": "Failed to load rounds. Please try again.",
+  "privacySelectRoundToDelete": "Select the round to delete",
+  "watchTapToPair": "Tap to start pairing",
+  "mapLoadingHole": "Loading hole {hole}…",
+  "@mapLoadingHole": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetryHint": "Retry loading the hole map",
+  "roundSetupKmAway": "{km} km away",
+  "@roundSetupKmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadRetryCount": "Retry {count}",
+  "@downloadRetryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPendingLabel": "Pending sync to server",
+  "syncSyncingLabel": "Syncing to server",
+  "syncFailedTapRetry": "Sync failed. Tap to retry",
+  "holeAutoSwitchBlocked": "Auto hole switch blocked. {reason}. Please select the hole yourself.",
+  "@holeAutoSwitchBlocked": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "detectLowConfidence": "Low confidence — the app is not sure which hole you are on. Select it yourself.",
+  "detectMediumConfidence": "Medium confidence — the app has a guess but is not certain. Auto-switch is off; you can still select the hole yourself.",
+  "msgPrivacySubmitFailed": "The request could not be submitted. Please try again.",
+  "msgWeatherExpired": "Weather data has expired. Refresh when online.",
+  "msgPackageCorrupted": "Course data is corrupted — please re-download.",
+  "msgPackageFilesMissing": "Some course files are missing — please re-download.",
+  "msgScorecardLoadFailed": "Could not load scores",
+  "msgScorecardSaveFailed": "Could not save the score",
+  "msgTargetActionFailed": "Could not update the target. Try again.",
+  "shotClubChosen": "Club selected",
+  "shotStartLabel": "Start shot"
 }

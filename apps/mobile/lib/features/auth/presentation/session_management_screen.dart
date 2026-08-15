@@ -49,10 +49,7 @@ class _SessionManagementScreenState extends State<SessionManagementScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(AppLocalizations.of(context).sessionsRevokeTitle),
-        content: Text(
-          'Are you sure you want to sign out of "$deviceLabel"? '
-          'This session will be immediately terminated.',
-        ),
+        content: Text(AppLocalizations.of(context).signOutDeviceConfirm(deviceLabel)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

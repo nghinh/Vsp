@@ -858,7 +858,7 @@ class _ErrorView extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load profile',
+              AppLocalizations.of(context).profileLoadFailed,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),

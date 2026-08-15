@@ -372,7 +372,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
       );
       widget.onShotStarted?.call(shot);
     } catch (e) {
-      setState(() => _errorMessage = 'Failed to start shot: $e');
+      setState(() => _errorMessage = '${AppLocalizations.of(context).shotStartFailed}: $e');
     }
   }
 
@@ -394,7 +394,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
       );
       widget.onShotEnded?.call(result);
     } catch (e) {
-      setState(() => _errorMessage = 'Failed to end shot: $e');
+      setState(() => _errorMessage = '${AppLocalizations.of(context).shotEndFailed}: $e');
     }
   }
 
@@ -425,7 +425,9 @@ class _ClubSelectorButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: selectedClubId != null ? 'Club selected' : 'Select club',
+      label: selectedClubId != null
+          ? AppLocalizations.of(context).shotClubChosen
+          : AppLocalizations.of(context).commonSelectClub,
       button: true,
       child: Material(
         color: selectedClubId != null
@@ -469,7 +471,9 @@ class _ClubSelectorButton extends StatelessWidget {
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  selectedClubId != null ? 'Club OK' : 'Select Club',
+                  selectedClubId != null
+                      ? AppLocalizations.of(context).shotClubChosen
+                      : AppLocalizations.of(context).commonSelectClub,
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: selectedClubId != null
                         ? colorScheme.onPrimaryContainer
@@ -498,7 +502,7 @@ class _StartShotButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: hasClub ? 'Start shot' : 'Select a club first',
+      label: hasClub ? AppLocalizations.of(context).shotStartLabel : AppLocalizations.of(context).shotSelectClubFirst,
       button: true,
       child: SizedBox(
         height: 64,

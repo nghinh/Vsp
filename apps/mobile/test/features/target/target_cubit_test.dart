@@ -17,6 +17,7 @@ import 'package:vsp_mobile/features/target/domain/target_model.dart';
 import 'package:vsp_mobile/features/target/domain/target_repository.dart';
 import 'package:vsp_mobile/features/target/presentation/target_cubit.dart';
 import 'package:vsp_mobile/features/target/presentation/target_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Fake implementation of TargetRepository for testing.
 class FakeTargetRepository implements TargetRepository {
@@ -153,7 +154,13 @@ void main() {
         await throwingCubit.placeTarget([106.6300, 10.7630]);
 
         expect(throwingCubit.state.hasTarget, isFalse);
-        expect(throwingCubit.state.errorMessage, contains('Failed to place target'));
+        // The cubit emits a message key now, translated where it is shown —
+        // the English literal it used to carry reached a Vietnamese golfer
+        // untranslated.
+        expect(
+          throwingCubit.state.errorMessage,
+          AppMessages.targetActionFailed,
+        );
         expect(throwingCubit.state.isLoading, isFalse);
 
         await throwingCubit.close();

@@ -51,6 +51,7 @@ import '../../widgets/score/score_entry_card.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../shot/shot_review_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -554,7 +555,9 @@ class _ScorecardScreenContent extends StatelessWidget {
               // Error banner
               if (state.errorMessage != null)
                 _ErrorBanner(
-                  message: state.errorMessage!,
+                  // tr: the cubit emits message keys now, and an unknown
+                  // string passes through unchanged.
+                  message: context.tr(state.errorMessage!),
                   onDismiss: () => context.read<ScorecardCubit>().clearError(),
                 ),
 

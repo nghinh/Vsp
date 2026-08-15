@@ -16,6 +16,7 @@ import '../../domain/repositories/score_repository.dart';
 import '../../data/repositories/score_repository_impl.dart';
 import '../../infrastructure/persistence/sync_queue_repository.dart';
 import 'scorecard_state.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Cubit for managing the full scorecard screen state.
 class ScorecardCubit extends Cubit<ScorecardScreenState> {
@@ -91,7 +92,7 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
       emit(
         state.copyWith(
           isLoading: false,
-          errorMessage: 'Failed to load scores: $e',
+          errorMessage: AppMessages.scorecardLoadFailed,
         ),
       );
     }
@@ -157,7 +158,7 @@ class ScorecardCubit extends Cubit<ScorecardScreenState> {
         ),
       );
     } catch (e) {
-      emit(state.copyWith(errorMessage: 'Failed to save score: $e'));
+      emit(state.copyWith(errorMessage: AppMessages.scorecardSaveFailed));
     }
   }
 

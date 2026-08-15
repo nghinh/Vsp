@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../repositories/package_manifest_repository.dart';
 import '../../domain/models/course_package_manifest.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Collects the single [Digest] a chunked SHA-256 conversion emits on close.
 class _DigestSink implements Sink<Digest> {
@@ -95,7 +96,7 @@ class OfflineReadiness {
     return const OfflineReadiness(
       isReady: false,
       reason: PackageReadinessReason.checksumMismatch,
-      reasonMessage: 'Course data is corrupted. Please re-download.',
+      reasonMessage: AppMessages.packageCorrupted,
     );
   }
 
@@ -104,7 +105,7 @@ class OfflineReadiness {
     return const OfflineReadiness(
       isReady: false,
       reason: PackageReadinessReason.filesMissing,
-      reasonMessage: 'Some course files are missing. Please re-download.',
+      reasonMessage: AppMessages.packageFilesMissing,
     );
   }
 }

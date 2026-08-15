@@ -69,6 +69,15 @@ class IncompleteDataWarning extends Equatable {
   /// Actual sample size available.
   final int actualCount;
 
+  /// What the warning is about, as a golfer would say it — a club's name, or a
+  /// hole's number as text.
+  ///
+  /// The banner renders localized text from the structured fields, because
+  /// this model has no BuildContext and its message strings are English. The
+  /// club name only existed inside that English message, which is why this
+  /// field exists.
+  final String? subjectLabel;
+
   /// Recommended action to improve data quality.
   final String? recommendedAction;
 
@@ -89,6 +98,7 @@ class IncompleteDataWarning extends Equatable {
     this.recommendedAction,
     required this.generatedAt,
     this.context,
+    this.subjectLabel,
   });
 
   /// Shortage ratio: how far the actual is from the required (0.0–1.0).
@@ -115,6 +125,7 @@ class IncompleteDataWarning extends Equatable {
     recommendedAction,
     generatedAt,
     context,
+      subjectLabel,
   ];
 
   Map<String, dynamic> toJson() => {
@@ -171,6 +182,8 @@ class IncompleteDataWarning extends Equatable {
           'Record more shots to unlock driving zone and round analytics.',
       generatedAt: generatedAt,
     );
+    // The English message/recommendedAction strings above are retained for
+    // logs; the banner renders localized text from the structured fields.
   }
 
   /// Creates a warning for insufficient club-specific shots.
@@ -197,6 +210,7 @@ class IncompleteDataWarning extends Equatable {
           'Use $clubName more often to build a reliable club profile.',
       generatedAt: generatedAt,
       context: clubId,
+      subjectLabel: clubName,
     );
   }
 
@@ -223,6 +237,7 @@ class IncompleteDataWarning extends Equatable {
           'Play hole $holeNumber more times to get personalized insights.',
       generatedAt: generatedAt,
       context: 'hole-$holeNumber',
+      subjectLabel: '$holeNumber',
     );
   }
 }

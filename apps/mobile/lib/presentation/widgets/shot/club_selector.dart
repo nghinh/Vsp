@@ -101,7 +101,7 @@ class ClubSelector extends StatelessWidget {
 
             // Title
             Text(
-              'Select Club',
+              AppLocalizations.of(context).commonSelectClub,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),

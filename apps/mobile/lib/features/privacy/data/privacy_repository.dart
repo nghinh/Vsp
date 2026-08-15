@@ -6,6 +6,7 @@
 import '../../../core/network/api_client.dart' show VspApiException;
 import 'privacy_request_dto.dart';
 import 'privacy_service.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Result of a submit operation.
 class SubmitResult {
@@ -48,7 +49,7 @@ class PrivacyRepository {
       return SubmitResult.failure(ex.message);
     } catch (ex) {
       return SubmitResult.failure(
-        'Failed to submit request. Please try again.',
+        AppMessages.privacySubmitFailed,
       );
     }
   }

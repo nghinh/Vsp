@@ -88,11 +88,11 @@ class _DispersionMapScreenState extends State<DispersionMapScreen> {
 
   Widget _buildBody(BuildContext context, PerformanceState state) {
     if (widget.holeId == null || widget.layoutId == null) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
-            'Select a hole to view shot dispersion.',
+            AppLocalizations.of(context).dispersionSelectHole,
             textAlign: TextAlign.center,
           ),
         ),
@@ -350,7 +350,7 @@ class _LoadingBody extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Loading dispersion data...',
+                  AppLocalizations.of(context).dispersionLoading,
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
@@ -386,7 +386,7 @@ class _ErrorBody extends StatelessWidget {
             Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'Failed to load dispersion',
+              AppLocalizations.of(context).dispersionLoadFailed,
               style: theme.textTheme.titleMedium,
             ),
             const SizedBox(height: VspSpacing.sm),

@@ -351,7 +351,9 @@ class _ClubFormScreenState extends State<ClubFormScreen> {
       builder: (dialogContext) => AlertDialog(
         title: Text(AppLocalizations.of(context).clubDeleteTitle),
         content: Text(
-          'Are you sure you want to delete this ${_selectedClubType?.displayName ?? "club"}?',
+          AppLocalizations.of(context).clubDeleteConfirm(
+            _selectedClubType?.displayName ?? AppLocalizations.of(context).clubTypeSelect,
+          ),
         ),
         actions: [
           TextButton(
@@ -447,7 +449,7 @@ class _ClubTypeSelector extends StatelessWidget {
               ],
               Expanded(
                 child: Text(
-                  selectedType?.displayName ?? 'Select club type',
+                  selectedType?.displayName ?? AppLocalizations.of(context).clubTypeSelect,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: selectedType != null
                         ? colorScheme.onSurface
@@ -599,7 +601,7 @@ class _Phase2Field extends StatelessWidget {
             const SizedBox(width: 4),
             Expanded(
               child: Text(
-                'Phase 2: Dispersion analytics will be available in a future update.',
+                AppLocalizations.of(context).clubDispersionPhase2,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                   fontStyle: FontStyle.italic,
@@ -656,7 +658,7 @@ class _DateSelector extends StatelessWidget {
                 child: Text(
                   selectedDate != null
                       ? _formatDate(selectedDate!)
-                      : 'Select date (optional)',
+                      : AppLocalizations.of(context).clubSelectDate,
                   style: theme.textTheme.bodyLarge?.copyWith(
                     color: selectedDate != null
                         ? colorScheme.onSurface

@@ -3497,7 +3497,7 @@ abstract class AppLocalizations {
   /// No description provided for @bagDetailLoadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load bag details.'**
+  /// **'Failed to load the bag'**
   String get bagDetailLoadFailed;
 
   /// No description provided for @clubDeleted.
@@ -3599,7 +3599,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileLoadFailed.
   ///
   /// In en, this message translates to:
-  /// **'Failed to load profile. Please try again.'**
+  /// **'Failed to load profile'**
   String get profileLoadFailed;
 
   /// No description provided for @profileSaveFailed.
@@ -6313,6 +6313,390 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This club reads as: {name}'**
   String clubResolvedName(String name);
+
+  /// No description provided for @analyticsLoadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load analytics'**
+  String get analyticsLoadFailedTitle;
+
+  /// No description provided for @analyticsRecordShots.
+  ///
+  /// In en, this message translates to:
+  /// **'Record shots'**
+  String get analyticsRecordShots;
+
+  /// No description provided for @drivingZoneEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record shots on the course to see your driving zone analytics.'**
+  String get drivingZoneEmptySubtitle;
+
+  /// No description provided for @timeRangeLast30.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 30 days'**
+  String get timeRangeLast30;
+
+  /// No description provided for @timeRangeLast90.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 90 days'**
+  String get timeRangeLast90;
+
+  /// No description provided for @timeRangeYearToDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Year to date'**
+  String get timeRangeYearToDate;
+
+  /// No description provided for @timeRangeAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get timeRangeAllTime;
+
+  /// No description provided for @warnShotsTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {actual} shots recorded. At least {required} are needed for reliable analytics.'**
+  String warnShotsTotal(int actual, int required);
+
+  /// No description provided for @warnShotsTotalAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Record more shots to unlock driving zone and round analytics.'**
+  String get warnShotsTotalAction;
+
+  /// No description provided for @warnShotsClub.
+  ///
+  /// In en, this message translates to:
+  /// **'{club} has only {actual} shots — {required} are recommended for accurate analytics.'**
+  String warnShotsClub(String club, int actual, int required);
+
+  /// No description provided for @warnShotsClubAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Use {club} more often to build a reliable club profile.'**
+  String warnShotsClubAction(String club);
+
+  /// No description provided for @warnShotsHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole} has only {actual} shots — {required} are recommended for hole analytics.'**
+  String warnShotsHole(String hole, int actual, int required);
+
+  /// No description provided for @warnShotsHoleAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Play hole {hole} a few more times for personalised insights.'**
+  String warnShotsHoleAction(String hole);
+
+  /// No description provided for @warnShotsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{actual}/{required} shots'**
+  String warnShotsProgress(int actual, int required);
+
+  /// No description provided for @performanceLoadFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load performance'**
+  String get performanceLoadFailedTitle;
+
+  /// No description provided for @dispersionSelectHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a hole to view shot dispersion.'**
+  String get dispersionSelectHole;
+
+  /// No description provided for @dispersionLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading dispersion data…'**
+  String get dispersionLoading;
+
+  /// No description provided for @dispersionLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load dispersion'**
+  String get dispersionLoadFailed;
+
+  /// No description provided for @lockedRecsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations locked'**
+  String get lockedRecsTitle;
+
+  /// No description provided for @lockedRecsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{current}/{required} shots recorded.'**
+  String lockedRecsProgress(int current, int required);
+
+  /// No description provided for @lockedRecsAddMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {count} more shots to unlock club recommendations.'**
+  String lockedRecsAddMore(int count);
+
+  /// No description provided for @lockedRecsKeepGoing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep recording shots to unlock personalised recommendations.'**
+  String get lockedRecsKeepGoing;
+
+  /// No description provided for @calcError.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculation error'**
+  String get calcError;
+
+  /// No description provided for @commonSelectClub.
+  ///
+  /// In en, this message translates to:
+  /// **'Select club'**
+  String get commonSelectClub;
+
+  /// No description provided for @shotSelectClubFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a club first'**
+  String get shotSelectClubFirst;
+
+  /// No description provided for @shotNoneRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'No shots recorded'**
+  String get shotNoneRecorded;
+
+  /// No description provided for @shotDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete shot {number} on hole {hole}? This cannot be undone.'**
+  String shotDeleteConfirm(int number, int hole);
+
+  /// No description provided for @shotDeleteConfirmShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete shot {number}? This cannot be undone.'**
+  String shotDeleteConfirmShort(int number);
+
+  /// No description provided for @shotMergeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the target shot — the current shot will be merged into it.'**
+  String get shotMergeHint;
+
+  /// No description provided for @shotStartFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start the shot'**
+  String get shotStartFailed;
+
+  /// No description provided for @shotEndFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not end the shot'**
+  String get shotEndFailed;
+
+  /// No description provided for @shotSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save'**
+  String get shotSaveFailed;
+
+  /// No description provided for @shotDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete'**
+  String get shotDeleteFailed;
+
+  /// No description provided for @shotMergeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not merge'**
+  String get shotMergeFailed;
+
+  /// No description provided for @clubTypeSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select club type'**
+  String get clubTypeSelect;
+
+  /// No description provided for @clubSelectDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select date (optional)'**
+  String get clubSelectDate;
+
+  /// No description provided for @clubDispersionPhase2.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispersion analytics will arrive in a future update.'**
+  String get clubDispersionPhase2;
+
+  /// No description provided for @clubDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete {name} from the bag?'**
+  String clubDeleteConfirm(String name);
+
+  /// No description provided for @bagDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete bag \"{name}\"? This cannot be undone.'**
+  String bagDeleteConfirm(String name);
+
+  /// No description provided for @skillSelectLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Select skill level'**
+  String get skillSelectLevel;
+
+  /// No description provided for @signOutDeviceConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out of \"{device}\"? This session will be terminated immediately.'**
+  String signOutDeviceConfirm(String device);
+
+  /// No description provided for @privacyRequestsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load requests'**
+  String get privacyRequestsLoadFailed;
+
+  /// No description provided for @privacyRoundsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load rounds. Please try again.'**
+  String get privacyRoundsLoadFailed;
+
+  /// No description provided for @privacySelectRoundToDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Select the round to delete'**
+  String get privacySelectRoundToDelete;
+
+  /// No description provided for @watchTapToPair.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to start pairing'**
+  String get watchTapToPair;
+
+  /// No description provided for @mapLoadingHole.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading hole {hole}…'**
+  String mapLoadingHole(String hole);
+
+  /// No description provided for @mapRetryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry loading the hole map'**
+  String get mapRetryHint;
+
+  /// No description provided for @roundSetupKmAway.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km away'**
+  String roundSetupKmAway(String km);
+
+  /// No description provided for @downloadRetryCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry {count}'**
+  String downloadRetryCount(int count);
+
+  /// No description provided for @syncPendingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending sync to server'**
+  String get syncPendingLabel;
+
+  /// No description provided for @syncSyncingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing to server'**
+  String get syncSyncingLabel;
+
+  /// No description provided for @syncFailedTapRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Tap to retry'**
+  String get syncFailedTapRetry;
+
+  /// No description provided for @holeAutoSwitchBlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto hole switch blocked. {reason}. Please select the hole yourself.'**
+  String holeAutoSwitchBlocked(String reason);
+
+  /// No description provided for @detectLowConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Low confidence — the app is not sure which hole you are on. Select it yourself.'**
+  String get detectLowConfidence;
+
+  /// No description provided for @detectMediumConfidence.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium confidence — the app has a guess but is not certain. Auto-switch is off; you can still select the hole yourself.'**
+  String get detectMediumConfidence;
+
+  /// No description provided for @msgPrivacySubmitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The request could not be submitted. Please try again.'**
+  String get msgPrivacySubmitFailed;
+
+  /// No description provided for @msgWeatherExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather data has expired. Refresh when online.'**
+  String get msgWeatherExpired;
+
+  /// No description provided for @msgPackageCorrupted.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data is corrupted — please re-download.'**
+  String get msgPackageCorrupted;
+
+  /// No description provided for @msgPackageFilesMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Some course files are missing — please re-download.'**
+  String get msgPackageFilesMissing;
+
+  /// No description provided for @msgScorecardLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load scores'**
+  String get msgScorecardLoadFailed;
+
+  /// No description provided for @msgScorecardSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the score'**
+  String get msgScorecardSaveFailed;
+
+  /// No description provided for @msgTargetActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update the target. Try again.'**
+  String get msgTargetActionFailed;
+
+  /// No description provided for @shotClubChosen.
+  ///
+  /// In en, this message translates to:
+  /// **'Club selected'**
+  String get shotClubChosen;
+
+  /// No description provided for @shotStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start shot'**
+  String get shotStartLabel;
 }
 
 class _AppLocalizationsDelegate

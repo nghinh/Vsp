@@ -574,7 +574,7 @@
   "bagDeleteTitle": "Xoá túi gậy?",
   "bagLoadFailedRetry": "Không tải được túi gậy. Vui lòng thử lại.",
   "bagDeleted": "Đã xoá túi gậy",
-  "bagDetailLoadFailed": "Không tải được chi tiết túi gậy.",
+  "bagDetailLoadFailed": "Không tải được túi gậy",
   "clubDeleted": "Đã xoá gậy",
   "commonSynced": "Đã đồng bộ",
   "clubType": "LOẠI GẬY",
@@ -591,7 +591,7 @@
   "clubLoftTooltip": "Độ loft",
   "clubCarryTooltip": "Khoảng cách carry",
   "clubTotalTooltip": "Tổng khoảng cách",
-  "profileLoadFailed": "Không tải được hồ sơ. Vui lòng thử lại.",
+  "profileLoadFailed": "Không tải được hồ sơ",
   "profileSaveFailed": "Lưu thất bại. Vui lòng thử lại.",
   "unitMeters": "Mét",
   "unitYards": "Yard",
@@ -1291,5 +1291,212 @@
         "type": "String"
       }
     }
-  }
+  },
+  "analyticsLoadFailedTitle": "Không tải được thống kê",
+  "analyticsRecordShots": "Ghi cú đánh",
+  "drivingZoneEmptySubtitle": "Ghi cú đánh trên sân để xem thống kê vùng phát bóng.",
+  "timeRangeLast30": "30 ngày qua",
+  "timeRangeLast90": "90 ngày qua",
+  "timeRangeYearToDate": "Từ đầu năm",
+  "timeRangeAllTime": "Toàn bộ",
+  "warnShotsTotal": "Mới ghi {actual} cú. Cần ít nhất {required} cú để thống kê đáng tin cậy.",
+  "@warnShotsTotal": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsTotalAction": "Ghi thêm cú đánh để mở khoá vùng phát bóng và phân tích vòng đấu.",
+  "warnShotsClub": "{club} mới có {actual} cú — nên có {required} cú để phân tích chính xác.",
+  "@warnShotsClub": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      },
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsClubAction": "Dùng {club} thường xuyên hơn để có hồ sơ gậy đáng tin cậy.",
+  "@warnShotsClubAction": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "warnShotsHole": "Hố {hole} mới có {actual} cú — nên có {required} cú cho phân tích theo hố.",
+  "@warnShotsHole": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      },
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "warnShotsHoleAction": "Chơi hố {hole} thêm vài lần để có gợi ý riêng.",
+  "@warnShotsHoleAction": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "warnShotsProgress": "{actual}/{required} cú",
+  "@warnShotsProgress": {
+    "placeholders": {
+      "actual": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "performanceLoadFailedTitle": "Không tải được hiệu suất",
+  "dispersionSelectHole": "Chọn hố để xem độ phân tán cú đánh.",
+  "dispersionLoading": "Đang tải dữ liệu phân tán…",
+  "dispersionLoadFailed": "Không tải được dữ liệu phân tán",
+  "lockedRecsTitle": "Chưa mở khoá gợi ý",
+  "lockedRecsProgress": "Đã ghi {current}/{required} cú.",
+  "@lockedRecsProgress": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "required": {
+        "type": "int"
+      }
+    }
+  },
+  "lockedRecsAddMore": "Ghi thêm {count} cú nữa để mở khoá gợi ý chọn gậy.",
+  "@lockedRecsAddMore": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lockedRecsKeepGoing": "Ghi thêm cú đánh để mở khoá gợi ý cá nhân hoá.",
+  "calcError": "Lỗi tính toán",
+  "commonSelectClub": "Chọn gậy",
+  "shotSelectClubFirst": "Chọn gậy trước đã",
+  "shotNoneRecorded": "Chưa ghi cú đánh nào",
+  "shotDeleteConfirm": "Xoá cú {number} ở hố {hole}? Việc này không hoàn tác được.",
+  "@shotDeleteConfirm": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
+  "shotDeleteConfirmShort": "Xoá cú {number}? Việc này không hoàn tác được.",
+  "@shotDeleteConfirmShort": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "shotMergeHint": "Chọn cú đích — cú hiện tại sẽ được gộp vào cú đó.",
+  "shotStartFailed": "Không bắt đầu được cú đánh",
+  "shotEndFailed": "Không kết thúc được cú đánh",
+  "shotSaveFailed": "Không lưu được",
+  "shotDeleteFailed": "Không xoá được",
+  "shotMergeFailed": "Không gộp được",
+  "clubTypeSelect": "Chọn loại gậy",
+  "clubSelectDate": "Chọn ngày (không bắt buộc)",
+  "clubDispersionPhase2": "Phân tích độ phân tán sẽ có trong bản cập nhật sau.",
+  "clubDeleteConfirm": "Xoá {name} khỏi túi gậy?",
+  "@clubDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "bagDeleteConfirm": "Xoá túi \"{name}\"? Việc này không hoàn tác được.",
+  "@bagDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "skillSelectLevel": "Chọn trình độ",
+  "signOutDeviceConfirm": "Đăng xuất khỏi \"{device}\"? Phiên này sẽ bị chấm dứt ngay.",
+  "@signOutDeviceConfirm": {
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyRequestsLoadFailed": "Không tải được danh sách yêu cầu",
+  "privacyRoundsLoadFailed": "Không tải được danh sách vòng đấu. Vui lòng thử lại.",
+  "privacySelectRoundToDelete": "Chọn vòng đấu cần xoá",
+  "watchTapToPair": "Chạm để bắt đầu ghép nối",
+  "mapLoadingHole": "Đang tải hố {hole}…",
+  "@mapLoadingHole": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "mapRetryHint": "Tải lại bản đồ hố",
+  "roundSetupKmAway": "cách {km} km",
+  "@roundSetupKmAway": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadRetryCount": "Thử lại lần {count}",
+  "@downloadRetryCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncPendingLabel": "Chờ đồng bộ lên máy chủ",
+  "syncSyncingLabel": "Đang đồng bộ lên máy chủ",
+  "syncFailedTapRetry": "Đồng bộ thất bại. Chạm để thử lại",
+  "holeAutoSwitchBlocked": "Tự chuyển hố bị chặn. {reason}. Hãy tự chọn hố.",
+  "@holeAutoSwitchBlocked": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "detectLowConfidence": "Độ tin cậy thấp — app chưa chắc bạn đang ở hố nào. Hãy tự chọn hố.",
+  "detectMediumConfidence": "Độ tin cậy trung bình — app có phỏng đoán nhưng chưa chắc chắn. Tự chuyển hố đang tắt; bạn vẫn có thể tự chọn.",
+  "msgPrivacySubmitFailed": "Không gửi được yêu cầu. Vui lòng thử lại.",
+  "msgWeatherExpired": "Dữ liệu thời tiết đã hết hạn. Làm mới khi có mạng.",
+  "msgPackageCorrupted": "Dữ liệu sân bị hỏng — hãy tải lại.",
+  "msgPackageFilesMissing": "Thiếu một phần dữ liệu sân — hãy tải lại.",
+  "msgScorecardLoadFailed": "Không tải được điểm",
+  "msgScorecardSaveFailed": "Không lưu được điểm",
+  "msgTargetActionFailed": "Không thao tác được điểm mục tiêu. Thử lại.",
+  "shotClubChosen": "Đã chọn gậy",
+  "shotStartLabel": "Bắt đầu cú đánh"
 }

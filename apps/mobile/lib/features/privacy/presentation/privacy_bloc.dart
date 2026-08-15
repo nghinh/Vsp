@@ -239,7 +239,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
           PrivacyRequestsLoaded(
             requests: currentState.requests,
             submissionResult: PrivacySubmissionResult.failure(
-              errorMessage: result.errorMessage ?? 'Failed to submit request.',
+              errorMessage: result.errorMessage ?? AppMessages.privacySubmitFailed,
               submittedType: PrivacyRequestType.dataExport,
             ),
           ),
@@ -248,7 +248,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
         emit(
           PrivacyError(
             message:
-                result.errorMessage ?? 'Failed to submit data export request.',
+                result.errorMessage ?? AppMessages.privacySubmitFailed,
             lastRequests: _cachedRequests.isNotEmpty ? _cachedRequests : null,
           ),
         );
@@ -296,7 +296,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
           PrivacyRequestsLoaded(
             requests: currentState.requests,
             submissionResult: PrivacySubmissionResult.failure(
-              errorMessage: result.errorMessage ?? 'Failed to submit request.',
+              errorMessage: result.errorMessage ?? AppMessages.privacySubmitFailed,
               submittedType: PrivacyRequestType.accountDeletion,
             ),
           ),
@@ -306,7 +306,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
           PrivacyError(
             message:
                 result.errorMessage ??
-                'Failed to submit account deletion request.',
+                AppMessages.privacySubmitFailed,
             lastRequests: _cachedRequests.isNotEmpty ? _cachedRequests : null,
           ),
         );
@@ -355,7 +355,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
           PrivacyRequestsLoaded(
             requests: currentState.requests,
             submissionResult: PrivacySubmissionResult.failure(
-              errorMessage: result.errorMessage ?? 'Failed to submit request.',
+              errorMessage: result.errorMessage ?? AppMessages.privacySubmitFailed,
               submittedType: PrivacyRequestType.roundDeletion,
             ),
           ),
@@ -365,7 +365,7 @@ class PrivacyBloc extends Bloc<PrivacyEvent, PrivacyState> {
           PrivacyError(
             message:
                 result.errorMessage ??
-                'Failed to submit round deletion request.',
+                AppMessages.privacySubmitFailed,
             lastRequests: _cachedRequests.isNotEmpty ? _cachedRequests : null,
           ),
         );

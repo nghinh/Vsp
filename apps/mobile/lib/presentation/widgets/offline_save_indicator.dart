@@ -69,21 +69,22 @@ class OfflineSaveIndicator extends StatelessWidget {
     }
 
     return Semantics(
-      label: _semanticLabel(syncState),
+      label: _semanticLabel(context, syncState),
       child: _buildIndicator(context, brightness),
     );
   }
 
-  String _semanticLabel(RoundSyncState state) {
+  String _semanticLabel(BuildContext context, RoundSyncState state) {
+    final l10n = AppLocalizations.of(context);
     switch (state) {
       case RoundSyncState.synced:
-        return 'Saved locally';
+        return l10n.syncSavedLocally;
       case RoundSyncState.pending:
-        return 'Pending sync to server';
+        return l10n.syncPendingLabel;
       case RoundSyncState.syncing:
-        return 'Syncing to server';
+        return l10n.syncSyncingLabel;
       case RoundSyncState.failed:
-        return 'Sync failed. Tap to retry';
+        return l10n.syncFailedTapRetry;
     }
   }
 
