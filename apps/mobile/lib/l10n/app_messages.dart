@@ -111,6 +111,9 @@ abstract final class AppMessages {
   static const unexpectedError = 'msg.unexpectedError';
   static const emptyPackage = 'msg.emptyPackage';
 
+  /// The server has never built a package for this course — most of them.
+  static const noPackagePublished = 'msg.noPackagePublished';
+
   // GPS quality warnings (see LocationWarning.detail for the numeric part)
   static const gpsUnavailable = 'msg.gpsUnavailable';
   static const gpsUnavailableMessage = 'msg.gpsUnavailableMessage';
@@ -252,6 +255,7 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.weatherCacheExpired => l10n.weatherCacheExpired,
     AppMessages.weatherLocationUnavailable => l10n.weatherLocationUnavailable,
     AppMessages.emptyPackage => l10n.msgEmptyPackage,
+    AppMessages.noPackagePublished => l10n.msgNoPackagePublished,
     _ => raw ?? '',
   };
 }

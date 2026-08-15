@@ -143,12 +143,27 @@ class CoursePackageDownloadService {
       // Step 1: Fetch remote manifest
       final remoteManifest = await _fetchRemoteManifest(courseId);
       if (remoteManifest == null) {
+        // Two different situations wearing the same null. Most courses in
+        // this database have never had a package built — that is a fact
+        // about the course, not a failure, and reporting it as a server
+        // error sends the golfer to look for a problem that is not theirs.
+        var published = false;
+        try {
+          published = await _packageRepo.hasPublishedPackage(courseId);
+        } catch (_) {
+          // Could not even ask. Treat it as the network problem it is.
+          published = true;
+        }
         _emitError(
           courseId,
-          'Could not fetch course package manifest from server.',
+          published
+              ? 'Could not fetch course package manifest from server.'
+              : 'No package has been published for this course.',
         );
         return DownloadPackageFailure(
-          message: AppMessages.manifestFetchFailed,
+          message: published
+              ? AppMessages.manifestFetchFailed
+              : AppMessages.noPackagePublished,
           error: DownloadError.serverError,
         );
       }

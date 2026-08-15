@@ -74,6 +74,21 @@ class CoursePackageRepository {
     }
   }
 
+  /// Whether the server publishes a package for this course at all.
+  ///
+  /// A 404 here is not a failure: most courses in this database have never
+  /// had a package built, and the app has to say that plainly rather than
+  /// report a server error at a golfer who did nothing wrong.
+  Future<bool> hasPublishedPackage(int courseId) async {
+    try {
+      await _apiClient.get('/courses/$courseId/packages/current');
+      return true;
+    } on VspApiException catch (e) {
+      if (e.statusCode == 404) return false;
+      rethrow;
+    }
+  }
+
   /// Persist download state for a course (for app restart recovery).
   ///
   /// Called during download to save progress. After app restart,

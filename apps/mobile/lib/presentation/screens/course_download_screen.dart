@@ -28,6 +28,7 @@ import '../widgets/download_progress_indicator.dart';
 import '../widgets/package_info_card.dart';
 import '../widgets/wifi_only_toggle.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/l10n/app_messages.dart';
 
 /// Screen for managing course package download/update/delete.
 class CourseDownloadScreen extends StatefulWidget {
@@ -199,7 +200,10 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
                 ? Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(_errorMessage!, textAlign: TextAlign.center),
+                      child: Text(
+                        context.tr(_errorMessage!),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
                   )
                 : const Center(child: CircularProgressIndicator())
@@ -221,8 +225,13 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Package info card
-          if (_activeManifest != null)
+          // Package info card.
+          //
+          // A local manifest the server no longer publishes — or one that
+          // was promoted with no bytes behind it — is not a package. Long
+          // Biên showed 0.0 MB, eleven files and a Download button that
+          // could only fail: the server has never built a package for it.
+          if (_activeManifest != null && _hasRealPackage(_activeManifest!))
             PackageInfoCard(
               manifest: _activeManifest!,
               updateAvailable: _hasUpdateAvailable,
@@ -343,6 +352,14 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
     );
   }
 
+  /// Whether a manifest has an actual package behind it.
+  ///
+  /// Bytes are the test. A manifest can be saved and promoted with a file
+  /// list and a zero size — that is what "0.0 MB, 11 tệp" was — and the
+  /// screen then offers to download something that does not exist.
+  bool _hasRealPackage(CoursePackageManifest manifest) =>
+      manifest.sizeBytes > 0 && manifest.files.isNotEmpty;
+
   Widget _buildNoPackageAvailable(ThemeData theme) {
     return Container(
       padding: const EdgeInsets.all(VspSpacing.md),
@@ -395,7 +412,11 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
           ),
           const SizedBox(height: VspSpacing.xs),
           Text(
-            _errorMessage ?? 'An error occurred.',
+            // The service emits message keys, not sentences. Printed
+            // straight, a golfer was shown "msg.serverError".
+            _errorMessage == null
+                ? AppLocalizations.of(context).downloadFailed
+                : context.tr(_errorMessage!),
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),

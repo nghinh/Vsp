@@ -2674,5 +2674,9 @@
       }
     }
   },
-  "roundSetupNearbyCourses": "Courses near you"
+  "roundSetupNearbyCourses": "Courses near you",
+  "roundSetupCountsHandicap": "Count toward handicap",
+  "roundSetupCountsHandicapOn": "This round will feed your handicap",
+  "roundSetupCountsHandicapOff": "This round will not affect your handicap",
+  "msgNoPackagePublished": "No offline map has been built for this course yet. You can still play and score; the map just needs a connection."
 }

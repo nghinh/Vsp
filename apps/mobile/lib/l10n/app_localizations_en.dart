@@ -3984,4 +3984,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get roundSetupNearbyCourses => 'Courses near you';
+
+  @override
+  String get roundSetupCountsHandicap => 'Count toward handicap';
+
+  @override
+  String get roundSetupCountsHandicapOn => 'This round will feed your handicap';
+
+  @override
+  String get roundSetupCountsHandicapOff =>
+      'This round will not affect your handicap';
+
+  @override
+  String get msgNoPackagePublished =>
+      'No offline map has been built for this course yet. You can still play and score; the map just needs a connection.';
 }

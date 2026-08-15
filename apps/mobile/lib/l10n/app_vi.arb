@@ -1694,5 +1694,9 @@
       }
     }
   },
-  "roundSetupNearbyCourses": "Sân gần bạn"
+  "roundSetupNearbyCourses": "Sân gần bạn",
+  "roundSetupCountsHandicap": "Tính vào handicap",
+  "roundSetupCountsHandicapOn": "Vòng này sẽ được dùng để tính handicap của bạn",
+  "roundSetupCountsHandicapOff": "Vòng này không ảnh hưởng đến handicap",
+  "msgNoPackagePublished": "Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng."
 }

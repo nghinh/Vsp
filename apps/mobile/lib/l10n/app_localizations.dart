@@ -7015,6 +7015,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Courses near you'**
   String get roundSetupNearbyCourses;
+
+  /// No description provided for @roundSetupCountsHandicap.
+  ///
+  /// In en, this message translates to:
+  /// **'Count toward handicap'**
+  String get roundSetupCountsHandicap;
+
+  /// No description provided for @roundSetupCountsHandicapOn.
+  ///
+  /// In en, this message translates to:
+  /// **'This round will feed your handicap'**
+  String get roundSetupCountsHandicapOn;
+
+  /// No description provided for @roundSetupCountsHandicapOff.
+  ///
+  /// In en, this message translates to:
+  /// **'This round will not affect your handicap'**
+  String get roundSetupCountsHandicapOff;
+
+  /// No description provided for @msgNoPackagePublished.
+  ///
+  /// In en, this message translates to:
+  /// **'No offline map has been built for this course yet. You can still play and score; the map just needs a connection.'**
+  String get msgNoPackagePublished;
 }
 
 class _AppLocalizationsDelegate

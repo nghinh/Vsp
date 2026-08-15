@@ -3981,4 +3981,19 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get roundSetupNearbyCourses => 'Sân gần bạn';
+
+  @override
+  String get roundSetupCountsHandicap => 'Tính vào handicap';
+
+  @override
+  String get roundSetupCountsHandicapOn =>
+      'Vòng này sẽ được dùng để tính handicap của bạn';
+
+  @override
+  String get roundSetupCountsHandicapOff =>
+      'Vòng này không ảnh hưởng đến handicap';
+
+  @override
+  String get msgNoPackagePublished =>
+      'Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng.';
 }
