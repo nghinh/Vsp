@@ -52,8 +52,8 @@ public interface ScorecardRepository extends JpaRepository<Scorecard, Long> {
             JOIN scorecard_holes sh ON sh.scorecard_id = s.id
             WHERE s.id <> :excludedId
             GROUP BY s.id
-            HAVING string_agg(sh.par::text, ',' ORDER BY sh.hole_number) = :pars
-               AND string_agg(coalesce(sh.stroke_index, -1)::text, ',' ORDER BY sh.hole_number) = :indexes
+            HAVING string_agg(CAST(sh.par AS text), ',' ORDER BY sh.hole_number) = :pars
+               AND string_agg(CAST(coalesce(sh.stroke_index, -1) AS text), ',' ORDER BY sh.hole_number) = :indexes
             """, nativeQuery = true)
     List<Long> findIdsWithSameParAndStrokeIndex(
             @Param("excludedId") Long excludedId,
