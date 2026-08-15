@@ -1632,5 +1632,43 @@
     }
   },
   "recapTitle": "Tổng kết cho hội",
-  "recapShare": "Chia sẻ"
+  "recapShare": "Chia sẻ",
+  "ghostAhead": "Bạn đang hơn vòng hay nhất {strokes} gậy sau {holes} hố",
+  "@ghostAhead": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostBehind": "Vòng hay nhất đang hơn bạn {strokes} gậy sau {holes} hố",
+  "@ghostBehind": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostEven": "Hoà với vòng hay nhất sau {holes} hố",
+  "@ghostEven": {
+    "placeholders": {
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostBest": "Kỷ lục {strokes}",
+  "@ghostBest": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      }
+    }
+  }
 }

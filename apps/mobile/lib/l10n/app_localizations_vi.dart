@@ -3935,4 +3935,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get recapShare => 'Chia sẻ';
+
+  @override
+  String ghostAhead(int strokes, int holes) {
+    return 'Bạn đang hơn vòng hay nhất $strokes gậy sau $holes hố';
+  }
+
+  @override
+  String ghostBehind(int strokes, int holes) {
+    return 'Vòng hay nhất đang hơn bạn $strokes gậy sau $holes hố';
+  }
+
+  @override
+  String ghostEven(int holes) {
+    return 'Hoà với vòng hay nhất sau $holes hố';
+  }
+
+  @override
+  String ghostBest(int strokes) {
+    return 'Kỷ lục $strokes';
+  }
 }

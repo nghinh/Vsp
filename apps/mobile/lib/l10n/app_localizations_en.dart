@@ -3938,4 +3938,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recapShare => 'Share';
+
+  @override
+  String ghostAhead(int strokes, int holes) {
+    return 'You are $strokes ahead of your best round through $holes';
+  }
+
+  @override
+  String ghostBehind(int strokes, int holes) {
+    return 'Your best round is $strokes ahead through $holes';
+  }
+
+  @override
+  String ghostEven(int holes) {
+    return 'Level with your best round through $holes';
+  }
+
+  @override
+  String ghostBest(int strokes) {
+    return 'Best $strokes';
+  }
 }

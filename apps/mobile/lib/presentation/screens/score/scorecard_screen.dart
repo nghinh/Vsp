@@ -55,6 +55,7 @@ import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/features/games/domain/games_engine.dart';
 import 'package:vsp_mobile/features/games/presentation/games_sheet.dart';
 import 'package:vsp_mobile/features/strategy/presentation/strategy_screen.dart';
+import 'package:vsp_mobile/features/ghost/ghost_round.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -391,6 +392,22 @@ class _ScorecardScreenContent extends StatelessWidget {
   /// confirm reaches the scorecard — through the same upsert and the same sync
   /// queue as a hand-entered stroke.
 
+  /// This golfer's own gross by hole number — the first player on the card,
+  /// which is whose phone this is. The ghost races them, not the flight.
+  Map<int, int> _myGrossByHole(ScorecardScreenState state) {
+    final me = state.playerIds.isEmpty ? null : state.playerIds.first;
+    if (me == null) return const {};
+    final gross = <int, int>{};
+    for (var i = 0; i < state.holeIds.length; i++) {
+      final holeId = state.holeIds[i];
+      final score = state.scores[me]?[holeId]?.grossScore;
+      if (score != null) {
+        gross[int.tryParse(holeId) ?? (i + 1)] = score;
+      }
+    }
+    return gross;
+  }
+
   /// Opens the flight's book. Every photographed card this project holds
   /// carries the same handwriting — four players, +/- notation, running
   /// totals per nine. This is that ledger, minus the arguments: the stroke
@@ -635,6 +652,14 @@ class _ScorecardScreenContent extends StatelessWidget {
                 par: state.currentPar,
                 isOffline: state.isOffline,
               ),
+
+              // The golfer's own best round on this course, racing live.
+              if (int.tryParse(courseId ?? '') != null)
+                GhostBanner(
+                  courseId: int.parse(courseId!),
+                  backNineCourseId: int.tryParse(backNineCourseId ?? ''),
+                  grossByHole: _myGrossByHole(state),
+                ),
 
               // Error banner
               if (state.errorMessage != null)

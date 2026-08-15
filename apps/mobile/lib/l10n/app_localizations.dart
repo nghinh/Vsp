@@ -6949,6 +6949,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Share'**
   String get recapShare;
+
+  /// No description provided for @ghostAhead.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {strokes} ahead of your best round through {holes}'**
+  String ghostAhead(int strokes, int holes);
+
+  /// No description provided for @ghostBehind.
+  ///
+  /// In en, this message translates to:
+  /// **'Your best round is {strokes} ahead through {holes}'**
+  String ghostBehind(int strokes, int holes);
+
+  /// No description provided for @ghostEven.
+  ///
+  /// In en, this message translates to:
+  /// **'Level with your best round through {holes}'**
+  String ghostEven(int holes);
+
+  /// No description provided for @ghostBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best {strokes}'**
+  String ghostBest(int strokes);
 }
 
 class _AppLocalizationsDelegate

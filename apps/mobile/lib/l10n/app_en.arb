@@ -2612,5 +2612,43 @@
     }
   },
   "recapTitle": "Round recap",
-  "recapShare": "Share"
+  "recapShare": "Share",
+  "ghostAhead": "You are {strokes} ahead of your best round through {holes}",
+  "@ghostAhead": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostBehind": "Your best round is {strokes} ahead through {holes}",
+  "@ghostBehind": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostEven": "Level with your best round through {holes}",
+  "@ghostEven": {
+    "placeholders": {
+      "holes": {
+        "type": "int"
+      }
+    }
+  },
+  "ghostBest": "Best {strokes}",
+  "@ghostBest": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      }
+    }
+  }
 }
