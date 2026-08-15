@@ -1,85 +1,105 @@
-// The arithmetic that replaced a platform call per pointer sample.
+// Dragging a measured point on a map that has been turned.
 //
-// Dragging a measured point used to ask the map to unproject the finger on
-// every `onPanUpdate`. That is a MethodChannel round trip to Android, and
-// pointer samples arrive faster than frames — up to 120 a second on the test
-// phone — so the drag spent its time waiting on the platform thread while a
-// queue of stale answers built up behind it.
+// The map is rotatable now, because a golfer on a tee wants the photograph
+// facing the way they are. That makes the old drag maths wrong: it treated
+// screen x as longitude and screen y as latitude, which holds only while the
+// map points north. Turned forty degrees, a point dragged upward set off
+// sideways.
 //
-// Rotation and tilt are both disabled on this map, which makes screen-to-world
-// a plain linear scale over the span of one drag. So the scale is measured
-// once, when the finger goes down, from two of the map's own answers 120 px
-// apart — no tile-size convention is assumed, because the ratio between two
-// answers from the same projection is right whatever the convention is. Every
-// position after that is this class.
-//
-// What must not drift: the sign of the vertical axis. Screen y grows downward
-// and latitude grows northward, so dragging a point *down* the screen must
-// move it *south*. Getting that backwards would send every dragged point the
-// wrong way and still look plausible in a unit test that only checked
-// magnitude.
+// DragAnchor now carries all four terms, measured from the map's own answers
+// along each screen axis. No bearing is read anywhere — the rotation is
+// already inside the numbers — so these are the cases that proves.
 
-import 'dart:ui';
+import 'dart:math' as math;
+import 'dart:ui' show Offset;
 
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
 
-void main() {
-  // Long Thành, roughly: 0.0000090 degrees of latitude per pixel is about a
-  // metre a pixel, the order of magnitude at a hole-framing zoom.
-  const anchor = DragAnchor(
-    origin: Offset(200, 300),
-    latitude: 10.8612399,
-    longitude: 106.8960049,
-    degreesPerPixelX: 0.0000091,
-    degreesPerPixelY: -0.0000090,
+/// The anchor a map at [bearing] degrees would calibrate, for a camera where
+/// one pixel is [degPerPixel] of longitude at the equator.
+DragAnchor anchorAt(double bearing, {double degPerPixel = 0.00001}) {
+  final theta = bearing * math.pi / 180;
+  // Screen right, in (east, north). Screen down is the negative of screen up.
+  final rightEast = math.cos(theta);
+  final rightNorth = -math.sin(theta);
+  final downEast = -math.sin(theta);
+  final downNorth = -math.cos(theta);
+
+  return DragAnchor(
+    origin: Offset.zero,
+    latitude: 10.0,
+    longitude: 106.0,
+    lngPerX: rightEast * degPerPixel,
+    latPerX: rightNorth * degPerPixel,
+    lngPerY: downEast * degPerPixel,
+    latPerY: downNorth * degPerPixel,
   );
+}
 
-  test('the start position resolves to the point itself', () {
-    final at = anchor.resolve(anchor.origin);
+void main() {
+  group('dragging a point', () {
+    /// North-up, the case that used to be the only one that worked.
+    test('moves north when the finger moves up on a north-up map', () {
+      final moved = anchorAt(0).resolve(const Offset(0, -100));
 
-    expect(at.latitude, closeTo(anchor.latitude, 1e-12));
-    expect(at.longitude, closeTo(anchor.longitude, 1e-12));
-  });
+      expect(moved.latitude, greaterThan(10.0));
+      expect(moved.longitude, closeTo(106.0, 1e-9));
+    });
 
-  test('dragging down the screen moves the point south', () {
-    final at = anchor.resolve(anchor.origin + const Offset(0, 100));
+    test('moves east when the finger moves right on a north-up map', () {
+      final moved = anchorAt(0).resolve(const Offset(100, 0));
 
-    expect(
-      at.latitude,
-      lessThan(anchor.latitude),
-      reason: 'screen y grows downward, latitude grows northward',
-    );
-    expect(at.latitude, closeTo(anchor.latitude - 0.0009, 1e-9));
-    expect(at.longitude, closeTo(anchor.longitude, 1e-12));
-  });
+      expect(moved.longitude, greaterThan(106.0));
+      expect(moved.latitude, closeTo(10.0, 1e-9));
+    });
 
-  test('dragging right moves the point east', () {
-    final at = anchor.resolve(anchor.origin + const Offset(100, 0));
+    /// The bug this replaced: with the map turned a quarter turn, up the
+    /// screen is east, not north.
+    test('moves east when the finger moves up on a map turned 90°', () {
+      final moved = anchorAt(90).resolve(const Offset(0, -100));
 
-    expect(at.longitude, greaterThan(anchor.longitude));
-    expect(at.longitude, closeTo(anchor.longitude + 0.00091, 1e-9));
-    expect(at.latitude, closeTo(anchor.latitude, 1e-12));
-  });
+      expect(moved.longitude, greaterThan(106.0));
+      expect(moved.latitude, closeTo(10.0, 1e-9));
+    });
 
-  test('it is linear, so a drag and its reverse cancel', () {
-    // The frames of a drag are resolved from the total offset since the start,
-    // not accumulated increment by increment, so a wander that returns to
-    // where it began returns the point to where it began.
-    const wander = Offset(37, -212);
-    final out = anchor.resolve(anchor.origin + wander);
-    final back = anchor.resolve(anchor.origin);
+    /// Turned all the way round, up the screen is south.
+    test('moves south when the finger moves up on a map turned 180°', () {
+      final moved = anchorAt(180).resolve(const Offset(0, -100));
 
-    expect(out.latitude, isNot(closeTo(back.latitude, 1e-9)));
-    expect(back.latitude, closeTo(anchor.latitude, 1e-12));
-    expect(back.longitude, closeTo(anchor.longitude, 1e-12));
-  });
+      expect(moved.latitude, lessThan(10.0));
+    });
 
-  test('a diagonal drag moves both axes independently', () {
-    final at = anchor.resolve(anchor.origin + const Offset(-50, 25));
+    /// The awkward angle, where the old maths did not merely swap axes but
+    /// sent the point off at a wrong angle entirely.
+    test('splits the movement between both axes at 40°', () {
+      final moved = anchorAt(40).resolve(const Offset(0, -100));
 
-    expect(at.longitude, closeTo(anchor.longitude - 0.000455, 1e-9));
-    expect(at.latitude, closeTo(anchor.latitude - 0.000225, 1e-9));
+      expect(moved.latitude, greaterThan(10.0));
+      expect(moved.longitude, greaterThan(106.0));
+    });
+
+    /// However the map is turned, the finger and the point travel the same
+    /// distance — a rotation moves the ground under the finger, not further.
+    test('travels the same distance whatever the bearing', () {
+      double distance(double bearing) {
+        final moved = anchorAt(bearing).resolve(const Offset(60, -80));
+        final dLat = moved.latitude - 10.0;
+        final dLng = moved.longitude - 106.0;
+        return math.sqrt(dLat * dLat + dLng * dLng);
+      }
+
+      final north = distance(0);
+      for (final bearing in [37.0, 90.0, 145.0, 210.0, 315.0]) {
+        expect(distance(bearing), closeTo(north, 1e-12));
+      }
+    });
+
+    test('a finger that has not moved leaves the point where it was', () {
+      final moved = anchorAt(73).resolve(Offset.zero);
+
+      expect(moved.latitude, closeTo(10.0, 1e-12));
+      expect(moved.longitude, closeTo(106.0, 1e-12));
+    });
   });
 }

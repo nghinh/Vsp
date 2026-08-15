@@ -509,9 +509,20 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
         // Off while a point is being dragged, or the map slides away under the
         // finger and the point never moves.
         scrollGesturesEnabled: _draggingPointId == null,
-        // Rotating an aerial photo disorients more than it helps when the
-        // golfer is trying to match what is in front of them.
-        rotateGesturesEnabled: false,
+        // Rotatable, because a golfer standing on a tee wants the photograph
+        // turned to face the way they are. It was locked north-up on the
+        // reasoning that rotating an aerial photo disorients — which is true
+        // of rotating it by accident, and not of a golfer doing it on purpose
+        // to match what is in front of them.
+        //
+        // The compass is what makes it safe: MapLibre shows it as soon as the
+        // map is off north, and tapping it puts the map back. Rotation without
+        // a way home is what actually strands someone.
+        rotateGesturesEnabled: true,
+        compassEnabled: true,
+        // Tilt stays off. Turning an aerial photograph keeps every distance on
+        // the screen true; tipping it into perspective does not, and this view
+        // is the one a golfer measures with.
         tiltGesturesEnabled: false,
       ),
     );
@@ -623,27 +634,39 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
     unawaited(_calibrate(point, at));
   }
 
-  /// Works out degrees per logical pixel at this camera, once per drag.
+  /// Works out what a pixel of finger movement is worth, once per drag.
   ///
-  /// Two unprojections, 120 px apart, rather than trusting a tile-size
-  /// convention: whatever the plugin's zoom means, the ratio between two of
-  /// its own answers is right by construction.
+  /// Three unprojections rather than trusting a tile-size convention: whatever
+  /// the plugin's zoom means, the ratio between its own answers is right by
+  /// construction.
+  ///
+  /// The two probes are along each screen axis separately, and that is what
+  /// makes a rotated map work. The previous version probed once along the
+  /// diagonal and assigned the whole longitude change to x and the whole
+  /// latitude change to y — true only while the map points north. Turn it
+  /// forty degrees and a point dragged upward set off sideways.
+  ///
+  /// Measuring both axes gives all four terms, so no bearing has to be read or
+  /// trusted: the map is asked what it actually does with a horizontal pixel
+  /// and a vertical one, and any rotation is already inside the answer.
   Future<void> _calibrate(MeasurePoint point, Offset at) async {
     final controller = _controller;
     if (controller == null) return;
     const probe = 120.0;
-    final near = await _unproject(controller, at);
-    final far = await _unproject(controller, at + const Offset(probe, probe));
-    if (near == null || far == null || !mounted) return;
+    final origin = await _unproject(controller, at);
+    final alongX = await _unproject(controller, at + const Offset(probe, 0));
+    final alongY = await _unproject(controller, at + const Offset(0, probe));
+    if (origin == null || alongX == null || alongY == null || !mounted) return;
     if (_draggingPointId != point.id) return;
 
     _dragAnchor = DragAnchor(
       origin: at,
       latitude: point.position.latitude,
       longitude: point.position.longitude,
-      degreesPerPixelX: (far.longitude - near.longitude) / probe,
-      // Negative: screen y grows downward, latitude grows northward.
-      degreesPerPixelY: (far.latitude - near.latitude) / probe,
+      lngPerX: (alongX.longitude - origin.longitude) / probe,
+      latPerX: (alongX.latitude - origin.latitude) / probe,
+      lngPerY: (alongY.longitude - origin.longitude) / probe,
+      latPerY: (alongY.latitude - origin.latitude) / probe,
     );
   }
 
@@ -822,27 +845,43 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
 /// Valid only while the camera holds still, which it does during a drag —
 /// scroll and zoom gestures are off while a point is held.
 @visibleForTesting
+/// What a pixel of finger movement is worth, at one camera, in degrees.
+///
+/// Four terms rather than two, because a screen axis does not correspond to a
+/// compass axis once the map has been turned: moving the finger right on a map
+/// rotated forty degrees changes both longitude and latitude. Each term is
+/// measured from the map's own answers, so a rotation never has to be read —
+/// it is already in the numbers.
 class DragAnchor {
   final Offset origin;
   final double latitude;
   final double longitude;
-  final double degreesPerPixelX;
-  final double degreesPerPixelY;
+
+  /// Degrees per pixel of horizontal finger movement.
+  final double lngPerX;
+  final double latPerX;
+
+  /// Degrees per pixel of vertical finger movement. On a north-up map latPerY
+  /// is negative — screen y grows downward and latitude grows northward.
+  final double lngPerY;
+  final double latPerY;
 
   const DragAnchor({
     required this.origin,
     required this.latitude,
     required this.longitude,
-    required this.degreesPerPixelX,
-    required this.degreesPerPixelY,
+    required this.lngPerX,
+    required this.latPerX,
+    required this.lngPerY,
+    required this.latPerY,
   });
 
   /// Where a screen position sits, in degrees, without asking the map.
   vsp.LatLng resolve(Offset at) {
     final moved = at - origin;
     return vsp.LatLng(
-      latitude: latitude + moved.dy * degreesPerPixelY,
-      longitude: longitude + moved.dx * degreesPerPixelX,
+      latitude: latitude + moved.dx * latPerX + moved.dy * latPerY,
+      longitude: longitude + moved.dx * lngPerX + moved.dy * lngPerY,
     );
   }
 }

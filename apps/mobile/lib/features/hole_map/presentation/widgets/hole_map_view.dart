@@ -444,6 +444,18 @@ class _HoleMapViewState extends State<HoleMapView> {
           zoom: widget.state.holeMap.defaultZoom,
         ),
         myLocationEnabled: false,
+        // Rotatable, so a golfer can turn the hole to face the way they are
+        // standing. Stated rather than left to the default, because the
+        // measuring view beside it had this turned off and the two screens
+        // disagreeing about whether the map moves is worse than either
+        // choice.
+        rotateGesturesEnabled: true,
+        // The way back to north once it has been turned.
+        compassEnabled: true,
+        // Off, like the measuring view: a hole tipped into perspective no
+        // longer shows true distances, which is the one thing this screen is
+        // for.
+        tiltGesturesEnabled: false,
       ),
     );
   }
