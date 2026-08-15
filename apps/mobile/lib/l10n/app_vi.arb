@@ -1567,5 +1567,33 @@
         "type": "String"
       }
     }
-  }
+  },
+  "rangeModeTitle": "Đo cự ly ở sân tập",
+  "rangeModeIntro": "Chọn gậy, ghi từng cú carry khi bóng rơi. Trung bình sẽ thay cự ly tiêu chuẩn — từ đó gợi ý chọn gậy là của chính bạn.",
+  "rangeModeCarryLabel": "Carry ({unit})",
+  "@rangeModeCarryLabel": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeModeLog": "Ghi",
+  "rangeModeAverage": "Trung bình của {count} cú",
+  "@rangeModeAverage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rangeModeSave": "Lưu cho {club}",
+  "@rangeModeSave": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeModeOpen": "Đo ở sân tập"
 }

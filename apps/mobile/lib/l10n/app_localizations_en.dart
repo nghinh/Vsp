@@ -3873,4 +3873,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get caddieOpen => 'My caddie book';
+
+  @override
+  String get rangeModeTitle => 'Range session';
+
+  @override
+  String get rangeModeIntro =>
+      'Pick a club and log each carry as it lands. The average replaces the standard distance — club advice becomes yours.';
+
+  @override
+  String rangeModeCarryLabel(String unit) {
+    return 'Carry ($unit)';
+  }
+
+  @override
+  String get rangeModeLog => 'Log';
+
+  @override
+  String rangeModeAverage(int count) {
+    return 'Average of $count shots';
+  }
+
+  @override
+  String rangeModeSave(String club) {
+    return 'Save for $club';
+  }
+
+  @override
+  String get rangeModeOpen => 'Range session';
 }

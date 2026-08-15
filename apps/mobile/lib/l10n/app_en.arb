@@ -2547,5 +2547,33 @@
         "type": "String"
       }
     }
-  }
+  },
+  "rangeModeTitle": "Range session",
+  "rangeModeIntro": "Pick a club and log each carry as it lands. The average replaces the standard distance — club advice becomes yours.",
+  "rangeModeCarryLabel": "Carry ({unit})",
+  "@rangeModeCarryLabel": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeModeLog": "Log",
+  "rangeModeAverage": "Average of {count} shots",
+  "@rangeModeAverage": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rangeModeSave": "Save for {club}",
+  "@rangeModeSave": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "rangeModeOpen": "Range session"
 }

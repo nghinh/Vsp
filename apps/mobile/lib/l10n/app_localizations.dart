@@ -6847,6 +6847,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'My caddie book'**
   String get caddieOpen;
+
+  /// No description provided for @rangeModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Range session'**
+  String get rangeModeTitle;
+
+  /// No description provided for @rangeModeIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a club and log each carry as it lands. The average replaces the standard distance — club advice becomes yours.'**
+  String get rangeModeIntro;
+
+  /// No description provided for @rangeModeCarryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry ({unit})'**
+  String rangeModeCarryLabel(String unit);
+
+  /// No description provided for @rangeModeLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Log'**
+  String get rangeModeLog;
+
+  /// No description provided for @rangeModeAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average of {count} shots'**
+  String rangeModeAverage(int count);
+
+  /// No description provided for @rangeModeSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save for {club}'**
+  String rangeModeSave(String club);
+
+  /// No description provided for @rangeModeOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Range session'**
+  String get rangeModeOpen;
 }
 
 class _AppLocalizationsDelegate

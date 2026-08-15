@@ -3870,4 +3870,32 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get caddieOpen => 'Sổ caddie của tôi';
+
+  @override
+  String get rangeModeTitle => 'Đo cự ly ở sân tập';
+
+  @override
+  String get rangeModeIntro =>
+      'Chọn gậy, ghi từng cú carry khi bóng rơi. Trung bình sẽ thay cự ly tiêu chuẩn — từ đó gợi ý chọn gậy là của chính bạn.';
+
+  @override
+  String rangeModeCarryLabel(String unit) {
+    return 'Carry ($unit)';
+  }
+
+  @override
+  String get rangeModeLog => 'Ghi';
+
+  @override
+  String rangeModeAverage(int count) {
+    return 'Trung bình của $count cú';
+  }
+
+  @override
+  String rangeModeSave(String club) {
+    return 'Lưu cho $club';
+  }
+
+  @override
+  String get rangeModeOpen => 'Đo ở sân tập';
 }

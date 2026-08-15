@@ -18,6 +18,7 @@ import 'widgets/club_card.dart';
 import 'widgets/recommendations_disabled_banner.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/features/bag/presentation/range_mode_screen.dart';
 
 // ─── Screen ───────────────────────────────────────────────────────────────────
 
@@ -137,6 +138,36 @@ class _BagDetailBody extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          // Range mode: how a seeded standard distance becomes this golfer's
+          // own — measure it, and the default flag comes off on save.
+          IconButton(
+            key: const Key('bag_range_mode'),
+            icon: const Icon(Icons.straighten),
+            tooltip: AppLocalizations.of(context).rangeModeOpen,
+            onPressed: () async {
+              final changed = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => RangeModeScreen(
+                    bagId: bagId,
+                    clubs: bag.clubs,
+                    onSave: (clubId, carryMeters) async {
+                      context.read<BagBloc>().add(UpdateClub(
+                            bagId: bagId,
+                            clubId: clubId,
+                            request:
+                                UpdateClubRequest(carryDistance: carryMeters),
+                          ));
+                    },
+                  ),
+                ),
+              );
+              if (changed == true && context.mounted) {
+                context.read<BagBloc>().add(LoadBagDetail(bagId: bagId));
+              }
+            },
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
