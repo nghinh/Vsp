@@ -3958,4 +3958,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String ghostBest(int strokes) {
     return 'Best $strokes';
   }
+
+  @override
+  String get contributorTitle => 'Data contributors';
+
+  @override
+  String get contributorIntro =>
+      'Every stroke index in this app was photographed in a clubhouse and typed in by a golfer. No open dataset carries them.';
+
+  @override
+  String get contributorEmpty => 'No approved contributions yet.';
+
+  @override
+  String get contributorAll => 'See all';
+
+  @override
+  String contributorCredit(String names) {
+    return 'Course data contributed by $names';
+  }
+
+  @override
+  String contributorCounts(int cards, int courses) {
+    return '$cards approved cards · $courses courses';
+  }
 }

@@ -3955,4 +3955,27 @@ class AppLocalizationsVi extends AppLocalizations {
   String ghostBest(int strokes) {
     return 'Kỷ lục $strokes';
   }
+
+  @override
+  String get contributorTitle => 'Người đóng góp dữ liệu';
+
+  @override
+  String get contributorIntro =>
+      'Mọi chỉ số gậy trong app đều do người chơi chụp thẻ điểm ở clubhouse rồi nhập vào. Không có nguồn mở nào có dữ liệu này.';
+
+  @override
+  String get contributorEmpty => 'Chưa có đóng góp nào được duyệt.';
+
+  @override
+  String get contributorAll => 'Xem tất cả';
+
+  @override
+  String contributorCredit(String names) {
+    return 'Dữ liệu sân do $names đóng góp';
+  }
+
+  @override
+  String contributorCounts(int cards, int courses) {
+    return '$cards thẻ đã duyệt · $courses sân';
+  }
 }

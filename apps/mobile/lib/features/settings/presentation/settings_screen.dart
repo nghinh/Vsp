@@ -8,6 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/locale/locale_cubit.dart';
 import '../../../l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/contributors/contributors.dart';
 import 'credits_screen.dart';
 import 'telemetry_export_screen.dart';
 
@@ -40,6 +41,19 @@ class SettingsScreen extends StatelessWidget {
               ),
             ),
             _SectionHeader(title: l10n.settingsAbout),
+            // The people who photographed the cards this app runs on. Beside
+            // the licence credits, because it is the same kind of debt.
+            ListTile(
+              key: const Key('settings_contributors'),
+              leading: const Icon(Icons.volunteer_activism_outlined),
+              title: Text(l10n.contributorTitle),
+              subtitle: Text(l10n.contributorIntro, maxLines: 2),
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ContributorsScreen(),
+                ),
+              ),
+            ),
             ListTile(
               leading: const Icon(Icons.copyright_outlined),
               title: Text(l10n.creditsTitle),

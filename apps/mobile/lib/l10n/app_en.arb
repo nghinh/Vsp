@@ -2650,5 +2650,28 @@
         "type": "int"
       }
     }
+  },
+  "contributorTitle": "Data contributors",
+  "contributorIntro": "Every stroke index in this app was photographed in a clubhouse and typed in by a golfer. No open dataset carries them.",
+  "contributorEmpty": "No approved contributions yet.",
+  "contributorAll": "See all",
+  "contributorCredit": "Course data contributed by {names}",
+  "@contributorCredit": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "contributorCounts": "{cards} approved cards · {courses} courses",
+  "@contributorCounts": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      }
+    }
   }
 }

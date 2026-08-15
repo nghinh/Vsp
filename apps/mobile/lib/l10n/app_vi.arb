@@ -1670,5 +1670,28 @@
         "type": "int"
       }
     }
+  },
+  "contributorTitle": "Người đóng góp dữ liệu",
+  "contributorIntro": "Mọi chỉ số gậy trong app đều do người chơi chụp thẻ điểm ở clubhouse rồi nhập vào. Không có nguồn mở nào có dữ liệu này.",
+  "contributorEmpty": "Chưa có đóng góp nào được duyệt.",
+  "contributorAll": "Xem tất cả",
+  "contributorCredit": "Dữ liệu sân do {names} đóng góp",
+  "@contributorCredit": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "contributorCounts": "{cards} thẻ đã duyệt · {courses} sân",
+  "@contributorCounts": {
+    "placeholders": {
+      "cards": {
+        "type": "int"
+      },
+      "courses": {
+        "type": "int"
+      }
+    }
   }
 }

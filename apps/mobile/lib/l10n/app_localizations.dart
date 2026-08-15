@@ -6973,6 +6973,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Best {strokes}'**
   String ghostBest(int strokes);
+
+  /// No description provided for @contributorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data contributors'**
+  String get contributorTitle;
+
+  /// No description provided for @contributorIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Every stroke index in this app was photographed in a clubhouse and typed in by a golfer. No open dataset carries them.'**
+  String get contributorIntro;
+
+  /// No description provided for @contributorEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved contributions yet.'**
+  String get contributorEmpty;
+
+  /// No description provided for @contributorAll.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get contributorAll;
+
+  /// No description provided for @contributorCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data contributed by {names}'**
+  String contributorCredit(String names);
+
+  /// No description provided for @contributorCounts.
+  ///
+  /// In en, this message translates to:
+  /// **'{cards} approved cards · {courses} courses'**
+  String contributorCounts(int cards, int courses);
 }
 
 class _AppLocalizationsDelegate

@@ -38,6 +38,7 @@ import 'package:vsp_mobile/l10n/app_messages.dart';
 import '../../scorecard/presentation/scorecard_submit_screen.dart';
 import 'package:vsp_mobile/features/caddie/caddie_book.dart';
 import 'package:vsp_mobile/features/strategy/presentation/strategy_screen.dart';
+import 'package:vsp_mobile/features/contributors/contributors.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -346,6 +347,11 @@ class _LoadedBody extends StatelessWidget {
 
           // Data quality section
           SliverToBoxAdapter(child: DataQualitySection(course: course)),
+
+          // Whose clubhouse photograph this course's card came from.
+          SliverToBoxAdapter(
+            child: CourseCreditLine(courseId: course.courseId),
+          ),
 
           // The club's card. Stroke index is printed on it and held nowhere
           // else, so the golfer standing there with it is the only source the
