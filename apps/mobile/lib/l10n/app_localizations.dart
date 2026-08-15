@@ -7009,6 +7009,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{cards} approved cards · {courses} courses'**
   String contributorCounts(int cards, int courses);
+
+  /// No description provided for @roundSetupNearbyCourses.
+  ///
+  /// In en, this message translates to:
+  /// **'Courses near you'**
+  String get roundSetupNearbyCourses;
 }
 
 class _AppLocalizationsDelegate

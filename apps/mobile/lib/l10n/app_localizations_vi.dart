@@ -3978,4 +3978,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String contributorCounts(int cards, int courses) {
     return '$cards thẻ đã duyệt · $courses sân';
   }
+
+  @override
+  String get roundSetupNearbyCourses => 'Sân gần bạn';
 }

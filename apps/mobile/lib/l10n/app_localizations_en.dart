@@ -3981,4 +3981,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String contributorCounts(int cards, int courses) {
     return '$cards approved cards · $courses courses';
   }
+
+  @override
+  String get roundSetupNearbyCourses => 'Courses near you';
 }

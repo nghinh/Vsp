@@ -108,6 +108,9 @@ class RoundSetupScreen extends StatelessWidget {
           activeRoundGuard: activeRoundGuard,
           packageReadinessService: packageReadinessService,
           nearbyCourseService: nearbyCourseService,
+          // One fix, to put the course the golfer drove to at the top of the
+          // picker instead of whichever club sorts first alphabetically.
+          locationService: LocationServiceImpl(),
           roundSetupStore: roundSetupStore,
         )..add(
           LoadInitialData(
@@ -647,8 +650,9 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
   }
 
   bool get _searchable {
-    final total =
-        widget.state.nearbyCourses.length + widget.state.recentCourses.length;
+    final total = widget.state.allCourses.length +
+        widget.state.nearbyCourses.length +
+        widget.state.recentCourses.length;
     return total >= _CoursePickerSheet._searchableFrom;
   }
 
@@ -661,11 +665,19 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
     final nearby = widget.state.nearbyCourses
         .where((c) => VietnameseSearch.matches(c.courseName, text))
         .toList();
+    // A course already listed as nearby is not repeated in the catalogue —
+    // the same club twice, once with a distance and once without, reads as
+    // two different places.
+    final all = widget.state.catalogueBeyondNearby
+        .where((c) => VietnameseSearch.matches(c.courseName, text))
+        .toList();
     final recent = widget.state.recentCourses
         .where((c) => VietnameseSearch.matches(c.courseName, text))
         .toList();
-    final filteredOut =
-        _query.text.trim().isNotEmpty && nearby.isEmpty && recent.isEmpty;
+    final filteredOut = _query.text.trim().isNotEmpty &&
+        nearby.isEmpty &&
+        all.isEmpty &&
+        recent.isEmpty;
 
     // The keyboard is part of this sheet's layout now that it has a field in
     // it. Left alone, the sheet stays pinned to the bottom of the window and
@@ -729,21 +741,47 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // Where the golfer is standing, first. A round
+                        // starts at a course they drove to, so the list that
+                        // matters is the short one within reach — the whole
+                        // catalogue, alphabetical, sits under it.
                         if (nearby.isNotEmpty) ...[
                           Text(
-                            l10n.roundSetupCourses,
+                            l10n.roundSetupNearbyCourses,
                             style: theme.textTheme.labelLarge,
                           ),
                           const SizedBox(height: 8),
                           ...nearby.map(
                             (c) => ListTile(
-                              leading: const Icon(Icons.location_on),
+                              key: Key('picker_nearby_${c.courseId}'),
+                              leading: const Icon(Icons.near_me),
                               title: Text(c.courseName),
                               subtitle: c.distanceKm != null
                                   ? Text(
                                       AppLocalizations.of(context).roundSetupKmAway(c.distanceKm!.toStringAsFixed(1)),
                                     )
                                   : null,
+                              onTap: () => widget.onSelected(
+                                CourseSelected(
+                                  courseId: c.courseId,
+                                  courseName: c.courseName,
+                                  packageId: c.packageId,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (all.isNotEmpty) ...[
+                          Text(
+                            l10n.roundSetupCourses,
+                            style: theme.textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 8),
+                          ...all.map(
+                            (c) => ListTile(
+                              leading: const Icon(Icons.location_on),
+                              title: Text(c.courseName),
                               onTap: () => widget.onSelected(
                                 CourseSelected(
                                   courseId: c.courseId,
@@ -790,6 +828,7 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                         if (filteredOut)
                           _PickerNotice(title: l10n.courseSearchNoResults)
                         else if (widget.state.nearbyCourses.isEmpty &&
+                            widget.state.allCourses.isEmpty &&
                             widget.state.recentCourses.isEmpty)
                           _PickerNotice(title: l10n.roundSetupNoCoursesYet),
                       ],

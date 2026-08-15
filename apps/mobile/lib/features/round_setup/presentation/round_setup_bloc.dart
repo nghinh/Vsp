@@ -27,6 +27,8 @@ import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
 import '../../../data/services/package_readiness_service.dart';
 import '../../../data/services/nearby_course_service.dart';
+import '../../../domain/services/location_service.dart';
+import '../../../domain/models/qualified_location.dart';
 import '../../../domain/models/round.dart';
 import '../../../domain/models/round_config.dart';
 import '../../../domain/models/round_format.dart';
@@ -74,6 +76,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   final ActiveRoundGuard _activeRoundGuard;
   final PackageReadinessService _packageReadinessService;
   final NearbyCourseService _nearbyCourseService;
+
+  /// Asked for one fix, once, to suggest the courses the golfer can see from
+  /// where they are standing. Null where no service was supplied — the picker
+  /// then shows the catalogue, which is what it always showed.
+  final LocationService? _locationService;
   final RoundSetupStore _roundSetupStore;
   final CourseSearchApi _courseSearchApi;
   final CourseDetailApi _courseDetailApi;
@@ -89,6 +96,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     required ActiveRoundGuard activeRoundGuard,
     required PackageReadinessService packageReadinessService,
     required NearbyCourseService nearbyCourseService,
+    LocationService? locationService,
     required RoundSetupStore roundSetupStore,
     CourseSearchApi? courseSearchApi,
     CourseDetailApi? courseDetailApi,
@@ -102,6 +110,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
        _activeRoundGuard = activeRoundGuard,
        _packageReadinessService = packageReadinessService,
        _nearbyCourseService = nearbyCourseService,
+       _locationService = locationService,
        _roundSetupStore = roundSetupStore,
        _courseSearchApi =
            courseSearchApi ?? CourseSearchApi(apiClient: ApiClient()),
@@ -152,8 +161,9 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       // Get suggested start hole based on time of day
       final suggestedHole = RoundSetupReady.suggestedStartHole();
 
-      // Load the course catalogue so the picker always has options, even
-      // without GPS. Distance is filled in when the result carries it.
+      // The catalogue, so the picker always has something to show — no GPS,
+      // no permission, nothing within reach. Alphabetical, and labelled as
+      // such: what it is not is a list of courses near anybody.
       List<NearbyCourseSuggestion> availableCourses = const [];
       try {
         final page = await _courseSearchApi.searchCourses(
@@ -198,10 +208,15 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           activeBag: activeBag,
           selectedBagId: activeBag?.id,
           startHole: suggestedHole,
-          nearbyCourses: availableCourses,
+          allCourses: availableCourses,
           recentCourses: recentCourses,
         ),
       );
+
+      // The golfer is usually standing at, or driving to, the course they are
+      // about to play. Asked for after Ready is emitted, never before: a GPS
+      // fix takes seconds it would otherwise take from the whole screen.
+      unawaited(_suggestNearby());
 
       // Pre-select the course passed in (e.g. from the course-detail CTA) now
       // that the Ready state exists — dispatching here avoids the race where a
@@ -579,6 +594,49 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   }
 
   // ─── Nearby Courses ──────────────────────────────────────────────────────────
+
+  /// One fix, one query, and whatever comes back is a suggestion.
+  ///
+  /// Every failure here is silent and ordinary: permission refused, location
+  /// off, indoors with no sky, or simply no course within the radius. The
+  /// picker already works without it.
+  Future<void> _suggestNearby() async {
+    final location = _locationService;
+    if (location == null) return;
+    try {
+      final fix = await location
+          .getCurrentLocation()
+          .timeout(const Duration(seconds: 8));
+      if (fix.source == LocationSource.unavailable) return;
+
+      final page = await _courseSearchApi.findNearbyCourses(
+        latitude: fix.latitude,
+        longitude: fix.longitude,
+        // Wide enough to cover the drive a golfer makes to play — Hanoi's
+        // courses are an hour out — and narrow enough that "near you" still
+        // means something.
+        radiusMeters: 60000,
+        size: 10,
+      );
+      if (isClosed) return;
+      add(NearbyCoursesLoaded(
+        page.content
+            .map((c) => NearbyCourseSuggestion(
+                  courseId: c.courseId,
+                  courseName: c.courseName ?? c.facilityName,
+                  latitude: c.latitude,
+                  longitude: c.longitude,
+                  distanceKm: c.distanceMeters == null
+                      ? null
+                      : c.distanceMeters! / 1000,
+                  packageId: null,
+                ))
+            .toList(),
+      ));
+    } catch (_) {
+      // No fix, no permission, no network, no courses. All the same answer.
+    }
+  }
 
   Future<void> _onNearbyCoursesLoaded(
     NearbyCoursesLoaded event,

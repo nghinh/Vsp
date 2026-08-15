@@ -116,8 +116,18 @@ class RoundSetupReady extends RoundSetupState {
   // Tournament policy
   final String? tournamentPolicyId;
 
-  // Nearby suggestions
+  /// Courses within reach of the golfer's current position, nearest first.
+  ///
+  /// Genuinely nearby: these come from a GPS fix and the server's ST_DWithin
+  /// query, and each carries the distance it is away. Empty where there is no
+  /// fix, no permission, or nothing within the radius — all of which are
+  /// ordinary, and none of which stops the picker working.
   final List<NearbyCourseSuggestion> nearbyCourses;
+
+  /// The catalogue, alphabetically. What the picker falls back to, and what
+  /// it showed under a "nearby" heading before any of it was near anything.
+  final List<NearbyCourseSuggestion> allCourses;
+
   final List<RecentCourseSuggestion> recentCourses;
 
   // Validation
@@ -151,11 +161,22 @@ class RoundSetupReady extends RoundSetupState {
     this.warningAcknowledged = false,
     this.tournamentPolicyId,
     this.nearbyCourses = const [],
+    this.allCourses = const [],
     this.recentCourses = const [],
     this.validationErrors = const [],
     this.holePars = const {},
     this.isSubmitting = false,
   });
+
+  /// The catalogue, minus every course already listed as nearby.
+  ///
+  /// The picker draws nearby first and the catalogue under it. A club in both
+  /// lists appears twice — once with a distance, once without — which reads
+  /// as two different places rather than one listed twice.
+  List<NearbyCourseSuggestion> get catalogueBeyondNearby {
+    final near = nearbyCourses.map((c) => c.courseId).toSet();
+    return allCourses.where((c) => !near.contains(c.courseId)).toList();
+  }
 
   /// True if a course is selected.
   bool get hasCourse => courseId != null && courseName != null;
@@ -217,6 +238,7 @@ class RoundSetupReady extends RoundSetupState {
     bool? warningAcknowledged,
     String? tournamentPolicyId,
     List<NearbyCourseSuggestion>? nearbyCourses,
+    List<NearbyCourseSuggestion>? allCourses,
     List<RecentCourseSuggestion>? recentCourses,
     List<String>? validationErrors,
     Map<int, int>? holePars,
@@ -245,6 +267,7 @@ class RoundSetupReady extends RoundSetupState {
       warningAcknowledged: warningAcknowledged ?? this.warningAcknowledged,
       tournamentPolicyId: tournamentPolicyId ?? this.tournamentPolicyId,
       nearbyCourses: nearbyCourses ?? this.nearbyCourses,
+      allCourses: allCourses ?? this.allCourses,
       recentCourses: recentCourses ?? this.recentCourses,
       validationErrors: validationErrors ?? this.validationErrors,
       holePars: holePars ?? this.holePars,
@@ -274,6 +297,7 @@ class RoundSetupReady extends RoundSetupState {
     warningAcknowledged,
     tournamentPolicyId,
     nearbyCourses,
+    allCourses,
     recentCourses,
     validationErrors,
     holePars,
