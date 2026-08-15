@@ -184,15 +184,21 @@ void main() {
       },
     );
 
+    /// Back from the first hole wraps to the last, forward from the last
+    /// wraps to the first — asked for directly, and the way a golfer flicks
+    /// through a card. This test asserted the old dead end.
     blocTest<ScorecardCubit, ScorecardScreenState>(
-      'navigateToPreviousHole does nothing at first hole',
+      'navigateToPreviousHole wraps from the first hole to the last',
       build: buildCubit,
       act: (cubit) => cubit.navigateToPreviousHole(),
-      expect: () => [], // No state change
+      verify: (cubit) {
+        expect(cubit.state.currentHoleIndex, 17);
+        expect(cubit.state.currentHoleNumber, 18);
+      },
     );
 
     blocTest<ScorecardCubit, ScorecardScreenState>(
-      'navigateToNextHole does nothing at last hole',
+      'the eighteenth hole is the last one, and forward from it wraps',
       build: buildCubit,
       act: (cubit) {
         // Navigate to last hole
@@ -204,6 +210,21 @@ void main() {
         expect(cubit.state.currentHoleIndex, 17);
         expect(cubit.state.canGoForward, false);
         expect(cubit.state.isLastHole, true);
+      },
+    );
+
+    /// One more step from the eighteenth comes back round to the first tee.
+    blocTest<ScorecardCubit, ScorecardScreenState>(
+      'navigateToNextHole wraps from the last hole to the first',
+      build: buildCubit,
+      act: (cubit) {
+        for (int i = 0; i < 18; i++) {
+          cubit.navigateToNextHole();
+        }
+      },
+      verify: (cubit) {
+        expect(cubit.state.currentHoleIndex, 0);
+        expect(cubit.state.currentHoleNumber, 1);
       },
     );
 
