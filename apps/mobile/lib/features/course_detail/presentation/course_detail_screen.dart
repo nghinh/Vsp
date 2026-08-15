@@ -37,6 +37,7 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import '../../scorecard/presentation/scorecard_submit_screen.dart';
 import 'package:vsp_mobile/features/caddie/caddie_book.dart';
+import 'package:vsp_mobile/features/strategy/presentation/strategy_screen.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -258,6 +259,19 @@ class _LoadedBody extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             actions: [
+              // The caddie's pencilled page: 18 rows of shots received, net
+              // par and club picks, built for this golfer, shareable as one
+              // image.
+              IconButton(
+                key: const Key('course_detail_strategy_action'),
+                icon: const Icon(Icons.menu_book_outlined),
+                tooltip: AppLocalizations.of(context).strategyOpen,
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => StrategyScreen(courseId: course.courseId),
+                  ),
+                ),
+              ),
               // Caddie book: Vietnamese courses require a caddie and golfers
               // ask for good ones back by number — this is where that number
               // is looked up before the round.

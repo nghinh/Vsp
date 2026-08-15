@@ -3901,4 +3901,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get rangeModeOpen => 'Range session';
+
+  @override
+  String get strategyTitle => 'Strategy book';
+
+  @override
+  String get strategyOpen => '18-hole strategy book';
+
+  @override
+  String get strategyShare => 'Share image';
+
+  @override
+  String get strategyFailed => 'Could not load the strategy book.';
+
+  @override
+  String get strategyNoHandicap =>
+      'No handicap yet — record 3 rounds in the app to get stroke allocation.';
+
+  @override
+  String strategyHandicap(String handicap) {
+    return 'Strokes allocated off handicap $handicap';
+  }
+
+  @override
+  String strategyTotals(int strokes, int netPar) {
+    return '$strokes strokes received · your personal par $netPar';
+  }
+
+  @override
+  String strategyHistory(String average, String best) {
+    return 'Avg $average · best $best';
+  }
 }

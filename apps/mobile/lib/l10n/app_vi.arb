@@ -1595,5 +1595,40 @@
       }
     }
   },
-  "rangeModeOpen": "Đo ở sân tập"
+  "rangeModeOpen": "Đo ở sân tập",
+  "strategyTitle": "Sổ chiến thuật",
+  "strategyOpen": "Sổ chiến thuật 18 hố",
+  "strategyShare": "Chia sẻ ảnh",
+  "strategyFailed": "Không tải được sổ chiến thuật.",
+  "strategyNoHandicap": "Chưa có handicap — ghi đủ 3 vòng trong app để được chia gậy.",
+  "strategyHandicap": "Chia gậy theo handicap {handicap}",
+  "@strategyHandicap": {
+    "placeholders": {
+      "handicap": {
+        "type": "String"
+      }
+    }
+  },
+  "strategyTotals": "Được {strokes} gậy chấp · par thực tế của bạn {netPar}",
+  "@strategyTotals": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "netPar": {
+        "type": "int"
+      }
+    }
+  },
+  "strategyHistory": "TB {average} · tốt nhất {best}",
+  "@strategyHistory": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "String"
+      }
+    }
+  }
 }

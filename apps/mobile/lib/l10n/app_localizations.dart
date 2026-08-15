@@ -6889,6 +6889,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Range session'**
   String get rangeModeOpen;
+
+  /// No description provided for @strategyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Strategy book'**
+  String get strategyTitle;
+
+  /// No description provided for @strategyOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'18-hole strategy book'**
+  String get strategyOpen;
+
+  /// No description provided for @strategyShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share image'**
+  String get strategyShare;
+
+  /// No description provided for @strategyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the strategy book.'**
+  String get strategyFailed;
+
+  /// No description provided for @strategyNoHandicap.
+  ///
+  /// In en, this message translates to:
+  /// **'No handicap yet — record 3 rounds in the app to get stroke allocation.'**
+  String get strategyNoHandicap;
+
+  /// No description provided for @strategyHandicap.
+  ///
+  /// In en, this message translates to:
+  /// **'Strokes allocated off handicap {handicap}'**
+  String strategyHandicap(String handicap);
+
+  /// No description provided for @strategyTotals.
+  ///
+  /// In en, this message translates to:
+  /// **'{strokes} strokes received · your personal par {netPar}'**
+  String strategyTotals(int strokes, int netPar);
+
+  /// No description provided for @strategyHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg {average} · best {best}'**
+  String strategyHistory(String average, String best);
 }
 
 class _AppLocalizationsDelegate

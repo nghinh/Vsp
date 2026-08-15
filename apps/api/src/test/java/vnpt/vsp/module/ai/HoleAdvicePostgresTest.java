@@ -145,4 +145,27 @@ class HoleAdvicePostgresTest {
         assertThat(advice.bestStrokes()).isNull();
     }
 
+    /// The whole-card page runs the same queries in a loop; this proves the
+    /// loop finds the holes that exist rather than probing numbers that
+    /// don't, and that a golfer with nothing on record still gets a page.
+    @Test
+    @DisplayName("the strategy page answers off the same rows")
+    void strategyAnswersForTheCourse() {
+        var page = service.strategy(courseId, null, null, 999_999L);
+
+        assertThat(page.courseName()).isEqualTo("Hole advice probe course");
+        assertThat(page.backNineCourseName()).isNull();
+        assertThat(page.holes()).hasSize(1);
+        var row = page.holes().get(0);
+        assertThat(row.displayHole()).isEqualTo(7);
+        assertThat(row.par()).isEqualTo(4);
+        assertThat(row.roundsPlayed()).isZero();
+    }
+
+    @Test
+    @DisplayName("a course with no holes is a course-not-found, not an empty page")
+    void refusesACourseWithNoHoles() {
+        assertThatThrownBy(() -> service.strategy(999_999_999L, null, null, 1L))
+                .isInstanceOf(VspApiException.class);
+    }
 }

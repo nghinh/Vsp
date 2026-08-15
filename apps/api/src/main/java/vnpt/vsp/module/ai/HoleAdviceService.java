@@ -129,6 +129,99 @@ public class HoleAdviceService {
                 clubsAreStandard, advice, false);
     }
 
+    /**
+     * The whole card at once — the same facts {@link #advise} computes per
+     * hole, for every hole, with no model call.
+     *
+     * <p>A golfer reads this in the cart before the round, not standing on a
+     * tee, so it is the arithmetic that matters: where their shots land on
+     * the index, what their personal par is, which club covers each distance.
+     * Eighteen model sentences would cost real money per open and say less
+     * than the numbers do.
+     *
+     * <p>{@code backNineCourseId} names the second nine when the round is
+     * two nines from different courses — its holes are renumbered 10–18 the
+     * way {@code Round.resolveHole} does.
+     */
+    @Transactional(readOnly = true)
+    public vnpt.vsp.module.ai.dto.CourseStrategyResponse strategy(
+            Long courseId, Long backNineCourseId, String teeName, Long golferId) {
+
+        Golfer golfer = golfer(golferId);
+        List<Club> bag = bag(golferId);
+        BigDecimal handicap = golfer == null ? null : golfer.handicap;
+        if (handicap == null) {
+            handicap = appHandicapService.compute(golferId).handicap();
+        }
+        boolean clubsAreStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
+
+        var holes = new ArrayList<vnpt.vsp.module.ai.dto.CourseStrategyResponse.StrategyHole>();
+        Integer strokesTotal = null;
+        Integer netParTotal = null;
+
+        record Nine(Long courseId, int offset) {}
+        var nines = backNineCourseId == null
+                ? List.of(new Nine(courseId, 0))
+                : List.of(new Nine(courseId, 0), new Nine(backNineCourseId, 9));
+
+        // The allocation runs over the holes actually played: two nines make
+        // an 18-hole card, a single course stands on its own count.
+        int holesPlayed = backNineCourseId != null ? 18 : holesCount(courseId);
+
+        for (Nine nine : nines) {
+            for (int number : holeNumbers(nine.courseId())) {
+                Hole hole = hole(nine.courseId(), number, teeName);
+                if (hole == null) {
+                    continue;
+                }
+                History history = history(nine.courseId(), number, golferId);
+                Integer strokes = strokesReceived(handicap, hole.strokeIndex, holesPlayed);
+                Integer netPar = strokes == null ? null : hole.par + strokes;
+                if (strokes != null) {
+                    strokesTotal = (strokesTotal == null ? 0 : strokesTotal) + strokes;
+                    netParTotal = (netParTotal == null ? 0 : netParTotal) + netPar;
+                }
+                holes.add(new vnpt.vsp.module.ai.dto.CourseStrategyResponse.StrategyHole(
+                        nine.offset() + number, hole.par, hole.strokeIndex,
+                        hole.yards, hole.meters, strokes, netPar,
+                        history.rounds, history.average, history.best,
+                        clubs(hole, bag)));
+            }
+        }
+        if (holes.isEmpty()) {
+            throw new VspApiException(VspErrorCode.COURSE_001);
+        }
+
+        return new vnpt.vsp.module.ai.dto.CourseStrategyResponse(
+                courseName(courseId),
+                backNineCourseId == null ? null : courseName(backNineCourseId),
+                handicap, clubsAreStandard, strokesTotal, netParTotal, holes);
+    }
+
+    private String courseName(Long courseId) {
+        var rows = em.createNativeQuery("SELECT name FROM courses WHERE id = :id")
+                .setParameter("id", courseId).getResultList();
+        return rows.isEmpty() ? null : (String) rows.get(0);
+    }
+
+    private List<Integer> holeNumbers(Long courseId) {
+        var rows = em.createNativeQuery("""
+                SELECT hole_number FROM holes
+                WHERE course_id = :id ORDER BY hole_number
+                """).setParameter("id", courseId).getResultList();
+        var numbers = new ArrayList<Integer>();
+        for (Object row : rows) {
+            numbers.add(((Number) row).intValue());
+        }
+        return numbers;
+    }
+
+    private int holesCount(Long courseId) {
+        var rows = em.createNativeQuery("SELECT holes_count FROM courses WHERE id = :id")
+                .setParameter("id", courseId).getResultList();
+        return rows.isEmpty() || rows.get(0) == null ? 18 : ((Number) rows.get(0)).intValue();
+    }
+
     private HoleAdviceResponse response(
             Hole hole, History history, Integer strokes, BigDecimal handicap,
             Integer netPar, List<HoleAdviceResponse.ClubForShot> clubs,

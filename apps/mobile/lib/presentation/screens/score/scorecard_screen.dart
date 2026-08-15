@@ -54,6 +54,7 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/features/games/domain/games_engine.dart';
 import 'package:vsp_mobile/features/games/presentation/games_sheet.dart';
+import 'package:vsp_mobile/features/strategy/presentation/strategy_screen.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -583,6 +584,20 @@ class _ScorecardScreenContent extends StatelessWidget {
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [
+              if (int.tryParse(courseId ?? '') != null)
+                IconButton(
+                  key: const Key('scorecard_strategy'),
+                  icon: const Icon(Icons.menu_book_outlined),
+                  tooltip: AppLocalizations.of(context).strategyOpen,
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => StrategyScreen(
+                        courseId: int.parse(courseId!),
+                        backNineCourseId: int.tryParse(backNineCourseId ?? ''),
+                      ),
+                    ),
+                  ),
+                ),
               IconButton(
                 key: const Key('scorecard_games'),
                 icon: const Icon(Icons.payments_outlined),

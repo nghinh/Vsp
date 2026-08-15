@@ -3898,4 +3898,35 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get rangeModeOpen => 'Đo ở sân tập';
+
+  @override
+  String get strategyTitle => 'Sổ chiến thuật';
+
+  @override
+  String get strategyOpen => 'Sổ chiến thuật 18 hố';
+
+  @override
+  String get strategyShare => 'Chia sẻ ảnh';
+
+  @override
+  String get strategyFailed => 'Không tải được sổ chiến thuật.';
+
+  @override
+  String get strategyNoHandicap =>
+      'Chưa có handicap — ghi đủ 3 vòng trong app để được chia gậy.';
+
+  @override
+  String strategyHandicap(String handicap) {
+    return 'Chia gậy theo handicap $handicap';
+  }
+
+  @override
+  String strategyTotals(int strokes, int netPar) {
+    return 'Được $strokes gậy chấp · par thực tế của bạn $netPar';
+  }
+
+  @override
+  String strategyHistory(String average, String best) {
+    return 'TB $average · tốt nhất $best';
+  }
 }

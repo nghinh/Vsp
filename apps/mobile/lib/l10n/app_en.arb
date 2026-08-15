@@ -2575,5 +2575,40 @@
       }
     }
   },
-  "rangeModeOpen": "Range session"
+  "rangeModeOpen": "Range session",
+  "strategyTitle": "Strategy book",
+  "strategyOpen": "18-hole strategy book",
+  "strategyShare": "Share image",
+  "strategyFailed": "Could not load the strategy book.",
+  "strategyNoHandicap": "No handicap yet — record 3 rounds in the app to get stroke allocation.",
+  "strategyHandicap": "Strokes allocated off handicap {handicap}",
+  "@strategyHandicap": {
+    "placeholders": {
+      "handicap": {
+        "type": "String"
+      }
+    }
+  },
+  "strategyTotals": "{strokes} strokes received · your personal par {netPar}",
+  "@strategyTotals": {
+    "placeholders": {
+      "strokes": {
+        "type": "int"
+      },
+      "netPar": {
+        "type": "int"
+      }
+    }
+  },
+  "strategyHistory": "Avg {average} · best {best}",
+  "@strategyHistory": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "String"
+      }
+    }
+  }
 }
