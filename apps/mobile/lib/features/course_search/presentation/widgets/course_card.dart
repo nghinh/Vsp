@@ -83,9 +83,9 @@ class CourseCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Course name
+                        // The club, because that is what was searched for.
                         Text(
-                          course.displayName,
+                          course.clubName,
                           style:
                               (compact
                                       ? theme.textTheme.titleSmall
@@ -94,6 +94,21 @@ class CourseCard extends StatelessWidget {
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        // And which đường of it, where the club has named ones.
+                        // Three results reading only "Đường A", "Đường B",
+                        // "Đường C" is a search that looks like it failed.
+                        if (course.unitName != null) ...[
+                          const SizedBox(height: VspSpacing.half),
+                          Text(
+                            course.unitName!,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                         if (!compact && course.address != null) ...[
                           const SizedBox(height: VspSpacing.half),
                           Text(

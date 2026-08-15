@@ -109,7 +109,36 @@ class CourseSearchResult extends Equatable {
   };
 
   /// Display name — prefers courseName, falls back to facilityName.
+  /// What this course is called — the đường, or the club where it has no name
+  /// of its own.
+  ///
+  /// This is the course's own identity: the name a round is recorded against
+  /// and the name the tee picker offers. It is deliberately not what the search
+  /// card leads with; see [clubName].
   String get displayName => courseName ?? facilityName;
+
+  /// The club, which is what a golfer typed into the search box.
+  ///
+  /// The card used to lead with [displayName], which was fine while every
+  /// facility held one course called "<club> — Championship" and the club's
+  /// name sat inside the course's. Loading the real đường broke it: searching
+  /// "Long Biên" returned three cards reading "Đường A", "Đường B" and "Đường
+  /// C", with the club's name nowhere on the screen — a search that worked and
+  /// looked like it had failed.
+  String get clubName => facilityName;
+
+  /// Which đường, where the club has more than one and they are named.
+  ///
+  /// Null when the course is the club under another spelling — a facility with
+  /// one course called "<club> — Championship" would otherwise print the club's
+  /// name twice, once in each line.
+  String? get unitName {
+    final name = courseName;
+    if (name == null || name.trim().isEmpty) {
+      return null;
+    }
+    return name.contains('—') || name == facilityName ? null : name;
+  }
 
   /// How far the golfer is from the course, in their own unit.
   ///
