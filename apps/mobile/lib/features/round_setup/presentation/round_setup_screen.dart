@@ -192,6 +192,13 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
           // so rather than being handed an id that resolves to nothing.
           packageId: ready.packageId,
           courseId: '$courseId',
+          // The second đường, where the golfer paired two nines. The picker
+          // and the bloc have held this all along; it just never reached the
+          // round, so holes 10 to 18 belonged to no course and the map and
+          // the advice both said so in their own words.
+          backNineCourseId: ready.selectedSecondLayoutId == null
+              ? null
+              : '${ready.selectedSecondLayoutId}',
           courseName: courseName,
           holeNumber: ready.startHole,
           // Real par for the starting hole, or null when the course detail

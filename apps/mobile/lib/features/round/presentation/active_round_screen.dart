@@ -93,6 +93,14 @@ class ActiveRoundScreen extends StatefulWidget {
   /// Course ID within the package.
   final String courseId;
 
+  /// The second nine, where the round is composed of two đường.
+  ///
+  /// Long Biên is A, B and C at nine holes each, so an eighteen there is two of
+  /// them. Without this the round was bound to nine holes and played eighteen:
+  /// holes 10 to 18 belonged to no course, the map had no survey for any of
+  /// them and hole advice answered 404.
+  final String? backNineCourseId;
+
   /// Human-readable course name.
   final String courseName;
 
@@ -177,6 +185,7 @@ class ActiveRoundScreen extends StatefulWidget {
     required this.roundId,
     this.packageId,
     required this.courseId,
+    this.backNineCourseId,
     required this.courseName,
     required this.holeNumber,
     this.par,
@@ -229,6 +238,19 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
   /// whole round — on a database where nearly every hole falls back to
   /// measuring, that is the round's only distance tool, on one hole out of 18.
   late int _currentHoleNumber = widget.holeNumber;
+
+  /// Which course holds a hole of this round, and its number there.
+  ///
+  /// Hole 10 of a round made of two nines is hole 1 of the back nine — the
+  /// same translation the server does in Round.resolveHole, on the side that
+  /// has to ask for the data.
+  String _courseForHole(int hole) =>
+      widget.backNineCourseId != null && hole > 9
+          ? widget.backNineCourseId!
+          : widget.courseId;
+
+  int _holeOnItsCourse(int hole) =>
+      widget.backNineCourseId != null && hole > 9 ? hole - 9 : hole;
 
   /// Hole numbers in play order, taken from the round's own hole ids.
   ///
@@ -548,10 +570,19 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             ActiveRoundTab.map,
             (_) => _MapTab(
               packageId: widget.packageId,
-              courseId: widget.courseId,
+              // The course that holds this hole, and its number there; the
+              // header still shows the round's own number.
+              courseId: _courseForHole(_currentHoleNumber),
+              displayHoleOffset:
+                  _currentHoleNumber - _holeOnItsCourse(_currentHoleNumber),
               courseName: widget.courseName,
-              holeNumber: _currentHoleNumber,
-              holeNumbers: _holeNumbers,
+              holeNumber: _holeOnItsCourse(_currentHoleNumber),
+              holeNumbers: widget.backNineCourseId == null
+                  ? _holeNumbers
+                  : _holeNumbers
+                      .map(_holeOnItsCourse)
+                      .toSet()
+                      .toList(),
               locationService: widget.locationService,
               imageryConfig: widget.imageryConfig,
               onHoleChanged: _onHoleChanged,
@@ -595,8 +626,12 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
 
           // More tab — with correction submission entry point
           _MoreTab(
-            courseId: widget.courseId,
-            holeNumber: _currentHoleNumber,
+            // The course that actually holds this hole, and its number there:
+            // hole 10 of a two-nine round is hole 1 of the back nine, and
+            // asking for hole 10 of a nine-hole đường is the 404 the sheet
+            // reported as "không tải được thông tin hố này".
+            courseId: _courseForHole(_currentHoleNumber),
+            holeNumber: _holeOnItsCourse(_currentHoleNumber),
             // Null rather than the hole number when the package cannot tell us
             // the real id: a correction with no hole attached can still be
             // placed by its coordinates, one attached to the wrong hole cannot.
@@ -628,6 +663,11 @@ class _MapTab extends StatelessWidget {
   final String courseName;
   final int holeNumber;
 
+  /// Added to a hole's number for display only. A round made of two nines asks
+  /// the map for hole 1 of the back nine while the golfer is standing on the
+  /// round's 10th; see [HoleMapScreen].
+  final int displayHoleOffset;
+
   /// Holes in play order, so the map header can step through the round.
   final List<int> holeNumbers;
 
@@ -641,6 +681,7 @@ class _MapTab extends StatelessWidget {
   final ValueChanged<int> onHoleChanged;
 
   const _MapTab({
+    this.displayHoleOffset = 0,
     required this.packageId,
     required this.courseId,
     required this.courseName,
@@ -656,6 +697,7 @@ class _MapTab extends StatelessWidget {
     return HoleMapScreen(
       packageId: packageId,
       courseId: courseId,
+      displayHoleOffset: displayHoleOffset,
       courseName: courseName,
       holeNumber: holeNumber,
       holeNumbers: holeNumbers,

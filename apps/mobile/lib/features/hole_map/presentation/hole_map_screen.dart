@@ -45,6 +45,15 @@ class HoleMapScreen extends StatelessWidget {
   /// back-nine round steps 10→11 rather than 10→2.
   final List<int> holeNumbers;
 
+  /// Added to a hole's number for display only.
+  ///
+  /// A round made of two nines asks this screen for hole 1 of the back nine
+  /// and the golfer is standing on the round's 10th. The data has to be
+  /// fetched by the number the course knows; the header has to show the number
+  /// the golfer is playing, or the map and the scorecard disagree about where
+  /// they are.
+  final int displayHoleOffset;
+
   /// GPS source for the satellite measuring tool. Optional.
   final LocationService? locationService;
 
@@ -74,6 +83,7 @@ class HoleMapScreen extends StatelessWidget {
     required this.courseName,
     required this.holeNumber,
     this.holeNumbers = const [],
+    this.displayHoleOffset = 0,
     this.locationService,
     this.distanceUnit,
     this.imageryConfig,
@@ -98,6 +108,7 @@ class HoleMapScreen extends StatelessWidget {
                 courseId: courseId,
                 holeNumber: holeNumber,
                 holeNumbers: holeNumbers,
+                displayHoleOffset: displayHoleOffset,
                 locationService: locationService,
                 distanceUnit: distanceUnit,
                 imageryConfig: imageryConfig,
@@ -205,6 +216,10 @@ class _HoleMapBody extends StatelessWidget {
 
   final int holeNumber;
   final List<int> holeNumbers;
+
+  /// Added to a hole's number for display only; see [HoleMapScreen].
+  final int displayHoleOffset;
+
   final LocationService? locationService;
   final DistanceUnit? distanceUnit;
   final SatelliteImageryConfig? imageryConfig;
@@ -217,6 +232,7 @@ class _HoleMapBody extends StatelessWidget {
     required this.courseId,
     required this.holeNumber,
     required this.holeNumbers,
+    this.displayHoleOffset = 0,
     this.locationService,
     this.distanceUnit,
     this.imageryConfig,
@@ -236,7 +252,7 @@ class _HoleMapBody extends StatelessWidget {
           children: [
             _HoleHeader(
               courseName: _courseNameOf(state) ?? courseName,
-              holeNumber: hole,
+              holeNumber: hole + displayHoleOffset,
               par: state is HoleMapReady ? state.holeMap.par : null,
               lengthMeters: state is HoleMapReady
                   ? state.holeMap.yardage
