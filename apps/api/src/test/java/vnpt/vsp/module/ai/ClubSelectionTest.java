@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ClubSelectionTest {
 
     private final HoleAdviceService service = new HoleAdviceService(
-            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper());
+            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper(), null);
 
     @SuppressWarnings("unchecked")
     private List<HoleAdviceResponse.ClubForShot> plan(int par, int metres, Object bag)

@@ -68,7 +68,8 @@ class HoleAdvicePostgresTest {
                 em,
                 new LlmGateway(new ObjectMapper(), "", "", ""),
                 null,
-                new ObjectMapper());
+                new ObjectMapper(),
+                new vnpt.vsp.module.profile.AppHandicapService(em));
 
         GolfFacility facility = new GolfFacility();
         facility.setName("Hole advice probe facility");
@@ -143,4 +144,5 @@ class HoleAdvicePostgresTest {
         assertThat(advice.averageStrokes()).isNull();
         assertThat(advice.bestStrokes()).isNull();
     }
+
 }

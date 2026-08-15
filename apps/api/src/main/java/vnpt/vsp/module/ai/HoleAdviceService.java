@@ -58,13 +58,16 @@ public class HoleAdviceService {
     private final LlmGateway gateway;
     private final RedisTemplate<String, Object> redis;
     private final ObjectMapper objectMapper;
+    private final vnpt.vsp.module.profile.AppHandicapService appHandicapService;
 
     public HoleAdviceService(EntityManager em, LlmGateway gateway,
-                             RedisTemplate<String, Object> redis, ObjectMapper objectMapper) {
+                             RedisTemplate<String, Object> redis, ObjectMapper objectMapper,
+                             vnpt.vsp.module.profile.AppHandicapService appHandicapService) {
         this.em = em;
         this.gateway = gateway;
         this.redis = redis;
         this.objectMapper = objectMapper;
+        this.appHandicapService = appHandicapService;
     }
 
     public boolean isEnabled() {
@@ -82,9 +85,18 @@ public class HoleAdviceService {
         Golfer golfer = golfer(golferId);
         List<Club> bag = bag(golferId);
 
-        Integer strokes = strokesReceived(
-                golfer == null ? null : golfer.handicap, hole.strokeIndex, 18);
+        // The profile's handicap where it exists; the one this app computed
+        // from their own rounds where it does not. Most Vietnamese golfers
+        // hold no official handicap, and without a number here the stroke
+        // allocation — the feature the stroke index exists for — sat silent.
+        BigDecimal handicap = golfer == null ? null : golfer.handicap;
+        if (handicap == null) {
+            handicap = appHandicapService.compute(golferId).handicap();
+        }
+
+        Integer strokes = strokesReceived(handicap, hole.strokeIndex, 18);
         Integer netPar = strokes == null ? null : hole.par + strokes;
+        final BigDecimal handicapUsed = handicap;
         var clubs = clubs(hole, bag);
         boolean clubsAreStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
 
@@ -93,7 +105,7 @@ public class HoleAdviceService {
         String cached = cached(cacheKey);
         if (cached != null) {
             return response(hole, history, strokes,
-                    golfer == null ? null : golfer.handicap, netPar, clubs,
+                    handicapUsed, netPar, clubs,
                     clubsAreStandard, cached, true);
         }
 
@@ -102,7 +114,7 @@ public class HoleAdviceService {
             // has a hole to draw, and the golfer still has their own record on
             // it. Only the sentence is missing.
             return response(hole, history, strokes,
-                    golfer == null ? null : golfer.handicap, netPar, clubs,
+                    handicapUsed, netPar, clubs,
                     clubsAreStandard, null, false);
         }
 
@@ -113,7 +125,7 @@ public class HoleAdviceService {
         log.info("Advised golfer {} on course {} hole {} ({} rounds of history, {} shot(s) received)",
                 golferId, courseId, holeNumber, history.rounds, strokes);
         return response(hole, history, strokes,
-                golfer == null ? null : golfer.handicap, netPar, clubs,
+                handicapUsed, netPar, clubs,
                 clubsAreStandard, advice, false);
     }
 

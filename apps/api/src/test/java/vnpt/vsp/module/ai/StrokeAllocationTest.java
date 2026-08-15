@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class StrokeAllocationTest {
 
     private final HoleAdviceService service = new HoleAdviceService(
-            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper());
+            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper(), null);
 
     private Integer strokes(String handicap, Integer strokeIndex) throws Exception {
         Method m = HoleAdviceService.class.getDeclaredMethod(

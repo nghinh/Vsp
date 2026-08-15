@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HoleAdvicePromptTest {
 
     private final HoleAdviceService service = new HoleAdviceService(
-            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper());
+            null, new LlmGateway(new ObjectMapper(), "", "", ""), null, new ObjectMapper(), null);
 
     @Test
     void carriesTheGolfersOwnRecordOnThisHole() throws Exception {
