@@ -52,6 +52,8 @@ import '../../widgets/sync_status_badge.dart';
 import '../shot/shot_review_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
+import 'package:vsp_mobile/features/games/domain/games_engine.dart';
+import 'package:vsp_mobile/features/games/presentation/games_sheet.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -106,7 +108,14 @@ class ScorecardScreen extends StatelessWidget {
   /// has.
   final int? holeNumber;
 
+  /// Which course the round is on, and its second nine where paired — the
+  /// games sheet fetches stroke indexes by these. Null keeps games gross-only.
+  final String? courseId;
+  final String? backNineCourseId;
+
   const ScorecardScreen({
+    this.courseId,
+    this.backNineCourseId,
     super.key,
     required this.flightId,
     required this.holeIds,
@@ -141,7 +150,11 @@ class ScorecardScreen extends StatelessWidget {
         holeNumber: holeNumber,
         child: _FinishRequestHandler(
           requests: finishRequests,
-          child: _ScorecardScreenContent(onHoleChanged: onHoleChanged),
+          child: _ScorecardScreenContent(
+            onHoleChanged: onHoleChanged,
+            courseId: courseId,
+            backNineCourseId: backNineCourseId,
+          ),
         ),
       ),
     );
@@ -238,7 +251,14 @@ class _FinishRequestHandlerState extends State<_FinishRequestHandler> {
 class _ScorecardScreenContent extends StatelessWidget {
   final ValueChanged<int>? onHoleChanged;
 
-  const _ScorecardScreenContent({this.onHoleChanged});
+  final String? courseId;
+  final String? backNineCourseId;
+
+  const _ScorecardScreenContent({
+    this.onHoleChanged,
+    this.courseId,
+    this.backNineCourseId,
+  });
 
   /// The hole number the scorecard is on.
   ///
@@ -369,6 +389,49 @@ class _ScorecardScreenContent extends StatelessWidget {
   /// checks every hole against the card in their hand, and only what they
   /// confirm reaches the scorecard — through the same upsert and the same sync
   /// queue as a hand-entered stroke.
+
+  /// Opens the flight's book. Every photographed card this project holds
+  /// carries the same handwriting — four players, +/- notation, running
+  /// totals per nine. This is that ledger, minus the arguments: the stroke
+  /// index decides where the strokes land, which is what it is printed for.
+  void _openGames(BuildContext context, ScorecardScreenState state) {
+    final holeNumbers = <int>[];
+    final gross = <String, Map<int, int>>{
+      for (final playerId in state.playerIds) playerId: {},
+    };
+    for (var i = 0; i < state.holeIds.length; i++) {
+      final holeId = state.holeIds[i];
+      final holeNumber = int.tryParse(holeId) ?? (i + 1);
+      holeNumbers.add(holeNumber);
+      for (final playerId in state.playerIds) {
+        final score = state.scores[playerId]?[holeId]?.grossScore;
+        if (score != null) {
+          gross[playerId]![holeNumber] = score;
+        }
+      }
+    }
+    showGamesSheet(
+      context,
+      flightId: state.flightId,
+      input: GamesInput(
+        players: [
+          for (final id in state.playerIds)
+            GamePlayer(id: id, name: state.playerNames[id] ?? id),
+        ],
+        holeNumbers: holeNumbers,
+        gross: gross,
+        courseId: int.tryParse(courseId ?? ''),
+        backNineCourseId: int.tryParse(backNineCourseId ?? ''),
+      ),
+    );
+  }
+
+  /// Photograph the card the golfer filled in by hand and read it back.
+  ///
+  /// Nothing is written here. The read comes back as a draft, the golfer
+  /// checks every hole against the card in their hand, and only what they
+  /// confirm reaches the scorecard — through the same upsert and the same
+  /// sync queue as a hand-entered stroke.
   Future<void> _scanScores(
     BuildContext context,
     ScorecardScreenState state,
@@ -520,6 +583,12 @@ class _ScorecardScreenContent extends StatelessWidget {
             elevation: 0,
             scrolledUnderElevation: 0,
             actions: [
+              IconButton(
+                key: const Key('scorecard_games'),
+                icon: const Icon(Icons.payments_outlined),
+                tooltip: AppLocalizations.of(context).gamesTitle,
+                onPressed: () => _openGames(context, state),
+              ),
               IconButton(
                 icon: const Icon(Icons.photo_camera_outlined),
                 tooltip: AppLocalizations.of(context).scoreScan,

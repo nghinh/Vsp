@@ -2478,5 +2478,59 @@
   "msgScorecardSaveFailed": "Could not save the score",
   "msgTargetActionFailed": "Could not update the target. Try again.",
   "shotClubChosen": "Club selected",
-  "shotStartLabel": "Start shot"
+  "shotStartLabel": "Start shot",
+  "gamesTitle": "Games",
+  "gamesMatchPlay": "Match play",
+  "gamesNassau": "Nassau",
+  "gamesSkins": "Skins",
+  "gamesStake": "Stake per unit",
+  "gamesUseNet": "Net (strokes by index)",
+  "gamesNoSi": "This course has no stroke index — gross only.",
+  "gamesHandicaps": "Agreed handicaps",
+  "gamesStandings": "Standings",
+  "gamesAllSquare": "All square",
+  "gamesUp": "{name} {n} up",
+  "@gamesUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesThrough": "through {n}",
+  "@gamesThrough": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesSkinWon": "Hole {hole}: {name} wins the skin ×{units}",
+  "@gamesSkinWon": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "units": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesCarried": "{n} holes carrying — nobody has taken them yet",
+  "@gamesCarried": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesSettlement": "Settlement",
+  "gamesNoDebts": "Nobody owes anybody.",
+  "gamesDisclaimer": "The app keeps the book for the flight — it never holds or moves money."
 }

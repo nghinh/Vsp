@@ -3783,4 +3783,64 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get shotStartLabel => 'Bắt đầu cú đánh';
+
+  @override
+  String get gamesTitle => 'Chia độ';
+
+  @override
+  String get gamesMatchPlay => 'Đối kháng';
+
+  @override
+  String get gamesNassau => 'Nassau';
+
+  @override
+  String get gamesSkins => 'Skins';
+
+  @override
+  String get gamesStake => 'Mức cược mỗi đơn vị';
+
+  @override
+  String get gamesUseNet => 'Chấp gậy theo chỉ số (net)';
+
+  @override
+  String get gamesNoSi => 'Sân chưa có chỉ số gậy — chỉ chơi được gross.';
+
+  @override
+  String get gamesHandicaps => 'Handicap thoả thuận';
+
+  @override
+  String get gamesStandings => 'Thế trận';
+
+  @override
+  String get gamesAllSquare => 'Hoà';
+
+  @override
+  String gamesUp(String name, int n) {
+    return '$name dẫn $n';
+  }
+
+  @override
+  String gamesThrough(int n) {
+    return 'qua $n hố';
+  }
+
+  @override
+  String gamesSkinWon(int hole, String name, int units) {
+    return 'Hố $hole: $name ăn skin ×$units';
+  }
+
+  @override
+  String gamesCarried(int n) {
+    return '$n hố đang dồn — chưa ai ăn';
+  }
+
+  @override
+  String get gamesSettlement => 'Thanh toán';
+
+  @override
+  String get gamesNoDebts => 'Không ai nợ ai.';
+
+  @override
+  String get gamesDisclaimer =>
+      'App chỉ ghi sổ hộ cả nhóm — không giữ và không chuyển tiền.';
 }

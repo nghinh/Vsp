@@ -6697,6 +6697,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Start shot'**
   String get shotStartLabel;
+
+  /// No description provided for @gamesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Games'**
+  String get gamesTitle;
+
+  /// No description provided for @gamesMatchPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Match play'**
+  String get gamesMatchPlay;
+
+  /// No description provided for @gamesNassau.
+  ///
+  /// In en, this message translates to:
+  /// **'Nassau'**
+  String get gamesNassau;
+
+  /// No description provided for @gamesSkins.
+  ///
+  /// In en, this message translates to:
+  /// **'Skins'**
+  String get gamesSkins;
+
+  /// No description provided for @gamesStake.
+  ///
+  /// In en, this message translates to:
+  /// **'Stake per unit'**
+  String get gamesStake;
+
+  /// No description provided for @gamesUseNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net (strokes by index)'**
+  String get gamesUseNet;
+
+  /// No description provided for @gamesNoSi.
+  ///
+  /// In en, this message translates to:
+  /// **'This course has no stroke index — gross only.'**
+  String get gamesNoSi;
+
+  /// No description provided for @gamesHandicaps.
+  ///
+  /// In en, this message translates to:
+  /// **'Agreed handicaps'**
+  String get gamesHandicaps;
+
+  /// No description provided for @gamesStandings.
+  ///
+  /// In en, this message translates to:
+  /// **'Standings'**
+  String get gamesStandings;
+
+  /// No description provided for @gamesAllSquare.
+  ///
+  /// In en, this message translates to:
+  /// **'All square'**
+  String get gamesAllSquare;
+
+  /// No description provided for @gamesUp.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} {n} up'**
+  String gamesUp(String name, int n);
+
+  /// No description provided for @gamesThrough.
+  ///
+  /// In en, this message translates to:
+  /// **'through {n}'**
+  String gamesThrough(int n);
+
+  /// No description provided for @gamesSkinWon.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole}: {name} wins the skin ×{units}'**
+  String gamesSkinWon(int hole, String name, int units);
+
+  /// No description provided for @gamesCarried.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} holes carrying — nobody has taken them yet'**
+  String gamesCarried(int n);
+
+  /// No description provided for @gamesSettlement.
+  ///
+  /// In en, this message translates to:
+  /// **'Settlement'**
+  String get gamesSettlement;
+
+  /// No description provided for @gamesNoDebts.
+  ///
+  /// In en, this message translates to:
+  /// **'Nobody owes anybody.'**
+  String get gamesNoDebts;
+
+  /// No description provided for @gamesDisclaimer.
+  ///
+  /// In en, this message translates to:
+  /// **'The app keeps the book for the flight — it never holds or moves money.'**
+  String get gamesDisclaimer;
 }
 
 class _AppLocalizationsDelegate

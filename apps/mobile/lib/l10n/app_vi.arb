@@ -1498,5 +1498,59 @@
   "msgScorecardSaveFailed": "Không lưu được điểm",
   "msgTargetActionFailed": "Không thao tác được điểm mục tiêu. Thử lại.",
   "shotClubChosen": "Đã chọn gậy",
-  "shotStartLabel": "Bắt đầu cú đánh"
+  "shotStartLabel": "Bắt đầu cú đánh",
+  "gamesTitle": "Chia độ",
+  "gamesMatchPlay": "Đối kháng",
+  "gamesNassau": "Nassau",
+  "gamesSkins": "Skins",
+  "gamesStake": "Mức cược mỗi đơn vị",
+  "gamesUseNet": "Chấp gậy theo chỉ số (net)",
+  "gamesNoSi": "Sân chưa có chỉ số gậy — chỉ chơi được gross.",
+  "gamesHandicaps": "Handicap thoả thuận",
+  "gamesStandings": "Thế trận",
+  "gamesAllSquare": "Hoà",
+  "gamesUp": "{name} dẫn {n}",
+  "@gamesUp": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesThrough": "qua {n} hố",
+  "@gamesThrough": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesSkinWon": "Hố {hole}: {name} ăn skin ×{units}",
+  "@gamesSkinWon": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      },
+      "units": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesCarried": "{n} hố đang dồn — chưa ai ăn",
+  "@gamesCarried": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gamesSettlement": "Thanh toán",
+  "gamesNoDebts": "Không ai nợ ai.",
+  "gamesDisclaimer": "App chỉ ghi sổ hộ cả nhóm — không giữ và không chuyển tiền."
 }

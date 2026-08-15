@@ -593,6 +593,8 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
           // Score tab — the scorecard the golfer already uses. Built eagerly:
           // it is the tab a round opens on and it loads saved scores.
           _ScoreTab(
+            courseId: widget.courseId,
+            backNineCourseId: widget.backNineCourseId,
             roundId: widget.roundId,
             holeIds: widget.holeIds,
             playerIds: widget.playerIds,
@@ -719,6 +721,10 @@ class _MapTab extends StatelessWidget {
 /// round's bottom nav sits below it.
 class _ScoreTab extends StatelessWidget {
   final String roundId;
+
+  /// For the games sheet's stroke-index fetch; see ScorecardScreen.
+  final String? courseId;
+  final String? backNineCourseId;
   final List<String> holeIds;
   final List<String> playerIds;
   final Map<String, String> playerNames;
@@ -741,6 +747,8 @@ class _ScoreTab extends StatelessWidget {
   final Listenable finishRequests;
 
   const _ScoreTab({
+    this.courseId,
+    this.backNineCourseId,
     required this.finishRequests,
     required this.roundId,
     required this.holeIds,
@@ -757,6 +765,8 @@ class _ScoreTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScorecardScreen(
       flightId: roundId,
+      courseId: courseId,
+      backNineCourseId: backNineCourseId,
       holeIds: holeIds,
       playerIds: playerIds,
       playerNames: playerNames,

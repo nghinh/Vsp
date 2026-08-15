@@ -3786,4 +3786,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shotStartLabel => 'Start shot';
+
+  @override
+  String get gamesTitle => 'Games';
+
+  @override
+  String get gamesMatchPlay => 'Match play';
+
+  @override
+  String get gamesNassau => 'Nassau';
+
+  @override
+  String get gamesSkins => 'Skins';
+
+  @override
+  String get gamesStake => 'Stake per unit';
+
+  @override
+  String get gamesUseNet => 'Net (strokes by index)';
+
+  @override
+  String get gamesNoSi => 'This course has no stroke index — gross only.';
+
+  @override
+  String get gamesHandicaps => 'Agreed handicaps';
+
+  @override
+  String get gamesStandings => 'Standings';
+
+  @override
+  String get gamesAllSquare => 'All square';
+
+  @override
+  String gamesUp(String name, int n) {
+    return '$name $n up';
+  }
+
+  @override
+  String gamesThrough(int n) {
+    return 'through $n';
+  }
+
+  @override
+  String gamesSkinWon(int hole, String name, int units) {
+    return 'Hole $hole: $name wins the skin ×$units';
+  }
+
+  @override
+  String gamesCarried(int n) {
+    return '$n holes carrying — nobody has taken them yet';
+  }
+
+  @override
+  String get gamesSettlement => 'Settlement';
+
+  @override
+  String get gamesNoDebts => 'Nobody owes anybody.';
+
+  @override
+  String get gamesDisclaimer =>
+      'The app keeps the book for the flight — it never holds or moves money.';
 }
