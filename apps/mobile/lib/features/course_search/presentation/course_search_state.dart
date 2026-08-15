@@ -76,12 +76,20 @@ class CourseSearchLoaded extends CourseSearchState {
   /// Whether results were loaded from cache (not fresh).
   final bool fromCache;
 
+  /// Which of these courses the golfer has favourited.
+  ///
+  /// Carried on the results state so the heart on a search card can be filled
+  /// in. Without it the card had no way to know, defaulted to empty, and every
+  /// heart stayed hollow however many times it was tapped.
+  final Set<int> favoriteCourseIds;
+
   const CourseSearchLoaded({
     required this.results,
     required this.page,
     required this.hasNext,
     this.isLoadingMore = false,
     this.fromCache = false,
+    this.favoriteCourseIds = const {},
     required super.activeTab,
     super.lastQuery,
     super.lastLatitude,
@@ -95,6 +103,7 @@ class CourseSearchLoaded extends CourseSearchState {
     bool? hasNext,
     bool? isLoadingMore,
     bool? fromCache,
+    Set<int>? favoriteCourseIds,
     SearchTab? activeTab,
     String? lastQuery,
     double? lastLatitude,
@@ -107,6 +116,7 @@ class CourseSearchLoaded extends CourseSearchState {
       hasNext: hasNext ?? this.hasNext,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       fromCache: fromCache ?? this.fromCache,
+      favoriteCourseIds: favoriteCourseIds ?? this.favoriteCourseIds,
       activeTab: activeTab ?? this.activeTab,
       lastQuery: lastQuery ?? this.lastQuery,
       lastLatitude: lastLatitude ?? this.lastLatitude,
@@ -123,6 +133,7 @@ class CourseSearchLoaded extends CourseSearchState {
     hasNext,
     isLoadingMore,
     fromCache,
+    favoriteCourseIds,
   ];
 }
 

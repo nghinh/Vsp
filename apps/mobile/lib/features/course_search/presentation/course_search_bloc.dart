@@ -125,6 +125,7 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
           hasNext: page.hasNext,
           activeTab: SearchTab.all,
           lastQuery: query,
+          favoriteCourseIds: await _loadFavoriteIds(),
         ),
       );
     } catch (ex) {
@@ -282,48 +283,85 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
     }
   }
 
+  /// Adds or removes a favourite, from whichever tab the golfer is on.
+  ///
+  /// This only ever did the work when the state was CourseFavoritesLoaded —
+  /// that is, only on the Favourites tab itself. Tapping the heart on a search
+  /// result reached the second branch, which called isFavorite and threw the
+  /// answer away: nothing was added, nothing removed, and the heart stayed
+  /// hollow. Which is what "chức năng yêu thích chưa hoạt động" was.
   Future<void> _onToggleFavorite(
     ToggleFavorite event,
     Emitter<CourseSearchState> emit,
   ) async {
     final currentState = state;
 
-    // Optimistic toggle
     if (currentState is CourseSearchFavoritesLoaded) {
-      final isFav = currentState.favorites.any(
-        (f) => f.courseId == event.courseId,
-      );
+      final isFav =
+          currentState.favorites.any((f) => f.courseId == event.courseId);
 
-      if (isFav) {
-        final updated = currentState.favorites
-            .where((f) => f.courseId != event.courseId)
-            .toList();
-        emit(currentState.copyWith(favorites: updated));
-        try {
-          await _repository.removeFavorite(event.courseId);
-        } catch (_) {
-          // Revert on failure
-          add(const LoadFavorites(forceReload: true));
-        }
-      } else {
-        try {
-          await _repository.addFavorite(event.courseId);
-          final favorites = await _repository.getFavorites(forceReload: true);
-          emit(currentState.copyWith(favorites: favorites));
-        } catch (_) {
-          add(const LoadFavorites(forceReload: true));
-        }
-      }
-    }
+      // Optimistic, so the list reacts to the tap rather than to the network.
+      emit(currentState.copyWith(
+        favorites: isFav
+            ? currentState.favorites
+                .where((f) => f.courseId != event.courseId)
+                .toList()
+            : currentState.favorites,
+      ));
 
-    // Also update course card in results if on all/nearby tab
-    if (currentState is CourseSearchLoaded) {
       try {
-        await _repository.isFavorite(event.courseId);
+        if (isFav) {
+          await _repository.removeFavorite(event.courseId);
+        } else {
+          await _repository.addFavorite(event.courseId);
+          emit(currentState.copyWith(
+            favorites: await _repository.getFavorites(forceReload: true),
+          ));
+        }
       } catch (_) {
-        // Ignore for results list
+        add(const LoadFavorites(forceReload: true));
+      }
+      return;
+    }
+
+    if (currentState is CourseSearchLoaded) {
+      final isFav = currentState.favoriteCourseIds.contains(event.courseId);
+      final updated = Set<int>.from(currentState.favoriteCourseIds);
+      isFav ? updated.remove(event.courseId) : updated.add(event.courseId);
+      emit(currentState.copyWith(favoriteCourseIds: updated));
+
+      try {
+        if (isFav) {
+          await _repository.removeFavorite(event.courseId);
+        } else {
+          await _repository.addFavorite(event.courseId);
+        }
+        _favoriteIds = updated;
+      } catch (_) {
+        // Put the heart back where it was rather than leaving it lying about
+        // a favourite the server never took.
+        emit(currentState.copyWith(
+          favoriteCourseIds: currentState.favoriteCourseIds,
+        ));
       }
     }
+  }
+
+  /// The favourites known to this bloc, so a results page can fill in its
+  /// hearts without asking per card.
+  Set<int> _favoriteIds = const {};
+
+  /// Loads them once, quietly. A failure leaves the hearts hollow, which is
+  /// the same as not knowing — and better than a search that fails because
+  /// favourites did.
+  Future<Set<int>> _loadFavoriteIds() async {
+    try {
+      final favorites = await _repository.getFavorites();
+      _favoriteIds = favorites.map((f) => f.courseId).toSet();
+    } catch (_) {
+      // Leave whatever was known.
+    }
+    return _favoriteIds;
   }
 
   // ─── Recent Courses ─────────────────────────────────────────────────────────

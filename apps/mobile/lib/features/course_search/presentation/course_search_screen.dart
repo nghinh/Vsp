@@ -346,6 +346,7 @@ class _SearchResultsTab extends StatelessWidget {
         if (state is CourseSearchLoaded) {
           return _ResultsList(
             results: state.results,
+            favoriteCourseIds: state.favoriteCourseIds,
             scrollController: scrollController,
             isLoadingMore: state.isLoadingMore,
             hasNext: state.hasNext,
@@ -436,6 +437,7 @@ class _NearbyTab extends StatelessWidget {
             state.activeTab == SearchTab.nearby) {
           return _ResultsList(
             results: state.results,
+            favoriteCourseIds: state.favoriteCourseIds,
             scrollController: scrollController,
             isLoadingMore: state.isLoadingMore,
             hasNext: state.hasNext,
@@ -629,6 +631,10 @@ class _RecentTab extends StatelessWidget {
 
 class _ResultsList extends StatelessWidget {
   final List<CourseSearchResult> results;
+
+  /// Which of these the golfer has favourited, so the heart on each card can
+  /// be filled in. Empty until they are known, which reads the same as none.
+  final Set<int> favoriteCourseIds;
   final ScrollController scrollController;
   final bool isLoadingMore;
   final bool hasNext;
@@ -637,6 +643,7 @@ class _ResultsList extends StatelessWidget {
   final bool selectionMode;
 
   const _ResultsList({
+    this.favoriteCourseIds = const {},
     required this.results,
     required this.scrollController,
     required this.isLoadingMore,
@@ -669,6 +676,9 @@ class _ResultsList extends StatelessWidget {
           final course = results[index];
           return CourseCard(
             course: course,
+            // Filled in from the bloc, so the heart reflects what the server
+            // holds rather than staying hollow whatever is tapped.
+            isFavorite: favoriteCourseIds.contains(course.courseId),
             onTap: () {
               context.read<CourseSearchBloc>().add(
                 RecordCourseView(course.courseId),
