@@ -3846,4 +3846,31 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get gamesDisclaimer =>
       'The app keeps the book for the flight — it never holds or moves money.';
+
+  @override
+  String get caddieBookTitle => 'Caddie book';
+
+  @override
+  String get caddieBookEmpty =>
+      'No caddies saved at this club yet. After a round, save a good caddie\'s number so you can ask for them again.';
+
+  @override
+  String get caddieNumber => 'Caddie number';
+
+  @override
+  String get caddieName => 'Name (optional)';
+
+  @override
+  String get caddieNote => 'Notes';
+
+  @override
+  String get caddieSave => 'Save caddie';
+
+  @override
+  String caddieDeleteConfirm(String number) {
+    return 'Remove caddie $number from the book?';
+  }
+
+  @override
+  String get caddieOpen => 'My caddie book';
 }

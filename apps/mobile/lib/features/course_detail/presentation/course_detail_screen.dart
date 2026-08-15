@@ -36,6 +36,7 @@ import 'widgets/data_quality_section.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import '../../scorecard/presentation/scorecard_submit_screen.dart';
+import 'package:vsp_mobile/features/caddie/caddie_book.dart';
 
 /// Course detail screen — full course information for pre-round preparation.
 class CourseDetailScreen extends StatelessWidget {
@@ -257,6 +258,22 @@ class _LoadedBody extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             actions: [
+              // Caddie book: Vietnamese courses require a caddie and golfers
+              // ask for good ones back by number — this is where that number
+              // is looked up before the round.
+              IconButton(
+                key: const Key('course_detail_caddie_action'),
+                icon: const Icon(Icons.badge_outlined),
+                tooltip: AppLocalizations.of(context).caddieOpen,
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => CaddieBookScreen(
+                      facilityId: course.facilityId,
+                      facilityName: course.facilityName,
+                    ),
+                  ),
+                ),
+              ),
               // The scorecard button also sits at the foot of this page, past
               // the conditions and the tee sets and the data-quality panel —
               // which is to say, past where anyone scrolls. A golfer holding

@@ -539,6 +539,12 @@ class AdminEndpointAuthorizationTest {
             "UserCourseController.removeFavorite",
             "UserCourseController.recordRecentView",
 
+            // A golfer's own caddie notebook. Every query is scoped to the
+            // authenticated principal; there is nothing of anyone else's to
+            // reach, and nothing written is ever shown to another account.
+            "CaddieNoteController.save",
+            "CaddieNoteController.forget",
+
             // A golfer's own bookings, consents, privacy requests and points.
             "BookingController.createBooking",
             "BookingController.updateBookingStatus",

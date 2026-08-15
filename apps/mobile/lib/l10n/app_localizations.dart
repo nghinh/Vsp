@@ -6799,6 +6799,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The app keeps the book for the flight — it never holds or moves money.'**
   String get gamesDisclaimer;
+
+  /// No description provided for @caddieBookTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Caddie book'**
+  String get caddieBookTitle;
+
+  /// No description provided for @caddieBookEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No caddies saved at this club yet. After a round, save a good caddie\'s number so you can ask for them again.'**
+  String get caddieBookEmpty;
+
+  /// No description provided for @caddieNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Caddie number'**
+  String get caddieNumber;
+
+  /// No description provided for @caddieName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (optional)'**
+  String get caddieName;
+
+  /// No description provided for @caddieNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get caddieNote;
+
+  /// No description provided for @caddieSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save caddie'**
+  String get caddieSave;
+
+  /// No description provided for @caddieDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove caddie {number} from the book?'**
+  String caddieDeleteConfirm(String number);
+
+  /// No description provided for @caddieOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'My caddie book'**
+  String get caddieOpen;
 }
 
 class _AppLocalizationsDelegate

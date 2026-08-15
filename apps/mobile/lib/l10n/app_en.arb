@@ -2532,5 +2532,20 @@
   },
   "gamesSettlement": "Settlement",
   "gamesNoDebts": "Nobody owes anybody.",
-  "gamesDisclaimer": "The app keeps the book for the flight — it never holds or moves money."
+  "gamesDisclaimer": "The app keeps the book for the flight — it never holds or moves money.",
+  "caddieBookTitle": "Caddie book",
+  "caddieBookEmpty": "No caddies saved at this club yet. After a round, save a good caddie's number so you can ask for them again.",
+  "caddieNumber": "Caddie number",
+  "caddieName": "Name (optional)",
+  "caddieNote": "Notes",
+  "caddieSave": "Save caddie",
+  "caddieDeleteConfirm": "Remove caddie {number} from the book?",
+  "caddieOpen": "My caddie book",
+  "@caddieDeleteConfirm": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -1552,5 +1552,20 @@
   },
   "gamesSettlement": "Thanh toán",
   "gamesNoDebts": "Không ai nợ ai.",
-  "gamesDisclaimer": "App chỉ ghi sổ hộ cả nhóm — không giữ và không chuyển tiền."
+  "gamesDisclaimer": "App chỉ ghi sổ hộ cả nhóm — không giữ và không chuyển tiền.",
+  "caddieBookTitle": "Sổ caddie",
+  "caddieBookEmpty": "Chưa lưu caddie nào ở sân này. Sau vòng đấu, lưu số caddie tốt để lần sau xin lại đúng người.",
+  "caddieNumber": "Số caddie",
+  "caddieName": "Tên (không bắt buộc)",
+  "caddieNote": "Ghi chú",
+  "caddieSave": "Lưu caddie",
+  "caddieDeleteConfirm": "Xoá caddie {number} khỏi sổ?",
+  "caddieOpen": "Sổ caddie của tôi",
+  "@caddieDeleteConfirm": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  }
 }

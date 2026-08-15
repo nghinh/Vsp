@@ -3843,4 +3843,31 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get gamesDisclaimer =>
       'App chỉ ghi sổ hộ cả nhóm — không giữ và không chuyển tiền.';
+
+  @override
+  String get caddieBookTitle => 'Sổ caddie';
+
+  @override
+  String get caddieBookEmpty =>
+      'Chưa lưu caddie nào ở sân này. Sau vòng đấu, lưu số caddie tốt để lần sau xin lại đúng người.';
+
+  @override
+  String get caddieNumber => 'Số caddie';
+
+  @override
+  String get caddieName => 'Tên (không bắt buộc)';
+
+  @override
+  String get caddieNote => 'Ghi chú';
+
+  @override
+  String get caddieSave => 'Lưu caddie';
+
+  @override
+  String caddieDeleteConfirm(String number) {
+    return 'Xoá caddie $number khỏi sổ?';
+  }
+
+  @override
+  String get caddieOpen => 'Sổ caddie của tôi';
 }
