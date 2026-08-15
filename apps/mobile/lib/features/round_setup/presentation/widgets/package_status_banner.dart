@@ -28,11 +28,20 @@ class PackageStatusBanner extends StatelessWidget {
   final VoidCallback? onDownloadPressed;
   final VoidCallback? onWarningAcknowledged;
 
+  /// True when the server actually publishes a package for this course.
+  ///
+  /// "Not downloaded" is only worth a banner where something can be
+  /// downloaded. Most courses in this database have no package at all, and
+  /// warning a golfer about the absence of a file they cannot obtain is
+  /// noise standing between them and the first tee.
+  final bool packageAvailable;
+
   const PackageStatusBanner({
     super.key,
     this.packageReadiness,
     this.onDownloadPressed,
     this.onWarningAcknowledged,
+    this.packageAvailable = false,
   });
 
   @override
@@ -58,6 +67,10 @@ class PackageStatusBanner extends StatelessWidget {
         );
 
       case PackageStatus.notDownloaded:
+        // Nothing published for this course: nothing to say.
+        if (!packageAvailable) {
+          return const SizedBox.shrink();
+        }
         return _buildBanner(
           context: context,
           icon: Icons.cloud_download_outlined,
@@ -66,15 +79,9 @@ class PackageStatusBanner extends StatelessWidget {
           subtitle: AppLocalizations.of(context).packageNotDownloadedSubtitle,
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),
-          // "Play Anyway" lets the golfer start the round online without the
-          // offline package (scoring only needs holes/par); Download is for
-          // offline GPS use.
-          secondaryAction: onWarningAcknowledged != null
-              ? _Action(
-                  label: AppLocalizations.of(context).packagePlayNow,
-                  onPressed: onWarningAcknowledged!,
-                )
-              : null,
+          // No "play anyway": starting the round was never blocked on this.
+          // The only thing on offer here is the download, which is the whole
+          // point of the banner.
           action: onDownloadPressed != null
               ? _Action(
                   label: AppLocalizations.of(context).packageDownload,

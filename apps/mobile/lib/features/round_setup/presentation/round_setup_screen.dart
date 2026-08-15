@@ -18,6 +18,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bag/presentation/bag_screen.dart';
 import '../../course_search/presentation/course_search_screen.dart';
 import '../../../data/repositories/package_manifest_repository.dart';
+import '../../../presentation/screens/course_download_screen.dart';
+import '../../../core/network/api_client.dart';
+import '../../../data/repositories/course_package_repository.dart';
 import '../../../data/repositories/player_repository.dart';
 import '../../../data/repositories/round_repository.dart';
 import '../../../data/services/active_round_guard.dart';
@@ -382,19 +385,32 @@ class _RoundSetupScaffold extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Package status banner
-                    PackageStatusBanner(
-                      packageReadiness: state.packageReadiness,
-                      // No in-setup download flow: scoring works offline and
-                      // the "Play Anyway" acknowledgement covers a missing
-                      // package, so we omit a non-functional download button.
-                      onDownloadPressed: null,
-                      onWarningAcknowledged: () {
-                        context.read<RoundSetupBloc>().add(
-                          const PackageWarningAcknowledged(),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 24),
+                    // Only where there is a package to talk about — see
+                    // RoundSetupReady.showsPackageBanner. The download button
+                    // opens the screen that already knows how to fetch one,
+                    // with progress and a Wi-Fi policy, rather than starting
+                    // a silent download from here.
+                    if (state.showsPackageBanner) ...[
+                      PackageStatusBanner(
+                        packageReadiness: state.packageReadiness,
+                        packageAvailable: state.coursePackageAvailable,
+                        onDownloadPressed: state.courseId == null
+                            ? null
+                            : () => Navigator.of(context).push(
+                                  MaterialPageRoute<void>(
+                                    builder: (_) => CourseDownloadScreen(
+                                      courseId: state.courseId!,
+                                      courseName: state.courseName ?? '',
+                                      manifestRepo: PackageManifestRepository(),
+                                      packageRepo: CoursePackageRepository(
+                                        apiClient: ApiClient(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
                     // Course section
                     _CourseSection(state: state),
@@ -1229,19 +1245,16 @@ class _StartRoundButton extends StatelessWidget {
 
     final isEnabled = state.isStartEnabled;
     final canStart = state.hasCourse && state.players.isNotEmpty;
-    final needsPackageAck =
-        state.packageReadiness != null &&
-        !state.packageReadiness!.isReady &&
-        !state.warningAcknowledged;
 
     final l10n = AppLocalizations.of(context);
+    // A course and a player. The offline package used to be a third
+    // condition, which meant the button that starts a round sat disabled
+    // behind an acknowledgement of a file most courses do not have.
     String disabledReason = '';
     if (!state.hasCourse) {
       disabledReason = l10n.roundSetupSelectCourseFirst;
     } else if (state.players.isEmpty) {
       disabledReason = l10n.roundSetupAddPlayer;
-    } else if (needsPackageAck) {
-      disabledReason = l10n.roundSetupAcknowledgeWarning;
     }
 
     return Semantics(

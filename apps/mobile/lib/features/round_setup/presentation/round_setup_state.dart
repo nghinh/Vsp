@@ -113,6 +113,14 @@ class RoundSetupReady extends RoundSetupState {
   final PackageReadiness? packageReadiness;
   final bool warningAcknowledged;
 
+  /// True when the server publishes an offline package for this course.
+  ///
+  /// Most courses have none — 900 holes of this country are a par and a
+  /// stroke index and nothing else — and telling a golfer their course is
+  /// "not downloaded" when there is nothing to download is a warning about
+  /// a choice they do not have.
+  final bool coursePackageAvailable;
+
   // Tournament policy
   final String? tournamentPolicyId;
 
@@ -159,6 +167,7 @@ class RoundSetupReady extends RoundSetupState {
     this.holes,
     this.packageReadiness,
     this.warningAcknowledged = false,
+    this.coursePackageAvailable = false,
     this.tournamentPolicyId,
     this.nearbyCourses = const [],
     this.allCourses = const [],
@@ -181,12 +190,26 @@ class RoundSetupReady extends RoundSetupState {
   /// True if a course is selected.
   bool get hasCourse => courseId != null && courseName != null;
 
-  /// True if a valid package is ready (or warning was acknowledged).
+  /// True when there is a round to start: a course and between one and four
+  /// players.
+  ///
+  /// The offline package is deliberately not part of this. Scoring needs a
+  /// par and a hole list, both of which the round already has; the package
+  /// buys a map that works without signal. Requiring an acknowledgement of
+  /// its absence put a tap between the golfer and the first tee — and did it
+  /// on every course that has no package to acknowledge, which is most of
+  /// them.
   bool get canStartRound =>
-      hasCourse &&
-      players.isNotEmpty &&
-      players.length <= 4 &&
-      (packageReadiness?.isReady == true || warningAcknowledged);
+      hasCourse && players.isNotEmpty && players.length <= 4;
+
+  /// True when the banner has something worth saying: a package exists to
+  /// download, or one is already here and is stale or broken.
+  bool get showsPackageBanner {
+    final status = packageReadiness?.status;
+    if (status == null) return false;
+    if (status == PackageStatus.notDownloaded) return coursePackageAvailable;
+    return true;
+  }
 
   /// True if Start Round CTA should be enabled.
   bool get isStartEnabled =>
@@ -236,6 +259,7 @@ class RoundSetupReady extends RoundSetupState {
     String? holes,
     PackageReadiness? packageReadiness,
     bool? warningAcknowledged,
+    bool? coursePackageAvailable,
     String? tournamentPolicyId,
     List<NearbyCourseSuggestion>? nearbyCourses,
     List<NearbyCourseSuggestion>? allCourses,
@@ -265,6 +289,8 @@ class RoundSetupReady extends RoundSetupState {
       holes: holes ?? this.holes,
       packageReadiness: packageReadiness ?? this.packageReadiness,
       warningAcknowledged: warningAcknowledged ?? this.warningAcknowledged,
+      coursePackageAvailable:
+          coursePackageAvailable ?? this.coursePackageAvailable,
       tournamentPolicyId: tournamentPolicyId ?? this.tournamentPolicyId,
       nearbyCourses: nearbyCourses ?? this.nearbyCourses,
       allCourses: allCourses ?? this.allCourses,
@@ -295,6 +321,7 @@ class RoundSetupReady extends RoundSetupState {
     holes,
     packageReadiness,
     warningAcknowledged,
+    coursePackageAvailable,
     tournamentPolicyId,
     nearbyCourses,
     allCourses,

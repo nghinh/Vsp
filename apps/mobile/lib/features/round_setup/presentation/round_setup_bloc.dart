@@ -521,8 +521,26 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
 
       final status = _mapReadinessToStatus(readiness.reason);
 
+      // Whether there is anything to download at all. "Not downloaded" is
+      // only news where the server publishes a package; on the courses that
+      // have none it is a warning about a choice the golfer does not have.
+      bool available = currentState.coursePackageAvailable;
+      if (status == PackageStatus.notDownloaded) {
+        try {
+          final result = await _courseSearchApi.getCourseSearchResult(
+            currentState.courseId!,
+          );
+          available = result.hasPackage;
+        } catch (_) {
+          // Offline, or the course is not on the server. Say nothing rather
+          // than invite a download that may not exist.
+          available = false;
+        }
+      }
+
       emit(
         currentState.copyWith(
+          coursePackageAvailable: available,
           packageReadiness: PackageReadiness(
             status: status,
             reason: readiness.reason.name,
