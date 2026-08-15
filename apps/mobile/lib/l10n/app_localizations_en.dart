@@ -3932,4 +3932,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String strategyHistory(String average, String best) {
     return 'Avg $average · best $best';
   }
+
+  @override
+  String get recapTitle => 'Round recap';
+
+  @override
+  String get recapShare => 'Share';
 }

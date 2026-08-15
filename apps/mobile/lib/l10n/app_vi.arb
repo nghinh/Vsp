@@ -1630,5 +1630,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "recapTitle": "Tổng kết cho hội",
+  "recapShare": "Chia sẻ"
 }

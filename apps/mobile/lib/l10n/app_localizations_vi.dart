@@ -3929,4 +3929,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String strategyHistory(String average, String best) {
     return 'TB $average · tốt nhất $best';
   }
+
+  @override
+  String get recapTitle => 'Tổng kết cho hội';
+
+  @override
+  String get recapShare => 'Chia sẻ';
 }

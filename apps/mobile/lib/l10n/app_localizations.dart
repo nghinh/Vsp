@@ -6937,6 +6937,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avg {average} · best {best}'**
   String strategyHistory(String average, String best);
+
+  /// No description provided for @recapTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Round recap'**
+  String get recapTitle;
+
+  /// No description provided for @recapShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get recapShare;
 }
 
 class _AppLocalizationsDelegate

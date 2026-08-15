@@ -26,6 +26,7 @@ import 'widgets/round_stats_card.dart';
 import 'widgets/score_row_widget.dart';
 import 'widgets/sync_state_badge.dart';
 import 'widgets/correction_dialog.dart';
+import 'widgets/round_recap_card.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -266,6 +267,17 @@ class _SummaryScaffold extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: _SyncStateBanner(state: summary.overallSyncState),
+              ),
+            ),
+
+            // The Zalo message, written by the server from these same rows.
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: RoundRecapCard(
+                  roundId: summary.roundId,
+                  subject: summary.courseName,
+                ),
               ),
             ),
 

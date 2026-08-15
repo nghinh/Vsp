@@ -2610,5 +2610,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "recapTitle": "Round recap",
+  "recapShare": "Share"
 }
