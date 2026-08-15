@@ -70,8 +70,26 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
      * province returned its clubs in id order and the one being looked for was
      * as likely to be last as first.
      *
+     * <h2>One row per club</h2>
+     *
+     * <p>Nobody types "Đường A" into a search box: they type the club and
+     * choose the đường when the round starts. Searching "Long Biên" returned
+     * three cards reading "Đường A", "Đường B" and "Đường C" — a search that
+     * had worked and looked exactly like one that had failed.
+     *
+     * <p>Each club is represented by its longest course, so a resort shows its
+     * championship eighteen rather than whichever nine happens to sort first,
+     * and {@code courseCount} tells the app whether tapping goes straight into
+     * a course or has to ask which đường.
+     *
      * <p>An empty query matches everything, which is what the app asks for when
      * it opens the list.
+     *
+     * <p>No SQL comments in the query below. Spring Data parses the string for
+     * parameters before it ever reaches the database, and an apostrophe inside
+     * a {@code --} comment reads to that parser as an unterminated string
+     * literal — which took the whole application down at startup, not the
+     * query at runtime.
      */
     @Query(value = """
         SELECT c.* FROM courses c
@@ -82,17 +100,23 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                 SELECT 1 FROM unnest(
                     string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
                 WHERE token <> ''
-                  AND unaccent(lower(f.name || ' ' || c.name || ' '
-                                     || coalesce(f.address, ''))) NOT LIKE '%' || token || '%'
+                  AND unaccent(lower(f.name || ' ' || coalesce(f.address, '')))
+                      NOT LIKE '%' || token || '%'
               )
+          AND c.id = (
+                SELECT c2.id FROM courses c2
+                WHERE c2.facility_id = f.id
+                  AND EXISTS (SELECT 1 FROM holes h2 WHERE h2.course_id = c2.id)
+                  AND (c2.expiry_date IS NULL OR c2.expiry_date > CURRENT_DATE)
+                ORDER BY c2.holes_count DESC NULLS LAST, c2.name
+                LIMIT 1)
         ORDER BY
           CASE
             WHEN unaccent(lower(f.name)) LIKE unaccent(lower(CAST(:query AS text))) || '%' THEN 0
             WHEN unaccent(lower(f.name)) LIKE '%' || unaccent(lower(CAST(:query AS text))) || '%' THEN 1
-            WHEN unaccent(lower(c.name)) LIKE '%' || unaccent(lower(CAST(:query AS text))) || '%' THEN 2
-            ELSE 3
+            ELSE 2
           END,
-          f.name, c.name
+          f.name
         """,
         countQuery = """
         SELECT count(*) FROM courses c
@@ -103,12 +127,39 @@ public interface CourseSearchRepository extends JpaRepository<Course, Long> {
                 SELECT 1 FROM unnest(
                     string_to_array(unaccent(lower(trim(CAST(:query AS text)))), ' ')) AS token
                 WHERE token <> ''
-                  AND unaccent(lower(f.name || ' ' || c.name || ' '
-                                     || coalesce(f.address, ''))) NOT LIKE '%' || token || '%'
+                  AND unaccent(lower(f.name || ' ' || coalesce(f.address, '')))
+                      NOT LIKE '%' || token || '%'
               )
+          AND c.id = (
+                SELECT c2.id FROM courses c2
+                WHERE c2.facility_id = f.id
+                  AND EXISTS (SELECT 1 FROM holes h2 WHERE h2.course_id = c2.id)
+                  AND (c2.expiry_date IS NULL OR c2.expiry_date > CURRENT_DATE)
+                ORDER BY c2.holes_count DESC NULLS LAST, c2.name
+                LIMIT 1)
         """,
         nativeQuery = true)
     Page<Course> searchByText(@Param("query") String query, Pageable pageable);
+
+    /**
+     * How many playable courses each of these clubs has.
+     *
+     * <p>Search returns the club, and the app needs to know whether tapping it
+     * opens a course or has to ask which đường first. Fetched for the whole
+     * page at once rather than per row — a query per result is the shape that
+     * makes a list of twenty clubs twenty-one round trips.
+     *
+     * @return rows of [facilityId, count]
+     */
+    @Query(value = """
+            SELECT c.facility_id, count(*)
+            FROM courses c
+            WHERE c.facility_id IN (:facilityIds)
+              AND EXISTS (SELECT 1 FROM holes h WHERE h.course_id = c.id)
+              AND (c.expiry_date IS NULL OR c.expiry_date > CURRENT_DATE)
+            GROUP BY c.facility_id
+            """, nativeQuery = true)
+    List<Object[]> countPlayableByFacility(@Param("facilityIds") List<Long> facilityIds);
 
     // ─── Nearby Search ──────────────────────────────────────────────────────
 

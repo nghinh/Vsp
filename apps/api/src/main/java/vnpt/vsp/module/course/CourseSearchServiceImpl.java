@@ -106,8 +106,42 @@ public class CourseSearchServiceImpl implements CourseSearchService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+        fillCourseCounts(results);
         return new PageResponse<>(results, page.getNumber(), page.getSize(),
                 page.getTotalElements(), page.getTotalPages());
+    }
+
+    /**
+     * How many playable courses each club on this page has.
+     *
+     * <p>A search result is a club now, and the app needs to know whether
+     * tapping it opens a course or has to ask which đường first. Fetched for
+     * the whole page in one query — asking per row is what turns a list of
+     * twenty clubs into twenty-one round trips.
+     *
+     * <p>Defaults to one where the count comes back empty, which is the
+     * honest answer: the club is on the page because it had a playable course.
+     */
+    private void fillCourseCounts(List<CourseSearchResultDto> results) {
+        if (results.isEmpty()) {
+            return;
+        }
+        List<Long> facilityIds = results.stream()
+                .map(CourseSearchResultDto::getFacilityId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+        if (facilityIds.isEmpty()) {
+            return;
+        }
+
+        var counts = new java.util.HashMap<Long, Integer>();
+        for (Object[] row : searchRepository.countPlayableByFacility(facilityIds)) {
+            counts.put(((Number) row[0]).longValue(), ((Number) row[1]).intValue());
+        }
+        for (CourseSearchResultDto dto : results) {
+            dto.setCourseCount(counts.getOrDefault(dto.getFacilityId(), 1));
+        }
     }
 
     private PageResponse<CourseSearchResultDto> searchByNearby(CourseSearchRequest request) {

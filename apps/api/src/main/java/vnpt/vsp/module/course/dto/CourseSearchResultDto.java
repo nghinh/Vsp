@@ -24,6 +24,19 @@ public class CourseSearchResultDto {
     private BigDecimal distanceMeters;
 
     /** Whether a published data package exists for this course. */
+    /**
+     * How many playable courses this club has.
+     *
+     * <p>Search returns one row per club, not one per đường: nobody types
+     * "Đường A" into a search box, they type the club and choose the đường
+     * when they start the round. Three cards reading "Đường A", "Đường B" and
+     * "Đường C" was a search that had worked and looked like it had failed.
+     *
+     * <p>This is what tells the app whether tapping the club goes straight
+     * into a course or has to ask which one first.
+     */
+    private int courseCount;
+
     private boolean hasPackage;
 
     /** Whether an update is available (compared against downloadedVersion in request). */
@@ -155,4 +168,8 @@ public class CourseSearchResultDto {
     public void setDataFreshness(DataFreshnessDto dataFreshness) {
         this.dataFreshness = dataFreshness;
     }
+
+    public int getCourseCount() { return courseCount; }
+
+    public void setCourseCount(int courseCount) { this.courseCount = courseCount; }
 }
