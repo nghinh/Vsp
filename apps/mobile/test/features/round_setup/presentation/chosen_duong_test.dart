@@ -127,4 +127,75 @@ void main() {
       expect(state.segmentCourseIds, [1351, 1353]);
     });
   });
+
+  group('which hole the round starts on', () {
+    /// The bug the 9-hole fix uncovered. suggestedStartHole offers the tenth
+    /// after midday — right for an eighteen, impossible on a nine. Opened at
+    /// 13:44 on Đường B, the scorecard read its own hole list and showed 1 of
+    /// 9 while the map took the start hole and sat on hole 10: no green, no
+    /// geometry, satellite imagery over the golfer's own street.
+    test('a nine cannot start on the tenth, whatever the clock says', () {
+      final state = RoundSetupReady(
+        courseId: 1351,
+        courseName: 'Long Biên Golf Course',
+        layouts: const [duongA, duongB, duongC],
+        selectedLayoutId: 1352,
+        startHole: 10,
+      );
+
+      expect(state.holeNumbersInPlay, hasLength(9));
+      expect(state.effectiveStartHole, 1);
+    });
+
+    test('an eighteen keeps the afternoon suggestion', () {
+      final state = RoundSetupReady(
+        courseId: 3,
+        courseName: 'Long Biên Golf Course',
+        layouts: const [championship],
+        selectedLayoutId: 3,
+        startHole: 10,
+      );
+
+      expect(state.effectiveStartHole, 10);
+    });
+
+    test('a paired round of two nines can start on the tenth', () {
+      final state = RoundSetupReady(
+        courseId: 1351,
+        courseName: 'Long Biên Golf Course',
+        layouts: const [duongA, duongB, duongC],
+        selectedLayoutId: 1351,
+        selectedSecondLayoutId: 1352,
+        startHole: 10,
+      );
+
+      expect(state.effectiveStartHole, 10);
+    });
+
+    test('a start the golfer chose inside the round is left alone', () {
+      final state = RoundSetupReady(
+        courseId: 1351,
+        courseName: 'Long Biên Golf Course',
+        layouts: const [duongA, duongB, duongC],
+        selectedLayoutId: 1352,
+        startHole: 4,
+      );
+
+      expect(state.effectiveStartHole, 4);
+    });
+
+    /// A back-nine round of an eighteen genuinely starts at 10.
+    test('back nine starts at ten', () {
+      final state = RoundSetupReady(
+        courseId: 3,
+        courseName: 'Long Biên Golf Course',
+        layouts: const [championship],
+        selectedLayoutId: 3,
+        holes: 'back9',
+        startHole: 10,
+      );
+
+      expect(state.effectiveStartHole, 10);
+    });
+  });
 }

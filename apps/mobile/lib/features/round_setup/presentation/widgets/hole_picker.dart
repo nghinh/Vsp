@@ -19,6 +19,13 @@ class HolePicker extends StatelessWidget {
   final ValueChanged<String?>? onHolesChanged;
   final int suggestedHole;
 
+  /// How many holes this round actually plays.
+  ///
+  /// A nine-hole đường has no hole 10, so offering "back nine" or a grid of
+  /// eighteen numbers invites a start the round cannot honour — which is
+  /// exactly how a round of Đường B opened on hole 10 and found nothing there.
+  final int holeCount;
+
   const HolePicker({
     super.key,
     required this.selectedHole,
@@ -26,6 +33,7 @@ class HolePicker extends StatelessWidget {
     required this.onHoleChanged,
     this.onHolesChanged,
     required this.suggestedHole,
+    this.holeCount = 18,
   });
 
   @override
@@ -68,6 +76,7 @@ class HolePicker extends StatelessWidget {
       context: context,
       builder: (context) => _HolePickerSheet(
         selectedHole: selectedHole,
+        holeCount: holeCount,
         holes: holes,
         suggestedHole: suggestedHole,
         onHoleChanged: onHoleChanged,
@@ -203,6 +212,7 @@ class _SelectedHoleChip extends StatelessWidget {
 
 class _HolePickerSheet extends StatefulWidget {
   final int selectedHole;
+  final int holeCount;
   final String? holes;
   final int suggestedHole;
   final ValueChanged<int> onHoleChanged;
@@ -210,6 +220,7 @@ class _HolePickerSheet extends StatefulWidget {
 
   const _HolePickerSheet({
     required this.selectedHole,
+    required this.holeCount,
     this.holes,
     required this.suggestedHole,
     required this.onHoleChanged,
@@ -265,7 +276,9 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
             ),
             const SizedBox(height: 16),
 
-            // 9-hole options
+            // 9-hole options. Only on an eighteen: splitting a nine into a
+            // front and a back nine is not a thing a golfer can do.
+            if (widget.holeCount >= 18) ...[
             Text(
               '9-Hole Rounds',
               style: theme.textTheme.labelLarge?.copyWith(
@@ -305,10 +318,11 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
               ],
             ),
             const SizedBox(height: 16),
+            ],
 
-            // 18-hole options
+            // Every hole this round contains.
             Text(
-              '18-Hole Rounds',
+              widget.holeCount >= 18 ? '18-Hole Rounds' : 'Chọn hố bắt đầu',
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -323,7 +337,7 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
                   crossAxisSpacing: 8,
                   childAspectRatio: 1,
                 ),
-                itemCount: 18,
+                itemCount: widget.holeCount,
                 itemBuilder: (context, index) {
                   final hole = index + 1;
                   return _HoleNumberButton(

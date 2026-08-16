@@ -242,6 +242,24 @@ class RoundSetupReady extends RoundSetupState {
     return hour < 12 ? 1 : 10;
   }
 
+  /// The start hole this round can actually begin on.
+  ///
+  /// [suggestedStartHole] offers the tenth after midday, which is right for an
+  /// eighteen and nonsense for a nine: a round of Đường B started at 13:44
+  /// opened on hole 10, and hole 10 does not exist there. The scorecard read
+  /// its own hole list and showed 1 of 9 while the map, which takes the start
+  /// hole, sat on a hole with no green, no geometry and satellite imagery over
+  /// the golfer's own street.
+  ///
+  /// So the suggestion is clamped to the holes in play, and the golfer's own
+  /// choice with it — a round cannot start on a hole it does not contain.
+  int get effectiveStartHole {
+    final holes = holeNumbersInPlay;
+    if (holes.isEmpty) return startHole;
+    if (holes.contains(startHole)) return startHole;
+    return holes.first;
+  }
+
 
   /// The đường the round is played on, in playing order.
   ///

@@ -213,12 +213,14 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
               ? null
               : '${ready.selectedSecondLayoutId}',
           courseName: courseName,
-          holeNumber: ready.startHole,
+          // Clamped to the holes this round contains: the suggestion is the
+          // tenth after midday, which a nine-hole đường does not have.
+          holeNumber: ready.effectiveStartHole,
           // Real par for the starting hole, or null when the course detail
           // does not cover it. The scorecard keeps its own par-4 fallback so
           // scoring is unchanged; the round header simply omits what it does
           // not know.
-          par: ready.holePars[ready.startHole],
+          par: ready.holePars[ready.effectiveStartHole],
           locationService: LocationServiceImpl(),
           holeIds: holeIds,
           playerIds: players.map((p) => p.id).toList(),
@@ -480,9 +482,12 @@ class _RoundSetupScaffold extends StatelessWidget {
 
                     // Start hole picker
                     HolePicker(
-                      selectedHole: state.startHole,
+                      selectedHole: state.effectiveStartHole,
+                      // Only the holes this round contains: a nine-hole đường
+                      // has no hole 10 to start on.
+                      holeCount: state.holeNumbersInPlay.length,
                       holes: state.holes,
-                      suggestedHole: RoundSetupReady.suggestedStartHole(),
+                      suggestedHole: state.effectiveStartHole,
                       onHoleChanged: (hole) {
                         context.read<RoundSetupBloc>().add(
                           StartHoleChanged(hole),
