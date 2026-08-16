@@ -181,4 +181,43 @@ class VisionGeometryReaderTest {
         assertThat(BOUNDS.fractionOf(21.0340, 105.8965)[0]).isCloseTo(1.0, within(1e-9));
         assertThat(BOUNDS.fractionOf(21.0340, 105.8965)[1]).isCloseTo(1.0, within(1e-9));
     }
+
+    /// A flood fill that leaked along a cart path into the next bunker comes
+    /// back looking exactly like a polygon. Golf is the check.
+    @Test
+    @DisplayName("a bunker the size of a fairway is not a bunker")
+    void refusesAnImplausibleRefinement() {
+        // A synthetic image where everything is one colour: the flood fills
+        // the whole window, which the refiner already rejects — and even if
+        // it did not, the area check would.
+        var image = new java.awt.image.BufferedImage(
+                400, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        var g = image.createGraphics();
+        g.setColor(java.awt.Color.GRAY);
+        g.fillRect(0, 0, 400, 400);
+        g.dispose();
+
+        var detected = reader.read(json("""
+                {"layer": "bunker",
+                 "polygon": [[0.40,0.40],[0.46,0.40],[0.46,0.46],[0.40,0.46]]}
+                """), BOUNDS, image);
+
+        // The seed survives: eight points, not sixty-one.
+        assertThat(detected).hasSize(1);
+        assertThat(detected.get(0).ring().size()).isLessThan(20);
+    }
+
+    @Test
+    @DisplayName("a green keeps the model's outline — grass has no edge to find")
+    void doesNotRefineGrass() {
+        var image = new java.awt.image.BufferedImage(
+                400, 400, java.awt.image.BufferedImage.TYPE_INT_RGB);
+
+        var detected = reader.read(json("""
+                {"layer": "green",
+                 "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}
+                """), BOUNDS, image);
+
+        assertThat(detected.get(0).ring()).hasSize(5);
+    }
 }

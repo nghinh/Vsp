@@ -86,7 +86,12 @@ public final class VisionGeometryReader {
             // too, so those keep the model's own outline.
             if (image != null && REFINABLE.contains(layer)) {
                 List<double[]> snapped = ShapeRefiner.refine(image, imageRing);
-                if (snapped != null) {
+                // A flood that found a bright core inside a bunker, or one
+                // that escaped along a path into the next one, both come back
+                // looking like a polygon. Golf is the check: a bunker is not
+                // six square metres and not half a hectare. Outside the range
+                // the model's own outline is the better of two poor answers.
+                if (snapped != null && isPlausible(layer, snapped, bounds)) {
                     imageRing = snapped;
                 }
             }
@@ -140,6 +145,45 @@ public final class VisionGeometryReader {
     private static final java.util.Set<LayerType> REFINABLE =
             java.util.EnumSet.of(LayerType.BUNKER, LayerType.WATER_HAZARD,
                     LayerType.PENALTY_AREA);
+
+    /// What a feature of this kind can plausibly measure, in square metres.
+    ///
+    /// Not model output and not a guess: a bunker on a Vietnamese course is
+    /// tens to a few hundred square metres, and a pond is thousands. These
+    /// bounds are wide enough to admit anything real and narrow enough to
+    /// catch a flood fill that leaked.
+    private static boolean isPlausible(LayerType layer, List<double[]> ring,
+                                       ImageBounds bounds) {
+        double area = areaMeters(toGround(ring, bounds));
+        return switch (layer) {
+            case BUNKER -> area >= 20 && area <= 1_500;
+            case WATER_HAZARD, PENALTY_AREA -> area >= 100 && area <= 60_000;
+            default -> true;
+        };
+    }
+
+    /// The shoelace area of a small ring, in square metres.
+    ///
+    /// Flat-earth, which over a bunker is exact to well under a percent and
+    /// avoids dragging a projection library in for a sanity check.
+    private static double areaMeters(List<double[]> ring) {
+        if (ring.size() < 4) {
+            return 0;
+        }
+        double latRadians = Math.toRadians(ring.get(0)[0]);
+        double metresPerDegreeLat = 111_132.0;
+        double metresPerDegreeLng = 111_320.0 * Math.cos(latRadians);
+
+        double sum = 0;
+        for (int i = 0; i < ring.size() - 1; i++) {
+            double x1 = ring.get(i)[1] * metresPerDegreeLng;
+            double y1 = ring.get(i)[0] * metresPerDegreeLat;
+            double x2 = ring.get(i + 1)[1] * metresPerDegreeLng;
+            double y2 = ring.get(i + 1)[0] * metresPerDegreeLat;
+            sum += x1 * y2 - x2 * y1;
+        }
+        return Math.abs(sum) / 2;
+    }
 
     /// Image fractions to latitude and longitude.
     private static List<double[]> toGround(List<double[]> ring, ImageBounds bounds) {
