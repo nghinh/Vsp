@@ -2723,5 +2723,6 @@
   "mapLayerBunker": "Bunker",
   "mapLayerWater": "Water",
   "mapLayerPenaltyArea": "Penalty area",
-  "mapLayerOb": "Out of bounds"
+  "mapLayerOb": "Out of bounds",
+  "mapLayerTee": "Tee"
 }

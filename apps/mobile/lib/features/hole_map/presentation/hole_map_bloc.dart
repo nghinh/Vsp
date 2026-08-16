@@ -282,7 +282,11 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       emit(current.copyWith(
         holeMap: current.holeMap.copyWith(layers: merged),
         layerVisibility: visibility,
-        tracedShapesUnverified: traced.anyUnverified,
+        // Only where a model drew something. Shapes a person digitised carry
+        // their credit in the attribution line at the foot of the map, and
+        // calling them unchecked machine output would be both untrue and a
+        // good way to teach golfers to ignore the warning that is true.
+        tracedShapesUnverified: traced.anyUnverified && traced.anyFromModel,
       ));
     } catch (_) {
       // Offline, or nothing traced for this hole. The map keeps whatever the

@@ -12,13 +12,25 @@ import 'package:vsp_mobile/core/network/api_client.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 
 class TracedFeatures {
-  const TracedFeatures({required this.layers, required this.anyUnverified});
+  const TracedFeatures({
+    required this.layers,
+    required this.anyUnverified,
+    this.anyFromModel = false,
+  });
 
   /// Ready to merge into HoleMapEntity.layers.
   final Map<MapLayerType, MapLayerEntity> layers;
 
   /// True while at least one shape here is nobody's but the model's.
   final bool anyUnverified;
+
+  /// True when a vision model drew some of this, as opposed to a person.
+  ///
+  /// The two need different words on screen. "A model traced this and nobody
+  /// has checked it" is a warning. A green a mapper drew by hand off the same
+  /// imagery is not that, and warning about it teaches a golfer to ignore the
+  /// line that matters.
+  final bool anyFromModel;
 
   bool get isEmpty => layers.isEmpty;
 
@@ -72,6 +84,7 @@ class HoleFeatureApi {
 
     final byLayer = <MapLayerType, List<Map<String, dynamic>>>{};
     var anyUnverified = false;
+    var anyFromModel = false;
 
     for (final entry in features) {
       if (entry is! Map<String, dynamic>) continue;
@@ -80,6 +93,7 @@ class HoleFeatureApi {
       final type = _layerOf(properties['layerType'] as String?);
       if (type == null) continue;
       if (properties['verified'] != true) anyUnverified = true;
+      if (properties['source'] == 'ai-satellite') anyFromModel = true;
       byLayer.putIfAbsent(type, () => []).add(entry);
     }
 
@@ -97,6 +111,7 @@ class HoleFeatureApi {
           ),
       },
       anyUnverified: anyUnverified,
+      anyFromModel: anyFromModel,
     );
   }
 

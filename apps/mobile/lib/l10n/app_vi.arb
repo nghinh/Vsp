@@ -1743,5 +1743,6 @@
   "mapLayerBunker": "Bunker",
   "mapLayerWater": "Hồ nước",
   "mapLayerPenaltyArea": "Khu phạt",
-  "mapLayerOb": "Ngoài biên"
+  "mapLayerOb": "Ngoài biên",
+  "mapLayerTee": "Phát bóng"
 }

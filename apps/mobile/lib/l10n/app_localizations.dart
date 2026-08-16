@@ -7279,6 +7279,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Out of bounds'**
   String get mapLayerOb;
+
+  /// No description provided for @mapLayerTee.
+  ///
+  /// In en, this message translates to:
+  /// **'Tee'**
+  String get mapLayerTee;
 }
 
 class _AppLocalizationsDelegate

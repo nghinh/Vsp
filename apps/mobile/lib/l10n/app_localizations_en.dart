@@ -4131,4 +4131,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapLayerOb => 'Out of bounds';
+
+  @override
+  String get mapLayerTee => 'Tee';
 }

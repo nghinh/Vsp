@@ -100,6 +100,10 @@ public class HoleFeatureController {
             @PathVariable Long courseId,
             @PathVariable @Min(1) @Max(18) int holeNumber) {
 
+        // Where a person has drawn this layer on this hole, the model's
+        // attempt at it is not shown beside theirs. It is not a second
+        // opinion a golfer can weigh — it is the same green in the wrong
+        // place, and two greens on one hole is worse than either alone.
         var rows = em.createNativeQuery("""
                 SELECT d.layer_type,
                        ST_AsGeoJSON(ST_GeomFromText(d.geometry, 4326)),
@@ -111,6 +115,14 @@ public class HoleFeatureController {
                   AND d.is_valid
                   AND coalesce(d.confidence, 0) >= :floor
                   AND d.verification_status <> 'REJECTED'
+                  AND (d.source <> 'ai-satellite' OR NOT EXISTS (
+                        SELECT 1 FROM draft_geometry_features surveyed
+                        WHERE surveyed.course_id = d.course_id
+                          AND surveyed.hole_id = d.hole_id
+                          AND surveyed.layer_type = d.layer_type
+                          AND surveyed.is_valid
+                          AND surveyed.source <> 'ai-satellite'
+                          AND surveyed.verification_status <> 'REJECTED'))
                 ORDER BY d.layer_type
                 """)
                 .setParameter("course", courseId)

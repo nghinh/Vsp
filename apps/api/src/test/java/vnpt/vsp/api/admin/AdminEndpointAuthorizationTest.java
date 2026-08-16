@@ -137,6 +137,11 @@ class AdminEndpointAuthorizationTest {
                 // Eighteen metered model calls per run, so the same gate.
                 new Endpoint("CourseMappingController", HttpMethod.POST,
                         "/admin/courses/1/geometry/analyze", RoleName.COURSE_ADMIN),
+                // Free per call, but it writes proposals across every hole of
+                // a course and each call is a request against a public service
+                // that a loop would get this deployment banned from.
+                new Endpoint("OsmImportController", HttpMethod.POST,
+                        "/admin/courses/1/geometry/osm-import", RoleName.COURSE_ADMIN),
                 new Endpoint("CourseImportController", HttpMethod.POST, "/admin/courses/1/import/preview", RoleName.COURSE_ADMIN),
                 new Endpoint("DataLicenseController", HttpMethod.GET, "/admin/licenses", RoleName.SUPER_ADMIN),
                 new Endpoint("AdminMarketController", HttpMethod.GET, "/admin/markets", RoleName.SUPER_ADMIN),

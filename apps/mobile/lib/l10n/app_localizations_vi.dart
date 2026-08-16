@@ -4129,4 +4129,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mapLayerOb => 'Ngoài biên';
+
+  @override
+  String get mapLayerTee => 'Phát bóng';
 }

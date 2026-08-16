@@ -23,7 +23,9 @@ import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'play_line_panel.dart';
 import 'feature_distance_panel.dart';
+import 'feature_label_overlay.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_distances.dart';
+import 'package:vsp_mobile/features/hole_map/domain/feature_labels.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 // Satellite basemap + manual measuring, for holes we never surveyed.
@@ -211,6 +213,31 @@ class _HoleMapViewState extends State<HoleMapView> {
         )).toList();
   }
 
+  /// A chip on each shape worth naming: what it is, and how far.
+  ///
+  /// Measured from the golfer where the phone knows where they are and from
+  /// the tee otherwise, which is the same rule the panel uses — the two
+  /// disagreeing about the same bunker would be worse than either.
+  List<FeatureLabelChip> _featureLabels() {
+    final state = widget.state;
+    final golfer = state.golferPosition;
+    final from = golfer != null
+        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
+        : state.holeMap.teeCenter;
+    if (from == null) return const [];
+
+    final l10n = AppLocalizations.of(context);
+    return FeatureLabels.forLayers(layers: state.holeMap.layers, from: from)
+        .map((label) => FeatureLabelChip(
+              label: _labelOf(label.layer, l10n),
+              meters: label.meters,
+              colour: _colourOf(label.layer),
+              latitude: label.at.latitude,
+              longitude: label.at.longitude,
+            ))
+        .toList();
+  }
+
   static String _labelOf(MapLayerType layer, AppLocalizations l10n) =>
       switch (layer) {
         MapLayerType.green => l10n.mapLayerGreen,
@@ -218,6 +245,7 @@ class _HoleMapViewState extends State<HoleMapView> {
         MapLayerType.water => l10n.mapLayerWater,
         MapLayerType.penaltyArea => l10n.mapLayerPenaltyArea,
         MapLayerType.ob => l10n.mapLayerOb,
+        MapLayerType.tee => l10n.mapLayerTee,
         _ => layer.name,
       };
 
@@ -431,6 +459,14 @@ class _HoleMapViewState extends State<HoleMapView> {
         children: [
           // MapLibre GL map
           _buildMap(),
+
+          // A name and a number on each shape. Sits directly above the map
+          // and below every panel, so a chip never covers a control.
+          FeatureLabelOverlay(
+            controller: _mapController,
+            chips: _featureLabels(),
+            unit: DistanceUnitScope.watch(context),
+          ),
 
           // Wind arrow overlay (Flutter-rendered, positioned over map)
           if (widget.state.wind != null)
