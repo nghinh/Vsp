@@ -177,6 +177,9 @@ vsp:
   # its own budget. Server-side only: a vision key on a phone is a key in
   # everybody's hands.
   vision:
+    # Below this the shape is not served at all. A polygon the model itself
+    # doubts is a polygon a golfer would measure a distance to.
+    minimum-confidence: ${AI_VISION_MIN_CONFIDENCE:65}
     base-url: "${AI_VISION_BASE_URL:}"
     api-key: "${AI_VISION_API_KEY:}"
     model: "${AI_VISION_MODEL:}"

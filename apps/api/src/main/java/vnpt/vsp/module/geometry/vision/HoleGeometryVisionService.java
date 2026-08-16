@@ -104,6 +104,24 @@ public class HoleGeometryVisionService {
                 prompt(hole, image.bounds()), MAX_TOKENS);
         List<DetectedFeature> detected = reader.read(answer, image.bounds());
 
+        // A re-trace replaces this hole's previous proposals rather than
+        // adding to them. The polygons differ slightly every run, so keying
+        // on their shape left three greens and twelve bunkers on one hole —
+        // a reviewer's queue filled with the same hole traced three times.
+        //
+        // Only untouched proposals from this same source: anything a human
+        // has looked at is theirs, and a new model run does not get to
+        // overwrite a decision somebody made.
+        em.createNativeQuery("""
+                DELETE FROM draft_geometry_features
+                WHERE course_id = :course AND hole_id = :hole
+                  AND source = 'ai-satellite'
+                  AND verification_status = 'PENDING_REVIEW'
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", hole.id)
+                .executeUpdate();
+
         var counts = new java.util.LinkedHashMap<String, Integer>();
         for (DetectedFeature feature : detected) {
             save(courseId, hole.id, feature, requestedBy, image.attribution());

@@ -162,17 +162,47 @@ class HoleGeometryVisionPostgresTest {
         assertThat(draftCount()).isZero();
     }
 
+    /// The polygons differ slightly on every run, so keying on their shape
+    /// left one hole with three greens and twelve bunkers — a review queue
+    /// full of the same hole traced three times.
     @Test
-    @DisplayName("running it twice does not double the queue")
-    void isIdempotentEnoughToRerun() {
-        String answer = """
+    @DisplayName("a re-trace replaces this hole's proposals rather than adding")
+    void aRetraceReplaces() {
+        service("""
                 {"features": [{"layer": "green",
                   "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}]}
-                """;
-        service(answer, true).detect(courseId, 1, "tester");
-        service(answer, true).detect(courseId, 1, "tester");
+                """, true).detect(courseId, 1, "tester");
+        // A slightly different trace of the same green.
+        service("""
+                {"features": [{"layer": "green",
+                  "polygon": [[0.44,0.44],[0.56,0.45],[0.55,0.56],[0.45,0.55]]}]}
+                """, true).detect(courseId, 1, "tester");
 
         assertThat(draftCount()).isEqualTo(1);
+    }
+
+    /// A proposal somebody has already looked at is theirs, and a new model
+    /// run does not get to delete their decision.
+    @Test
+    @DisplayName("a reviewed proposal survives a re-trace")
+    void keepsWhatAHumanTouched() {
+        service("""
+                {"features": [{"layer": "green",
+                  "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}]}
+                """, true).detect(courseId, 1, "tester");
+        em.createNativeQuery("""
+                UPDATE draft_geometry_features SET verification_status = 'VERIFIED'
+                WHERE course_id = :course
+                """).setParameter("course", courseId).executeUpdate();
+        em.flush();
+
+        service("""
+                {"features": [{"layer": "green",
+                  "polygon": [[0.40,0.40],[0.50,0.40],[0.50,0.50],[0.40,0.50]]}]}
+                """, true).detect(courseId, 1, "tester");
+
+        // The verified one, plus the new proposal beside it.
+        assertThat(draftCount()).isEqualTo(2);
     }
 
     @Test
