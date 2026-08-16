@@ -128,7 +128,9 @@ public class GolfSegImportService {
                     Map.of("golfseg", "the golf vision service could not answer"));
         }
 
-        return file(courseId, holeId, holeNumber, answer, requestedBy);
+        return file(courseId, holeId, holeNumber, answer, requestedBy,
+                ((Number) row[3]).doubleValue(), ((Number) row[4]).doubleValue(),
+                ((Number) row[1]).doubleValue(), ((Number) row[2]).doubleValue());
     }
 
     /**
@@ -148,8 +150,28 @@ public class GolfSegImportService {
     public Map<String, Integer> ingest(Long courseId, int holeNumber,
                                        JsonNode featureCollection,
                                        String requestedBy) {
-        Long holeId = holeIdOf(courseId, holeNumber);
-        return file(courseId, holeId, holeNumber, featureCollection, requestedBy);
+        var rows = em.createNativeQuery("""
+                SELECT h.id,
+                       ST_Y(CAST(h.green_location AS geometry)),
+                       ST_X(CAST(h.green_location AS geometry)),
+                       ST_Y(CAST(h.teeing_ground_location AS geometry)),
+                       ST_X(CAST(h.teeing_ground_location AS geometry))
+                FROM holes h
+                WHERE h.course_id = :course AND h.hole_number = :hole
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", holeNumber)
+                .getResultList();
+        if (rows.isEmpty()) {
+            throw new VspApiException(VspErrorCode.HOLE_001, "holeNumber");
+        }
+        Object[] row = (Object[]) rows.get(0);
+        return file(courseId, ((Number) row[0]).longValue(), holeNumber,
+                featureCollection, requestedBy,
+                row[1] == null ? Double.NaN : ((Number) row[1]).doubleValue(),
+                row[2] == null ? Double.NaN : ((Number) row[2]).doubleValue(),
+                row[3] == null ? Double.NaN : ((Number) row[3]).doubleValue(),
+                row[4] == null ? Double.NaN : ((Number) row[4]).doubleValue());
     }
 
     private Long holeIdOf(Long courseId, int holeNumber) {
@@ -167,7 +189,9 @@ public class GolfSegImportService {
     }
 
     private Map<String, Integer> file(Long courseId, Long holeId, int holeNumber,
-                                      JsonNode answer, String requestedBy) {
+                                      JsonNode answer, String requestedBy,
+                                      double greenLat, double greenLng,
+                                      double teeLat, double teeLng) {
         // A re-trace replaces this hole's untouched proposals rather than
         // adding to them — the same rule the satellite reader needed, for the
         // same reason: the polygons differ slightly every run.
@@ -204,8 +228,19 @@ public class GolfSegImportService {
             if (wkt == null) {
                 continue;
             }
+            // The rank a candidate is kept by. Largest-first for everything
+            // whose position this database does not know — and nearest-first
+            // for the green and the tee, which it does.
+            double rank;
+            if ("GREEN".equals(layer) && !Double.isNaN(greenLat)) {
+                rank = -distanceTo(feature, greenLat, greenLng);
+            } else if ("TEE".equals(layer) && !Double.isNaN(teeLat)) {
+                rank = -distanceTo(feature, teeLat, teeLng);
+            } else {
+                rank = area;
+            }
             candidates.computeIfAbsent(layer, k -> new java.util.ArrayList<>())
-                    .add(new double[]{area, wkts.computeIfAbsent(layer,
+                    .add(new double[]{rank, wkts.computeIfAbsent(layer,
                             k -> new java.util.ArrayList<>()).size()});
             wkts.get(layer).add(wkt);
             visions.computeIfAbsent(layer, k -> new java.util.ArrayList<>())
@@ -216,11 +251,11 @@ public class GolfSegImportService {
         int index = 0;
         for (var entry : candidates.entrySet()) {
             String layer = entry.getKey();
-            var byArea = entry.getValue();
-            byArea.sort((a, b) -> Double.compare(b[0], a[0]));
-            int limit = Math.min(limitFor(layer), byArea.size());
+            var ranked = entry.getValue();
+            ranked.sort((a, b) -> Double.compare(b[0], a[0]));
+            int limit = Math.min(limitFor(layer), ranked.size());
             for (int i = 0; i < limit; i++) {
-                int at = (int) byArea.get(i)[1];
+                int at = (int) ranked.get(i)[1];
                 save(courseId, holeId, layer, wkts.get(layer).get(at),
                         visions.get(layer).get(at), modelVersion,
                         attribution, requestedBy, index++);
@@ -230,6 +265,35 @@ public class GolfSegImportService {
 
         log.info("GolfSeg traced course {} hole {}: {}", courseId, holeNumber, counts);
         return counts;
+    }
+
+
+    /// Metres from a traced shape's centre to a point this database already
+    /// holds.
+    ///
+    /// The measurement that forced this: keeping the largest green found the
+    /// right one on one hole in nine. The other eight were 85 to 463 metres
+    /// away — a neighbouring green, or a patch of mown turf that happened to
+    /// be bigger. The model has no idea which green belongs to this hole, and
+    /// it does not need one: the green point has been in the holes table all
+    /// along.
+    private static double distanceTo(JsonNode feature, double lat, double lng) {
+        JsonNode ring = feature.path("geometry").path("coordinates").path(0);
+        if (!ring.isArray() || ring.isEmpty()) {
+            return Double.MAX_VALUE;
+        }
+        double sumLat = 0;
+        double sumLng = 0;
+        for (JsonNode point : ring) {
+            sumLng += point.get(0).asDouble();
+            sumLat += point.get(1).asDouble();
+        }
+        double centreLat = sumLat / ring.size();
+        double centreLng = sumLng / ring.size();
+        double dy = (centreLat - lat) * 111_132.0;
+        double dx = (centreLng - lng) * 111_320.0
+                * Math.cos(Math.toRadians(lat));
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /// GeoJSON ring to WKT. Only the outer ring: an interior is drawn by the

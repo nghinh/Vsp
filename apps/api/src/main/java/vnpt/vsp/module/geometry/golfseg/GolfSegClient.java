@@ -31,15 +31,18 @@ public class GolfSegClient {
     private static final Logger log = LoggerFactory.getLogger(GolfSegClient.class);
 
     private final String baseUrl;
+    private final String apiKey;
     private final Duration timeout;
     private final ObjectMapper objectMapper;
     private final HttpClient http;
 
     public GolfSegClient(
             @Value("${vsp.golfseg.base-url:}") String baseUrl,
+            @Value("${vsp.golfseg.api-key:}") String apiKey,
             @Value("${vsp.golfseg.timeout-seconds:90}") int timeoutSeconds,
             ObjectMapper objectMapper) {
         this.baseUrl = baseUrl == null ? "" : baseUrl.trim().replaceAll("/+$", "");
+        this.apiKey = apiKey == null ? "" : apiKey.trim();
         this.timeout = Duration.ofSeconds(Math.max(10, timeoutSeconds));
         this.objectMapper = objectMapper;
         this.http = HttpClient.newBuilder()
@@ -47,9 +50,11 @@ public class GolfSegClient {
                 .build();
     }
 
-    /// True when this deployment has a vision service to call.
+    /// True when this deployment has a vision service to call, and a key to
+    /// call it with. The service listens on a public address, so a URL without
+    /// a key is not a configuration — it is a request that will be refused.
     public boolean isConfigured() {
-        return !baseUrl.isEmpty();
+        return !baseUrl.isEmpty() && !apiKey.isEmpty();
     }
 
     /**
@@ -76,6 +81,7 @@ public class GolfSegClient {
             var request = HttpRequest.newBuilder(URI.create(baseUrl + "/trace/hole"))
                     .timeout(timeout)
                     .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + apiKey)
                     .POST(HttpRequest.BodyPublishers.ofString(body))
                     .build();
             HttpResponse<String> response =

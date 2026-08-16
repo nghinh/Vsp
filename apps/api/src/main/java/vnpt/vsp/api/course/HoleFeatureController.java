@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
+import vnpt.vsp.module.geometry.golfseg.GolfSegImportService;
 import vnpt.vsp.module.geometry.vision.CourseMappingService;
 
 import java.math.BigDecimal;
@@ -42,16 +43,19 @@ public class HoleFeatureController {
 
     private final EntityManager em;
     private final CourseMappingService mappingService;
+    private final GolfSegImportService golfSeg;
     private final BigDecimal minimumConfidence;
     private final int dailyLimit;
 
     public HoleFeatureController(
             EntityManager em,
             CourseMappingService mappingService,
+            GolfSegImportService golfSeg,
             @Value("${vsp.vision.minimum-confidence:65}") int minimumConfidence,
             @Value("${vsp.vision.golfer-daily-limit:30}") int dailyLimit) {
         this.em = em;
         this.mappingService = mappingService;
+        this.golfSeg = golfSeg;
         this.minimumConfidence = BigDecimal.valueOf(minimumConfidence);
         this.dailyLimit = dailyLimit;
     }
@@ -90,8 +94,27 @@ public class HoleFeatureController {
                     Map.of("limit", "daily satellite-analysis limit reached"));
         }
 
-        var jobId = mappingService.request(courseId, holeNumber, requestedBy);
-        return mappingService.status(jobId);
+        // Traced on the spot rather than queued. GolfSeg answers in about
+        // three seconds, which is inside what a golfer will wait for on a tee
+        // — and a queued job they have to come back for is a job they never
+        // come back for. The queue existed because the model it replaced took
+        // a metered call and half a minute.
+        try {
+            var filed = golfSeg.traceHole(courseId, holeNumber, requestedBy);
+            int total = filed.values().stream().mapToInt(Integer::intValue).sum();
+            log.info("GolfSeg traced course {} hole {} on request: {}",
+                    courseId, holeNumber, filed);
+            return Map.of("status", "READY", "tracedNow", true,
+                    "featuresDetected", total, "perLayer", filed);
+        } catch (VspApiException notAvailable) {
+            // No vision service on this deployment, or it could not answer.
+            // The hole stays as it was, which is how every hole was before any
+            // of this existed — said plainly rather than dressed as a failure.
+            log.info("GolfSeg unavailable for course {} hole {}: {}",
+                    courseId, holeNumber, notAvailable.getMessage());
+            return Map.of("status", "UNAVAILABLE", "tracedNow", false,
+                    "featuresDetected", 0);
+        }
     }
 
     @GetMapping("/courses/{courseId}/holes/{holeNumber}/features")

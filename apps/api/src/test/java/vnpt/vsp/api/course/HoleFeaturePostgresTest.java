@@ -50,9 +50,9 @@ class HoleFeaturePostgresTest {
 
     @BeforeEach
     void setUp() {
-        // The mapping service is only reached by the request endpoint, which
-        // this test does not exercise.
-        controller = new HoleFeatureController(em, null, 65, 30);
+        // The mapping and vision services are only reached by the request
+        // endpoint, which this test does not exercise.
+        controller = new HoleFeatureController(em, null, null, 65, 30);
 
         long facilityId = ((Number) em.createNativeQuery("""
                 INSERT INTO golf_facilities (name, publisher, effective_date, confidence, version, created_at, updated_at)

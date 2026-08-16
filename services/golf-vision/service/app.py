@@ -23,7 +23,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import numpy as np                                              # noqa: E402
-from fastapi import FastAPI, HTTPException                      # noqa: E402
+from fastapi import Depends, FastAPI, Header, HTTPException     # noqa: E402
 from pydantic import BaseModel, Field                           # noqa: E402
 
 from golfvision.classes import APP_LAYER_TYPE, GOLF_SEG_LABELS  # noqa: E402
@@ -34,6 +34,29 @@ from golfvision.vector.vectorize import (                       # noqa: E402
     MaskVectorizationService, feature_collection)
 
 app = FastAPI(title="VSP Golf Vision", version="0.1")
+
+
+def require_key(authorization: str = Header(default="")) -> None:
+    """A shared secret, because this listens on a public address.
+
+    The backend that calls it is on a private network and this box is not, so
+    the two can only meet out here. A segmentation service left open is a GPU
+    anybody can spend and a tile fetcher anybody can point at anything, so it
+    asks for a key.
+
+    Unset means unset, not open: without GOLF_VISION_API_KEY the service
+    refuses every request rather than silently serving the internet. The health
+    check stays open so a load balancer can see it without holding a secret.
+    """
+    expected = os.environ.get("GOLF_VISION_API_KEY", "")
+    if not expected:
+        raise HTTPException(503, "GOLF_VISION_API_KEY is not configured")
+    presented = authorization.removeprefix("Bearer ").strip()
+    # Constant-time: a timing oracle on a shared secret is a small hole that
+    # costs nothing to close.
+    import hmac
+    if not hmac.compare_digest(presented, expected):
+        raise HTTPException(401, "invalid or missing API key")
 
 #: Loaded once per process, not per request (§54). A 14 MB checkpoint costs
 #: half a second to read and the GPU nothing to keep.
@@ -100,7 +123,7 @@ def health():
     return {"status": "ok", "modelConfigured": ready, "model": _model_meta}
 
 
-@app.post("/trace/hole")
+@app.post("/trace/hole", dependencies=[Depends(require_key)])
 def trace_hole(request: TraceRequest):
     """One hole, traced. GeoJSON in WGS84, with provenance on every feature."""
     import torch
