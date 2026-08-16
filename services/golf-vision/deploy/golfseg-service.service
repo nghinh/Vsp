@@ -1,0 +1,23 @@
+[Unit]
+# The vision service the API now depends on. It was running under nohup, which
+# survives a logout and not a reboot — and since the API began calling it
+# through the tunnel, a reboot here is a course map that quietly stops being
+# traced rather than a service somebody notices is down.
+Description=GolfSeg vision service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+WorkingDirectory=/root/golfseg/golf-vision
+# Bound to localhost. The only way in is the restricted tunnel the API host
+# opens; nothing here is reachable from the internet even though this machine
+# is on it.
+Environment=GOLF_SEG_CHECKPOINT=/root/golfseg/golf-vision/models/naip-v3/best.pt
+Environment=HF_HOME=/root/golfseg/hf-cache
+EnvironmentFile=/root/golfseg/.vision-api-key.env
+ExecStart=/root/miniconda3/envs/golfseg/bin/uvicorn service.app:app --host 127.0.0.1 --port 8100
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

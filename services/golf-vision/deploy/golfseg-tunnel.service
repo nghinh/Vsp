@@ -1,0 +1,31 @@
+[Unit]
+# The vision service runs on a GPU box on the public internet; this API runs
+# on a LAN address behind NAT. They cannot reach each other, and the fix that
+# needs no new public surface is an outbound tunnel this side opens.
+#
+# Bound to 172.18.0.1 — the gateway of the vsp docker network — rather than to
+# 0.0.0.0. The API container reaches it; nothing else on the LAN does. The key
+# it authenticates with is restricted on the far side to opening this one
+# forward and nothing else: it cannot run a command.
+Description=Tunnel from vsp-api to the GolfSeg vision service
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+ExecStart=/usr/bin/ssh -N \
+  -i /home/ubuntu/.ssh/id_ed25519_golfseg \
+  -o BatchMode=yes \
+  -o ExitOnForwardFailure=yes \
+  -o ServerAliveInterval=30 \
+  -o ServerAliveCountMax=3 \
+  -o StrictHostKeyChecking=accept-new \
+  -L 172.18.0.1:18100:127.0.0.1:8100 \
+  root@14.225.68.28
+# A dropped tunnel is the normal case, not an error: the far side reboots, the
+# link flaps, the far side's sshd restarts. Restarting quietly is the whole job.
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
