@@ -425,6 +425,12 @@ class _RoundDetailsSheet extends StatelessWidget {
           // says so rather than being handed an id that resolves to nothing.
           packageId: plan.packageId,
           courseId: '${round.courseId}',
+          // Holes 10 to 18 of a paired round live on the second đường. Absent
+          // here, they resolved to the front nine's hole 10 — a hole a nine
+          // does not have — and the map reported the hole as unsurveyed.
+          backNineCourseId: round.backNineCourseId == null
+              ? null
+              : '${round.backNineCourseId}',
           courseName: round.courseName,
           holeNumber: plan.currentHole,
           // Omitted rather than defaulted when the course detail could not be

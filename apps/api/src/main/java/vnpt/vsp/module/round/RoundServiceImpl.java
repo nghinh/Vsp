@@ -389,6 +389,7 @@ public class RoundServiceImpl implements RoundService {
         RoundResponse response = new RoundResponse();
         response.setId(round.getId());
         response.setCourseId(round.getCourseId());
+        response.setBackNineCourseId(round.getBackNineCourseId());
         response.setCourseName(courseName);
         response.setStatus(round.getStatus());
         response.setStartedAt(round.getStartedAt());

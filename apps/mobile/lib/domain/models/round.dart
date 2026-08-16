@@ -18,6 +18,18 @@ enum RoundStatus { inProgress, completed, abandoned, cancelled }
 class Round extends Equatable {
   final String id; // UUID, local identifier
   final int courseId;
+
+  /// The second đường, where the round pairs two nines.
+  ///
+  /// Long Biên has three of them and a round there is a pairing chosen on the
+  /// day, so round hole 10 is hole 1 of whichever nine came second. The round
+  /// setup screen has always known this and passed it into the round; the
+  /// round itself did not carry it, so resuming one left holes 10 to 18
+  /// belonging to no course. The map asked the front nine for its hole 10,
+  /// which does not exist, and said the hole had not been surveyed.
+  ///
+  /// Null for an eighteen played on one course, which is most of them.
+  final int? backNineCourseId;
   final String courseName; // denormalized from course package
   final RoundStatus status;
   final DateTime startedAt;
@@ -42,6 +54,7 @@ class Round extends Equatable {
   const Round({
     required this.id,
     required this.courseId,
+    this.backNineCourseId,
     required this.courseName,
     required this.status,
     required this.startedAt,
@@ -65,6 +78,7 @@ class Round extends Equatable {
   Round copyWith({
     String? id,
     int? courseId,
+    int? backNineCourseId,
     String? courseName,
     RoundStatus? status,
     DateTime? startedAt,
@@ -80,6 +94,7 @@ class Round extends Equatable {
     return Round(
       id: id ?? this.id,
       courseId: courseId ?? this.courseId,
+      backNineCourseId: backNineCourseId ?? this.backNineCourseId,
       courseName: courseName ?? this.courseName,
       status: status ?? this.status,
       startedAt: startedAt ?? this.startedAt,
@@ -100,6 +115,7 @@ class Round extends Equatable {
     return {
       'id': id,
       'course_id': courseId,
+      'back_nine_course_id': backNineCourseId,
       'course_name': courseName,
       'status': status.name,
       'started_at': startedAt.toUtc().toIso8601String(),
@@ -132,6 +148,9 @@ class Round extends Equatable {
     return Round(
       id: map['id'] as String,
       courseId: (map['course_id'] as num).toInt(),
+      // Absent on a row written before this column existed, which every
+      // in-progress round on an installed app is.
+      backNineCourseId: (map['back_nine_course_id'] as num?)?.toInt(),
       courseName: map['course_name'] as String,
       status: RoundStatus.values.firstWhere(
         (e) => e.name == map['status'],
@@ -156,6 +175,7 @@ class Round extends Equatable {
   List<Object?> get props => [
     id,
     courseId,
+    backNineCourseId,
     courseName,
     status,
     startedAt,

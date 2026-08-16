@@ -840,6 +840,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         Round(
           id: roundId,
           courseId: config.courseId,
+          // The second đường, so a round resumed tomorrow still knows where
+          // holes 10 to 18 are. The screen has always passed this straight
+          // into the active round; the stored round did not carry it, so
+          // reopening one left those holes belonging to no course.
+          backNineCourseId: currentState.selectedSecondLayoutId,
           courseName: config.courseName,
           status: RoundStatus.inProgress,
           startedAt: config.startTime,

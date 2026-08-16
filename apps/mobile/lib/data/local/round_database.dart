@@ -38,7 +38,7 @@ const String kRoundDbName = 'vsp_round.db';
 /// to v2 for everyone; [migrateRoundSchema] performs the v1→v2 column adds.
 ///
 /// v3 adds `corrections.layer` — which geometry layer a golfer is correcting.
-const int kRoundDbVersion = 3;
+const int kRoundDbVersion = 4;
 
 /// Round-sync queue table (owned historically by `RoundSyncStore`).
 const String kRoundSyncQueueTableName = 'round_sync_queue';
@@ -67,6 +67,9 @@ const String kRoundsTableCreateSql = '''
   CREATE TABLE IF NOT EXISTS rounds (
     id TEXT PRIMARY KEY,
     course_id INTEGER NOT NULL,
+    -- The second đường, where the round pairs two nines. Null for an
+    -- eighteen played on one course, which is most of them.
+    back_nine_course_id INTEGER,
     course_name TEXT NOT NULL,
     status TEXT NOT NULL,
     started_at TEXT NOT NULL,
@@ -203,6 +206,12 @@ Future<void> migrateRoundSchema(
   if (oldVersion < 3) {
     // Geometry corrections: which layer of the hole the golfer is reporting.
     await _addColumnIfMissing(db, 'corrections', 'layer', 'TEXT');
+  }
+  if (oldVersion < 4) {
+    // The second đường of a paired round. Without it a resumed round on
+    // Long Biên's A+B had holes 10 to 18 belonging to no course, and the map
+    // asked the front nine for a hole it does not have.
+    await _addColumnIfMissing(db, 'rounds', 'back_nine_course_id', 'INTEGER');
   }
 }
 

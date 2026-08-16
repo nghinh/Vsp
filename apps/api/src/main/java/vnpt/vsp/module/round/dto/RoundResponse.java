@@ -17,6 +17,18 @@ public class RoundResponse {
 
     private UUID id;
     private Long courseId;
+
+    /**
+     * The second nine, where the round pairs two of them.
+     *
+     * Long Biên has three đường of nine holes and a round there is a pairing
+     * chosen on the day. The round has always carried this — it is a column on
+     * the entity and the resolver uses it — and it was never sent to the app,
+     * so a resumed round had holes 10 to 18 belonging to no course at all. The
+     * map asked the front nine for its hole 10, which does not exist, and drew
+     * nothing.
+     */
+    private Long backNineCourseId;
     private String courseName;
     private Round.RoundStatus status;
     private Instant startedAt;
@@ -51,6 +63,14 @@ public class RoundResponse {
 
     public void setId(UUID id) {
         this.id = id;
+    }
+
+    public Long getBackNineCourseId() {
+        return backNineCourseId;
+    }
+
+    public void setBackNineCourseId(Long backNineCourseId) {
+        this.backNineCourseId = backNineCourseId;
     }
 
     public Long getCourseId() {

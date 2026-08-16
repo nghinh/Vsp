@@ -71,6 +71,7 @@ void main() {
           CREATE TABLE rounds (
             id TEXT PRIMARY KEY,
             course_id INTEGER NOT NULL,
+            back_nine_course_id INTEGER,
             course_name TEXT NOT NULL,
             status TEXT NOT NULL,
             started_at TEXT NOT NULL,

@@ -87,6 +87,10 @@ Round roundFromApiJson(Map<String, dynamic> json) {
   return Round(
     id: json['id'] as String,
     courseId: (json['courseId'] as num?)?.toInt() ?? 0,
+    // The second đường of a paired round, so resuming from the history list
+    // knows where holes 10 to 18 are. Null from a server that does not send
+    // it, which behaves as before rather than guessing.
+    backNineCourseId: (json['backNineCourseId'] as num?)?.toInt(),
     courseName: (json['courseName'] as String?)?.trim().isNotEmpty == true
         ? json['courseName'] as String
         : 'Sân chưa xác định',

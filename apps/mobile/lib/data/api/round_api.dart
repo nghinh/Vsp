@@ -13,6 +13,9 @@ import '../../core/network/api_client.dart';
 class RoundApiModel {
   final String id;
   final int courseId;
+
+  /// The second đường, where the round pairs two nines.
+  final int? backNineCourseId;
   final String? courseName;
   final String status;
   final DateTime startedAt;
@@ -24,6 +27,7 @@ class RoundApiModel {
   const RoundApiModel({
     required this.id,
     required this.courseId,
+    this.backNineCourseId,
     this.courseName,
     required this.status,
     required this.startedAt,
@@ -37,6 +41,10 @@ class RoundApiModel {
     return RoundApiModel(
       id: json['id'].toString(),
       courseId: (json['courseId'] as num?)?.toInt() ?? 0,
+      // The second đường of a paired round. Null on an eighteen played on one
+      // course, and null from a server too old to send it — in which case a
+      // resumed round behaves as it did before, which is the safe direction.
+      backNineCourseId: (json['backNineCourseId'] as num?)?.toInt(),
       courseName: json['courseName'] as String?,
       status: json['status'] as String? ?? 'IN_PROGRESS',
       startedAt: json['startedAt'] != null
