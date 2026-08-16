@@ -87,10 +87,20 @@ class ToggleLayerVisibility extends HoleMapEvent {
 class NavigateToHole extends HoleMapEvent {
   final int holeNumber;
 
-  const NavigateToHole({required this.holeNumber});
+  /// The đường that holds the hole, where the round crosses from one to
+  /// another. Null keeps the map on the course it is already showing.
+  ///
+  /// A round of two nines changes course at hole 10, and the hole number
+  /// alone cannot say so: hole 10 of the round is hole 1 of the back nine,
+  /// and navigating to "hole 1" without this left the map on the front nine's
+  /// first — the right number, the wrong hole, and no way for a golfer to
+  /// tell from the screen.
+  final String? courseId;
+
+  const NavigateToHole({required this.holeNumber, this.courseId});
 
   @override
-  List<Object?> get props => [holeNumber];
+  List<Object?> get props => [holeNumber, courseId];
 }
 
 /// Retry loading after an error.

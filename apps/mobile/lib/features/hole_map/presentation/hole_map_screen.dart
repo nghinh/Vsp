@@ -105,6 +105,7 @@ class HoleMapScreen extends StatelessWidget {
             context,
             _HoleSync(
               holeNumber: holeNumber,
+              courseId: courseId,
               child: _HoleMapBody(
                 courseName: courseName,
                 courseId: courseId,
@@ -172,9 +173,17 @@ class HoleMapScreen extends StatelessWidget {
 /// the 6th is not yanked back the next time anything rebuilds.
 class _HoleSync extends StatefulWidget {
   final int holeNumber;
+
+  /// The đường that holds the hole. A round of two nines changes course at
+  /// hole 10, and the hole number alone cannot say so.
+  final String courseId;
   final Widget child;
 
-  const _HoleSync({required this.holeNumber, required this.child});
+  const _HoleSync({
+    required this.holeNumber,
+    required this.courseId,
+    required this.child,
+  });
 
   @override
   State<_HoleSync> createState() => _HoleSyncState();
@@ -192,7 +201,10 @@ class _HoleSyncState extends State<_HoleSync> {
       final bloc = context.read<HoleMapBloc>();
       final loaded = bloc.loadedHoleNumber;
       if (loaded != null && loaded != widget.holeNumber) {
-        bloc.add(NavigateToHole(holeNumber: widget.holeNumber));
+        bloc.add(NavigateToHole(
+          holeNumber: widget.holeNumber,
+          courseId: widget.courseId,
+        ));
       }
     });
   }
@@ -200,9 +212,13 @@ class _HoleSyncState extends State<_HoleSync> {
   @override
   void didUpdateWidget(_HoleSync oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.holeNumber != widget.holeNumber) {
+    if (oldWidget.holeNumber != widget.holeNumber ||
+        oldWidget.courseId != widget.courseId) {
       context.read<HoleMapBloc>().add(
-        NavigateToHole(holeNumber: widget.holeNumber),
+        NavigateToHole(
+          holeNumber: widget.holeNumber,
+          courseId: widget.courseId,
+        ),
       );
     }
   }

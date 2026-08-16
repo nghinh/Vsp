@@ -436,7 +436,10 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     add(
       LoadHoleMap(
         packageId: _currentPackageId,
-        courseId: _currentCourseId!,
+        // The đường the caller named, where it named one. A round that
+        // crosses from the front nine to the back changes course at hole 10,
+        // and the hole number alone cannot say so.
+        courseId: event.courseId ?? _currentCourseId!,
         courseName: _currentCourseName!,
         holeNumber: event.holeNumber,
       ),

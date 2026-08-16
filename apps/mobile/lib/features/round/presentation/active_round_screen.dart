@@ -525,12 +525,18 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
           )..add(
             LoadHoleMap(
               packageId: widget.packageId,
-              courseId: widget.courseId,
+              // The đường that holds this hole, and its number there — the
+              // same translation _MapTab is given. The bloc used to be loaded
+              // with the round's own numbers while the tab below it passed the
+              // course's, and the header adds the offset to whichever the bloc
+              // reports: hole 10 of a paired round came out as hole 19, on a
+              // course that has eighteen.
+              courseId: _courseForHole(_currentHoleNumber),
               courseName: widget.courseName,
               // Created lazily on the first read, which may be several holes into
               // the round — so it opens on the hole being played, not the one the
               // round started on.
-              holeNumber: _currentHoleNumber,
+              holeNumber: _holeOnItsCourse(_currentHoleNumber),
             ),
           ),
       child: child,
