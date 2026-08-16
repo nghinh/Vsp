@@ -13,6 +13,13 @@ import '../../hole_map/presentation/hole_map_bloc.dart';
 import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
 import 'widgets/hole_map_view.dart';
+import 'package:vsp_mobile/core/network/api_client.dart';
+import 'package:vsp_mobile/features/bag/data/bag_repository.dart';
+import 'package:vsp_mobile/features/bag/data/bag_service.dart';
+import 'package:vsp_mobile/core/storage/bag_sync_store.dart';
+import 'package:vsp_mobile/features/bag/data/bag_dto.dart';
+import 'package:vsp_mobile/features/bag/domain/club_naming.dart';
+import 'package:vsp_mobile/features/measure/domain/club_plan.dart';
 import 'widgets/map_loading_skeleton.dart';
 import 'widgets/hole_advice_sheet.dart';
 import 'widgets/map_error_view.dart';
@@ -171,6 +178,31 @@ class HoleMapScreen extends StatelessWidget {
 /// Only a change in [holeNumber] moves the map. Looking ahead with the header's
 /// own previous/next controls changes the bloc but not this input, so a peek at
 /// the 6th is not yanked back the next time anything rebuilds.
+/// The golfer's clubs, passed down to whatever wants to suggest a way round
+/// the hole.
+///
+/// An inherited widget rather than a constructor argument because the widget
+/// that can load a bag (stateful, above) is handed the widget that needs one
+/// (stateless, below) already built. Threading it through would mean making
+/// the body stateful for a value it does not own.
+class ClubBagScope extends InheritedWidget {
+  const ClubBagScope({
+    super.key,
+    required this.clubs,
+    required super.child,
+  });
+
+  final List<PlannedClub> clubs;
+
+  /// The clubs in scope, or none — which hides the suggestion.
+  static List<PlannedClub> of(BuildContext context) =>
+      context.dependOnInheritedWidgetOfExactType<ClubBagScope>()?.clubs ??
+      const [];
+
+  @override
+  bool updateShouldNotify(ClubBagScope old) => old.clubs != clubs;
+}
+
 class _HoleSync extends StatefulWidget {
   final int holeNumber;
 
@@ -190,9 +222,40 @@ class _HoleSync extends StatefulWidget {
 }
 
 class _HoleSyncState extends State<_HoleSync> {
+  /// The golfer's clubs, for the hole map's club suggestion.
+  ///
+  /// Read once for the screen rather than once per hole: a bag does not change
+  /// between the 3rd and the 4th. Empty until it arrives and empty if it never
+  /// does, which hides the suggestion rather than failing.
+  List<PlannedClub> _clubs = const [];
+
+  Future<void> _loadClubs() async {
+    try {
+      final apiClient = ApiClient();
+      final bag = await BagRepository(
+        bagService: BagService(apiClient: apiClient),
+        syncStore: BagSyncStore(),
+        apiClient: apiClient,
+      ).getActiveBag();
+      final clubs = <PlannedClub>[
+        for (final club in bag?.clubs ?? const <ClubDTO>[])
+          if ((club.carryDistance ?? 0) > 0)
+            PlannedClub(
+              label: club.displayName,
+              carryMeters: club.carryDistance!,
+            ),
+      ];
+      if (mounted) setState(() => _clubs = clubs);
+    } catch (_) {
+      // No bag, no network, no carry on file. The suggestion is an offer, and
+      // the absence of an offer is not an error worth a message.
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadClubs();
     // A bloc created earlier by another tab is already loaded, and loaded on
     // the hole that tab asked for. Reading it here is safe: something above has
     // already put this screen on screen, which is the read that creates it.
@@ -224,7 +287,8 @@ class _HoleSyncState extends State<_HoleSync> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) =>
+      ClubBagScope(clubs: _clubs, child: widget.child);
 }
 
 class _HoleMapBody extends StatelessWidget {
@@ -347,6 +411,7 @@ class _HoleMapBody extends StatelessWidget {
         locationService: locationService,
         distanceUnit: distanceUnit,
         imageryConfig: imageryConfig,
+        clubs: ClubBagScope.of(context),
       );
     }
 

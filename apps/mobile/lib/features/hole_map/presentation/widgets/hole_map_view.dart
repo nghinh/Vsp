@@ -42,6 +42,8 @@ import 'package:vsp_mobile/features/basemap/presentation/widgets/basemap_toggle.
 import 'package:vsp_mobile/features/basemap/presentation/widgets/map_data_attribution.dart';
 import 'package:vsp_mobile/features/hole_map/domain/course_map_style_builder.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
+import 'package:vsp_mobile/features/measure/domain/club_plan.dart';
+import 'package:vsp_mobile/features/measure/presentation/widgets/club_plan_button.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_geojson.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/measure/presentation/measure_cubit.dart';
@@ -68,12 +70,20 @@ class HoleMapView extends StatefulWidget {
   /// Imagery configuration. Defaults to this build's; injectable for tests.
   final SatelliteImageryConfig? imageryConfig;
 
+  /// The golfer's clubs, for suggesting how to play the hole.
+  ///
+  /// Empty where no bag is loaded or no club has a carry on file, and the
+  /// suggestion is simply not offered — a plan drawn from clubs the golfer
+  /// has not told us about would be a plan for somebody else.
+  final List<PlannedClub> clubs;
+
   const HoleMapView({
     super.key,
     required this.state,
     this.locationService,
     this.distanceUnit,
     this.imageryConfig,
+    this.clubs = const [],
   });
 
   @override
@@ -469,12 +479,28 @@ class _HoleMapViewState extends State<HoleMapView> {
           // The same chips the drawn map carries. On a photograph they are
           // worth more: a golfer can see the sand and not how far it is.
           featureLabels: _featureLabels(),
-          mapOverlay: _drawVectorHole
-              ? Align(alignment: Alignment.topRight, child: toggle)
-              : NoGeometryBanner(
+          mapOverlay: Stack(
+            children: [
+              if (_drawVectorHole)
+                Align(alignment: Alignment.topRight, child: toggle)
+              else
+                NoGeometryBanner(
                   trailing: toggle,
                   imageryAvailable: _imagery.isAvailable,
                 ),
+              // The suggested way round the hole. Sits over the photograph
+              // because that is where a golfer can check it against the pond
+              // they can see, and because the points it drops are the same
+              // points the tool already lets them drag.
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12, bottom: 96),
+                  child: ClubPlanButton(clubs: widget.clubs),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

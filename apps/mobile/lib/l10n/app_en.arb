@@ -255,6 +255,14 @@
   "roundSetupHolesBack9Label": "Holes 10-18 (Back 9)",
   "packageChecking": "Checking package…",
   "packageOfflineReady": "Offline Ready",
+  "measurePlanSuggest": "Suggest clubs",
+  "@measurePlanSuggest": {
+    "description": "Drops a suggested chain of aim points on the satellite view, one per shot, from the golfer's own club carries."
+  },
+  "measurePlanClear": "Clear plan",
+  "@measurePlanClear": {
+    "description": "Removes the suggested points again. A suggestion that cannot be dismissed is a decision."
+  },
   "packageNotDownloaded": "Course data not downloaded",
   "packageNotDownloadedNamed": "{course} not downloaded",
   "@packageNotDownloadedNamed": {

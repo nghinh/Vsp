@@ -152,6 +152,28 @@ class MeasureCubit extends Cubit<MeasureState> {
     _recompute();
   }
 
+  /// Replaces the chain with a suggested one.
+  ///
+  /// The plan arrives as ordinary points, deliberately. Everything the golfer
+  /// can already do to a point they dropped themselves — drag it off the
+  /// bunker, delete the layup and play the hole in two, tap to put one back —
+  /// works on these without a line of new code, because there is nothing
+  /// special about them once they are here. A suggestion the golfer cannot
+  /// argue with is worse than no suggestion; this one is an opening offer.
+  ///
+  /// The last aim point is the target itself and is left off: the tool already
+  /// measures the last leg to the green, and a point sitting on the flag would
+  /// be a marker the golfer has to delete before the number reads right.
+  void applyPlan(List<LatLng> aimPoints) {
+    if (isClosed) return;
+    final points = [
+      for (final position in aimPoints)
+        MeasurePoint(id: _uuid.v4(), position: position),
+    ];
+    emit(state.copyWith(points: List.unmodifiable(points)));
+    _recompute();
+  }
+
   /// Removes the most recently dropped point.
   void undo() {
     if (isClosed || state.points.isEmpty) return;

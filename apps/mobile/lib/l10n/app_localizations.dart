@@ -1178,6 +1178,18 @@ abstract class AppLocalizations {
   /// **'Offline Ready'**
   String get packageOfflineReady;
 
+  /// Drops a suggested chain of aim points on the satellite view, one per shot, from the golfer's own club carries.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest clubs'**
+  String get measurePlanSuggest;
+
+  /// Removes the suggested points again. A suggestion that cannot be dismissed is a decision.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear plan'**
+  String get measurePlanClear;
+
   /// No description provided for @packageNotDownloaded.
   ///
   /// In en, this message translates to:

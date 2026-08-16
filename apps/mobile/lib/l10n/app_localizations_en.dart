@@ -579,6 +579,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packageOfflineReady => 'Offline Ready';
 
   @override
+  String get measurePlanSuggest => 'Suggest clubs';
+
+  @override
+  String get measurePlanClear => 'Clear plan';
+
+  @override
   String get packageNotDownloaded => 'Course data not downloaded';
 
   @override

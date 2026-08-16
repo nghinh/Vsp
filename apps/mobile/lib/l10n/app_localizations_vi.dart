@@ -579,6 +579,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get packageOfflineReady => 'Sẵn sàng ngoại tuyến';
 
   @override
+  String get measurePlanSuggest => 'Gợi ý chia gậy';
+
+  @override
+  String get measurePlanClear => 'Bỏ gợi ý';
+
+  @override
   String get packageNotDownloaded => 'Chưa tải dữ liệu sân';
 
   @override

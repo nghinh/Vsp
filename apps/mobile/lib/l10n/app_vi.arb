@@ -188,6 +188,8 @@
   "roundSetupHolesBack9Label": "Hố 10-18 (9 hố sau)",
   "packageChecking": "Đang kiểm tra gói dữ liệu…",
   "packageOfflineReady": "Sẵn sàng ngoại tuyến",
+  "measurePlanSuggest": "Gợi ý chia gậy",
+  "measurePlanClear": "Bỏ gợi ý",
   "packageNotDownloaded": "Chưa tải dữ liệu sân",
   "packageNotDownloadedNamed": "Chưa tải dữ liệu {course}",
   "packageNotDownloadedSubtitle": "Tải để dùng offline, hoặc chơi luôn (cần mạng)",
