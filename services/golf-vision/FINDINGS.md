@@ -240,3 +240,69 @@ would produce confident nonsense at exactly the place a golfer trusts most.
 The gap is left visible. It is the argument for GolfSeg, and it now has a
 number on both sides of it: bunker 0.90 precision from a generic model plus
 rules, green 0.006 IoU from anything short of training.
+
+---
+
+## 8. Training pipeline and dataset (Phase 5)
+
+Built on a borrowed A100 (production server, VRAM shared with a live vLLM —
+see the training run's discipline below). The dataset is the whole point of
+§62: the persistent asset is not the model, it is the labelled corpus, and it
+now exists.
+
+### The dataset, measured
+
+From the 2,614 OSM polygons across 34 courses that carry hole geometry:
+
+| | patches | courses |
+|---|---|---|
+| train | 1,051 | 26 |
+| val | 103 | 3 |
+| test | 163 | 5 |
+
+512-px patches at zoom 19 (0.29 m/px), 25% overlap, split **by course** so a
+val score is not a memory test. Class pixel share, which is why the loss is
+weighted:
+
+| class | share |
+|---|---|
+| water_hazard | 45.9% |
+| background | 39.8% |
+| fairway | 9.7% |
+| bunker | 2.2% |
+| green | 1.45% |
+| tee_box | 0.67% |
+| rough | 0.27% |
+
+Green and tee — the two a rangefinder most needs — are under 2% of pixels
+between them. A plain cross-entropy would ignore them and score well; median-
+frequency weights (bunker ×12 capped, green ×3.6, background ×0.04) plus a
+Dice term are the answer, and they are in place.
+
+### The honest limit, again
+
+The masks are only as complete as OSM. Đường B maps 3 bunkers where the ground
+has ~20, so patches full of real sand carry no bunker label. The builder gates
+each class per course on what that course actually maps, and writes unmapped
+ground as `ignore` (255, skipped by the loss) rather than as background — but
+where OSM is simply thin, the model will be too. The fix is the human-
+correction loop of §37–38, feeding verified polygons back; the 90%-precision
+bare-ground detector from §7 is the obvious way to pre-label the sand OSM
+missed.
+
+### What is built, ready for the GPU
+
+```
+training/dataset.py   patches + dihedral augmentation (§43)
+training/losses.py    median-frequency weights + Dice, ignore-aware (§42)
+training/metrics.py   per-class IoU, mean over present classes only
+training/models.py    SegFormer (feasibility) | SMP U-Net (commercial), §4
+training/train.py     the loop: VRAM cap, class balance, best-on-green
+evaluation/evaluate_checkpoint.py   IoU + boundary error in metres (§46)
+datasets/build_golfseg_dataset.py   OSM → (image, mask) pairs (§36)
+```
+
+Smoke-tested end to end on synthetic data: dataset → weighted loss → per-class
+IoU → checkpoint → metre-accurate evaluation, no crash. The weights are not
+trained yet — that is the one step that needs the A100, and it waits on
+freeing VRAM from the production vLLM without disrupting it.
