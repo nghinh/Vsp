@@ -2722,6 +2722,14 @@
   "downloadAlreadyCurrent": "Already up to date",
   "downloadCompleted": "Course data downloaded",
   "mapToPin": "To pin",
+  "mapToGreenCentre": "To green centre",
+  "@mapToGreenCentre": {
+    "description": "Play-line distance where the club published no pin, so the line ends at the middle of the green. Naming it stops the middle reading as the flag — they are a club apart."
+  },
+  "mapTargetToGreenCentre": "Target to green centre",
+  "@mapTargetToGreenCentre": {
+    "description": "The same, for the leg after a target the golfer placed."
+  },
   "mapToTarget": "To target",
   "mapTargetToPin": "Target to pin",
   "mapTracedShapes": "Hole shapes traced from satellite imagery by AI, not yet checked by a human",

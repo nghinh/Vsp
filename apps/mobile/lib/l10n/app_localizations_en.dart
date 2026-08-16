@@ -4110,6 +4110,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mapToPin => 'To pin';
 
   @override
+  String get mapToGreenCentre => 'To green centre';
+
+  @override
+  String get mapTargetToGreenCentre => 'Target to green centre';
+
+  @override
   String get mapToTarget => 'To target';
 
   @override

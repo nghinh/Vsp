@@ -584,9 +584,14 @@ class _HoleMapViewState extends State<HoleMapView> {
               child: Builder(
                 builder: (context) {
                   final legs = _playLine(widget.state);
+                  final flag = widget.state.holeMap.pin;
                   return PlayLinePanel(
                     toTarget: legs.length > 1 ? legs.first.label : null,
                     toPin: legs.last.label,
+                    // aimPoint falls back to the middle of the green where no
+                    // club has published a flag, which is most holes most
+                    // days. Same number either way; the row says which.
+                    aimsAtPublishedPin: flag != null && !flag.isExpired,
                   );
                 },
               ),

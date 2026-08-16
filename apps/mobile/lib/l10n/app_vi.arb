@@ -1736,6 +1736,8 @@
   "downloadAlreadyCurrent": "Đã là bản mới nhất",
   "downloadCompleted": "Đã tải xong dữ liệu sân",
   "mapToPin": "Tới cờ",
+  "mapToGreenCentre": "Tới giữa green",
+  "mapTargetToGreenCentre": "Còn lại tới giữa green",
   "mapToTarget": "Tới mục tiêu",
   "mapTargetToPin": "Còn lại",
   "mapTracedShapes": "Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng",

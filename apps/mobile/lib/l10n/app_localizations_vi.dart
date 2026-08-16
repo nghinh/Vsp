@@ -4108,6 +4108,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get mapToPin => 'Tới cờ';
 
   @override
+  String get mapToGreenCentre => 'Tới giữa green';
+
+  @override
+  String get mapTargetToGreenCentre => 'Còn lại tới giữa green';
+
+  @override
   String get mapToTarget => 'Tới mục tiêu';
 
   @override

@@ -84,6 +84,43 @@ abstract final class HoleGeometryCoverage {
     return geoJson['coordinates'] != null ? 1 : 0;
   }
 
+  /// True when a layer carries a shape, as opposed to a spot on the ground.
+  ///
+  /// The distinction the course package does not make. Every hole it ships has
+  /// a `tee` layer and a `green` layer, because the assembler writes the hole's
+  /// own `teeing_ground_location` and `green_location` into them as reference
+  /// points before it adds any polygons — and on the 62 courses whose polygons
+  /// live in the draft table rather than the published one, those single points
+  /// are the entire layer.
+  ///
+  /// A layer like that is a coordinate wearing a layer's name, and treating it
+  /// as geometry is what let a package with no green outline in it displace a
+  /// traced green outline. Everything downstream then measured to the middle of
+  /// a green it could no longer see the edges of: no front, no back, one number
+  /// on the panel where there should have been two.
+  static bool hasAreaGeometry(MapLayerEntity layer) {
+    final geoJson = layer.geoJson;
+    if (geoJson == null) return false;
+
+    bool isArea(Object? geometry) =>
+        geometry is Map &&
+        (geometry['type'] == 'Polygon' || geometry['type'] == 'MultiPolygon') &&
+        geometry['coordinates'] != null;
+
+    switch (geoJson['type']) {
+      case 'FeatureCollection':
+        final features = geoJson['features'];
+        if (features is! List) return false;
+        return features.any(
+          (feature) => feature is Map && isArea(feature['geometry']),
+        );
+      case 'Feature':
+        return isArea(geoJson['geometry']);
+      default:
+        return isArea(geoJson);
+    }
+  }
+
   /// Every coordinate of the green as the course package draws it.
   ///
   /// The near edge, the far edge and the middle of a green are three different

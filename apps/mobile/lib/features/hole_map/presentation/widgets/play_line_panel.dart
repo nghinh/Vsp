@@ -15,7 +15,18 @@ class PlayLinePanel extends StatelessWidget {
     super.key,
     required this.toTarget,
     required this.toPin,
+    this.aimsAtPublishedPin = true,
   });
+
+  /// Whether the far end of this line is a flag the club published, or the
+  /// middle of the green standing in for one.
+  ///
+  /// It is the middle of the green on most holes, most days — few clubs
+  /// publish a pin — and calling that "Tới cờ" claims a precision nobody
+  /// has. It is also the one number on this screen a golfer clubs off, and
+  /// the middle of a green is a club away from its front. The front and back
+  /// are on the right of the map; this row says which of the three it is.
+  final bool aimsAtPublishedPin;
 
   /// Distance to the target the golfer placed, already formatted. Null when
   /// they have not placed one.
@@ -47,9 +58,19 @@ class PlayLinePanel extends StatelessWidget {
           if (toTarget != null) ...[
             _Row(label: l10n.mapToTarget, value: toTarget!),
             const SizedBox(height: 2),
-            _Row(label: l10n.mapTargetToPin, value: toPin),
+            _Row(
+              label: aimsAtPublishedPin
+                  ? l10n.mapTargetToPin
+                  : l10n.mapTargetToGreenCentre,
+              value: toPin,
+            ),
           ] else
-            _Row(label: l10n.mapToPin, value: toPin),
+            _Row(
+              label: aimsAtPublishedPin
+                  ? l10n.mapToPin
+                  : l10n.mapToGreenCentre,
+              value: toPin,
+            ),
         ],
       ),
     );

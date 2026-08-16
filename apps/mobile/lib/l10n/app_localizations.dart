@@ -7232,6 +7232,18 @@ abstract class AppLocalizations {
   /// **'To pin'**
   String get mapToPin;
 
+  /// Play-line distance where the club published no pin, so the line ends at the middle of the green. Naming it stops the middle reading as the flag — they are a club apart.
+  ///
+  /// In en, this message translates to:
+  /// **'To green centre'**
+  String get mapToGreenCentre;
+
+  /// The same, for the leg after a target the golfer placed.
+  ///
+  /// In en, this message translates to:
+  /// **'Target to green centre'**
+  String get mapTargetToGreenCentre;
+
   /// No description provided for @mapToTarget.
   ///
   /// In en, this message translates to:

@@ -15,6 +15,7 @@ import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/data/course_pin_api.dart';
 import 'package:vsp_mobile/features/hole_map/data/hole_feature_api.dart';
+import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
@@ -272,8 +273,30 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       final current = state;
       if (current is! HoleMapReady) return;
 
-      final merged = Map<MapLayerType, MapLayerEntity>.from(traced.layers)
-        ..addAll(current.holeMap.layers);
+      final merged = Map<MapLayerType, MapLayerEntity>.from(traced.layers);
+      for (final entry in current.holeMap.layers.entries) {
+        // The package wins where it has a shape — and only there.
+        //
+        // This used to be `addAll`, on the reading that a package layer beats
+        // a traced one. It does. But every hole in every package carries a
+        // `tee` and a `green` layer whether or not anybody digitised either:
+        // the assembler seeds them with the hole's own two reference points.
+        // So on every course whose polygons are still in the draft table —
+        // which is all 62 of them — a one-point green layer overwrote the
+        // green GolfSeg had just traced.
+        //
+        // Nothing looked broken. The green still had a position, the play line
+        // still reached it, the header still read "Tới cờ 509 yd". What was
+        // gone was its shape, and with it the front and back edges: the panel
+        // that shows 505 / 530 needs three coordinates and had one, so it
+        // rendered nothing at all rather than something wrong. A golfer was
+        // being given the middle of the green and no way to tell it was the
+        // middle.
+        if (HoleGeometryCoverage.hasAreaGeometry(entry.value) ||
+            !merged.containsKey(entry.key)) {
+          merged[entry.key] = entry.value;
+        }
+      }
       final visibility = Map<String, bool>.from(current.layerVisibility);
       for (final layer in merged.keys) {
         visibility.putIfAbsent(layer.name, () => true);
