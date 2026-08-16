@@ -124,10 +124,18 @@ public class HoleFeatureController {
                   -- queue for somebody to correct; it does not go out.
                   AND NOT (d.source = 'ai-satellite'
                            AND d.layer_type IN ('FAIRWAY', 'ROUGH'))
+                  -- Course-wide, not hole-by-hole, for two reasons that agree.
+                  -- A course whose greens are real on holes 1 and 9 and the
+                  -- model's on the other seven is one where nothing on screen
+                  -- can be trusted more than the worst of it. And ODbL's
+                  -- horizontal-layers guideline draws the same line: mixing
+                  -- OSM and non-OSM geometry within one feature type in one
+                  -- regional cut makes the whole layer a Derivative Database.
+                  -- Keeping each (course, layer) to a single source keeps it a
+                  -- Collective Database, and our own work our own.
                   AND (d.source <> 'ai-satellite' OR NOT EXISTS (
                         SELECT 1 FROM draft_geometry_features surveyed
                         WHERE surveyed.course_id = d.course_id
-                          AND surveyed.hole_id = d.hole_id
                           AND surveyed.layer_type = d.layer_type
                           AND surveyed.is_valid
                           AND surveyed.source <> 'ai-satellite'

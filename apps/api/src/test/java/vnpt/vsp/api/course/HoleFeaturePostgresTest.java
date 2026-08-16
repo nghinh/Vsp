@@ -136,6 +136,45 @@ class HoleFeaturePostgresTest {
                 .containsExactlyInAnyOrder("bunker:ai-satellite", "green:openstreetmap");
     }
 
+    /// The rule is the course's, not the hole's. A course with real greens on
+    /// two holes and the model's on the other seven is one where nothing on
+    /// screen can be trusted more than the worst of it — and ODbL's
+    /// horizontal-layers guideline draws the same line, because mixing
+    /// sources within one feature type in one regional cut makes the whole
+    /// layer a Derivative Database.
+    @Test
+    @DisplayName("a mapped green on one hole silences the model's on the others")
+    void theRuleCoversTheWholeCourse() {
+        long otherHole = ((Number) em.createNativeQuery("""
+                INSERT INTO holes (course_id, hole_number, par, publisher, effective_date, confidence, version, created_at, updated_at)
+                VALUES (:course, 2, 4, 'feature-test', CURRENT_DATE, 0, 0, now(), now())
+                RETURNING id
+                """).setParameter("course", courseId).getSingleResult()).longValue();
+        em.flush();
+
+        // Hole 1: a mapper drew the green. Hole 2: only the model did.
+        draft("GREEN", "openstreetmap", "PENDING_REVIEW", 90);
+        em.createNativeQuery("""
+                INSERT INTO draft_geometry_features
+                    (feature_uuid, course_id, hole_id, layer_type, geometry,
+                     is_valid, external_feature_id, publisher, source,
+                     accuracy_class, verification_status, confidence,
+                     effective_date, version, created_at, updated_at)
+                VALUES (gen_random_uuid(), :course, :hole, 'GREEN', :wkt,
+                        true, 'ai:green:2', 'ai-satellite', 'ai-satellite',
+                        'D_UNVERIFIED_COMMUNITY', 'PENDING_REVIEW', 88,
+                        CURRENT_DATE, 0, now(), now())
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", otherHole)
+                .setParameter("wkt", SQUARE)
+                .executeUpdate();
+        em.flush();
+
+        var holeTwo = controller.features(courseId, 2);
+        assertThat((List<?>) holeTwo.get("features")).isEmpty();
+    }
+
     /// The largest thing on screen and the one carrying no number a golfer
     /// plays to. It stays in the queue for a reviewer; it does not go out.
     @Test

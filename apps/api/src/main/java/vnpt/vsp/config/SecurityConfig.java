@@ -102,6 +102,14 @@ public class SecurityConfig {
                         // by someone already holding the URL.
                         .requestMatchers(HttpMethod.GET, "/scorecard-photos/**").permitAll()
 
+                        // The OpenStreetMap-derived geometry, offered back.
+                        // Open because ODbL §4.6 requires it to be: serving
+                        // this data to golfers is public use, and recipients
+                        // must be offered the whole derived database "free of
+                        // charge if distributed over the internet". A download
+                        // behind a login is not an offer.
+                        .requestMatchers(HttpMethod.GET, "/open-data/**").permitAll()
+
                         // All other endpoints require authentication
                         .anyRequest().authenticated()
                 )
