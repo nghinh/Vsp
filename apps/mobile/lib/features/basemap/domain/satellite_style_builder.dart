@@ -24,13 +24,24 @@ abstract final class SatelliteStyleBuilder {
   /// Source id for the measuring overlay GeoJSON.
   static const String measureSourceId = 'measure-overlay';
 
-  // Palette — matches the app's dark map surfaces.
+  // Palette — the same one the vector course map uses, deliberately.
+  //
+  // These were a set of their own: yellow legs, cyan golfer, green flag. Each
+  // was a reasonable choice for reading against grass, and together with the
+  // vector map's own set they meant the line a golfer was reading changed
+  // colour when they switched between the photograph and the drawing of the
+  // same hole. Two views of one hole should not disagree about what the aim
+  // line looks like.
+  //
+  // So: a white line over a dark casing, which reads over fairway, sand, water
+  // and shadow alike; the flag end dark; the golfer slate; and the point being
+  // aimed at the one red thing on screen.
   static const String _backgroundColor = '#0F172A';
-  static const String _legColor = '#FACC15';
-  static const String _greenLegColor = '#22C55E';
-  static const String _pointColor = '#FACC15';
-  static const String _golferColor = '#38BDF8';
-  static const String _greenMarkerColor = '#22C55E';
+  static const String _legColor = '#FFFFFF';
+  static const String _greenLegColor = '#FFFFFF';
+  static const String _pointColor = '#DA2B3C';
+  static const String _golferColor = '#4A6E8F';
+  static const String _greenMarkerColor = '#111827';
   static const String _outlineColor = '#0F172A';
 
   /// Builds the style as a JSON string ready for `MapLibreMap.styleString`.
@@ -165,17 +176,35 @@ abstract final class SatelliteStyleBuilder {
           'circle-stroke-color': '#FFFFFF',
         },
       },
+      // The aiming point is a bullseye, not a disc: it is the one marker the
+      // golfer put there themselves, and on a satellite photograph — where
+      // every other dot on screen is a real object — a plain disc reads as
+      // part of the picture. Three stacked circles, matching the vector map.
+      {
+        'id': 'measure-point-ring',
+        'type': 'circle',
+        'source': measureSourceId,
+        'filter': ['==', 'kind', MeasureFeatureKind.point],
+        'paint': {
+          'circle-radius': 11.0,
+          'circle-color': _pointColor,
+          'circle-stroke-width': 2.0,
+          'circle-stroke-color': '#FFFFFF',
+        },
+      },
+      {
+        'id': 'measure-point-ring-inner',
+        'type': 'circle',
+        'source': measureSourceId,
+        'filter': ['==', 'kind', MeasureFeatureKind.point],
+        'paint': {'circle-radius': 7.0, 'circle-color': '#FFFFFF'},
+      },
       {
         'id': 'measure-point-circle',
         'type': 'circle',
         'source': measureSourceId,
         'filter': ['==', 'kind', MeasureFeatureKind.point],
-        'paint': {
-          'circle-radius': 8.0,
-          'circle-color': _pointColor,
-          'circle-stroke-width': 2.0,
-          'circle-stroke-color': _outlineColor,
-        },
+        'paint': {'circle-radius': 3.5, 'circle-color': _pointColor},
       },
     ];
   }

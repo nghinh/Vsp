@@ -236,6 +236,25 @@ class _HoleMapViewState extends State<HoleMapView> {
         .toList();
   }
 
+  /// The distance on each leg of the play line, halfway along it.
+  ///
+  /// Only on the drawn map. The satellite view beside it draws the measuring
+  /// session's own chain, which is different geometry — putting these numbers
+  /// over it would float them beside a line they are not measuring.
+  List<FeatureLabelChip> _playLineLabels() {
+    return [
+      for (final leg in _playLine(widget.state))
+        FeatureLabelChip.onLine(
+          meters: leg.from.distanceTo(leg.to),
+          // Straight average. Over the few hundred metres of a golf hole the
+          // difference from a great-circle midpoint is under a metre, which is
+          // less than the width of the chip sitting on it.
+          latitude: (leg.from.latitude + leg.to.latitude) / 2,
+          longitude: (leg.from.longitude + leg.to.longitude) / 2,
+        ),
+    ];
+  }
+
   static String _labelOf(MapLayerType layer, AppLocalizations l10n) =>
       switch (layer) {
         MapLayerType.green => l10n.mapLayerGreen,
@@ -247,15 +266,21 @@ class _HoleMapViewState extends State<HoleMapView> {
         _ => layer.name,
       };
 
-  /// The same colours the polygons are drawn in, so the row and the shape
-  /// on the map are obviously the same thing.
+  /// The hues the polygons are drawn in, so the row and the shape on the map
+  /// are obviously the same thing.
+  ///
+  /// Same hue, deeper: the map's fills are pale because they cover half the
+  /// screen, and a four-pixel strip of pale green on a white card is a white
+  /// card. What has to survive here is which layer it is, not the exact shade.
   static Color _colourOf(MapLayerType layer) => switch (layer) {
-        MapLayerType.green => const Color(0xFF22C55E),
-        MapLayerType.bunker => const Color(0xFFD6C6A0),
-        MapLayerType.water => const Color(0xFF3B82F6),
-        MapLayerType.penaltyArea => const Color(0xFFF97316),
-        MapLayerType.ob => const Color(0xFFDC2626),
-        _ => const Color(0xFF94A3B8),
+        MapLayerType.green => const Color(0xFF7FB13F),
+        MapLayerType.bunker => const Color(0xFFD9BE79),
+        MapLayerType.water => const Color(0xFF3E96CC),
+        MapLayerType.penaltyArea => const Color(0xFFC96A6A),
+        MapLayerType.ob => const Color(0xFFB3453F),
+        MapLayerType.fairway => const Color(0xFF8DC15E),
+        MapLayerType.tee => const Color(0xFF8FB35F),
+        _ => const Color(0xFF94A38C),
       };
 
   /// Where every number on this screen is measured from.
@@ -503,7 +528,7 @@ class _HoleMapViewState extends State<HoleMapView> {
           // and below every panel, so a chip never covers a control.
           FeatureLabelOverlay(
             controller: _mapController,
-            chips: _featureLabels(),
+            chips: [..._featureLabels(), ..._playLineLabels()],
             unit: DistanceUnitScope.watch(context),
           ),
 

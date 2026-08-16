@@ -29,7 +29,22 @@ class FeatureLabelChip {
     required this.colour,
     required this.latitude,
     required this.longitude,
-  });
+  }) : onLine = false;
+
+  /// A number sitting on the play line itself, halfway along a leg.
+  ///
+  /// No name and no pointer: the line under it says what it is measuring, and
+  /// a pointer would point at a piece of line rather than at a thing. This is
+  /// the number a golfer on the tee reads first — "239 to the target, 240 on
+  /// to the pin" — and reading it used to mean looking away from the hole to
+  /// a panel in the corner.
+  const FeatureLabelChip.onLine({
+    required this.meters,
+    required this.latitude,
+    required this.longitude,
+  })  : label = '',
+        colour = const Color(0xFF111827),
+        onLine = true;
 
   final String label;
   final double meters;
@@ -37,11 +52,14 @@ class FeatureLabelChip {
   final double latitude;
   final double longitude;
 
+  /// True for a number on the line rather than a callout on a shape.
+  final bool onLine;
+
   /// Two chips for the same shape at the same distance are the same chip.
   /// Used to decide whether a camera-independent rebuild is needed at all.
   String get identity =>
       '$label|${latitude.toStringAsFixed(6)}|${longitude.toStringAsFixed(6)}'
-      '|${meters.round()}';
+      '|${meters.round()}|$onLine';
 }
 
 class FeatureLabelOverlay extends StatefulWidget {
@@ -158,7 +176,16 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
         key: const Key('feature_label_overlay'),
         children: [
           for (final chip in widget.chips)
-            if (_onScreen(_positions[chip.identity], size))
+            if (chip.onLine && _onScreen(_positions[chip.identity], size))
+              Positioned(
+                // Centred on the line, because the line is what it belongs to.
+                left: _positions[chip.identity]!.dx - _chipWidth / 2,
+                top: _positions[chip.identity]!.dy - 13,
+                width: _chipWidth,
+                child: Center(child: _pill(chip)),
+              ),
+          for (final chip in widget.chips)
+            if (!chip.onLine && _onScreen(_positions[chip.identity], size))
               Positioned(
                 // Placed by the tip of its pointer, not by its middle. A chip
                 // centred on the shape covers the shape — on a bunker the size
@@ -190,6 +217,34 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
       at.dy > -20 &&
       at.dx < size.width + 40 &&
       at.dy < size.height + 20;
+
+  /// The number on the line: a white pill, nothing else in it.
+  Widget _pill(FeatureLabelChip chip) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(7),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x330B1F17),
+            blurRadius: 3,
+            offset: Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Text(
+        MeasureUnits.format(chip.meters, widget.unit),
+        maxLines: 1,
+        style: const TextStyle(
+          color: Color(0xFF111827),
+          fontSize: 15,
+          height: 1.1,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
 
   /// A white callout with a pointer, on the reading that a label has two jobs
   /// and they pull in opposite directions: it has to be legible against
