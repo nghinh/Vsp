@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import vnpt.vsp.module.geometry.golfseg.GolfSegImportService;
 
@@ -45,5 +47,28 @@ public class GolfSegController {
                 courseId, holeNumber, requestedBy);
         return Map.of("courseId", courseId, "holeNumber", holeNumber,
                 "filed", importService.traceHole(courseId, holeNumber, requestedBy));
+    }
+
+    /**
+     * Files a FeatureCollection somebody else traced.
+     *
+     * <p>The vision service runs on a GPU host this API cannot reach, and
+     * tracing is a batch job rather than something on a request path — so the
+     * geometry arrives rather than being fetched. Same filing rules either
+     * way: the confidence floor, the area bounds golf actually has, and a
+     * place below anything a person drew.
+     */
+    @PostMapping("/admin/courses/{courseId}/holes/{holeNumber}/geometry/ingest")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
+    public Map<String, Object> ingest(Authentication authentication,
+                                      @PathVariable Long courseId,
+                                      @PathVariable @Min(1) @Max(18) int holeNumber,
+                                      @RequestBody JsonNode featureCollection) {
+        String requestedBy = String.valueOf(authentication.getPrincipal());
+        log.info("POST /admin/courses/{}/holes/{}/geometry/ingest - {}",
+                courseId, holeNumber, requestedBy);
+        return Map.of("courseId", courseId, "holeNumber", holeNumber,
+                "filed", importService.ingest(courseId, holeNumber,
+                        featureCollection, requestedBy));
     }
 }

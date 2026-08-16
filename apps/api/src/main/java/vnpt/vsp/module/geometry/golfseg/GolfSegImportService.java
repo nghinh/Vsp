@@ -39,6 +39,26 @@ public class GolfSegImportService {
     /// the shapes it is least sure about are the ones that are wrong.
     private static final double MINIMUM_VISION_SCORE = 0.45;
 
+    /// How many of each a single hole can have.
+    ///
+    /// The area bounds pass a fragment because a fragment is bunker-sized; it
+    /// takes counting to notice that the first live run filed fifty-three
+    /// bunkers, thirty tees and seven greens on one hole. A hole has one
+    /// green. Whatever else the mask says, that is not negotiable, and the
+    /// rest are ordered by area so the biggest survive — a shredded mask
+    /// leaves the real feature as its largest piece.
+    private static int limitFor(String layer) {
+        return switch (layer) {
+            case "GREEN" -> 1;
+            case "FAIRWAY" -> 2;
+            case "TEE" -> 4;
+            case "BUNKER" -> 8;
+            case "WATER_HAZARD" -> 4;
+            case "ROUGH" -> 2;
+            default -> 4;
+        };
+    }
+
     /// What a feature of this kind can plausibly measure, in square metres.
     ///
     /// The same bounds the satellite reader needed, for the same reason and
@@ -108,6 +128,46 @@ public class GolfSegImportService {
                     Map.of("golfseg", "the golf vision service could not answer"));
         }
 
+        return file(courseId, holeId, holeNumber, answer, requestedBy);
+    }
+
+    /**
+     * Files a FeatureCollection somebody else produced.
+     *
+     * <p>The same filing path, without the call. The vision service runs on a
+     * GPU host that this API cannot reach — the API is on a private network and
+     * the GPU box is not — and tracing is a batch job rather than something on
+     * a request path, so decoupling the two costs nothing and removes a
+     * dependency that would have to be kept alive.
+     *
+     * <p>It also happens to be the door §34 asks for: anything that can produce
+     * GeoJSON for a hole — a fine-tuned model, a licensed provider, a human's
+     * QGIS export — arrives the same way and is judged by the same rules.
+     */
+    @Transactional
+    public Map<String, Integer> ingest(Long courseId, int holeNumber,
+                                       JsonNode featureCollection,
+                                       String requestedBy) {
+        Long holeId = holeIdOf(courseId, holeNumber);
+        return file(courseId, holeId, holeNumber, featureCollection, requestedBy);
+    }
+
+    private Long holeIdOf(Long courseId, int holeNumber) {
+        var rows = em.createNativeQuery("""
+                SELECT h.id FROM holes h
+                WHERE h.course_id = :course AND h.hole_number = :hole
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", holeNumber)
+                .getResultList();
+        if (rows.isEmpty()) {
+            throw new VspApiException(VspErrorCode.HOLE_001, "holeNumber");
+        }
+        return ((Number) rows.get(0)).longValue();
+    }
+
+    private Map<String, Integer> file(Long courseId, Long holeId, int holeNumber,
+                                      JsonNode answer, String requestedBy) {
         // A re-trace replaces this hole's untouched proposals rather than
         // adding to them — the same rule the satellite reader needed, for the
         // same reason: the polygons differ slightly every run.
@@ -124,8 +184,11 @@ public class GolfSegImportService {
         String modelVersion = answer.path("metadata").path("checkpoint").asText("golfseg");
         String attribution = answer.path("attribution").asText("");
 
-        var counts = new LinkedHashMap<String, Integer>();
-        int index = 0;
+        // Gather, then keep the largest few of each. Sorting has to happen
+        // across the whole answer, so it cannot be done in one pass.
+        var candidates = new java.util.HashMap<String, java.util.List<double[]>>();
+        var wkts = new java.util.HashMap<String, java.util.List<String>>();
+        var visions = new java.util.HashMap<String, java.util.List<Double>>();
         for (JsonNode feature : answer.path("features")) {
             String layer = feature.path("properties").path("label").asText(null);
             double vision = feature.path("properties").path("scores")
@@ -141,9 +204,28 @@ public class GolfSegImportService {
             if (wkt == null) {
                 continue;
             }
-            save(courseId, holeId, layer, wkt, vision, modelVersion,
-                    attribution, requestedBy, index++);
-            counts.merge(layer, 1, Integer::sum);
+            candidates.computeIfAbsent(layer, k -> new java.util.ArrayList<>())
+                    .add(new double[]{area, wkts.computeIfAbsent(layer,
+                            k -> new java.util.ArrayList<>()).size()});
+            wkts.get(layer).add(wkt);
+            visions.computeIfAbsent(layer, k -> new java.util.ArrayList<>())
+                    .add(vision);
+        }
+
+        var counts = new LinkedHashMap<String, Integer>();
+        int index = 0;
+        for (var entry : candidates.entrySet()) {
+            String layer = entry.getKey();
+            var byArea = entry.getValue();
+            byArea.sort((a, b) -> Double.compare(b[0], a[0]));
+            int limit = Math.min(limitFor(layer), byArea.size());
+            for (int i = 0; i < limit; i++) {
+                int at = (int) byArea.get(i)[1];
+                save(courseId, holeId, layer, wkts.get(layer).get(at),
+                        visions.get(layer).get(at), modelVersion,
+                        attribution, requestedBy, index++);
+                counts.merge(layer, 1, Integer::sum);
+            }
         }
 
         log.info("GolfSeg traced course {} hole {}: {}", courseId, holeNumber, counts);

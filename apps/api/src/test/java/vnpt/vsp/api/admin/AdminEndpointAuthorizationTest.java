@@ -147,6 +147,11 @@ class AdminEndpointAuthorizationTest {
                 // extraction — research output rather than something to publish.
                 new Endpoint("GolfSegController", HttpMethod.POST,
                         "/admin/courses/1/holes/1/geometry/golfseg", RoleName.COURSE_ADMIN),
+                // Geometry arriving from outside — a model on another host, a
+                // licensed provider, a human's export. It writes course data,
+                // so it is gated exactly like the trace that fetches it.
+                new Endpoint("GolfSegController", HttpMethod.POST,
+                        "/admin/courses/1/holes/1/geometry/ingest", RoleName.COURSE_ADMIN),
                 new Endpoint("CourseImportController", HttpMethod.POST, "/admin/courses/1/import/preview", RoleName.COURSE_ADMIN),
                 new Endpoint("DataLicenseController", HttpMethod.GET, "/admin/licenses", RoleName.SUPER_ADMIN),
                 new Endpoint("AdminMarketController", HttpMethod.GET, "/admin/markets", RoleName.SUPER_ADMIN),
