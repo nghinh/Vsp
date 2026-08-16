@@ -130,6 +130,10 @@ class AdminEndpointAuthorizationTest {
                 new Endpoint("CourseAlertController", HttpMethod.GET, "/admin/alerts", RoleName.COURSE_ADMIN),
                 new Endpoint("DataQualityController", HttpMethod.GET, "/admin/data-quality/stale", RoleName.AUDITOR),
                 new Endpoint("GeometryController", HttpMethod.GET, "/admin/courses/1/geometry/draft", RoleName.COURSE_ADMIN),
+                // Tracing a hole from satellite imagery costs money per call
+                // and makes work for a reviewer, so a golfer cannot start one.
+                new Endpoint("HoleGeometryVisionController", HttpMethod.POST,
+                        "/admin/courses/1/holes/1/geometry/detect", RoleName.COURSE_ADMIN),
                 new Endpoint("CourseImportController", HttpMethod.POST, "/admin/courses/1/import/preview", RoleName.COURSE_ADMIN),
                 new Endpoint("DataLicenseController", HttpMethod.GET, "/admin/licenses", RoleName.SUPER_ADMIN),
                 new Endpoint("AdminMarketController", HttpMethod.GET, "/admin/markets", RoleName.SUPER_ADMIN),

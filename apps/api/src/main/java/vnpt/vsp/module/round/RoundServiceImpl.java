@@ -226,10 +226,35 @@ public class RoundServiceImpl implements RoundService {
                 roundPage.getTotalElements(), roundPage.getTotalPages());
     }
 
+    /**
+     * What to call a round: the club, then the đường.
+     *
+     * <p>This returned the course's own name, so a golfer's history read
+     * "Đường B, Đường B, Đường A" — six rounds at three clubs, none of them
+     * named. Nobody remembers a round by which nine they played; they
+     * remember where they were.
+     *
+     * <p>"Long Biên Golf Course — Đường B" where the đường adds something,
+     * and just the club where the course carries the club's own name.
+     */
     private String resolveCourseName(Long courseId) {
         try {
             Course course = courseService.getCourse(courseId);
-            return course != null ? course.getName() : null;
+            if (course == null) {
+                return null;
+            }
+            String courseName = course.getName();
+            String club = course.getFacility() != null
+                    ? course.getFacility().getName() : null;
+            if (club == null || club.isBlank()) {
+                return courseName;
+            }
+            if (courseName == null || courseName.isBlank()
+                    || courseName.equals(club)
+                    || courseName.startsWith(club)) {
+                return club;
+            }
+            return club + " — " + courseName;
         } catch (Exception e) {
             log.debug("Could not resolve course name for courseId {}: {}", courseId, e.getMessage());
             return null;
@@ -253,7 +278,7 @@ public class RoundServiceImpl implements RoundService {
         if (round.getStatus() == Round.RoundStatus.COMPLETED) {
             log.debug("Round {} already completed — returning idempotent success", roundId);
             String courseName = round.getCourseId() != null
-                    ? courseService.getCourse(round.getCourseId()).getName()
+                    ? resolveCourseName(round.getCourseId())
                     : null;
             return toResponse(round, courseName);
         }
@@ -273,7 +298,7 @@ public class RoundServiceImpl implements RoundService {
 
         // Audit log
         String courseName = round.getCourseId() != null
-                ? courseService.getCourse(round.getCourseId()).getName()
+                ? resolveCourseName(round.getCourseId())
                 : null;
         auditService.log(
                 AuditAction.ROUND_COMPLETE,
@@ -304,7 +329,7 @@ public class RoundServiceImpl implements RoundService {
         if (round.getStatus() == Round.RoundStatus.ABANDONED) {
             log.debug("Round {} already abandoned — returning idempotent success", roundId);
             String courseName = round.getCourseId() != null
-                    ? courseService.getCourse(round.getCourseId()).getName()
+                    ? resolveCourseName(round.getCourseId())
                     : null;
             return toResponse(round, courseName);
         }
@@ -325,7 +350,7 @@ public class RoundServiceImpl implements RoundService {
         log.debug("Round {} marked ABANDONED", roundId);
 
         String courseName = round.getCourseId() != null
-                ? courseService.getCourse(round.getCourseId()).getName()
+                ? resolveCourseName(round.getCourseId())
                 : null;
         auditService.log(
                 AuditAction.ROUND_ABANDON,
