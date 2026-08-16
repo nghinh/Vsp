@@ -57,5 +57,28 @@ fi
 [ -n "${VSP_PACKAGE_BASE_URL:-}" ] &&
   DEFINES+=(--dart-define="VSP_PACKAGE_BASE_URL=$VSP_PACKAGE_BASE_URL")
 
-echo "building $TARGET against $VSP_API_BASE_URL"
-exec flutter build "$TARGET" --debug "${DEFINES[@]}"
+# Release on iOS, and not as a preference.
+#
+# A Flutter debug build on iOS runs Dart under JIT, and iOS only permits a
+# process to make memory executable while it is being debugged. Launched by
+# `flutter run`, or by `devicectl`, or by Xcode, it is — so the app comes up
+# and everything looks fine. Tapped on the home screen it is not, and the
+# kernel kills it the moment the VM tries to compile. The app "crashes on
+# open" with no Dart error anywhere, because Dart never ran.
+#
+# Every iOS build handed over for testing so far was `--debug` + `flutter
+# install`, which is exactly that trap: it verified fine on the cable and
+# crashed for the golfer holding the phone.
+#
+# Android has no such rule and debug is the useful build there — hot reload,
+# assertions, readable stack traces.
+MODE=--debug
+if [ "$TARGET" = "ios" ] || [ "$TARGET" = "ipa" ]; then
+  MODE=--release
+  echo "note: iOS is built --release. A debug build is JIT and iOS kills it" >&2
+  echo "      unless a debugger is attached, so it runs from Xcode and dies" >&2
+  echo "      when tapped on the home screen." >&2
+fi
+
+echo "building $TARGET $MODE against $VSP_API_BASE_URL"
+exec flutter build "$TARGET" "$MODE" "${DEFINES[@]}"
