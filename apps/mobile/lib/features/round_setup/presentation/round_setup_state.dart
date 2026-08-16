@@ -253,6 +253,36 @@ class RoundSetupReady extends RoundSetupState {
     if (selectedSecondLayoutId != null) selectedSecondLayoutId!,
   ];
 
+  /// The holes this round actually plays, in order.
+  ///
+  /// From the option the golfer chose. This used to be derived from [holes]
+  /// alone — front9, back9, or a default eighteen — which knows nothing about
+  /// which đường was picked, so choosing Đường B on its own produced a round
+  /// of holes 1 to 18. Holes 10 to 18 do not exist on a nine-hole đường: the
+  /// map had no geometry for them, the green had no position, and the screen
+  /// fell back to satellite imagery over wherever the golfer was standing.
+  ///
+  /// [holes] still wins where it is set, because front9/back9 is an explicit
+  /// choice about an eighteen rather than a guess.
+  List<int> get holeNumbersInPlay {
+    switch (holes) {
+      case 'front9':
+        return [for (var h = 1; h <= 9; h++) h];
+      case 'back9':
+        return [for (var h = 10; h <= 18; h++) h];
+    }
+    final count = selectedPlayOption?.holeCount ?? 18;
+    return [for (var h = 1; h <= count; h++) h];
+  }
+
+  /// The course a round started now would be recorded against.
+  ///
+  /// The đường, not the club. Selecting Long Biên sets [courseId] to whichever
+  /// of its đường the search returned; choosing another afterwards only moves
+  /// [selectedLayoutId], and a round that reads [courseId] opens on the wrong
+  /// nine with every hole wrong behind it.
+  int? get playingCourseId => selectedLayoutId ?? courseId;
+
   /// True when the chosen đường is a nine and needs a partner to make a round.
   /// Every way this club can actually be played, worked out in advance.
   ///

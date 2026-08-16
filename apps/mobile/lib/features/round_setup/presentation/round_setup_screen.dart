@@ -178,9 +178,16 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
     if (ready == null) return;
     // A round cannot start without a course, so these are non-null by the time
     // we get here; read them once rather than sprinkling `!` through the route.
-    final courseId = ready.courseId;
-    final courseName = ready.courseName;
-    if (courseId == null || courseName == null) return;
+    //
+    // The đường the golfer chose, not the club the picker landed on.
+    final courseId = ready.playingCourseId;
+    final club = ready.courseName;
+    if (courseId == null || club == null) return;
+    // "Long Biên Golf Course — Đường B", the same shape the server's own
+    // round listing uses, so the header and the history agree.
+    final option = ready.selectedPlayOption;
+    final courseName =
+        option == null || ready.layouts.length <= 1 ? club : '$club — ${option.name}';
 
     final holeIds = _holeIdsFor(ready);
     final players = ready.players;
@@ -228,16 +235,12 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
     );
   }
 
-  List<String> _holeIdsFor(RoundSetupReady ready) {
-    switch (ready.holes) {
-      case 'front9':
-        return [for (var h = 1; h <= 9; h++) '$h'];
-      case 'back9':
-        return [for (var h = 10; h <= 18; h++) '$h'];
-      default:
-        return [for (var h = 1; h <= 18; h++) '$h'];
-    }
-  }
+  /// The holes this round plays, as the ids the round screen expects.
+  ///
+  /// The rule itself lives on the state, where it can be tested without a
+  /// widget — see [RoundSetupReady.holeNumbersInPlay].
+  List<String> _holeIdsFor(RoundSetupReady ready) =>
+      [for (final h in ready.holeNumbersInPlay) '$h'];
 
   @override
   Widget build(BuildContext context) {

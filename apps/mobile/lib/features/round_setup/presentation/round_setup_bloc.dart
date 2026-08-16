@@ -527,19 +527,22 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     if (currentState.courseId == null) return;
 
     try {
-      // Every đường the round is played on, not just the first. A round on
+      // Every đường the round is played on, and only those. A round on
       // Đường A + B needs both packages; checking only the first told a
       // golfer who had downloaded B that their data was missing.
-      var readiness = await _packageReadinessService.getOfflineReadiness(
-              currentState.courseId!);
-      for (final segment in currentState.segmentCourseIds) {
-        final segmentReadiness =
-            await _packageReadinessService.getOfflineReadiness(segment);
-        if (!segmentReadiness.isReady) {
-          readiness = segmentReadiness;
-          break;
-        }
-        readiness = segmentReadiness;
+      //
+      // The club-level course is deliberately not among them. Picking Long
+      // Biên leaves courseId on whichever đường the search happened to
+      // return, and asking whether *that* is downloaded reports a package the
+      // golfer is not about to play — which is how a downloaded Đường B kept
+      // being told to download.
+      final segments = currentState.segmentCourseIds;
+      if (segments.isEmpty) return;
+      var readiness =
+          await _packageReadinessService.getOfflineReadiness(segments.first);
+      for (final segment in segments.skip(1)) {
+        if (!readiness.isReady) break;
+        readiness = await _packageReadinessService.getOfflineReadiness(segment);
       }
 
       final status = _mapReadinessToStatus(readiness.reason);
@@ -550,8 +553,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       bool available = currentState.coursePackageAvailable;
       if (status == PackageStatus.notDownloaded) {
         try {
+          // The đường that is missing its package, not the club — a club whose
+          // A is published and whose B is not would otherwise offer a download
+          // for B that does not exist.
           final result = await _courseSearchApi.getCourseSearchResult(
-            currentState.courseId!,
+            segments.first,
           );
           available = result.hasPackage;
         } catch (_) {
