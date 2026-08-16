@@ -31,6 +31,29 @@ class HoleFeatureApi {
 
   final ApiClient _apiClient;
 
+  /// Asks the server to trace this hole, because nothing has drawn it yet.
+  ///
+  /// Returns true when the shapes are on their way — the server queues one
+  /// model call, and the map picks them up on a later poll. False when it
+  /// refused: already traced, already queued, or this account has asked for
+  /// its share today.
+  Future<bool> requestTrace({
+    required String courseId,
+    required int holeNumber,
+  }) async {
+    try {
+      final json = await _apiClient.post(
+        '/courses/$courseId/holes/$holeNumber/features/request',
+      );
+      final status = (json as Map<String, dynamic>)['status'];
+      return status == 'QUEUED' || status == 'ANALYSING';
+    } catch (_) {
+      // Offline, over the daily limit, or the hole has no coordinates to
+      // frame an image around. The map stays as it was.
+      return false;
+    }
+  }
+
   Future<TracedFeatures> forHole({
     required String courseId,
     required int holeNumber,

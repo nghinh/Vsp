@@ -58,30 +58,67 @@ public class CourseMappingService {
      */
     @Transactional
     public UUID request(Long courseId, String requestedBy) {
+        return request(courseId, null, requestedBy);
+    }
+
+    /**
+     * Queues a run over a course, or over one hole of it.
+     *
+     * <p>A golfer standing on an unmapped 7th asks for the 7th. Tracing the
+     * whole course because somebody opened one hole is seventeen model calls
+     * nobody asked for.
+     *
+     * <p>Returns the run already covering this scope where there is one,
+     * rather than starting a second: the two would trace the same holes and
+     * bill for both.
+     */
+    @Transactional
+    public UUID request(Long courseId, Integer holeNumber, String requestedBy) {
         var existing = em.createNativeQuery("""
                 SELECT id FROM course_mapping_job
                 WHERE course_id = :course
+                  AND (hole_number IS NULL
+                       OR hole_number = coalesce(CAST(:hole AS integer), hole_number))
                   AND status IN ('QUEUED', 'FETCHING_IMAGERY', 'ANALYSING')
-                """).setParameter("course", courseId).getResultList();
+                LIMIT 1
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", holeNumber)
+                .getResultList();
         if (!existing.isEmpty()) {
             return (UUID) existing.get(0);
         }
 
-        int holes = holeNumbers(courseId).size();
-        if (holes == 0) {
-            throw new VspApiException(VspErrorCode.HOLE_001, "courseId");
+        List<Integer> holes = holeNumber == null
+                ? holeNumbers(courseId)
+                : holeNumbers(courseId).stream().filter(h -> h == holeNumber).toList();
+        if (holes.isEmpty()) {
+            throw new VspApiException(VspErrorCode.HOLE_001,
+                    holeNumber == null ? "courseId" : "holeNumber");
         }
         return (UUID) em.createNativeQuery("""
                 INSERT INTO course_mapping_job
-                    (course_id, status, holes_total, requested_by, model_version)
-                VALUES (:course, 'QUEUED', :holes, :by, :model)
+                    (course_id, hole_number, status, holes_total, requested_by, model_version)
+                VALUES (:course, CAST(:hole AS integer), 'QUEUED', :holes, :by, :model)
                 RETURNING id
                 """)
                 .setParameter("course", courseId)
-                .setParameter("holes", holes)
+                .setParameter("hole", holeNumber)
+                .setParameter("holes", holes.size())
                 .setParameter("by", requestedBy)
                 .setParameter("model", vision.modelVersion())
                 .getSingleResult();
+    }
+
+    /// How many runs this account has asked for since midnight. The cap on
+    /// this is what stands between a curious golfer flicking through
+    /// eighteen holes and eighteen model calls per flick.
+    @Transactional(readOnly = true)
+    public int runsToday(String requestedBy) {
+        return ((Number) em.createNativeQuery("""
+                SELECT count(*) FROM course_mapping_job
+                WHERE requested_by = :by AND created_at >= date_trunc('day', now())
+                """).setParameter("by", requestedBy).getSingleResult()).intValue();
     }
 
     /// The oldest job nobody has started, claimed for this worker.
@@ -107,15 +144,21 @@ public class CourseMappingService {
      * course that fails halfway keeps what it traced.
      */
     public void run(UUID jobId) {
-        Long courseId = courseOf(jobId);
-        if (courseId == null) {
+        Object[] scope = scopeOf(jobId);
+        if (scope == null) {
             return;
         }
+        Long courseId = ((Number) scope[0]).longValue();
+        Integer onlyHole = scope[1] == null ? null : ((Number) scope[1]).intValue();
+
         int analysed = 0;
         int failed = 0;
         int features = 0;
 
-        for (int holeNumber : holeNumbers(courseId)) {
+        List<Integer> holes = onlyHole == null
+                ? holeNumbers(courseId)
+                : List.of(onlyHole);
+        for (int holeNumber : holes) {
             try {
                 Map<String, Integer> counts =
                         visionService.detect(courseId, holeNumber, "job:" + jobId);
@@ -162,11 +205,12 @@ public class CourseMappingService {
         return status;
     }
 
-    private Long courseOf(UUID jobId) {
+    /// The course and, where the run is scoped to one, the hole.
+    private Object[] scopeOf(UUID jobId) {
         var rows = em.createNativeQuery(
-                "SELECT course_id FROM course_mapping_job WHERE id = :id")
+                "SELECT course_id, hole_number FROM course_mapping_job WHERE id = :id")
                 .setParameter("id", jobId).getResultList();
-        return rows.isEmpty() ? null : ((Number) rows.get(0)).longValue();
+        return rows.isEmpty() ? null : (Object[]) rows.get(0);
     }
 
     /// Holes that can be framed at all: both a tee and a green point.

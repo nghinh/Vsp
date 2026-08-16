@@ -190,4 +190,76 @@ class CourseMappingPostgresTest {
         assertThatThrownBy(() -> service(ONE_GREEN).status(UUID.randomUUID()))
                 .isInstanceOf(VspApiException.class);
     }
+
+    /// A golfer standing on the 7th asks for the 7th. Tracing the whole
+    /// course because somebody opened one hole is seventeen model calls
+    /// nobody asked for.
+    @Test
+    @DisplayName("a run can cover one hole instead of the course")
+    void tracesOneHole() {
+        var service = service(ONE_GREEN);
+
+        UUID jobId = service.request(courseId, 2, "golfer:7");
+        service.run(jobId);
+
+        var status = service.status(jobId);
+        assertThat(status.get("holesTotal")).isEqualTo(1);
+        assertThat(status.get("holesAnalysed")).isEqualTo(1);
+
+        int onHoleTwo = ((Number) em.createNativeQuery("""
+                SELECT count(*) FROM draft_geometry_features d
+                JOIN holes h ON h.id = d.hole_id
+                WHERE d.course_id = :course AND h.hole_number = 2
+                """).setParameter("course", courseId).getSingleResult()).intValue();
+        int elsewhere = ((Number) em.createNativeQuery("""
+                SELECT count(*) FROM draft_geometry_features d
+                JOIN holes h ON h.id = d.hole_id
+                WHERE d.course_id = :course AND h.hole_number <> 2
+                """).setParameter("course", courseId).getSingleResult()).intValue();
+
+        assertThat(onHoleTwo).isEqualTo(1);
+        assertThat(elsewhere).isZero();
+    }
+
+    @Test
+    @DisplayName("the same hole is not queued twice at once")
+    void oneHoleAtATime() {
+        var service = service(ONE_GREEN);
+
+        UUID first = service.request(courseId, 2, "golfer:7");
+        UUID again = service.request(courseId, 2, "golfer:8");
+
+        assertThat(again).isEqualTo(first);
+    }
+
+    /// Two golfers on two different holes must not block each other.
+    @Test
+    @DisplayName("two different holes can be queued at the same time")
+    void differentHolesDoNotBlock() {
+        var service = service(ONE_GREEN);
+
+        UUID second = service.request(courseId, 2, "golfer:7");
+        UUID third = service.request(courseId, 3, "golfer:8");
+
+        assertThat(third).isNotEqualTo(second);
+    }
+
+    /// What stands between a curious golfer and a bill.
+    @Test
+    @DisplayName("requests are counted per account per day")
+    void countsRequestsPerAccount() {
+        var service = service(ONE_GREEN);
+        service.request(courseId, 2, "golfer:7");
+        service.request(courseId, 3, "golfer:7");
+
+        assertThat(service.runsToday("golfer:7")).isEqualTo(2);
+        assertThat(service.runsToday("golfer:8")).isZero();
+    }
+
+    @Test
+    @DisplayName("a hole this course does not have is refused")
+    void refusesAHoleThatIsNotThere() {
+        assertThatThrownBy(() -> service(ONE_GREEN).request(courseId, 17, "golfer:7"))
+                .isInstanceOf(VspApiException.class);
+    }
 }

@@ -546,6 +546,15 @@ class AdminEndpointAuthorizationTest {
             "UserCourseController.removeFavorite",
             "UserCourseController.recordRecentView",
 
+            // A golfer standing on a hole nobody has mapped, asking for it to
+            // be traced. They are the person who needs it and the only one
+            // who knows they are there. It writes drafts for review and
+            // nothing a golfer can see; it is idempotent per hole, refuses a
+            // hole that already has shapes, and is capped per account per day
+            // — the three gates that keep a metered model call from being a
+            // button anyone can lean on.
+            "HoleFeatureController.request",
+
             // A golfer's own caddie notebook. Every query is scoped to the
             // authenticated principal; there is nothing of anyone else's to
             // reach, and nothing written is ever shown to another account.

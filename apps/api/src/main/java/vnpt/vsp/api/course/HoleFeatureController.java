@@ -6,9 +6,14 @@ import jakarta.validation.constraints.Min;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import vnpt.vsp.api.error.VspApiException;
+import vnpt.vsp.api.error.VspErrorCode;
+import vnpt.vsp.module.geometry.vision.CourseMappingService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,13 +38,55 @@ import java.util.Map;
 public class HoleFeatureController {
 
     private final EntityManager em;
+    private final CourseMappingService mappingService;
     private final BigDecimal minimumConfidence;
+    private final int dailyLimit;
 
     public HoleFeatureController(
             EntityManager em,
-            @Value("${vsp.vision.minimum-confidence:65}") int minimumConfidence) {
+            CourseMappingService mappingService,
+            @Value("${vsp.vision.minimum-confidence:65}") int minimumConfidence,
+            @Value("${vsp.vision.golfer-daily-limit:30}") int dailyLimit) {
         this.em = em;
+        this.mappingService = mappingService;
         this.minimumConfidence = BigDecimal.valueOf(minimumConfidence);
+        this.dailyLimit = dailyLimit;
+    }
+
+    /**
+     * Asks for this hole to be traced, because nothing has drawn it yet.
+     *
+     * <p>The golfer standing on an unmapped tee is the person who needs it
+     * and the only one who knows they are there, so they may ask — but each
+     * request is a metered model call, and a golfer flicking through
+     * eighteen holes would otherwise spend eighteen of them.
+     *
+     * <p>Three gates: a hole that already has shapes is answered with those
+     * rather than traced again, one hole is never queued twice at once, and
+     * an account gets a fixed number of requests a day.
+     */
+    @PostMapping("/courses/{courseId}/holes/{holeNumber}/features/request")
+    @Transactional
+    public Map<String, Object> request(
+            Authentication authentication,
+            @PathVariable Long courseId,
+            @PathVariable @Min(1) @Max(18) int holeNumber) {
+
+        String requestedBy = "golfer:" + authentication.getPrincipal();
+
+        // Already drawn: answer with that rather than pay to draw it twice.
+        Object existing = features(courseId, holeNumber).get("features");
+        if (existing instanceof List<?> drawn && !drawn.isEmpty()) {
+            return Map.of("status", "READY", "alreadyTraced", true,
+                    "featuresDetected", drawn.size());
+        }
+        if (mappingService.runsToday(requestedBy) >= dailyLimit) {
+            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "limit",
+                    Map.of("limit", "daily satellite-analysis limit reached"));
+        }
+
+        var jobId = mappingService.request(courseId, holeNumber, requestedBy);
+        return mappingService.status(jobId);
     }
 
     @GetMapping("/courses/{courseId}/holes/{holeNumber}/features")

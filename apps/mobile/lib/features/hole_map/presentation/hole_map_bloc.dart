@@ -260,7 +260,15 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         courseId: courseId,
         holeNumber: holeNumber,
       );
-      if (traced.isEmpty || emit.isDone) return;
+      if (traced.isEmpty) {
+        // Nothing has drawn this hole. Ask for it — one model call, gated by
+        // the server — and pick the shapes up on the next open. Deliberately
+        // not awaited into a spinner: the golfer wants the satellite view
+        // now, and tracing takes seconds it should not owe them.
+        await api.requestTrace(courseId: courseId, holeNumber: holeNumber);
+        return;
+      }
+      if (emit.isDone) return;
       final current = state;
       if (current is! HoleMapReady) return;
 
