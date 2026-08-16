@@ -26,6 +26,7 @@ import 'feature_distance_panel.dart';
 import 'feature_label_overlay.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_distances.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_labels.dart';
+import 'package:vsp_mobile/features/hole_map/domain/hole_vantage.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 // Satellite basemap + manual measuring, for holes we never surveyed.
@@ -194,10 +195,7 @@ class _HoleMapViewState extends State<HoleMapView> {
     final state = widget.state;
     final aim = state.holeMap.aimPoint;
     if (aim == null) return const [];
-    final golfer = state.golferPosition;
-    final from = golfer != null
-        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
-        : state.holeMap.teeCenter;
+    final from = _measuringPoint();
     if (from == null) return const [];
 
     final l10n = AppLocalizations.of(context);
@@ -220,10 +218,7 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// disagreeing about the same bunker would be worse than either.
   List<FeatureLabelChip> _featureLabels() {
     final state = widget.state;
-    final golfer = state.golferPosition;
-    final from = golfer != null
-        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
-        : state.holeMap.teeCenter;
+    final from = _measuringPoint();
     if (from == null) return const [];
 
     final l10n = AppLocalizations.of(context);
@@ -260,6 +255,22 @@ class _HoleMapViewState extends State<HoleMapView> {
         _ => const Color(0xFF94A3B8),
       };
 
+  /// Where every number on this screen is measured from.
+  ///
+  /// The golfer's fix while they are on the hole, and the tee while they are
+  /// not. Opening a hole from home otherwise reads "to the pin: 6.1 mi", and
+  /// every hazard on the screen carries the same six miles.
+  geo.LatLng? _measuringPoint() {
+    final golfer = widget.state.golferPosition;
+    return HoleVantage.measuringPoint(
+      golfer: golfer == null
+          ? null
+          : geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude),
+      tee: widget.state.holeMap.teeCenter,
+      green: widget.state.holeMap.greenCenter,
+    );
+  }
+
   /// The line the golfer is playing along, in legs.
   ///
   /// From where they are standing — or the tee, before there is a fix —
@@ -270,10 +281,7 @@ class _HoleMapViewState extends State<HoleMapView> {
     final aim = state.holeMap.aimPoint;
     if (aim == null) return const [];
 
-    final golfer = state.golferPosition;
-    final start = golfer != null
-        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
-        : state.holeMap.teeCenter;
+    final start = _measuringPoint();
     if (start == null) return const [];
 
     final unit = DistanceUnitScope.watch(context);
