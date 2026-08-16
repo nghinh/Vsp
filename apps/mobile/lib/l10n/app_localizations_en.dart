@@ -4021,4 +4021,77 @@ class AppLocalizationsEn extends AppLocalizations {
   String roundSetupCourseCount(int count) {
     return '$count courses';
   }
+
+  @override
+  String get performanceTitle => 'My performance';
+
+  @override
+  String get performanceAllTime => 'All time';
+
+  @override
+  String performanceLast(int count) {
+    return 'Last $count';
+  }
+
+  @override
+  String get performanceFailed => 'Could not load your statistics.';
+
+  @override
+  String get performanceEmpty =>
+      'No completed rounds yet. Finish one and the numbers appear here.';
+
+  @override
+  String get performanceRounds => 'Rounds';
+
+  @override
+  String get performanceBestToPar => 'Best round';
+
+  @override
+  String get performancePutts => 'Putts / hole';
+
+  @override
+  String get performanceGir => 'Greens in regulation';
+
+  @override
+  String get performanceFairways => 'Fairways hit';
+
+  @override
+  String get performancePenalties => 'Penalties / round';
+
+  @override
+  String get performanceNotRecorded => 'not recorded';
+
+  @override
+  String performanceHoles(int count) {
+    return '$count holes';
+  }
+
+  @override
+  String get performanceDistribution => 'Score distribution';
+
+  @override
+  String get performanceByPar => 'By par';
+
+  @override
+  String get performanceEagle => 'Eagle or better';
+
+  @override
+  String get performanceBirdie => 'Birdie';
+
+  @override
+  String get performancePar => 'Par';
+
+  @override
+  String get performanceBogey => 'Bogey';
+
+  @override
+  String get performanceDoubleBogey => 'Double bogey';
+
+  @override
+  String get performanceTripleOrWorse => 'Triple or worse';
+
+  @override
+  String performanceParDetail(String average, int best, int worst) {
+    return 'Avg $average · best $best · worst $worst';
+  }
 }

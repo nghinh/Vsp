@@ -7075,6 +7075,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} courses'**
   String roundSetupCourseCount(int count);
+
+  /// No description provided for @performanceTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My performance'**
+  String get performanceTitle;
+
+  /// No description provided for @performanceAllTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get performanceAllTime;
+
+  /// No description provided for @performanceLast.
+  ///
+  /// In en, this message translates to:
+  /// **'Last {count}'**
+  String performanceLast(int count);
+
+  /// No description provided for @performanceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your statistics.'**
+  String get performanceFailed;
+
+  /// No description provided for @performanceEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No completed rounds yet. Finish one and the numbers appear here.'**
+  String get performanceEmpty;
+
+  /// No description provided for @performanceRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Rounds'**
+  String get performanceRounds;
+
+  /// No description provided for @performanceBestToPar.
+  ///
+  /// In en, this message translates to:
+  /// **'Best round'**
+  String get performanceBestToPar;
+
+  /// No description provided for @performancePutts.
+  ///
+  /// In en, this message translates to:
+  /// **'Putts / hole'**
+  String get performancePutts;
+
+  /// No description provided for @performanceGir.
+  ///
+  /// In en, this message translates to:
+  /// **'Greens in regulation'**
+  String get performanceGir;
+
+  /// No description provided for @performanceFairways.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairways hit'**
+  String get performanceFairways;
+
+  /// No description provided for @performancePenalties.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalties / round'**
+  String get performancePenalties;
+
+  /// No description provided for @performanceNotRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'not recorded'**
+  String get performanceNotRecorded;
+
+  /// No description provided for @performanceHoles.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} holes'**
+  String performanceHoles(int count);
+
+  /// No description provided for @performanceDistribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Score distribution'**
+  String get performanceDistribution;
+
+  /// No description provided for @performanceByPar.
+  ///
+  /// In en, this message translates to:
+  /// **'By par'**
+  String get performanceByPar;
+
+  /// No description provided for @performanceEagle.
+  ///
+  /// In en, this message translates to:
+  /// **'Eagle or better'**
+  String get performanceEagle;
+
+  /// No description provided for @performanceBirdie.
+  ///
+  /// In en, this message translates to:
+  /// **'Birdie'**
+  String get performanceBirdie;
+
+  /// No description provided for @performancePar.
+  ///
+  /// In en, this message translates to:
+  /// **'Par'**
+  String get performancePar;
+
+  /// No description provided for @performanceBogey.
+  ///
+  /// In en, this message translates to:
+  /// **'Bogey'**
+  String get performanceBogey;
+
+  /// No description provided for @performanceDoubleBogey.
+  ///
+  /// In en, this message translates to:
+  /// **'Double bogey'**
+  String get performanceDoubleBogey;
+
+  /// No description provided for @performanceTripleOrWorse.
+  ///
+  /// In en, this message translates to:
+  /// **'Triple or worse'**
+  String get performanceTripleOrWorse;
+
+  /// No description provided for @performanceParDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Avg {average} · best {best} · worst {worst}'**
+  String performanceParDetail(String average, int best, int worst);
 }
 
 class _AppLocalizationsDelegate

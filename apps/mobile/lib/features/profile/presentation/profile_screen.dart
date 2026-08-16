@@ -27,6 +27,7 @@ import 'widgets/profile_field_tile.dart';
 import 'widgets/unit_picker.dart';
 import 'widgets/skill_level_picker.dart';
 import 'widgets/hand_picker.dart';
+import 'package:vsp_mobile/features/performance/presentation/performance_dashboard.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -242,6 +243,15 @@ class _ProfileContent extends StatelessWidget {
           _SyncBanner(isSyncing: state!.isSyncing),
           const SizedBox(height: 12),
         ],
+
+        // ─── What the golfer's own rounds say ───────────────────────────────
+        //
+        // Above the editable fields on purpose: the handicap typed into the
+        // profile is a claim, and this is the record. A golfer opening this
+        // tab is usually asking how they are playing, not changing their
+        // home club.
+        const PerformanceDashboard(),
+        const SizedBox(height: VspSpacing.lg),
 
         // ─── Identity Section ───────────────────────────────────────────────
         _SectionHeader(title: AppLocalizations.of(context).profileSectionIdentity),

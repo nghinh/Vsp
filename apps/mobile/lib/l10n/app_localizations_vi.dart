@@ -4019,4 +4019,77 @@ class AppLocalizationsVi extends AppLocalizations {
   String roundSetupCourseCount(int count) {
     return '$count đường';
   }
+
+  @override
+  String get performanceTitle => 'Thành tích của tôi';
+
+  @override
+  String get performanceAllTime => 'Tất cả';
+
+  @override
+  String performanceLast(int count) {
+    return '$count vòng gần nhất';
+  }
+
+  @override
+  String get performanceFailed => 'Không tải được thống kê.';
+
+  @override
+  String get performanceEmpty =>
+      'Chưa có vòng nào hoàn tất. Ghi xong một vòng là số liệu hiện ở đây.';
+
+  @override
+  String get performanceRounds => 'Số vòng';
+
+  @override
+  String get performanceBestToPar => 'Vòng hay nhất';
+
+  @override
+  String get performancePutts => 'Gậy putt / hố';
+
+  @override
+  String get performanceGir => 'Lên green đúng nhịp';
+
+  @override
+  String get performanceFairways => 'Vào fairway';
+
+  @override
+  String get performancePenalties => 'Gậy phạt / vòng';
+
+  @override
+  String get performanceNotRecorded => 'chưa ghi nhận';
+
+  @override
+  String performanceHoles(int count) {
+    return '$count hố';
+  }
+
+  @override
+  String get performanceDistribution => 'Phân bố điểm';
+
+  @override
+  String get performanceByPar => 'Theo par';
+
+  @override
+  String get performanceEagle => 'Eagle trở lên';
+
+  @override
+  String get performanceBirdie => 'Birdie';
+
+  @override
+  String get performancePar => 'Par';
+
+  @override
+  String get performanceBogey => 'Bogey';
+
+  @override
+  String get performanceDoubleBogey => 'Double bogey';
+
+  @override
+  String get performanceTripleOrWorse => 'Triple trở lên';
+
+  @override
+  String performanceParDetail(String average, int best, int worst) {
+    return 'TB $average · tốt nhất $best · tệ nhất $worst';
+  }
 }
