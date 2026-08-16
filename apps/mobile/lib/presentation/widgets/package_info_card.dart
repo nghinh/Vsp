@@ -62,7 +62,7 @@ class PackageInfoCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  'MB',
+                  _unit(manifest.sizeBytes),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -150,10 +150,17 @@ class PackageInfoCard extends StatelessWidget {
     );
   }
 
+  /// A course package of geometry is kilobytes, not megabytes. Rounded to
+  /// MB it read "0.0 MB", which looks exactly like a package that failed to
+  /// download — and that is the screen a golfer was staring at.
   String _formatBytes(int bytes) {
-    final mb = bytes / (1024 * 1024);
-    return mb.toStringAsFixed(1);
+    if (bytes < 1024 * 1024) {
+      return (bytes / 1024).toStringAsFixed(bytes < 10 * 1024 ? 1 : 0);
+    }
+    return (bytes / (1024 * 1024)).toStringAsFixed(1);
   }
+
+  String _unit(int bytes) => bytes < 1024 * 1024 ? 'KB' : 'MB';
 
   String _formatRelativeTime(AppLocalizations l10n, DateTime date) =>
       RelativeTime.format(l10n, date);

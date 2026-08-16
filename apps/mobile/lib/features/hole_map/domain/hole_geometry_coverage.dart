@@ -125,6 +125,16 @@ abstract final class HoleGeometryCoverage {
     return MeasureAnchor(position: centroid, isSurveyed: false);
   }
 
+  /// The middle of one layer, or null where the hole has none of it.
+  ///
+  /// Enough for the two ends of a hole: a tee point and a green point are
+  /// all most Vietnamese holes have, and they are all the play line needs.
+  static LatLng? layerCenter(HoleMapEntity holeMap, MapLayerType type) {
+    final layer = holeMap.layers[type];
+    if (layer == null) return null;
+    return _centroid(layer.geoJson);
+  }
+
   /// Centre of everything this hole actually draws.
   ///
   /// The mean of every coordinate in the strategic layers — tee, fairway,

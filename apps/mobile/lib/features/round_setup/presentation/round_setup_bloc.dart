@@ -401,6 +401,9 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         clearSecondLayout: true,
       ),
     );
+    // The round now covers different đường, so what counts as downloaded
+    // has changed with it.
+    add(const PackageValidationRequested());
   }
 
   Future<void> _onSecondLayoutSelected(
@@ -415,6 +418,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           ? currentState.copyWith(clearSecondLayout: true)
           : currentState.copyWith(selectedSecondLayoutId: event.layoutId),
     );
+    add(const PackageValidationRequested());
   }
 
   Future<void> _onTeeSelected(
@@ -523,9 +527,20 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     if (currentState.courseId == null) return;
 
     try {
-      final readiness = await _packageReadinessService.getOfflineReadiness(
-        currentState.courseId!,
-      );
+      // Every đường the round is played on, not just the first. A round on
+      // Đường A + B needs both packages; checking only the first told a
+      // golfer who had downloaded B that their data was missing.
+      var readiness = await _packageReadinessService.getOfflineReadiness(
+              currentState.courseId!);
+      for (final segment in currentState.segmentCourseIds) {
+        final segmentReadiness =
+            await _packageReadinessService.getOfflineReadiness(segment);
+        if (!segmentReadiness.isReady) {
+          readiness = segmentReadiness;
+          break;
+        }
+        readiness = segmentReadiness;
+      }
 
       final status = _mapReadinessToStatus(readiness.reason);
 

@@ -4094,4 +4094,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String performanceParDetail(String average, int best, int worst) {
     return 'Avg $average · best $best · worst $worst';
   }
+
+  @override
+  String get downloadAlreadyCurrent => 'Already up to date';
+
+  @override
+  String get downloadCompleted => 'Course data downloaded';
+
+  @override
+  String get mapToPin => 'To pin';
+
+  @override
+  String get mapToTarget => 'To target';
+
+  @override
+  String get mapTargetToPin => 'Target to pin';
 }

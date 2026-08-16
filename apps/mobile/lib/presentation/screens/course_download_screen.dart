@@ -438,7 +438,28 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
   }
 
   Future<void> _startDownload() async {
-    await _downloadService.downloadPackage(widget.courseId);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context);
+    final before = _activeManifest?.version;
+
+    final result = await _downloadService.downloadPackage(widget.courseId);
+    if (!mounted) return;
+
+    // Tapping "Cập nhật" on a package that is already current returns
+    // success having downloaded nothing, and the screen looked identical —
+    // a button that does nothing, twice, is how a golfer concludes the app
+    // is broken. Say which of the two happened.
+    if (result is DownloadPackageSuccess) {
+      final unchanged = before != null && result.manifest.version == before;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(
+          content: Text(unchanged
+              ? l10n.downloadAlreadyCurrent
+              : l10n.downloadCompleted),
+        ));
+    }
+    await _loadState();
   }
 
   Future<void> _resumeDownload() async {

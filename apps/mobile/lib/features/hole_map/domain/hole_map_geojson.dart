@@ -32,6 +32,23 @@ abstract final class HoleMapFeatureKind {
   static const String distanceRing100 = 'distanceRing100';
   static const String distanceRing150 = 'distanceRing150';
   static const String distanceRing200 = 'distanceRing200';
+
+  /// The line a golfer is playing along. The numbers that go with it are
+  /// drawn as Flutter widgets, not map symbols: a symbol layer needs a glyph
+  /// endpoint, and this map has to work on a course with no signal.
+  static const String playLine = 'playLine';
+}
+
+/// One leg of the play line: where it runs and what the number on it says.
+///
+/// The label arrives ready-made because only the caller knows whether this
+/// golfer reads metres or yards.
+class PlayLeg {
+  const PlayLeg({required this.from, required this.to, required this.label});
+
+  final LatLng from;
+  final LatLng to;
+  final String label;
 }
 
 /// Builds the GeoJSON feature collections for the vector hole map.
@@ -77,8 +94,28 @@ abstract final class HoleMapGeoJson {
     PinEntity? pin,
     TargetEntity? target,
     List<DistanceRingEntity> distanceRings = const [],
+    List<PlayLeg> playLine = const [],
   }) {
     final features = <Map<String, dynamic>>[];
+
+    // The line first, so every marker draws on top of it.
+    //
+    // Most holes here have a tee point, a green point and nothing else. Drawn
+    // as two dots that is a map of nothing; drawn as a line with the distance
+    // on it, it is the one thing a golfer wants from a hole map.
+    for (final leg in playLine) {
+      features.add({
+        'type': 'Feature',
+        'geometry': {
+          'type': 'LineString',
+          'coordinates': [
+            [leg.from.longitude, leg.from.latitude],
+            [leg.to.longitude, leg.to.latitude],
+          ],
+        },
+        'properties': {'layerType': HoleMapFeatureKind.playLine},
+      });
+    }
 
     // Accuracy disc first so the golfer dot draws on top of it.
     if (golferPosition != null) {

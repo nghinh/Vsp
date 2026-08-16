@@ -1731,5 +1731,10 @@
   "performanceDoubleBogey": "Double bogey",
   "performanceTripleOrWorse": "Triple trở lên",
   "performanceParDetail": "TB {average} · tốt nhất {best} · tệ nhất {worst}",
-  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}}
+  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}},
+  "downloadAlreadyCurrent": "Đã là bản mới nhất",
+  "downloadCompleted": "Đã tải xong dữ liệu sân",
+  "mapToPin": "Tới cờ",
+  "mapToTarget": "Tới mục tiêu",
+  "mapTargetToPin": "Còn lại"
 }

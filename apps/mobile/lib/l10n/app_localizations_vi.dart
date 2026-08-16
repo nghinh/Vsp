@@ -4092,4 +4092,19 @@ class AppLocalizationsVi extends AppLocalizations {
   String performanceParDetail(String average, int best, int worst) {
     return 'TB $average · tốt nhất $best · tệ nhất $worst';
   }
+
+  @override
+  String get downloadAlreadyCurrent => 'Đã là bản mới nhất';
+
+  @override
+  String get downloadCompleted => 'Đã tải xong dữ liệu sân';
+
+  @override
+  String get mapToPin => 'Tới cờ';
+
+  @override
+  String get mapToTarget => 'Tới mục tiêu';
+
+  @override
+  String get mapTargetToPin => 'Còn lại';
 }

@@ -284,6 +284,19 @@ abstract final class CourseMapStyleBuilder {
     };
 
     return [
+      // The play line, under everything: from where the golfer stands (or the
+      // tee) through the target to the flag, with the distance written on it.
+      {
+        'id': 'play-line',
+        'type': 'line',
+        'source': overlaySourceId,
+        'filter': ['==', ['get', 'layerType'], HoleMapFeatureKind.playLine],
+        'paint': {
+          'line-color': '#FFFFFF',
+          'line-width': 2.0,
+          'line-opacity': 0.9,
+        },
+      },
       // The accuracy disc is a real geodesic polygon (see HoleMapGeoJson), so
       // it is filled, not a pixel-radius circle that lies at every other zoom.
       {

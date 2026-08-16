@@ -96,6 +96,27 @@ class HoleMapEntity extends Equatable {
     return null;
   }
 
+  /// The two ends of the hole, where the package carries them.
+  ///
+  /// Most holes in this database have exactly these two points and no
+  /// polygons at all — the map was drawing them as two dots and saying
+  /// nothing about the golf between them.
+  LatLng? get teeCenter =>
+      HoleGeometryCoverage.layerCenter(this, MapLayerType.tee);
+
+  LatLng? get greenCenter =>
+      HoleGeometryCoverage.layerCenter(this, MapLayerType.green);
+
+  /// What the golfer is aiming at: the flag where the club published one,
+  /// the middle of the green otherwise.
+  LatLng? get aimPoint {
+    final flag = pin;
+    if (flag != null && !flag.isExpired) {
+      return LatLng(latitude: flag.latitude, longitude: flag.longitude);
+    }
+    return greenCenter;
+  }
+
   /// Zoom level appropriate for the hole scope.
   double get defaultZoom => 16.0;
 

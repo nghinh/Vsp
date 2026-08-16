@@ -4,9 +4,15 @@
 // Renders course geometry layers, golfer position, pin, target,
 // wind arrow, and distance rings from local course package data.
 
+import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+// MapLibre ships its own LatLng with a positional constructor; the app's own
+// is a different type with named fields, so it is prefixed rather than
+// shadowed.
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as geo;
+import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 import '../hole_map_bloc.dart';
 import '../hole_map_state.dart';
@@ -15,6 +21,7 @@ import 'golfer_position_marker.dart';
 import 'pin_marker.dart';
 import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
+import 'play_line_panel.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 // Satellite basemap + manual measuring, for holes we never surveyed.
@@ -29,7 +36,6 @@ import 'package:vsp_mobile/features/hole_map/domain/course_map_style_builder.dar
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_geojson.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
-import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 import 'package:vsp_mobile/features/measure/presentation/measure_cubit.dart';
 import 'package:vsp_mobile/features/measure/presentation/widgets/no_geometry_banner.dart';
 import 'package:vsp_mobile/features/measure/presentation/widgets/satellite_measure_view.dart';
@@ -171,8 +177,41 @@ class _HoleMapViewState extends State<HoleMapView> {
         pin: state.holeMap.pin,
         target: state.target,
         distanceRings: state.distanceRings,
+        playLine: _playLine(state),
       ),
     );
+  }
+
+  /// The line the golfer is playing along, in legs.
+  ///
+  /// From where they are standing — or the tee, before there is a fix —
+  /// through the target they placed, to the flag. One leg without a target,
+  /// two with, which is what makes "239 to the target, 240 on to the pin"
+  /// readable at a glance.
+  List<PlayLeg> _playLine(HoleMapReady state) {
+    final aim = state.holeMap.aimPoint;
+    if (aim == null) return const [];
+
+    final golfer = state.golferPosition;
+    final start = golfer != null
+        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
+        : state.holeMap.teeCenter;
+    if (start == null) return const [];
+
+    final unit = DistanceUnitScope.watch(context);
+    String label(geo.LatLng from, geo.LatLng to) =>
+        MeasureUnits.format(from.distanceTo(to), unit);
+
+    final target = state.target;
+    if (target != null) {
+      final aimAt =
+          geo.LatLng(latitude: target.latitude, longitude: target.longitude);
+      return [
+        PlayLeg(from: start, to: aimAt, label: label(start, aimAt)),
+        PlayLeg(from: aimAt, to: aim, label: label(aimAt, aim)),
+      ];
+    }
+    return [PlayLeg(from: start, to: aim, label: label(start, aim))];
   }
 
   void _onMapTap(LatLng point) {
@@ -384,6 +423,23 @@ class _HoleMapViewState extends State<HoleMapView> {
               left: 12,
               top: MediaQuery.of(context).padding.top + 8,
               child: PinMarker(pin: widget.state.holeMap.pin!),
+            ),
+
+          // How far to the flag, and to the target where one is placed. The
+          // line itself is drawn on the map; these are its numbers.
+          if (_playLine(widget.state).isNotEmpty)
+            Positioned(
+              left: 12,
+              top: MediaQuery.of(context).padding.top + 8,
+              child: Builder(
+                builder: (context) {
+                  final legs = _playLine(widget.state);
+                  return PlayLinePanel(
+                    toTarget: legs.length > 1 ? legs.first.label : null,
+                    toPin: legs.last.label,
+                  );
+                },
+              ),
             ),
 
           // Distance rings legend

@@ -2711,5 +2711,10 @@
   "performanceDoubleBogey": "Double bogey",
   "performanceTripleOrWorse": "Triple or worse",
   "performanceParDetail": "Avg {average} · best {best} · worst {worst}",
-  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}}
+  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}},
+  "downloadAlreadyCurrent": "Already up to date",
+  "downloadCompleted": "Course data downloaded",
+  "mapToPin": "To pin",
+  "mapToTarget": "To target",
+  "mapTargetToPin": "Target to pin"
 }

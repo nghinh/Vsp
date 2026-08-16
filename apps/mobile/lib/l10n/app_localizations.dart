@@ -7207,6 +7207,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Avg {average} · best {best} · worst {worst}'**
   String performanceParDetail(String average, int best, int worst);
+
+  /// No description provided for @downloadAlreadyCurrent.
+  ///
+  /// In en, this message translates to:
+  /// **'Already up to date'**
+  String get downloadAlreadyCurrent;
+
+  /// No description provided for @downloadCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Course data downloaded'**
+  String get downloadCompleted;
+
+  /// No description provided for @mapToPin.
+  ///
+  /// In en, this message translates to:
+  /// **'To pin'**
+  String get mapToPin;
+
+  /// No description provided for @mapToTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'To target'**
+  String get mapToTarget;
+
+  /// No description provided for @mapTargetToPin.
+  ///
+  /// In en, this message translates to:
+  /// **'Target to pin'**
+  String get mapTargetToPin;
 }
 
 class _AppLocalizationsDelegate
