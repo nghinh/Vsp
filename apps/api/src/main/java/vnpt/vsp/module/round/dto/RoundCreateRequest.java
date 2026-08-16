@@ -38,6 +38,20 @@ public class RoundCreateRequest {
 
     private Long packageId;
 
+    /**
+     * CASUAL, PRACTICE or TOURNAMENT — what the golfer chose on the setup
+     * screen. Absent from an older client, which means casual.
+     */
+    private String format;
+
+    /**
+     * Whether this round should feed the handicap the app computes.
+     *
+     * <p>Absent means "decide from the format": practice does not count,
+     * anything else does. Sent explicitly when the golfer moved the switch.
+     */
+    private Boolean countsTowardHandicap;
+
     private Boolean cartRequested = false;
 
     /**
@@ -101,6 +115,14 @@ public class RoundCreateRequest {
 
     public void setCartRequested(Boolean cartRequested) {
         this.cartRequested = cartRequested;
+    }
+
+    public String getFormat() { return format; }
+    public void setFormat(String format) { this.format = format; }
+
+    public Boolean getCountsTowardHandicap() { return countsTowardHandicap; }
+    public void setCountsTowardHandicap(Boolean countsTowardHandicap) {
+        this.countsTowardHandicap = countsTowardHandicap;
     }
 
     public UUID getTournamentPolicyId() { return tournamentPolicyId; }

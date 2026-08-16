@@ -182,7 +182,12 @@ class _StrategyPage extends StatelessWidget {
           Text(
             strategy.handicapUsed == null
                 ? l10n.strategyNoHandicap
-                : l10n.strategyHandicap('${strategy.handicapUsed}'),
+                : strategy.ratingAdjusted
+                    // Two numbers, because they are two different things:
+                    // the golfer's index, and what it becomes on this tee.
+                    ? l10n.strategyHandicapRated(
+                        '${strategy.handicapUsed}', '${strategy.playingHandicap}')
+                    : l10n.strategyHandicap('${strategy.handicapUsed}'),
             style: theme.textTheme.bodySmall
                 ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),

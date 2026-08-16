@@ -1,5 +1,6 @@
 package vnpt.vsp.module.pkg.storage;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -11,7 +12,26 @@ import java.util.Comparator;
 @Service
 public class LocalObjectStorageService implements ObjectStorageService {
 
-    private final Path storageRoot = Path.of(System.getProperty("java.io.tmpdir"), "vsp-packages").toAbsolutePath().normalize();
+    /**
+     * Where package files are written.
+     *
+     * <p>The same property {@code PackageFileController} reads them back
+     * from. This class used to hard-code the temp directory while the
+     * controller honoured configuration, so pointing the deployment at a
+     * mounted volume moved the reader and left the writer behind: every
+     * download 404'd on a file the manifest swore was there.
+     *
+     * <p>The default is still the temp directory, which is fine for a test
+     * and wrong for a deployment — a path inside the container does not
+     * survive the next {@code --build}, and the manifests in Postgres do.
+     */
+    private final Path storageRoot;
+
+    public LocalObjectStorageService(
+            @Value("${vsp.packages.storage-root:${java.io.tmpdir}/vsp-packages}")
+            String storageRoot) {
+        this.storageRoot = Path.of(storageRoot).toAbsolutePath().normalize();
+    }
 
     @Override
     public String uploadFile(byte[] data, Long courseId, String manifestVersion,

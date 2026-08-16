@@ -216,6 +216,12 @@ class _RoundSetupScreenBodyState extends State<_RoundSetupScreenBody> {
           holeIds: holeIds,
           playerIds: players.map((p) => p.id).toList(),
           playerNames: {for (final p in players) p.id: p.name},
+          // Carried so the scorecard can show a net score. Without it the
+          // Net view has nothing to subtract and has to refuse.
+          playerHandicaps: {
+            for (final p in players)
+              if (p.handicap != null) p.id: p.handicap!.round(),
+          },
           holePars: pars,
         ),
       ),
@@ -429,7 +435,32 @@ class _RoundSetupScaffold extends StatelessWidget {
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 8),
+
+                    // Whether this round moves the golfer's handicap.
+                    // Directly under the format because the format is what
+                    // sets its default, and a golfer who picks "Tập luyện"
+                    // should see the consequence in the same glance.
+                    SwitchListTile(
+                      key: const Key('round_setup_counts_handicap'),
+                      contentPadding: EdgeInsets.zero,
+                      value: state.countsTowardHandicap,
+                      onChanged: (v) => context
+                          .read<RoundSetupBloc>()
+                          .add(HandicapCountingChanged(v)),
+                      title: Text(
+                        AppLocalizations.of(context).roundSetupCountsHandicap,
+                      ),
+                      subtitle: Text(
+                        state.countsTowardHandicap
+                            ? AppLocalizations.of(context)
+                                .roundSetupCountsHandicapOn
+                            : AppLocalizations.of(context)
+                                .roundSetupCountsHandicapOff,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
 
                     // Mode selector
                     ModeSelector(
@@ -775,11 +806,20 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                               key: Key('picker_nearby_${c.courseId}'),
                               leading: const Icon(Icons.near_me),
                               title: Text(c.displayName),
-                              subtitle: c.distanceKm != null
-                                  ? Text(
-                                      AppLocalizations.of(context).roundSetupKmAway(c.distanceKm!.toStringAsFixed(1)),
-                                    )
-                                  : null,
+                              subtitle: Text(
+                                [
+                                  if (c.distanceKm != null)
+                                    AppLocalizations.of(context)
+                                        .roundSetupKmAway(
+                                            c.distanceKm!.toStringAsFixed(1)),
+                                  // How many đường, so the golfer knows
+                                  // whether tapping starts a round or asks
+                                  // another question first.
+                                  if (c.courseCount > 1)
+                                    AppLocalizations.of(context)
+                                        .roundSetupCourseCount(c.courseCount),
+                                ].join(' · '),
+                              ),
                               onTap: () => widget.onSelected(
                                 CourseSelected(
                                   courseId: c.courseId,
@@ -801,9 +841,12 @@ class _CoursePickerSheetState extends State<_CoursePickerSheet> {
                             (c) => ListTile(
                               leading: const Icon(Icons.location_on),
                               title: Text(c.displayName),
-                              subtitle: c.subtitleName == null
-                                  ? null
-                                  : Text(c.subtitleName!),
+                              subtitle: c.courseCount > 1
+                                  ? Text(AppLocalizations.of(context)
+                                      .roundSetupCourseCount(c.courseCount))
+                                  : (c.subtitleName == null
+                                      ? null
+                                      : Text(c.subtitleName!)),
                               onTap: () => widget.onSelected(
                                 CourseSelected(
                                   courseId: c.courseId,
@@ -895,94 +938,41 @@ class _LayoutSelector extends StatelessWidget {
 
   const _LayoutSelector({required this.state});
 
-  /// "Đường A · 9 hố". The hole count was hard-coded English — "(18 holes)" —
-  /// in a screen that is otherwise entirely Vietnamese.
-  static String _layoutLabel(BuildContext context, LayoutOption l) =>
-      '${l.name} · '
-      '${AppLocalizations.of(context).roundSetupLayoutHoles(l.holeCount)}';
-
   @override
   Widget build(BuildContext context) {
-    if (state.layouts.length <= 1) return const SizedBox.shrink();
+    final options = state.playOptions;
+    // One way to play is not a choice.
+    if (options.length <= 1) return const SizedBox.shrink();
+
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final selected = state.selectedPlayOption;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _layoutDropdown(context),
-        // A nine is half a round. When the golfer picks đường A at a club that
-        // has B and C as well, the round is not defined until they say which
-        // one they are pairing it with — so ask, rather than assume the next
-        // one alphabetically.
-        if (state.needsSecondLayout) ...[
-          const SizedBox(height: 12),
-          _secondLayoutDropdown(context),
-        ],
+        Text(l10n.roundSetupLayout, style: theme.textTheme.labelLarge),
+        const SizedBox(height: 8),
+        // The rounds this club actually offers, worked out in advance. Two
+        // dropdowns made the golfer assemble one — and let them assemble
+        // pairings that are not rounds anybody plays.
+        for (final option in options)
+          RadioListTile<PlayOption>(
+            key: Key('play_option_${option.first.id}_${option.second?.id ?? 0}'),
+            value: option,
+            groupValue: selected,
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(option.name),
+            subtitle: Text(l10n.roundSetupLayoutHoles(option.holeCount)),
+            onChanged: (chosen) {
+              if (chosen == null) return;
+              final bloc = context.read<RoundSetupBloc>();
+              bloc.add(LayoutSelected(chosen.first.id));
+              bloc.add(SecondLayoutSelected(chosen.second?.id));
+            },
+          ),
       ],
-    );
-  }
-
-  Widget _secondLayoutDropdown(BuildContext context) {
-    return DropdownButtonFormField<int>(
-      value: state.selectedSecondLayoutId,
-      decoration: InputDecoration(
-        labelText: AppLocalizations.of(context).roundSetupSecondLayout,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-      ),
-      // isExpanded, or the field sizes itself to its longest entry and a name
-      // like "Long Biên Golf Course — Championship" runs off the screen edge.
-      isExpanded: true,
-      items: state.layouts
-          .where((l) => l.id != state.selectedLayoutId)
-          .map(
-            (l) => DropdownMenuItem(
-              value: l.id,
-              child: Text(
-                _layoutLabel(context, l),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        context.read<RoundSetupBloc>().add(SecondLayoutSelected(value));
-      },
-    );
-  }
-
-  Widget _layoutDropdown(BuildContext context) {
-    return DropdownButtonFormField<int>(
-      value: state.selectedLayoutId,
-      decoration: InputDecoration(
-        labelText: AppLocalizations.of(context).roundSetupLayout,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
-        ),
-      ),
-      isExpanded: true,
-      items: state.layouts
-          .map(
-            (l) => DropdownMenuItem(
-              value: l.id,
-              child: Text(
-                _layoutLabel(context, l),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          )
-          .toList(),
-      onChanged: (value) {
-        if (value != null) {
-          context.read<RoundSetupBloc>().add(LayoutSelected(value));
-        }
-      },
     );
   }
 }

@@ -12,6 +12,19 @@ import java.util.UUID;
 @Table(name = "rounds")
 public class Round {
 
+    /// What kind of round this is, as the golfer chose on the setup screen.
+    public enum RoundFormat {
+        CASUAL,
+        PRACTICE,
+        TOURNAMENT;
+
+        /// Whether a round of this kind counts toward the handicap unless the
+        /// golfer says otherwise. Practice does not; that is what practice is.
+        public boolean countsByDefault() {
+            return this != PRACTICE;
+        }
+    }
+
     public enum RoundStatus {
         IN_PROGRESS,
         COMPLETED,
@@ -61,6 +74,28 @@ public class Round {
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
+
+    /**
+     * What the golfer said this round was: casual, practice or tournament.
+     *
+     * <p>The setup screen has asked since it existed and the answer went
+     * nowhere — there was no column to put it in.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "format", length = 20, nullable = false)
+    private RoundFormat format = RoundFormat.CASUAL;
+
+    /**
+     * Whether this round feeds the handicap this app computes.
+     *
+     * <p>Defaults from {@link #format} — a practice round does not count —
+     * and the golfer can override it either way before teeing off. Separate
+     * from the format because the two questions are separate: a casual round
+     * on a course you have never played may be one you would rather not have
+     * counted, and it is still a casual round.
+     */
+    @Column(name = "counts_toward_handicap", nullable = false)
+    private boolean countsTowardHandicap = true;
 
     /**
      * Tournament policy ID for tournament-format rounds.
@@ -152,6 +187,22 @@ public class Round {
 
     public void setGolferAccountId(Long golferAccountId) {
         this.golferAccountId = golferAccountId;
+    }
+
+    public RoundFormat getFormat() {
+        return format;
+    }
+
+    public void setFormat(RoundFormat format) {
+        this.format = format;
+    }
+
+    public boolean isCountsTowardHandicap() {
+        return countsTowardHandicap;
+    }
+
+    public void setCountsTowardHandicap(boolean countsTowardHandicap) {
+        this.countsTowardHandicap = countsTowardHandicap;
     }
 
     public RoundStatus getStatus() {

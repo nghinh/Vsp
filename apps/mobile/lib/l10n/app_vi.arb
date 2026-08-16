@@ -1698,5 +1698,13 @@
   "roundSetupCountsHandicap": "Tính vào handicap",
   "roundSetupCountsHandicapOn": "Vòng này sẽ được dùng để tính handicap của bạn",
   "roundSetupCountsHandicapOff": "Vòng này không ảnh hưởng đến handicap",
-  "msgNoPackagePublished": "Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng."
+  "msgNoPackagePublished": "Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng.",
+  "strategyHandicapRated": "Handicap {index} → handicap sân {playing} (theo slope/CR của tee)",
+  "@strategyHandicapRated": {"placeholders": {"index": {"type": "String"}, "playing": {"type": "String"}}},
+  "scoreDisplayGross": "Tổng gậy",
+  "scoreDisplayNet": "Net",
+  "scoreDisplayToPar": "So với par",
+  "scoreDisplayNetUnavailable": "Chưa tính được net: cần handicap của người chơi và chỉ số gậy của sân.",
+  "roundSetupCourseCount": "{count} đường",
+  "@roundSetupCourseCount": {"placeholders": {"count": {"type": "int"}}}
 }

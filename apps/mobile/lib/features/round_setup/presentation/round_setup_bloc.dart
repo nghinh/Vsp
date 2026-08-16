@@ -136,6 +136,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     on<PackageValidationRequested>(_onPackageValidationRequested);
     on<PackageWarningAcknowledged>(_onPackageWarningAcknowledged);
     on<StartRoundTapped>(_onStartRoundTapped);
+    on<HandicapCountingChanged>(_onHandicapCountingChanged);
     on<NearbyCoursesLoaded>(_onNearbyCoursesLoaded);
     on<LastPlayedCoursesLoaded>(_onLastPlayedCoursesLoaded);
     on<TournamentPolicySelected>(_onTournamentPolicySelected);
@@ -180,6 +181,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
                 courseName: c.courseName ?? c.facilityName,
                 facilityId: c.facilityId,
                 facilityName: c.facilityName,
+                courseCount: c.courseCount,
                 latitude: c.latitude,
                 longitude: c.longitude,
                 distanceKm: c.distanceMeters != null
@@ -659,6 +661,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           courseName: c.courseName ?? c.facilityName,
           facilityId: c.facilityId,
           facilityName: c.facilityName,
+          courseCount: c.courseCount,
           latitude: c.latitude,
           longitude: c.longitude,
           distanceKm:
@@ -671,6 +674,15 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     } catch (_) {
       // No fix, no permission, no network, no courses. All the same answer.
     }
+  }
+
+  Future<void> _onHandicapCountingChanged(
+    HandicapCountingChanged event,
+    Emitter<RoundSetupState> emit,
+  ) async {
+    final currentState = state;
+    if (currentState is! RoundSetupReady) return;
+    emit(currentState.copyWith(countsTowardHandicapOverride: event.counts));
   }
 
   Future<void> _onNearbyCoursesLoaded(
@@ -778,6 +790,9 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           startTime: config.startTime,
           packageId: int.tryParse(config.packageId ?? ''),
           tournamentPolicyId: config.tournamentPolicyId,
+          // The two answers the setup screen collects and never sent.
+          format: currentState.format.value,
+          countsTowardHandicap: currentState.countsTowardHandicap,
         );
         roundId = created.id;
         syncedToServer = true;

@@ -3998,4 +3998,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get msgNoPackagePublished =>
       'No offline map has been built for this course yet. You can still play and score; the map just needs a connection.';
+
+  @override
+  String strategyHandicapRated(String index, String playing) {
+    return 'Handicap $index → course handicap $playing (from this tee\'s slope and rating)';
+  }
+
+  @override
+  String get scoreDisplayGross => 'Gross';
+
+  @override
+  String get scoreDisplayNet => 'Net';
+
+  @override
+  String get scoreDisplayToPar => 'To par';
+
+  @override
+  String get scoreDisplayNetUnavailable =>
+      'Net needs a playing handicap and the club\'s stroke index.';
+
+  @override
+  String roundSetupCourseCount(int count) {
+    return '$count courses';
+  }
 }

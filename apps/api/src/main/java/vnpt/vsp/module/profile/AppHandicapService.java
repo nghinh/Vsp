@@ -51,6 +51,13 @@ public class AppHandicapService {
      * <p>A differential is the round's strokes over par, a nine scaled to an
      * eighteen. Only rounds with a full nine or eighteen of entries count — a
      * round abandoned on the 5th says nothing about ability.
+     *
+     * <p>And only rounds that are finished, undeleted, and marked as
+     * counting. All three were missing: an abandoned round with nine holes
+     * entered, a round the golfer deleted, and every round played as practice
+     * all moved this number. The golfer was offered a "Tập luyện" choice on
+     * the setup screen and it changed nothing — there was no column behind
+     * it, so there was nothing to filter on.
      */
     @Transactional(readOnly = true)
     public AppHandicap compute(Long golferAccountId) {
@@ -63,6 +70,9 @@ public class AppHandicapService {
                 JOIN rounds r ON r.id = sc.round_id
                 WHERE sc.golfer_account_id = :golfer
                   AND sc.deleted_at IS NULL
+                  AND r.deleted_at IS NULL
+                  AND r.status = 'COMPLETED'
+                  AND r.counts_toward_handicap
                 GROUP BY sc.id, r.created_at
                 HAVING count(*) IN (9, 18)
                 ORDER BY r.created_at DESC

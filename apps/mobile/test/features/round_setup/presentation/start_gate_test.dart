@@ -14,6 +14,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:vsp_mobile/domain/models/player.dart';
+import 'package:vsp_mobile/domain/models/round_format.dart';
 import 'package:vsp_mobile/features/round_setup/presentation/round_setup_state.dart';
 
 void main() {
@@ -73,6 +74,37 @@ void main() {
     });
   });
 
+  group('whether the round counts toward the handicap', () {
+    RoundSetupReady formatted(RoundFormat format, {bool? override}) =>
+        RoundSetupReady(
+          courseId: 1,
+          courseName: 'Long Biên',
+          players: const [me],
+          format: format,
+          countsTowardHandicapOverride: override,
+        );
+
+    test('a casual round counts, a practice round does not', () {
+      expect(formatted(RoundFormat.casual).countsTowardHandicap, isTrue);
+      expect(formatted(RoundFormat.practice).countsTowardHandicap, isFalse);
+    });
+
+    test('the golfer can override either way', () {
+      expect(
+        formatted(RoundFormat.practice, override: true).countsTowardHandicap,
+        isTrue,
+      );
+      expect(
+        formatted(RoundFormat.casual, override: false).countsTowardHandicap,
+        isFalse,
+      );
+    });
+
+    test('a tournament round counts', () {
+      expect(formatted(RoundFormat.tournament).countsTowardHandicap, isTrue);
+    });
+  });
+
   group('the package banner', () {
     test('says nothing where no package is published', () {
       final state = form(status: PackageStatus.notDownloaded, available: false);
@@ -99,3 +131,10 @@ void main() {
     });
   });
 }
+
+// ── Whether the round counts ────────────────────────────────────────────────
+//
+// The setup screen has offered Thường / Tập luyện / Giải đấu since it existed
+// and the answer never left the phone: no column, no field in the create
+// request, no filter in the handicap query. A golfer who chose practice was
+// told it would not count, and it counted.

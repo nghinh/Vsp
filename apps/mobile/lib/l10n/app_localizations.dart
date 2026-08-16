@@ -7039,6 +7039,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No offline map has been built for this course yet. You can still play and score; the map just needs a connection.'**
   String get msgNoPackagePublished;
+
+  /// No description provided for @strategyHandicapRated.
+  ///
+  /// In en, this message translates to:
+  /// **'Handicap {index} → course handicap {playing} (from this tee\'s slope and rating)'**
+  String strategyHandicapRated(String index, String playing);
+
+  /// No description provided for @scoreDisplayGross.
+  ///
+  /// In en, this message translates to:
+  /// **'Gross'**
+  String get scoreDisplayGross;
+
+  /// No description provided for @scoreDisplayNet.
+  ///
+  /// In en, this message translates to:
+  /// **'Net'**
+  String get scoreDisplayNet;
+
+  /// No description provided for @scoreDisplayToPar.
+  ///
+  /// In en, this message translates to:
+  /// **'To par'**
+  String get scoreDisplayToPar;
+
+  /// No description provided for @scoreDisplayNetUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Net needs a playing handicap and the club\'s stroke index.'**
+  String get scoreDisplayNetUnavailable;
+
+  /// No description provided for @roundSetupCourseCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} courses'**
+  String roundSetupCourseCount(int count);
 }
 
 class _AppLocalizationsDelegate

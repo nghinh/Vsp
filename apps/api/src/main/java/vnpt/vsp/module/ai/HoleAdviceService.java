@@ -94,9 +94,17 @@ public class HoleAdviceService {
             handicap = appHandicapService.compute(golferId).handicap();
         }
 
-        Integer strokes = strokesReceived(handicap, hole.strokeIndex, 18);
+        // The index measures the golfer; the shots they receive here also
+        // depend on the course and the tee. Where the club published a
+        // rating this converts one into the other; where it did not — every
+        // course in this database today — the index stands.
+        Rating rating = rating(courseId, teeName);
+        BigDecimal playing = CourseHandicap.playing(
+                handicap, rating.slope, rating.courseRating, rating.par, rating.holes);
+
+        Integer strokes = strokesReceived(playing, hole.strokeIndex, 18);
         Integer netPar = strokes == null ? null : hole.par + strokes;
-        final BigDecimal handicapUsed = handicap;
+        final BigDecimal handicapUsed = playing;
         var clubs = clubs(hole, bag);
         boolean clubsAreStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
 
@@ -155,6 +163,13 @@ public class HoleAdviceService {
         }
         boolean clubsAreStandard = !bag.isEmpty() && bag.stream().allMatch(Club::standard);
 
+        // The index becomes shots only against a tee's rating. Where the
+        // club published none — every course here today — the index stands.
+        Rating rating = rating(courseId, teeName);
+        BigDecimal playing = CourseHandicap.playing(
+                handicap, rating.slope, rating.courseRating, rating.par,
+                backNineCourseId != null ? 18 : rating.holes);
+
         var holes = new ArrayList<vnpt.vsp.module.ai.dto.CourseStrategyResponse.StrategyHole>();
         Integer strokesTotal = null;
         Integer netParTotal = null;
@@ -175,7 +190,7 @@ public class HoleAdviceService {
                     continue;
                 }
                 History history = history(nine.courseId(), number, golferId);
-                Integer strokes = strokesReceived(handicap, hole.strokeIndex, holesPlayed);
+                Integer strokes = strokesReceived(playing, hole.strokeIndex, holesPlayed);
                 Integer netPar = strokes == null ? null : hole.par + strokes;
                 if (strokes != null) {
                     strokesTotal = (strokesTotal == null ? 0 : strokesTotal) + strokes;
@@ -195,7 +210,7 @@ public class HoleAdviceService {
         return new vnpt.vsp.module.ai.dto.CourseStrategyResponse(
                 courseName(courseId),
                 backNineCourseId == null ? null : courseName(backNineCourseId),
-                handicap, clubsAreStandard, strokesTotal, netParTotal, holes);
+                handicap, playing, clubsAreStandard, strokesTotal, netParTotal, holes);
     }
 
     private String courseName(Long courseId) {
@@ -419,6 +434,40 @@ public class HoleAdviceService {
         return hole;
     }
 
+    /**
+     * The rating of the tee being played, and the course's par.
+     *
+     * <p>Both halves of a course handicap. Null fields where the club's card
+     * carries no rating box, or nobody has photographed one yet — which is
+     * every course in this database today, and the reason the allocation
+     * still has to work without them.
+     */
+    private Rating rating(Long courseId, String teeName) {
+        var rows = em.createNativeQuery("""
+                SELECT t.course_rating, t.slope_rating, c.par_total, c.holes_count
+                FROM courses c
+                LEFT JOIN scorecard_segments g ON g.course_id = c.id
+                LEFT JOIN scorecard_tees t ON t.scorecard_id = g.scorecard_id
+                     AND (CAST(:tee AS text) IS NULL OR t.name = CAST(:tee AS text))
+                WHERE c.id = :course
+                ORDER BY t.course_rating DESC NULLS LAST
+                LIMIT 1
+                """)
+                .setParameter("course", courseId)
+                .setParameter("tee", teeName)
+                .getResultList();
+        var rating = new Rating();
+        if (rows.isEmpty()) {
+            return rating;
+        }
+        Object[] r = (Object[]) rows.get(0);
+        rating.courseRating = (BigDecimal) r[0];
+        rating.slope = r[1] == null ? null : ((Number) r[1]).intValue();
+        rating.par = r[2] == null ? null : ((Number) r[2]).intValue();
+        rating.holes = r[3] == null ? 18 : ((Number) r[3]).intValue();
+        return rating;
+    }
+
     private History history(Long courseId, int holeNumber, Long golferId) {
         var rows = em.createNativeQuery("""
                 SELECT count(*), avg(e.strokes), min(e.strokes),
@@ -628,6 +677,15 @@ public class HoleAdviceService {
         BigDecimal meters;
         String tee;
         String courseName;
+    }
+
+    /// A tee's rating and the course it belongs to. Every field optional:
+    /// no card in this database carries a rating yet.
+    private static final class Rating {
+        BigDecimal courseRating;
+        Integer slope;
+        Integer par;
+        int holes = 18;
     }
 
     private static final class History {

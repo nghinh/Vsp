@@ -3996,4 +3996,27 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get msgNoPackagePublished =>
       'Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng.';
+
+  @override
+  String strategyHandicapRated(String index, String playing) {
+    return 'Handicap $index → handicap sân $playing (theo slope/CR của tee)';
+  }
+
+  @override
+  String get scoreDisplayGross => 'Tổng gậy';
+
+  @override
+  String get scoreDisplayNet => 'Net';
+
+  @override
+  String get scoreDisplayToPar => 'So với par';
+
+  @override
+  String get scoreDisplayNetUnavailable =>
+      'Chưa tính được net: cần handicap của người chơi và chỉ số gậy của sân.';
+
+  @override
+  String roundSetupCourseCount(int count) {
+    return '$count đường';
+  }
 }

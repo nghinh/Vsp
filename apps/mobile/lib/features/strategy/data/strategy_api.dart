@@ -15,6 +15,7 @@ class CourseStrategy {
     required this.courseName,
     this.backNineCourseName,
     this.handicapUsed,
+    this.playingHandicap,
     this.clubsAreStandard = false,
     this.strokesReceivedTotal,
     this.netParTotal,
@@ -31,6 +32,16 @@ class CourseStrategy {
   /// app-computed one otherwise. Null when neither exists.
   final double? handicapUsed;
 
+  /// The index turned into shots on this course from this tee. Equal to
+  /// [handicapUsed] where the club published no course rating.
+  final double? playingHandicap;
+
+  /// True when the tee's rating actually changed the number.
+  bool get ratingAdjusted =>
+      playingHandicap != null &&
+      handicapUsed != null &&
+      (playingHandicap! - handicapUsed!).abs() >= 0.05;
+
   /// True while every carry behind the club picks is still the seeded
   /// standard rather than something this golfer measured.
   final bool clubsAreStandard;
@@ -44,6 +55,7 @@ class CourseStrategy {
     courseName: json['courseName'] as String? ?? '',
     backNineCourseName: json['backNineCourseName'] as String?,
     handicapUsed: (json['handicapUsed'] as num?)?.toDouble(),
+    playingHandicap: (json['playingHandicap'] as num?)?.toDouble(),
     clubsAreStandard: json['clubsAreStandard'] as bool? ?? false,
     strokesReceivedTotal: json['strokesReceivedTotal'] as int?,
     netParTotal: json['netParTotal'] as int?,

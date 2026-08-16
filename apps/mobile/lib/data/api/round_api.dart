@@ -74,6 +74,8 @@ class RoundApi {
     bool cartRequested = false,
     String? tournamentPolicyId,
     String? tournamentId,
+    String? format,
+    bool? countsTowardHandicap,
   }) async {
     final body = <String, dynamic>{
       'courseId': courseId,
@@ -84,6 +86,12 @@ class RoundApi {
       'cartRequested': cartRequested,
       if (startTime != null) 'startTime': startTime.toUtc().toIso8601String(),
       if (packageId != null) 'packageId': packageId,
+      // What kind of round this is, and whether it feeds the handicap the
+      // app computes. The setup screen has asked the first question since it
+      // existed; until now the answer never left the phone.
+      if (format != null) 'format': format,
+      if (countsTowardHandicap != null)
+        'countsTowardHandicap': countsTowardHandicap,
       if (tournamentPolicyId != null) 'tournamentPolicyId': tournamentPolicyId,
       if (tournamentId != null) 'tournamentId': tournamentId,
     };

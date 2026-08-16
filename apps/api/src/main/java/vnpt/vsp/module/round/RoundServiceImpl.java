@@ -157,8 +157,17 @@ public class RoundServiceImpl implements RoundService {
         round.setTournamentId(tournamentId);
         round.setTournamentPolicyVersion(tournamentPolicyVersion);
 
+        // What kind of round, and whether it counts. An older client sends
+        // neither and gets what it always got: a casual round that counts.
+        Round.RoundFormat format = parseFormat(request.getFormat(), tournamentId, tournamentPolicyId);
+        round.setFormat(format);
+        round.setCountsTowardHandicap(request.getCountsTowardHandicap() != null
+                ? request.getCountsTowardHandicap()
+                : format.countsByDefault());
+
         Round savedRound = roundRepository.save(round);
-        log.debug("Round created with id {}", savedRound.getId());
+        log.debug("Round created with id {} (format {}, counts toward handicap: {})",
+                savedRound.getId(), savedRound.getFormat(), savedRound.isCountsTowardHandicap());
 
         saveSegments(savedRound, request.getSegmentCourseIds());
 
@@ -389,4 +398,28 @@ public class RoundServiceImpl implements RoundService {
     private String buildCompletionMetadata(Long accountId) {
         return "{\"accountId\":" + accountId + "}";
     }
+
+    /**
+     * The round's kind, from what the client said and what it asked for.
+     *
+     * <p>An unrecognised or absent value is casual — the shape every client
+     * built before this field sent, and the safest reading of silence. A
+     * round attached to a tournament is a tournament round whatever the
+     * client called it: the policy is already locked to it.
+     */
+    private Round.RoundFormat parseFormat(String requested, UUID tournamentId, UUID policyId) {
+        if (tournamentId != null || policyId != null) {
+            return Round.RoundFormat.TOURNAMENT;
+        }
+        if (requested == null) {
+            return Round.RoundFormat.CASUAL;
+        }
+        try {
+            return Round.RoundFormat.valueOf(requested.trim().toUpperCase(java.util.Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            log.warn("Unknown round format '{}' — recording it as CASUAL", requested);
+            return Round.RoundFormat.CASUAL;
+        }
+    }
+
 }

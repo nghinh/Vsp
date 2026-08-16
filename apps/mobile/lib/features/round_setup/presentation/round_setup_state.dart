@@ -113,6 +113,18 @@ class RoundSetupReady extends RoundSetupState {
   final PackageReadiness? packageReadiness;
   final bool warningAcknowledged;
 
+  /// Whether this round should feed the handicap the app computes.
+  ///
+  /// Null until the golfer touches the switch, which means "decide from the
+  /// format" — practice does not count, anything else does. Kept separate
+  /// from the format so that moving the switch survives a change of format
+  /// only where the golfer actually made a choice.
+  final bool? countsTowardHandicapOverride;
+
+  /// What the round will actually be recorded as, switch or no switch.
+  bool get countsTowardHandicap =>
+      countsTowardHandicapOverride ?? format != RoundFormat.practice;
+
   /// True when the server publishes an offline package for this course.
   ///
   /// Most courses have none — 900 holes of this country are a par and a
@@ -168,6 +180,7 @@ class RoundSetupReady extends RoundSetupState {
     this.packageReadiness,
     this.warningAcknowledged = false,
     this.coursePackageAvailable = false,
+    this.countsTowardHandicapOverride,
     this.tournamentPolicyId,
     this.nearbyCourses = const [],
     this.allCourses = const [],
@@ -241,6 +254,51 @@ class RoundSetupReady extends RoundSetupState {
   ];
 
   /// True when the chosen đường is a nine and needs a partner to make a round.
+  /// Every way this club can actually be played, worked out in advance.
+  ///
+  /// A club with three nines does not present a golfer with "pick a đường,
+  /// then pick another": it presents four or ten real rounds, and the golfer
+  /// picks the one they booked. Two dropdowns made them assemble it, and let
+  /// them assemble things that are not rounds.
+  ///
+  /// Eighteens first, then the pairings in playing order, then the nines on
+  /// their own. Order matters in a pairing — A then C numbers the holes
+  /// differently from C then A — so both directions are offered.
+  List<PlayOption> get playOptions {
+    final eighteens = layouts.where((l) => l.holeCount >= 18).toList();
+    final nines = layouts.where((l) => l.holeCount < 18).toList();
+    final options = <PlayOption>[];
+
+    for (final l in eighteens) {
+      options.add(PlayOption(first: l, holeCount: l.holeCount));
+    }
+    for (final a in nines) {
+      for (final b in nines) {
+        if (a.id == b.id) continue;
+        options.add(PlayOption(
+          first: a,
+          second: b,
+          holeCount: a.holeCount + b.holeCount,
+        ));
+      }
+    }
+    for (final l in nines) {
+      options.add(PlayOption(first: l, holeCount: l.holeCount));
+    }
+    return options;
+  }
+
+  /// The option the form is currently on, or null before a choice.
+  PlayOption? get selectedPlayOption {
+    for (final option in playOptions) {
+      if (option.first.id == selectedLayoutId &&
+          option.second?.id == selectedSecondLayoutId) {
+        return option;
+      }
+    }
+    return null;
+  }
+
   bool get needsSecondLayout {
     final first = layouts.where((l) => l.id == selectedLayoutId);
     return first.isNotEmpty && first.first.holeCount < 18 && layouts.length > 1;
@@ -267,6 +325,8 @@ class RoundSetupReady extends RoundSetupState {
     PackageReadiness? packageReadiness,
     bool? warningAcknowledged,
     bool? coursePackageAvailable,
+    bool? countsTowardHandicapOverride,
+    bool clearCountsOverride = false,
     String? tournamentPolicyId,
     List<NearbyCourseSuggestion>? nearbyCourses,
     List<NearbyCourseSuggestion>? allCourses,
@@ -298,6 +358,9 @@ class RoundSetupReady extends RoundSetupState {
       warningAcknowledged: warningAcknowledged ?? this.warningAcknowledged,
       coursePackageAvailable:
           coursePackageAvailable ?? this.coursePackageAvailable,
+      countsTowardHandicapOverride: clearCountsOverride
+          ? null
+          : countsTowardHandicapOverride ?? this.countsTowardHandicapOverride,
       tournamentPolicyId: tournamentPolicyId ?? this.tournamentPolicyId,
       nearbyCourses: nearbyCourses ?? this.nearbyCourses,
       allCourses: allCourses ?? this.allCourses,
@@ -329,6 +392,7 @@ class RoundSetupReady extends RoundSetupState {
     packageReadiness,
     warningAcknowledged,
     coursePackageAvailable,
+    countsTowardHandicapOverride,
     tournamentPolicyId,
     nearbyCourses,
     allCourses,
@@ -340,6 +404,32 @@ class RoundSetupReady extends RoundSetupState {
 }
 
 /// Layout option from course manifest.
+/// One playable round at this club: an eighteen, a pairing of nines in the
+/// order they are played, or a single nine.
+class PlayOption extends Equatable {
+  const PlayOption({
+    required this.first,
+    this.second,
+    required this.holeCount,
+  });
+
+  final LayoutOption first;
+
+  /// The second nine, where the round is a pairing.
+  final LayoutOption? second;
+
+  final int holeCount;
+
+  bool get isPairing => second != null;
+
+  /// "Đường A → Đường C", or just the layout's name.
+  String get name =>
+      second == null ? first.name : '${first.name} → ${second!.name}';
+
+  @override
+  List<Object?> get props => [first, second, holeCount];
+}
+
 class LayoutOption extends Equatable {
   final int id;
   final String name;

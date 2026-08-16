@@ -56,6 +56,7 @@ import 'package:vsp_mobile/features/games/domain/games_engine.dart';
 import 'package:vsp_mobile/features/games/presentation/games_sheet.dart';
 import 'package:vsp_mobile/features/strategy/presentation/strategy_screen.dart';
 import 'package:vsp_mobile/features/ghost/ghost_round.dart';
+import 'package:vsp_mobile/features/score_display/score_totals_bar.dart';
 
 /// Main scorecard screen for entering scores per hole per player.
 class ScorecardScreen extends StatelessWidget {
@@ -115,9 +116,14 @@ class ScorecardScreen extends StatelessWidget {
   final String? courseId;
   final String? backNineCourseId;
 
+  /// Playing handicap per player, where known. The Net view needs it and
+  /// refuses without it.
+  final Map<String, int> playerHandicaps;
+
   const ScorecardScreen({
     this.courseId,
     this.backNineCourseId,
+    this.playerHandicaps = const {},
     super.key,
     required this.flightId,
     required this.holeIds,
@@ -156,6 +162,7 @@ class ScorecardScreen extends StatelessWidget {
             onHoleChanged: onHoleChanged,
             courseId: courseId,
             backNineCourseId: backNineCourseId,
+            playerHandicaps: playerHandicaps,
           ),
         ),
       ),
@@ -255,11 +262,13 @@ class _ScorecardScreenContent extends StatelessWidget {
 
   final String? courseId;
   final String? backNineCourseId;
+  final Map<String, int> playerHandicaps;
 
   const _ScorecardScreenContent({
     this.onHoleChanged,
     this.courseId,
     this.backNineCourseId,
+    this.playerHandicaps = const {},
   });
 
   /// The hole number the scorecard is on.
@@ -391,6 +400,36 @@ class _ScorecardScreenContent extends StatelessWidget {
   /// checks every hole against the card in their hand, and only what they
   /// confirm reaches the scorecard — through the same upsert and the same sync
   /// queue as a hand-entered stroke.
+
+  /// Every player's strokes by hole number.
+  Map<String, Map<int, int>> _grossByPlayer(ScorecardScreenState state) {
+    final byPlayer = <String, Map<int, int>>{};
+    for (final playerId in state.playerIds) {
+      final gross = <int, int>{};
+      for (var i = 0; i < state.holeIds.length; i++) {
+        final holeId = state.holeIds[i];
+        final score = state.scores[playerId]?[holeId]?.grossScore;
+        if (score != null) {
+          gross[int.tryParse(holeId) ?? (i + 1)] = score;
+        }
+      }
+      byPlayer[playerId] = gross;
+    }
+    return byPlayer;
+  }
+
+  /// Par by hole number, as the round knows it.
+  Map<int, int> _parByHole(ScorecardScreenState state) {
+    final pars = <int, int>{};
+    for (var i = 0; i < state.holeIds.length; i++) {
+      final holeId = state.holeIds[i];
+      final par = state.holePars[holeId];
+      if (par != null) {
+        pars[int.tryParse(holeId) ?? (i + 1)] = par;
+      }
+    }
+    return pars;
+  }
 
   /// This golfer's own gross by hole number — the first player on the card,
   /// which is whose phone this is. The ghost races them, not the flight.
@@ -651,6 +690,17 @@ class _ScorecardScreenContent extends StatelessWidget {
                 totalHoles: state.totalHoles,
                 par: state.currentPar,
                 isOffline: state.isOffline,
+              ),
+
+              // What the golfer is on, in the reading they asked for.
+              ScoreTotalsBar(
+                playerIds: state.playerIds,
+                playerNames: state.playerNames,
+                grossByPlayer: _grossByPlayer(state),
+                parByHole: _parByHole(state),
+                playerHandicaps: playerHandicaps,
+                courseId: int.tryParse(courseId ?? ''),
+                backNineCourseId: int.tryParse(backNineCourseId ?? ''),
               ),
 
               // The golfer's own best round on this course, racing live.

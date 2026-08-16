@@ -40,6 +40,10 @@ class CourseSearchResult extends Equatable {
   /// True if a published data package exists for this course.
   final bool hasPackage;
 
+  /// How many playable đường this club has. Tells the picker whether tapping
+  /// goes straight into a round or has to ask which one.
+  final int courseCount;
+
   /// True if an update is available compared to the mobile's downloaded version.
   final bool updateAvailable;
   final DataFreshness? dataFreshness;
@@ -58,6 +62,7 @@ class CourseSearchResult extends Equatable {
     this.slope,
     this.distanceMeters,
     required this.hasPackage,
+    this.courseCount = 1,
     required this.updateAvailable,
     this.dataFreshness,
   });
@@ -80,6 +85,7 @@ class CourseSearchResult extends Equatable {
       slope: (json['slope'] as num?)?.toInt(),
       distanceMeters: (json['distanceMeters'] as num?)?.toDouble(),
       hasPackage: json['hasPackage'] as bool? ?? false,
+      courseCount: (json['courseCount'] as num?)?.toInt() ?? 1,
       updateAvailable: json['updateAvailable'] as bool? ?? false,
       dataFreshness: json['dataFreshness'] != null
           ? DataFreshness.fromJson(
@@ -104,6 +110,7 @@ class CourseSearchResult extends Equatable {
     if (slope != null) 'slope': slope,
     if (distanceMeters != null) 'distanceMeters': distanceMeters,
     'hasPackage': hasPackage,
+    'courseCount': courseCount,
     'updateAvailable': updateAvailable,
     if (dataFreshness != null) 'dataFreshness': dataFreshness!.toJson(),
   };

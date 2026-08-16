@@ -127,6 +127,10 @@ class ActiveRoundScreen extends StatefulWidget {
   /// playerId → display name.
   final Map<String, String> playerNames;
 
+  /// Playing handicap per player, where one is known. Feeds the scorecard's
+  /// Net view; absent players simply have no net score.
+  final Map<String, int> playerHandicaps;
+
   /// holeId → par, as the scorecard expects it.
   final Map<String, int> holePars;
 
@@ -196,6 +200,7 @@ class ActiveRoundScreen extends StatefulWidget {
     required this.holeIds,
     required this.playerIds,
     required this.playerNames,
+    this.playerHandicaps = const {},
     this.holePars = const {},
     this.isTournamentMode = false,
     this.initialTab = ActiveRoundTab.score,
@@ -601,6 +606,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             holeIds: widget.holeIds,
             playerIds: widget.playerIds,
             playerNames: widget.playerNames,
+            playerHandicaps: widget.playerHandicaps,
             holePars: widget.holePars,
             isTournamentMode: widget.isTournamentMode,
             onHoleChanged: _onHoleChanged,
@@ -727,6 +733,9 @@ class _ScoreTab extends StatelessWidget {
   /// For the games sheet's stroke-index fetch; see ScorecardScreen.
   final String? courseId;
   final String? backNineCourseId;
+
+  /// Playing handicap per player, for the scorecard's Net view.
+  final Map<String, int> playerHandicaps;
   final List<String> holeIds;
   final List<String> playerIds;
   final Map<String, String> playerNames;
@@ -751,6 +760,7 @@ class _ScoreTab extends StatelessWidget {
   const _ScoreTab({
     this.courseId,
     this.backNineCourseId,
+    this.playerHandicaps = const {},
     required this.finishRequests,
     required this.roundId,
     required this.holeIds,
@@ -772,6 +782,7 @@ class _ScoreTab extends StatelessWidget {
       holeIds: holeIds,
       playerIds: playerIds,
       playerNames: playerNames,
+      playerHandicaps: playerHandicaps,
       holePars: holePars,
       isTournamentMode: isTournamentMode,
       onHoleChanged: onHoleChanged,

@@ -26,6 +26,12 @@ public record CourseStrategyResponse(
         /// when neither exists, and every strokesReceived below is too.
         BigDecimal handicapUsed,
 
+        /// The same index converted to shots on this course from this tee —
+        /// index × slope/113 + (rating − par). Equal to {@code handicapUsed}
+        /// where the club published no rating, which is every course in this
+        /// database today.
+        BigDecimal playingHandicap,
+
         /// True while every carry behind the club picks is still the seeded
         /// standard rather than something this golfer measured.
         boolean clubsAreStandard,

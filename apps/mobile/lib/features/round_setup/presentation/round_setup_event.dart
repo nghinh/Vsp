@@ -192,6 +192,16 @@ class LastPlayedCoursesLoaded extends RoundSetupEvent {
 }
 
 /// Nearby course suggestion model.
+/// The golfer decided whether this round feeds their handicap.
+class HandicapCountingChanged extends RoundSetupEvent {
+  final bool counts;
+
+  const HandicapCountingChanged(this.counts);
+
+  @override
+  List<Object?> get props => [counts];
+}
+
 class NearbyCourseSuggestion extends Equatable {
   final int courseId;
 
@@ -203,6 +213,10 @@ class NearbyCourseSuggestion extends Equatable {
   /// The club. What a golfer types, and what the picker shows.
   final int? facilityId;
   final String? facilityName;
+
+  /// How many playable đường the club has. One means tapping starts a
+  /// round; more means the next question is which one.
+  final int courseCount;
 
   /// Null where the facility has no established location. The picker shows
   /// the course either way — a golfer who knows the name should be able to
@@ -217,6 +231,7 @@ class NearbyCourseSuggestion extends Equatable {
     required this.courseName,
     this.facilityId,
     this.facilityName,
+    this.courseCount = 1,
     this.latitude,
     this.longitude,
     this.distanceKm,
@@ -253,6 +268,7 @@ class NearbyCourseSuggestion extends Equatable {
     courseName,
     facilityId,
     facilityName,
+    courseCount,
     latitude,
     longitude,
     distanceKm,
