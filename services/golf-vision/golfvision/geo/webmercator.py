@@ -42,6 +42,25 @@ def latitude_of_tile_y(y: float, zoom: int) -> float:
     return math.degrees(math.atan(math.sinh(n)))
 
 
+#: Half the circumference of the sphere Web Mercator projects onto, which is
+#: where the projection's metres run out: ±20 037 508.34 on both axes.
+EARTH_RADIUS_M = 6_378_137.0
+
+
+def to_metres(latitude: float, longitude: float) -> tuple[float, float]:
+    """Degrees to EPSG:3857 metres — the units a GeoTIFF is warped into.
+
+    Tile arithmetic above is enough for anything that stays on the tile grid.
+    A GeoTIFF does not: rasterio wants an affine transform in projected units,
+    and the only projection this service ever asks it for is the one the tile
+    grid is already in. Same sphere, same origin, different units.
+    """
+    x = math.radians(longitude) * EARTH_RADIUS_M
+    y = math.log(math.tan(math.pi / 4 + math.radians(latitude) / 2)) \
+        * EARTH_RADIUS_M
+    return x, y
+
+
 def metres_per_pixel(latitude: float, zoom: int) -> float:
     """Ground resolution of one pixel, which is what decides the zoom.
 

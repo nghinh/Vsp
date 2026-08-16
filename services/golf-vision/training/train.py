@@ -24,7 +24,6 @@ import sys
 import time
 from pathlib import Path
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -85,6 +84,16 @@ def main() -> int:
                              "it can never starve a co-tenant")
     parser.add_argument("--select-on", default="green",
                         help="the class whose IoU picks the best checkpoint")
+    parser.add_argument("--in-channels", type=int, default=4,
+                        help="4 carries near-infrared; the band is a constant "
+                             "on corpora that have none, so the shape is the "
+                             "same either way and a pretrained stem transfers")
+    parser.add_argument("--init-from", default=None,
+                        help="checkpoint to start from — this is the "
+                             "fine-tuning step")
+    parser.add_argument("--nir-dropout", type=float, default=None,
+                        help="how often to hide the fourth band; defaults to "
+                             "half on a corpus that has one")
     args = parser.parse_args()
 
     device = torch.device(
@@ -99,9 +108,14 @@ def main() -> int:
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
 
-    train_set = GolfSegDataset(args.data, "train", augment=True, crop=args.crop)
+    kwargs = {} if args.nir_dropout is None else {"nir_dropout": args.nir_dropout}
+    train_set = GolfSegDataset(args.data, "train", augment=True, crop=args.crop,
+                               **kwargs)
     val_set = GolfSegDataset(args.data, "val", augment=False, crop=args.crop)
-    print(f"train {len(train_set)} patches | val {len(val_set)} patches")
+    print(f"train {len(train_set)} patches | val {len(val_set)} patches | "
+          f"near-infrared: {'yes' if train_set.has_nir else 'no'}")
+
+    lineage = corpus_lineage(train_set, args.init_from, len(train_set))
 
     counts = class_pixel_counts(train_set, NUM_CLASSES)
     weights = median_frequency_weights(counts).to(device)
@@ -119,7 +133,23 @@ def main() -> int:
                             pin_memory=device.type == "cuda")
 
     model = build_model(NUM_CLASSES, provider=args.provider,
-                        name=args.model_name).to(device)
+                        name=args.model_name,
+                        in_channels=args.in_channels).to(device)
+    if args.init_from:
+        prior = torch.load(args.init_from, map_location=device,
+                           weights_only=False)
+        missing, unexpected = model.load_state_dict(prior["model"], strict=False)
+        if missing or unexpected:
+            # Not fatal — a changed class count or a widened stem is a
+            # legitimate reason for a few tensors not to line up — but it is
+            # never something to discover from a disappointing score.
+            print(f"! init-from: {len(missing)} missing, "
+                  f"{len(unexpected)} unexpected tensors")
+        print(f"initialised from {args.init_from} "
+              f"(epoch {prior.get('epoch')}, "
+              f"{args.select_on} IoU "
+              f"{prior.get('scores', {}).get('perClass', {})
+                 .get(args.select_on, {}).get('iou')})")
     criterion = GolfSegLoss(NUM_CLASSES, class_weights=weights,
                             dice_weight=args.dice_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
@@ -161,9 +191,14 @@ def main() -> int:
             torch.save({"model": model.state_dict(), "epoch": epoch,
                         "scores": scores, "args": vars(args),
                         "labels": {i: f.value for i, f in GOLF_SEG_LABELS.items()},
-                        "commercialOk": model.commercial_ok},
+                        "inChannels": args.in_channels,
+                        "commercialOk": model.commercial_ok,
+                        "lineage": lineage,
+                        "shippable": is_shippable(model, lineage)},
                        out / "best.pt")
-            (out / "best.json").write_text(json.dumps(scores, indent=2))
+            (out / "best.json").write_text(json.dumps(
+                {**scores, "lineage": lineage,
+                 "shippable": is_shippable(model, lineage)}, indent=2))
             print(f"  ↑ best {args.select_on} IoU {best_score:.3f} — saved")
 
     (out / "history.json").write_text(json.dumps(history, indent=2))
@@ -171,7 +206,59 @@ def main() -> int:
     if not model.commercial_ok:
         print("! this checkpoint's backbone is non-commercial (SegFormer/NVIDIA) "
               "— feasibility only")
+    print_lineage(model, lineage)
     return 0
+
+
+def corpus_lineage(dataset, init_from: str | None, patches: int) -> list[dict]:
+    """Every corpus whose pixels have reached these weights, in order.
+
+    The point of writing this down is one question that is otherwise
+    unanswerable six months later: *may this checkpoint ship?* Esri's World
+    Imagery licence forbids automated extraction, so a weight that has seen an
+    Esri patch cannot be sold however good it is, and nothing about the file
+    itself says so. A NAIP-only weight can. The difference is not visible in
+    the tensors and it is not recoverable from a directory name.
+
+    Fine-tuning inherits: a model pretrained on NAIP and fine-tuned on Esri
+    carries both, and is therefore as restricted as its most restricted source.
+    That is the correct reading of the licence and the conservative one.
+    """
+    manifest = dataset.manifest or {}
+    entry = {
+        "corpus": str(dataset.root),
+        "patches": patches,
+        "imagerySource": manifest.get("imagerySource", "unknown"),
+        "imageryLicense": manifest.get("imageryLicense", "unknown"),
+        "permitsAutomatedExtraction": bool(
+            manifest.get("imageryPermitsExtraction", False)),
+        "maskLicense": manifest.get("maskLicense", "unknown"),
+    }
+    if not init_from:
+        return [entry]
+
+    prior = torch.load(init_from, map_location="cpu", weights_only=False)
+    return [*prior.get("lineage", []), entry]
+
+
+def is_shippable(model, lineage: list[dict]) -> bool:
+    """True when both the backbone and every pixel it saw allow it."""
+    return bool(model.commercial_ok) and all(
+        step["permitsAutomatedExtraction"] for step in lineage)
+
+
+def print_lineage(model, lineage: list[dict]) -> None:
+    print("\nimagery this weight has seen:")
+    for step in lineage:
+        mark = "ok " if step["permitsAutomatedExtraction"] else "NO "
+        print(f"  [{mark}] {step['imagerySource']:20s} {step['patches']:6d} "
+              f"patches  {step['imageryLicense']}")
+    if is_shippable(model, lineage):
+        print("→ shippable: commercial backbone, and every pixel permits "
+              "automated extraction")
+    else:
+        print("→ NOT shippable: research only. See the entries marked NO, and "
+              "the backbone licence above.")
 
 
 if __name__ == "__main__":

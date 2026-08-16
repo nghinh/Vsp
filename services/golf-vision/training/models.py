@@ -47,7 +47,21 @@ class GolfSegModel(nn.Module):
 
 
 def build_model(num_classes: int, *, provider: str | None = None,
-                name: str | None = None) -> GolfSegModel:
+                name: str | None = None, in_channels: int = 4) -> GolfSegModel:
+    """The model, with four input channels by default.
+
+    Four, not three, even for a corpus that has no near-infrared. NAIP carries
+    it and Esri cannot, so a model that changed shape between pretraining and
+    fine-tuning would throw away its first convolution at exactly the moment
+    the pretraining was supposed to pay off. The band is passed as a constant
+    where it does not exist, and hidden half the time where it does — see
+    NIR_DROPOUT in `training.dataset`.
+
+    segmentation-models-pytorch handles the widened stem properly: it keeps
+    the ImageNet weights for red, green and blue and seeds the fourth channel
+    from their mean rather than from noise, which is the difference between
+    starting with a working edge detector and starting without one.
+    """
     provider = (provider or os.environ.get("GOLF_SEG_MODEL_PROVIDER")
                 or "segformer").lower()
     name = name or os.environ.get("GOLF_SEG_MODEL_NAME")
@@ -60,6 +74,11 @@ def build_model(num_classes: int, *, provider: str | None = None,
             f"licence — non-commercial. Use for feasibility only; retrain on "
             f"an MIT/Apache backbone (GOLF_SEG_MODEL_PROVIDER=smp) before "
             f"anything ships.", stacklevel=2)
+        if in_channels != 3:
+            raise ValueError(
+                "the SegFormer path is RGB only; the near-infrared corpus "
+                "trains on the commercial backbone (--provider smp), which is "
+                "the one that can ship anyway")
         model = SegformerForSemanticSegmentation.from_pretrained(
             checkpoint, num_labels=num_classes,
             ignore_mismatched_sizes=True)
@@ -69,7 +88,7 @@ def build_model(num_classes: int, *, provider: str | None = None,
         import segmentation_models_pytorch as smp
         encoder = name or "resnet34"
         model = smp.Unet(encoder_name=encoder, encoder_weights="imagenet",
-                         in_channels=3, classes=num_classes)
+                         in_channels=in_channels, classes=num_classes)
         return GolfSegModel(model, "smp", commercial_ok=True)
 
     raise ValueError(f"unknown model provider: {provider!r}")

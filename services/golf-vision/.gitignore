@@ -5,3 +5,4 @@ __pycache__/
 
 # Trained weights live on the server + models/ locally; metrics are committed
 models/**/*.pt
+data/
