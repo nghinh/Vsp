@@ -2,3 +2,6 @@
 out/
 __pycache__/
 *.pyc
+
+# Trained weights live on the server + models/ locally; metrics are committed
+models/**/*.pt

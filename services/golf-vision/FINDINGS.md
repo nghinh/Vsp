@@ -306,3 +306,52 @@ Smoke-tested end to end on synthetic data: dataset → weighted loss → per-cla
 IoU → checkpoint → metre-accurate evaluation, no crash. The weights are not
 trained yet — that is the one step that needs the A100, and it waits on
 freeing VRAM from the production vLLM without disrupting it.
+
+---
+
+## 9. The trained baseline — the refactor's thesis, settled
+
+SegFormer-B0, 12 minutes on an A100 shared with a production vLLM (see the run
+discipline below), scored on the 5 held-out test courses it never trained on:
+
+| class | GolfSeg-B0 IoU | land-cover baseline | edge µ |
+|---|---|---|---|
+| green | **0.528** | 0.006 | 2.5 m |
+| fairway | **0.657** | not separable | 5.6 m |
+| bunker | 0.475 | 0.10–0.42 (+ filter) | 2.5 m |
+| water | 0.743 | 0.12–0.51 | 6.4 m |
+| mean IoU | **0.539** | — | — |
+
+Green went from 0.006 to 0.53. That is the argument of this whole exercise
+reduced to two numbers: a generic land-cover model cannot find a green because
+mown turf is mown turf, and a model trained on 26 courses of human-drawn
+polygons can — at a 2.5 m boundary error, already inside a club.
+
+The pipeline the spec asked for is now real end to end: satellite tile →
+segmentation mask → GIS vectorisation → GeoJSON → metre-accurate distance,
+with no LLM anywhere in the geometry path. The persistent asset of §62 — the
+labelled corpus and the model trained on it — exists.
+
+### Sharing a production GPU without breaking it
+
+The A100 was serving a 26B vLLM at 90% memory utilisation. The training run:
+
+1. Recreated vLLM at 0.80 (backup of the exact `docker run` taken first via
+   `runlike`; only the utilisation number changed), freeing ~8 GB.
+2. Verified vLLM served real completions before proceeding.
+3. Trained under a hard 9.6 GB per-process VRAM cap — it used 2.6 GB and could
+   not have touched vLLM's memory if it tried.
+4. Rolled vLLM back to 0.90 and verified health, a real completion, and the
+   restored config.
+
+vLLM stayed up throughout, at reduced capacity, with two ~6-minute reloads at
+the endpoints. No other service was touched.
+
+### Limits, stated
+
+- **tee IoU 0.192** — small, sparse (0.67% of pixels), and the hardest class.
+- **The model is as complete as OSM.** Where OSM maps 3 of 20 bunkers, so does
+  the model. Better labels, not a bigger model, is the next lever.
+- **This checkpoint does not ship.** Its mit-b0 encoder is NVIDIA
+  research-licensed; production retrains on the MIT backbone already wired
+  behind the same interface.
