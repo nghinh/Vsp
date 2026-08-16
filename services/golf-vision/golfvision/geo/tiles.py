@@ -13,6 +13,11 @@ from typing import Any
 
 from . import webmercator as wm
 
+#: How far the two axes may disagree before a single scale is a lie. Two per
+#: cent is comfortably above the floating-point noise of a real tile crop and
+#: well below anything that would matter to a distance.
+SQUARE_PIXEL_TOLERANCE = 0.02
+
 
 @dataclass(frozen=True)
 class ImageBounds:
@@ -72,11 +77,45 @@ class ImageBounds:
         return x * self.width - 0.5, y * self.height - 0.5
 
     @property
-    def metres_per_pixel(self) -> float:
+    def metres_per_pixel_x(self) -> float:
         centre = (self.north + self.south) / 2
         return wm.metres_per_pixel(centre, self.zoom) * (
             (wm.tile_x(self.east, self.zoom) - wm.tile_x(self.west, self.zoom))
             * wm.TILE_SIZE / self.width)
+
+    @property
+    def metres_per_pixel_y(self) -> float:
+        centre = (self.north + self.south) / 2
+        return wm.metres_per_pixel(centre, self.zoom) * (
+            (wm.tile_y(self.south, self.zoom) - wm.tile_y(self.north, self.zoom))
+            * wm.TILE_SIZE / self.height)
+
+    @property
+    def metres_per_pixel(self) -> float:
+        """One number for the scale — only meaningful when pixels are square.
+
+        In Web Mercator they are: the projection is conformal, so at a given
+        zoom a pixel covers the same ground in both axes. A raster stitched
+        from whole tiles therefore always has square pixels, and this is a
+        safe scalar to hand to morphology and simplification.
+
+        It stops being safe the moment a raster is resized in one axis, or
+        constructed by hand with a width and height that do not match the
+        ground it claims to cover. Then every area is silently wrong by the
+        ratio — 14% in the case that found this — and nothing looks odd.
+        """
+        x, y = self.metres_per_pixel_x, self.metres_per_pixel_y
+        if not self.pixels_are_square:
+            raise ValueError(
+                f"pixels are not square: {x:.4f} m across, {y:.4f} m down. "
+                "Use metres_per_pixel_x and metres_per_pixel_y, or fix the "
+                "raster's aspect ratio.")
+        return (x + y) / 2
+
+    @property
+    def pixels_are_square(self) -> bool:
+        x, y = self.metres_per_pixel_x, self.metres_per_pixel_y
+        return abs(x - y) <= SQUARE_PIXEL_TOLERANCE * max(x, y)
 
 
 @dataclass
