@@ -2728,5 +2728,18 @@
   "mapGreenLabel": "Green",
   "mapGreenFront": "Front",
   "mapGreenCentre": "Centre",
-  "mapGreenBack": "Back"
+  "mapGreenBack": "Back",
+  "holeHistoryTitle": "Hole {hole} — last time",
+  "@holeHistoryTitle": {"placeholders": {"hole": {"type": "int"}}},
+  "holeHistoryNeverPlayed": "You have not played this hole before.",
+  "holeHistoryTimesPlayed": "Played",
+  "holeHistoryAverage": "Average",
+  "holeHistoryBest": "Best",
+  "holeHistoryYourNotes": "YOUR NOTES",
+  "holeHistoryPastRounds": "PAST ROUNDS",
+  "holeNoteHint": "What did this hole teach you? e.g. driver runs into the ditch, 3-wood is plenty",
+  "holeNoteSave": "Save note",
+  "holeNoteSaving": "Saving…",
+  "holeNoteSaveFailed": "Not saved — check your connection and try again.",
+  "holeNoteDelete": "Delete note"
 }

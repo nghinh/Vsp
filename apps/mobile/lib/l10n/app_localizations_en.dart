@@ -4146,4 +4146,44 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapGreenBack => 'Back';
+
+  @override
+  String holeHistoryTitle(int hole) {
+    return 'Hole $hole — last time';
+  }
+
+  @override
+  String get holeHistoryNeverPlayed => 'You have not played this hole before.';
+
+  @override
+  String get holeHistoryTimesPlayed => 'Played';
+
+  @override
+  String get holeHistoryAverage => 'Average';
+
+  @override
+  String get holeHistoryBest => 'Best';
+
+  @override
+  String get holeHistoryYourNotes => 'YOUR NOTES';
+
+  @override
+  String get holeHistoryPastRounds => 'PAST ROUNDS';
+
+  @override
+  String get holeNoteHint =>
+      'What did this hole teach you? e.g. driver runs into the ditch, 3-wood is plenty';
+
+  @override
+  String get holeNoteSave => 'Save note';
+
+  @override
+  String get holeNoteSaving => 'Saving…';
+
+  @override
+  String get holeNoteSaveFailed =>
+      'Not saved — check your connection and try again.';
+
+  @override
+  String get holeNoteDelete => 'Delete note';
 }

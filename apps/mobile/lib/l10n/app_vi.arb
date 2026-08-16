@@ -1748,5 +1748,18 @@
   "mapGreenLabel": "Green",
   "mapGreenFront": "Đầu",
   "mapGreenCentre": "Giữa",
-  "mapGreenBack": "Cuối"
+  "mapGreenBack": "Cuối",
+  "holeHistoryTitle": "Hố {hole} — lần trước",
+  "@holeHistoryTitle": {"placeholders": {"hole": {"type": "int"}}},
+  "holeHistoryNeverPlayed": "Bạn chưa chơi hố này lần nào.",
+  "holeHistoryTimesPlayed": "Số lần chơi",
+  "holeHistoryAverage": "Trung bình",
+  "holeHistoryBest": "Tốt nhất",
+  "holeHistoryYourNotes": "GHI CHÚ CỦA BẠN",
+  "holeHistoryPastRounds": "CÁC LẦN TRƯỚC",
+  "holeNoteHint": "Rút ra được gì ở hố này? Ví dụ: driver chạy vào rãnh, gỗ 3 là đủ",
+  "holeNoteSave": "Lưu ghi chú",
+  "holeNoteSaving": "Đang lưu…",
+  "holeNoteSaveFailed": "Chưa lưu được — kiểm tra kết nối rồi thử lại.",
+  "holeNoteDelete": "Xoá ghi chú"
 }

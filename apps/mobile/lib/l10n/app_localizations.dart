@@ -7309,6 +7309,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back'**
   String get mapGreenBack;
+
+  /// No description provided for @holeHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole} — last time'**
+  String holeHistoryTitle(int hole);
+
+  /// No description provided for @holeHistoryNeverPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'You have not played this hole before.'**
+  String get holeHistoryNeverPlayed;
+
+  /// No description provided for @holeHistoryTimesPlayed.
+  ///
+  /// In en, this message translates to:
+  /// **'Played'**
+  String get holeHistoryTimesPlayed;
+
+  /// No description provided for @holeHistoryAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get holeHistoryAverage;
+
+  /// No description provided for @holeHistoryBest.
+  ///
+  /// In en, this message translates to:
+  /// **'Best'**
+  String get holeHistoryBest;
+
+  /// No description provided for @holeHistoryYourNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'YOUR NOTES'**
+  String get holeHistoryYourNotes;
+
+  /// No description provided for @holeHistoryPastRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'PAST ROUNDS'**
+  String get holeHistoryPastRounds;
+
+  /// No description provided for @holeNoteHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What did this hole teach you? e.g. driver runs into the ditch, 3-wood is plenty'**
+  String get holeNoteHint;
+
+  /// No description provided for @holeNoteSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save note'**
+  String get holeNoteSave;
+
+  /// No description provided for @holeNoteSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
+  String get holeNoteSaving;
+
+  /// No description provided for @holeNoteSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved — check your connection and try again.'**
+  String get holeNoteSaveFailed;
+
+  /// No description provided for @holeNoteDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete note'**
+  String get holeNoteDelete;
 }
 
 class _AppLocalizationsDelegate

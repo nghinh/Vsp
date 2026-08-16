@@ -4144,4 +4144,44 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mapGreenBack => 'Cuối';
+
+  @override
+  String holeHistoryTitle(int hole) {
+    return 'Hố $hole — lần trước';
+  }
+
+  @override
+  String get holeHistoryNeverPlayed => 'Bạn chưa chơi hố này lần nào.';
+
+  @override
+  String get holeHistoryTimesPlayed => 'Số lần chơi';
+
+  @override
+  String get holeHistoryAverage => 'Trung bình';
+
+  @override
+  String get holeHistoryBest => 'Tốt nhất';
+
+  @override
+  String get holeHistoryYourNotes => 'GHI CHÚ CỦA BẠN';
+
+  @override
+  String get holeHistoryPastRounds => 'CÁC LẦN TRƯỚC';
+
+  @override
+  String get holeNoteHint =>
+      'Rút ra được gì ở hố này? Ví dụ: driver chạy vào rãnh, gỗ 3 là đủ';
+
+  @override
+  String get holeNoteSave => 'Lưu ghi chú';
+
+  @override
+  String get holeNoteSaving => 'Đang lưu…';
+
+  @override
+  String get holeNoteSaveFailed =>
+      'Chưa lưu được — kiểm tra kết nối rồi thử lại.';
+
+  @override
+  String get holeNoteDelete => 'Xoá ghi chú';
 }

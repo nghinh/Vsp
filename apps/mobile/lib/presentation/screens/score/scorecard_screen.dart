@@ -51,6 +51,7 @@ import '../../widgets/score/score_entry_card.dart';
 import '../../widgets/sync_status_badge.dart';
 import '../shot/shot_review_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
+import 'package:vsp_mobile/features/hole_history/presentation/hole_history_sheet.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/features/games/domain/games_engine.dart';
 import 'package:vsp_mobile/features/games/presentation/games_sheet.dart';
@@ -258,6 +259,22 @@ class _FinishRequestHandlerState extends State<_FinishRequestHandler> {
 }
 
 class _ScorecardScreenContent extends StatelessWidget {
+  /// Which đường holds a hole of this round, and its number there.
+  ///
+  /// Hole 12 of a round made of two nines is the back nine's hole 3 — the same
+  /// translation the round screen and the server both do. A note filed against
+  /// the wrong đường is a note the golfer never sees again.
+  static String _courseForHole(int hole, String frontCourseId,
+      String? backNineCourseId) {
+    final back = backNineCourseId;
+    return back != null && back.isNotEmpty && hole > 9 ? back : frontCourseId;
+  }
+
+  static int _holeOnItsCourse(int hole, String? backNineCourseId) {
+    final back = backNineCourseId;
+    return back != null && back.isNotEmpty && hole > 9 ? hole - 9 : hole;
+  }
+
   final ValueChanged<int>? onHoleChanged;
 
   final String? courseId;
@@ -652,6 +669,28 @@ class _ScorecardScreenContent extends StatelessWidget {
                         backNineCourseId: int.tryParse(backNineCourseId ?? ''),
                       ),
                     ),
+                  ),
+                ),
+              // What this hole taught the golfer last time, and a place to
+              // write down what it is teaching them now. Beside the strategy
+              // book because it answers the same question — how does this one
+              // go? — for one hole rather than eighteen.
+              if (int.tryParse(courseId ?? '') != null)
+                IconButton(
+                  key: const Key('scorecard_hole_history'),
+                  icon: const Icon(Icons.history_edu_outlined),
+                  tooltip: AppLocalizations.of(context).holeHistoryTitle(
+                      state.currentHoleNumber),
+                  onPressed: () => HoleHistorySheet.show(
+                    context,
+                    // The đường that holds this hole, and its number there:
+                    // hole 12 of a two-nine round is the back nine's hole 3,
+                    // and a note filed against the wrong one is lost.
+                    courseId: _courseForHole(state.currentHoleNumber,
+                        courseId!, backNineCourseId),
+                    holeNumber: _holeOnItsCourse(
+                        state.currentHoleNumber, backNineCourseId),
+                    roundId: state.flightId,
                   ),
                 ),
               IconButton(

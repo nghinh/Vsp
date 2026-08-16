@@ -39,6 +39,25 @@ public class GolfSegImportService {
     /// the shapes it is least sure about are the ones that are wrong.
     private static final double MINIMUM_VISION_SCORE = 0.45;
 
+    /// What a feature of this kind can plausibly measure, in square metres.
+    ///
+    /// The same bounds the satellite reader needed, for the same reason and
+    /// found the same way: the first live trace of Đường B's opening hole came
+    /// back with fifty-three bunkers, the largest of them 33,827 m². That is
+    /// three and a half hectares of sand on one golf hole. A segmentation mask
+    /// has no idea how big a bunker is; golf does.
+    private static boolean isPlausible(String layer, double area) {
+        return switch (layer) {
+            case "BUNKER" -> area >= 20 && area <= 1_500;
+            case "GREEN" -> area >= 200 && area <= 1_400;
+            case "TEE" -> area >= 30 && area <= 2_000;
+            case "FAIRWAY" -> area >= 2_000 && area <= 60_000;
+            case "WATER_HAZARD", "PENALTY_AREA" -> area >= 100 && area <= 200_000;
+            case "ROUGH" -> area >= 1_000 && area <= 120_000;
+            default -> true;
+        };
+    }
+
     private final EntityManager em;
     private final GolfSegClient client;
 
@@ -112,6 +131,10 @@ public class GolfSegImportService {
             double vision = feature.path("properties").path("scores")
                     .path("vision").asDouble(0);
             if (layer == null || vision < MINIMUM_VISION_SCORE) {
+                continue;
+            }
+            double area = feature.path("properties").path("areaM2").asDouble(0);
+            if (!isPlausible(layer, area)) {
                 continue;
             }
             String wkt = toWkt(feature.path("geometry"));

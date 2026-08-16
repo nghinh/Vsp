@@ -532,6 +532,13 @@ class AdminEndpointAuthorizationTest {
             "AuthController.authenticateWithGoogle",
             "AuthController.authenticateWithApple",
 
+            // A golfer's own notes on a hole, and the removal of one. There is
+            // no account id in either path: the service scopes every statement
+            // to the caller, so a golfer cannot express the question "show me
+            // somebody else's notes" — there is nothing to tamper with.
+            "HoleHistoryController.addNote",
+            "HoleHistoryController.deleteNote",
+
             // A golfer's own bag, clubs, rounds, scores, shots and profile.
             "BagController.createBag",
             "BagController.updateBag",
