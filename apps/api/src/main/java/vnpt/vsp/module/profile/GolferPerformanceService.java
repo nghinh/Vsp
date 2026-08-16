@@ -3,7 +3,7 @@ package vnpt.vsp.module.profile;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import vnpt.vsp.module.profile.dto.PerformanceResponse;
+import vnpt.vsp.module.profile.dto.GolferPerformanceResponse;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,7 +25,7 @@ import java.util.List;
  * move their handicap.
  */
 @Service
-public class PerformanceService {
+public class GolferPerformanceService {
 
     /// Windows the app offers: everything, the last twenty, the last five.
     private static final int ALL = 10_000;
@@ -33,13 +33,13 @@ public class PerformanceService {
     private final EntityManager em;
     private final AppHandicapService appHandicapService;
 
-    public PerformanceService(EntityManager em, AppHandicapService appHandicapService) {
+    public GolferPerformanceService(EntityManager em, AppHandicapService appHandicapService) {
         this.em = em;
         this.appHandicapService = appHandicapService;
     }
 
     @Transactional(readOnly = true)
-    public PerformanceResponse compute(Long golferId, Integer window) {
+    public GolferPerformanceResponse compute(Long golferId, Integer window) {
         int limit = window == null || window <= 0 ? ALL : window;
 
         Object[] totals = (Object[]) em.createNativeQuery("""
@@ -90,16 +90,16 @@ public class PerformanceService {
 
         BestRound best = bestRound(golferId, limit);
 
-        var distribution = new ArrayList<PerformanceResponse.ScoreBucket>();
+        var distribution = new ArrayList<GolferPerformanceResponse.ScoreBucket>();
         String[] labels = {"EAGLE_OR_BETTER", "BIRDIE", "PAR", "BOGEY",
                 "DOUBLE_BOGEY", "TRIPLE_OR_WORSE"};
         for (int i = 0; i < labels.length; i++) {
             int count = num(totals[10 + i]);
-            distribution.add(new PerformanceResponse.ScoreBucket(
+            distribution.add(new GolferPerformanceResponse.ScoreBucket(
                     labels[i], count, percent(count, holes)));
         }
 
-        return new PerformanceResponse(
+        return new GolferPerformanceResponse(
                 rounds, holes,
                 appHandicapService.compute(golferId).handicap(),
                 best.toPar(), best.holes(),
@@ -155,8 +155,8 @@ public class PerformanceService {
         return new BestRound(num(r[0]), num(r[1]));
     }
 
-    private List<PerformanceResponse.ParAverage> byPar(Long golferId, int limit) {
-        var averages = new ArrayList<PerformanceResponse.ParAverage>();
+    private List<GolferPerformanceResponse.ParAverage> byPar(Long golferId, int limit) {
+        var averages = new ArrayList<GolferPerformanceResponse.ParAverage>();
         for (Object row : em.createNativeQuery("""
                 WITH window_scores AS (
                     SELECT sc.id
@@ -179,7 +179,7 @@ public class PerformanceService {
                 .setParameter("limit", limit)
                 .getResultList()) {
             Object[] r = (Object[]) row;
-            averages.add(new PerformanceResponse.ParAverage(
+            averages.add(new GolferPerformanceResponse.ParAverage(
                     num(r[0]), num(r[1]),
                     BigDecimal.valueOf(((Number) r[2]).doubleValue())
                             .setScale(1, RoundingMode.HALF_UP),

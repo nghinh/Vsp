@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @EnabledIf("postgisAvailable")
-class PerformancePostgresTest {
+class GolferPerformancePostgresTest {
 
     static boolean postgisAvailable() {
         return PostgresTestSupport.postgisAvailable();
@@ -40,12 +40,12 @@ class PerformancePostgresTest {
 
     @Autowired private EntityManager em;
 
-    private PerformanceService service;
+    private GolferPerformanceService service;
     private long golferId;
 
     @BeforeEach
     void setUp() {
-        service = new PerformanceService(em, new AppHandicapService(em));
+        service = new GolferPerformanceService(em, new AppHandicapService(em));
         golferId = ((Number) em.createNativeQuery("""
                 INSERT INTO golfer_accounts (phone, display_name, status, created_at, updated_at)
                 VALUES ('+849' || floor(random() * 100000000), 'Stats Probe', 'ACTIVE', now(), now())
@@ -176,7 +176,7 @@ class PerformancePostgresTest {
         assertThat(stats.handicap()).isNull();
     }
 
-    private static int bucket(vnpt.vsp.module.profile.dto.PerformanceResponse stats,
+    private static int bucket(vnpt.vsp.module.profile.dto.GolferPerformanceResponse stats,
                               String label) {
         return stats.distribution().stream()
                 .filter(b -> b.label().equals(label))

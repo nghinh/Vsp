@@ -12,7 +12,7 @@ import java.util.List;
  * golfer cannot trace back to a round they remember playing is worse than an
  * empty tile.
  */
-public record PerformanceResponse(
+public record GolferPerformanceResponse(
 
         /// How many completed rounds the window covers, and how many holes
         /// of scoring those rounds hold.

@@ -7,7 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import vnpt.vsp.module.profile.dto.PerformanceResponse;
+import vnpt.vsp.module.profile.dto.GolferPerformanceResponse;
 
 /**
  * The golfer's own record, counted from their own rounds.
@@ -18,16 +18,16 @@ import vnpt.vsp.module.profile.dto.PerformanceResponse;
  */
 @RestController
 @Validated
-public class PerformanceController {
+public class GolferPerformanceController {
 
-    private final PerformanceService performanceService;
+    private final GolferPerformanceService performanceService;
 
-    public PerformanceController(PerformanceService performanceService) {
+    public GolferPerformanceController(GolferPerformanceService performanceService) {
         this.performanceService = performanceService;
     }
 
     @GetMapping("/golfers/me/performance")
-    public PerformanceResponse performance(
+    public GolferPerformanceResponse performance(
             Authentication authentication,
             @RequestParam(required = false) @Min(1) @Max(500) Integer window) {
 
