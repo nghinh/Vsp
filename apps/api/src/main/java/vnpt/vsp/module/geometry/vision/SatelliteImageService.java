@@ -21,7 +21,7 @@ import java.time.Duration;
  * <p>Only the operator's configured imagery. A tile server nobody licensed is
  * a legal problem wearing a URL, and this project already refuses to serve
  * satellite tiles to the app without an attribution string for the same
- * reason — see {@code vsp.map.satellite-tile-url}.
+ * reason — see {@code vsp.basemap.satellite-tile-url}.
  */
 @Service
 public class SatelliteImageService {
@@ -39,9 +39,9 @@ public class SatelliteImageService {
             .build();
 
     public SatelliteImageService(
-            @Value("${vsp.map.satellite-tile-url:}") String tileUrlTemplate,
-            @Value("${vsp.map.satellite-attribution:}") String attribution,
-            @Value("${vsp.map.satellite-max-zoom:0}") int maxZoom) {
+            @Value("${vsp.basemap.satellite-tile-url:}") String tileUrlTemplate,
+            @Value("${vsp.basemap.satellite-attribution:}") String attribution,
+            @Value("${vsp.basemap.satellite-max-zoom:0}") int maxZoom) {
         this.tileUrlTemplate = tileUrlTemplate == null ? "" : tileUrlTemplate.trim();
         this.attribution = attribution == null ? "" : attribution.trim();
         this.maxZoom = maxZoom;

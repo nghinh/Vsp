@@ -17,6 +17,21 @@ public record ImageBounds(double north, double south, double east, double west,
         return west + (east - west) * x;
     }
 
+    /// Where a place sits in this image, as fractions from the left and the
+    /// top — the inverse of the two readers here.
+    ///
+    /// This is how the model can be told where the tee is in terms it can
+    /// actually see. Given a latitude instead, it has nothing in the picture
+    /// to compare against, and it anchors on whatever looks like a tee.
+    public double[] fractionOf(double latitude, double longitude) {
+        double topTileY = WebMercator.tileY(north, zoom);
+        double bottomTileY = WebMercator.tileY(south, zoom);
+        double y = (WebMercator.tileY(latitude, zoom) - topTileY)
+                / (bottomTileY - topTileY);
+        double x = (longitude - west) / (east - west);
+        return new double[]{x, y};
+    }
+
     /// Latitude at a fraction down the image, 0 at the top. Interpolated in
     /// tile space, which is where the projection is linear.
     public double latitudeAt(double y) {

@@ -155,4 +155,30 @@ class VisionGeometryReaderTest {
         double linear = 60.0 + (20.0 - 60.0) * 0.5;
         assertThat(tall.latitudeAt(0.5)).isNotCloseTo(linear, within(0.5));
     }
+
+    /// The prompt tells the model where the tee is in image fractions, so
+    /// the conversion has to be exactly the inverse of the one that reads
+    /// its answer back — otherwise it is told the tee is somewhere it can
+    /// see it is not, and anchors on the wrong thing.
+    @Test
+    @DisplayName("a place converts to a fraction and back to itself")
+    void fractionRoundTrips() {
+        double lat = 21.0368, lng = 105.8940;
+
+        double[] fraction = BOUNDS.fractionOf(lat, lng);
+
+        assertThat(fraction[0]).isBetween(0.0, 1.0);
+        assertThat(fraction[1]).isBetween(0.0, 1.0);
+        assertThat(BOUNDS.longitudeAt(fraction[0])).isCloseTo(lng, within(1e-9));
+        assertThat(BOUNDS.latitudeAt(fraction[1])).isCloseTo(lat, within(1e-9));
+    }
+
+    @Test
+    @DisplayName("the corners are the corners")
+    void cornersAreCorners() {
+        assertThat(BOUNDS.fractionOf(21.0385, 105.8910)[0]).isCloseTo(0.0, within(1e-9));
+        assertThat(BOUNDS.fractionOf(21.0385, 105.8910)[1]).isCloseTo(0.0, within(1e-9));
+        assertThat(BOUNDS.fractionOf(21.0340, 105.8965)[0]).isCloseTo(1.0, within(1e-9));
+        assertThat(BOUNDS.fractionOf(21.0340, 105.8965)[1]).isCloseTo(1.0, within(1e-9));
+    }
 }

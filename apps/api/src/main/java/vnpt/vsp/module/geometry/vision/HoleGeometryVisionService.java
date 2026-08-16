@@ -124,13 +124,17 @@ public class HoleGeometryVisionService {
      * one — the reviewer is looking at the same ambiguous image.
      */
     private String prompt(Hole hole, ImageBounds bounds) {
+        double[] teeAt = bounds.fractionOf(hole.teeLat, hole.teeLng);
+        double[] greenAt = bounds.fractionOf(hole.greenLat, hole.greenLng);
         return """
                 You are tracing one golf hole from a satellite image so its shapes
                 can be reviewed by a human editor.
 
-                THIS HOLE: number %d, par %d. The teeing ground is at about
-                (%.4f, %.4f) on the ground and the green at about (%.4f, %.4f);
-                the image covers a little more than the line between them.
+                THIS HOLE: number %d, par %d. In THIS image the teeing ground
+                is at about x=%.3f, y=%.3f and the green at about x=%.3f,
+                y=%.3f — the same fractions you will answer in. Everything you
+                trace belongs to the hole those two points define; the image
+                also shows parts of neighbouring holes, which are not yours.
 
                 RETURN STRICT JSON, no prose, no code fence:
                 {"features": [{"layer": "...", "name": "...", "confidence": 0.0,
@@ -162,10 +166,15 @@ public class HoleGeometryVisionService {
                   half in shadow is more useful than 0.9 for everything.
                 - Do not outline the whole image, the clubhouse, roads, car
                   parks, buildings or neighbouring holes.
+                - The fairway is this hole's mown corridor, not the whole
+                  green expanse in the picture. Where you cannot tell this
+                  fairway from the next one, omit it.
+                - The tee polygon is the platform at the point given above,
+                  not another hole's tee that happens to be in frame.
                 - Return an empty features array if this image does not show a
                   golf hole.
                 """.formatted(hole.number, hole.par,
-                hole.teeLat, hole.teeLng, hole.greenLat, hole.greenLng);
+                teeAt[0], teeAt[1], greenAt[0], greenAt[1]);
     }
 
     /// Files one proposal in the review queue.
