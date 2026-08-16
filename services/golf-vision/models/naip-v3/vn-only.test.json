@@ -1,0 +1,48 @@
+{
+  "split": "test",
+  "meanIoU": 0.5479,
+  "perClass": {
+    "background": {
+      "iou": 0.6653,
+      "recall": 0.7491,
+      "edgeMeanM": 4.85,
+      "edgeP95M": 12.17,
+      "areaRatio": 0.875
+    },
+    "tee_box": {
+      "iou": 0.1807,
+      "recall": 0.7789,
+      "edgeMeanM": 4.87,
+      "edgeP95M": 10.89,
+      "areaRatio": 4.088
+    },
+    "fairway": {
+      "iou": 0.7097,
+      "recall": 0.8953,
+      "edgeMeanM": 3.81,
+      "edgeP95M": 11.77,
+      "areaRatio": 1.157
+    },
+    "green": {
+      "iou": 0.532,
+      "recall": 0.8805,
+      "edgeMeanM": 2.29,
+      "edgeP95M": 6.09,
+      "areaRatio": 1.536
+    },
+    "bunker": {
+      "iou": 0.4365,
+      "recall": 0.9125,
+      "edgeMeanM": 2.32,
+      "edgeP95M": 5.62,
+      "areaRatio": 2.003
+    },
+    "water_hazard": {
+      "iou": 0.7634,
+      "recall": 0.8226,
+      "edgeMeanM": 4.29,
+      "edgeP95M": 16.05,
+      "areaRatio": 0.9
+    }
+  }
+}
