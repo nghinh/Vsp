@@ -161,13 +161,38 @@ public class HoleFeatureController {
                   -- a value here, not another branch: golfseg is judged by the
                   -- rule the satellite reader was, because the question is the
                   -- same one — did a person draw this layer?
+                  -- ...but only where a person drew that layer across most of
+                  -- the course. Đường B has three bunkers in OpenStreetMap and
+                  -- about twenty on the ground; letting those three silence
+                  -- every bunker the model found left holes with visible sand
+                  -- and nothing drawn on it. Three scattered polygons are not
+                  -- coverage. Nine greens on nine holes are.
+                  --
+                  -- On this hole, always. A hole has one green: showing the
+                  -- mapper's and the model's side by side is unambiguous
+                  -- nonsense whatever the rest of the course looks like.
                   AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
-                        SELECT 1 FROM draft_geometry_features surveyed
-                        WHERE surveyed.course_id = d.course_id
-                          AND surveyed.layer_type = d.layer_type
-                          AND surveyed.is_valid
-                          AND surveyed.source NOT IN ('ai-satellite', 'golfseg')
-                          AND surveyed.verification_status <> 'REJECTED'))
+                        SELECT 1 FROM draft_geometry_features here
+                        WHERE here.course_id = d.course_id
+                          AND here.hole_id = d.hole_id
+                          AND here.layer_type = d.layer_type
+                          AND here.is_valid
+                          AND here.source NOT IN ('ai-satellite', 'golfseg')
+                          AND here.verification_status <> 'REJECTED'))
+                  AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
+                        SELECT 1 FROM (
+                            SELECT count(DISTINCT surveyed.hole_id) AS drawn,
+                                   (SELECT count(*) FROM holes hh
+                                    WHERE hh.course_id = d.course_id) AS holes
+                            FROM draft_geometry_features surveyed
+                            WHERE surveyed.course_id = d.course_id
+                              AND surveyed.layer_type = d.layer_type
+                              AND surveyed.is_valid
+                              AND surveyed.source NOT IN ('ai-satellite', 'golfseg')
+                              AND surveyed.verification_status <> 'REJECTED'
+                        ) coverage
+                        WHERE coverage.holes > 0
+                          AND coverage.drawn * 2 >= coverage.holes))
                 ORDER BY d.layer_type
                 """)
                 .setParameter("course", courseId)

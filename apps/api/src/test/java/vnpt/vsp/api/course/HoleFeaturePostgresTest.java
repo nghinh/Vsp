@@ -221,4 +221,106 @@ class HoleFeaturePostgresTest {
 
         assertThat(servedLayers()).containsExactly("green:ai-satellite");
     }
+
+    /// Three scattered polygons are not coverage. Đường B has three bunkers in
+    /// OpenStreetMap and about twenty on the ground; letting those three
+    /// silence every bunker the model found left holes with visible sand and
+    /// nothing drawn on them.
+    @Test
+    @DisplayName("a thinly mapped layer does not silence the model")
+    void thinCoverageDoesNotSuppress() {
+        // Nine holes; a mapper drew one bunker.
+        for (int number = 2; number <= 9; number++) {
+            em.createNativeQuery("""
+                    INSERT INTO holes (course_id, hole_number, par, publisher, effective_date, confidence, version, created_at, updated_at)
+                    VALUES (:course, :n, 4, 'feature-test', CURRENT_DATE, 0, 0, now(), now())
+                    """)
+                    .setParameter("course", courseId)
+                    .setParameter("n", number)
+                    .executeUpdate();
+        }
+        em.flush();
+
+        // The mapper's bunker is on hole 2; hole 1 has only the model's.
+        long second = ((Number) em.createNativeQuery("""
+                SELECT id FROM holes WHERE course_id = :course AND hole_number = 2
+                """).setParameter("course", courseId).getSingleResult()).longValue();
+        em.createNativeQuery("""
+                INSERT INTO draft_geometry_features
+                    (feature_uuid, course_id, hole_id, layer_type, geometry,
+                     is_valid, external_feature_id, publisher, source,
+                     accuracy_class, verification_status, confidence,
+                     effective_date, version, created_at, updated_at)
+                VALUES (gen_random_uuid(), :course, :hole, 'BUNKER', :wkt,
+                        true, 'osm:b2', 'openstreetmap', 'openstreetmap',
+                        'C_VERIFIED_SATELLITE', 'PENDING_REVIEW', 90,
+                        CURRENT_DATE, 0, now(), now())
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", second)
+                .setParameter("wkt", SQUARE)
+                .executeUpdate();
+        em.flush();
+        draft("BUNKER", "golfseg", "PENDING_REVIEW", 80);
+
+        // Hole 1 shows the model's: one mapped hole out of nine is a gap, not
+        // a survey, and nobody drew a bunker here.
+        assertThat(servedLayers()).containsExactly("bunker:golfseg");
+    }
+
+    /// And on the hole itself the mapper always wins, however thin the rest
+    /// of the course is. Two greens on one hole is nonsense either way.
+    @Test
+    @DisplayName("on this hole, a mapper's shape always replaces the model's")
+    void onThisHoleTheMapperAlwaysWins() {
+        for (int number = 2; number <= 9; number++) {
+            em.createNativeQuery("""
+                    INSERT INTO holes (course_id, hole_number, par, publisher, effective_date, confidence, version, created_at, updated_at)
+                    VALUES (:course, :n, 4, 'feature-test', CURRENT_DATE, 0, 0, now(), now())
+                    """)
+                    .setParameter("course", courseId).setParameter("n", number)
+                    .executeUpdate();
+        }
+        em.flush();
+
+        draft("GREEN", "openstreetmap", "PENDING_REVIEW", 90);
+        draft("GREEN", "golfseg", "PENDING_REVIEW", 88);
+
+        assertThat(servedLayers()).containsExactly("green:openstreetmap");
+    }
+
+    /// And the other side of the same line: a layer somebody drew everywhere
+    /// still shuts the model out, on every hole of the course.
+    @Test
+    @DisplayName("a well mapped layer still silences the model course-wide")
+    void fullCoverageStillSuppresses() {
+        long second = ((Number) em.createNativeQuery("""
+                INSERT INTO holes (course_id, hole_number, par, publisher, effective_date, confidence, version, created_at, updated_at)
+                VALUES (:course, 2, 4, 'feature-test', CURRENT_DATE, 0, 0, now(), now())
+                RETURNING id
+                """).setParameter("course", courseId).getSingleResult()).longValue();
+        em.flush();
+
+        // A green on both of the course's two holes, and the model's on hole 1.
+        draft("GREEN", "openstreetmap", "PENDING_REVIEW", 90);
+        em.createNativeQuery("""
+                INSERT INTO draft_geometry_features
+                    (feature_uuid, course_id, hole_id, layer_type, geometry,
+                     is_valid, external_feature_id, publisher, source,
+                     accuracy_class, verification_status, confidence,
+                     effective_date, version, created_at, updated_at)
+                VALUES (gen_random_uuid(), :course, :hole, 'GREEN', :wkt,
+                        true, 'osm:2', 'openstreetmap', 'openstreetmap',
+                        'C_VERIFIED_SATELLITE', 'PENDING_REVIEW', 90,
+                        CURRENT_DATE, 0, now(), now())
+                """)
+                .setParameter("course", courseId)
+                .setParameter("hole", second)
+                .setParameter("wkt", SQUARE)
+                .executeUpdate();
+        em.flush();
+        draft("GREEN", "golfseg", "PENDING_REVIEW", 88);
+
+        assertThat(servedLayers()).containsExactly("green:openstreetmap");
+    }
 }
