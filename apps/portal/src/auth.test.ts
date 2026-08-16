@@ -174,6 +174,40 @@ describe('signing in', () => {
     expect(signInErrorMessage({ code: 'VSP-ERR-AUTH-001' })).toContain('mật khẩu');
   });
 
+  /**
+   * Everything that is not a rejected password used to be reported as one.
+   *
+   * Found by pointing a browser at the deployed API from a dev origin: CORS
+   * refused the preflight, `fetch` rejected before a request was sent, and the
+   * screen said the credentials were wrong. They were correct. The rate-limit
+   * case is worse still — the API refuses the fourteenth sign-in with 429, and
+   * an operator told their password is wrong retypes it, which is another
+   * attempt, which extends the block.
+   */
+  it('tells apart a server it could not reach from one that refused', () => {
+    expect(signInErrorMessage(new TypeError('Failed to fetch')))
+      .toContain('Không kết nối được');
+  });
+
+  it('says to wait when the API is rate limiting, not that the password is wrong', () => {
+    expect(signInErrorMessage({ code: 'VSP-ERR-RATE-001', status: 429 }))
+      .toContain('Đợi');
+    expect(signInErrorMessage({ code: 'UNKNOWN', status: 429 }))
+      .toContain('Đợi');
+  });
+
+  it('names a server fault as a server fault', () => {
+    expect(signInErrorMessage({ code: 'UNKNOWN', status: 500 }))
+      .toContain('sự cố');
+    expect(signInErrorMessage({ code: 'UNKNOWN', status: 502 }))
+      .toContain('sự cố');
+  });
+
+  it('still blames the credentials when the server actually refused them', () => {
+    expect(signInErrorMessage({ code: 'VSP-ERR-AUTH-001', status: 401 }))
+      .toContain('mật khẩu');
+  });
+
   it('does not fall back to a session when credentials are rejected', async () => {
     login.mockRejectedValue({ code: 'VSP-ERR-AUTH-001', message: 'Invalid credentials' });
 

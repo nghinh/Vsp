@@ -169,11 +169,44 @@ export async function restoreSession(): Promise<PortalSession | null> {
   return restoring;
 }
 
-/** What to tell someone whose sign-in did not end in a session. */
+/**
+ * What to tell someone whose sign-in did not end in a session.
+ *
+ * There used to be two answers here: "not an operator", and — for everything
+ * else that could possibly go wrong — "sai tài khoản hoặc mật khẩu". So a
+ * portal that could not reach the API at all told the operator their password
+ * was wrong, and an operator who believes that retypes it. Found by pointing a
+ * browser at the deployed API from a dev origin: CORS refused the preflight,
+ * `fetch` rejected before a request was ever sent, and the screen said the
+ * credentials were bad. They were correct.
+ *
+ * The distinction is the same one the mobile app needed: a server that refused
+ * you and a server you never reached are different facts, and only one of them
+ * is about the password.
+ */
 export function signInErrorMessage(error: unknown): string {
-  return (error as ApiError | undefined)?.code === NOT_AN_OPERATOR
-    ? 'Tài khoản này không có quyền vận hành trên portal.'
-    : 'Sai tài khoản hoặc mật khẩu.';
+  const api = error as (ApiError & { status?: number }) | undefined;
+
+  if (api?.code === NOT_AN_OPERATOR) {
+    return 'Tài khoản này không có quyền vận hành trên portal.';
+  }
+  // `fetch` rejects with a TypeError when the request never completed — the
+  // server is down, the network is out, or CORS refused it. There is no
+  // status because there was no response.
+  if (error instanceof TypeError || (api && api.code === 'NETWORK')) {
+    return 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+  }
+  // The one that cannot resolve itself. The API rate-limits sign-in — 429
+  // VSP-ERR-RATE-001, measured at the fourteenth attempt — and an operator
+  // told their password is wrong will retype it, which is another attempt,
+  // which extends the block. Saying "wait" is the only advice that ends it.
+  if (api?.status === 429 || api?.code === 'VSP-ERR-RATE-001') {
+    return 'Đã thử đăng nhập quá nhiều lần. Đợi một phút rồi thử lại.';
+  }
+  if (api?.status !== undefined && api.status >= 500) {
+    return 'Máy chủ đang gặp sự cố. Thử lại sau ít phút.';
+  }
+  return 'Sai tài khoản hoặc mật khẩu.';
 }
 
 /** Test seam: drop the in-memory session without touching storage. */

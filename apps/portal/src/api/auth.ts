@@ -23,6 +23,16 @@ export interface ApiError {
   message: string;
   correlationId?: string;
   field?: string;
+
+  /**
+   * The HTTP status that carried it.
+   *
+   * Not part of the envelope the server sends — added here because the code
+   * alone cannot tell a refusal from a server fault. A 500 whose body did not
+   * parse arrives as `code: 'UNKNOWN'`, which is indistinguishable from a
+   * rejected password unless the status comes with it.
+   */
+  status?: number;
 }
 
 /** POST /auth/login. */
@@ -52,7 +62,7 @@ async function parse<T>(res: Response): Promise<T> {
       code: 'UNKNOWN',
       message: res.statusText,
     }));
-    throw body;
+    throw { ...body, status: res.status };
   }
   return res.json() as Promise<T>;
 }
