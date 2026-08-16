@@ -245,36 +245,59 @@ def main() -> int:
     return 0
 
 
-def merge_shards(out: Path) -> int:
+def merge_shards(out: Path) -> int:  # noqa: C901
     """Join the per-shard manifests into the one every reader expects.
 
     Counts and class pixels add; the course lists concatenate. Written as a
     separate pass rather than as a lock around one shared file, because a lock
     held across an HTTPS fetch would put the shards back in single file.
     """
+    from PIL import Image
+
     shards = sorted(out.glob("manifest.shard*.json"))
     if not shards:
         print(f"no shard manifests under {out}")
         return 1
 
     merged = json.loads(shards[0].read_text())
-    merged["courses"] = []
-    merged["counts"] = {"train": 0, "val": 0}
-    pixels: Counter[int] = Counter()
+    merged["shards"] = len(shards)
 
+    # Deduplicated by OSM id. A course can appear in two shard manifests —
+    # the single-process run's manifest became shard 0's, and the courses it
+    # had already built belong to other shards under the new split, so they
+    # were built again. The files are the same files, written twice; the
+    # counts are not, and a manifest claiming 6 584 patches over a directory
+    # holding 5 744 is a manifest nobody can use to check anything.
+    seen: set[int] = set()
+    courses = []
     for shard in shards:
-        part = json.loads(shard.read_text())
-        merged["courses"].extend(part["courses"])
-        for split, count in part["counts"].items():
-            merged["counts"][split] = merged["counts"].get(split, 0) + count
-        pixels.update({int(k): v for k, v in part.get("_classPixels", {}).items()})
+        for course in json.loads(shard.read_text())["courses"]:
+            if course["osmId"] in seen:
+                continue
+            seen.add(course["osmId"])
+            courses.append(course)
+    merged["courses"] = courses
+
+    counts: Counter[str] = Counter()
+    for course in courses:
+        counts[course["split"]] += course["patches"]
+    merged["counts"] = dict(counts)
+
+    # Counted off the masks rather than summed from the shards, for the same
+    # reason: a shard's totals include the patches it rebuilt.
+    pixels: Counter[int] = Counter()
+    for split in counts:
+        for mask_file in sorted((out / "masks" / split).glob("*.png")):
+            mask = np.asarray(Image.open(mask_file))
+            values, seen_counts = np.unique(mask[mask != IGNORE_INDEX],
+                                            return_counts=True)
+            pixels.update(dict(zip(values.tolist(), seen_counts.tolist())))
 
     merged["_classPixels"] = {str(k): int(v) for k, v in pixels.items()}
     total = max(1, sum(pixels.values()))
     merged["classPixelShare"] = {
         GOLF_SEG_LABELS[int(k)].value: round(v / total, 5)
         for k, v in sorted(pixels.items())}
-    merged["shards"] = len(shards)
     (out / "manifest.json").write_text(
         json.dumps(merged, indent=2, ensure_ascii=False))
 
