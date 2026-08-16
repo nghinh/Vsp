@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.error
@@ -99,6 +100,15 @@ def main() -> int:
     parser.add_argument("--course", type=int, required=True)
     parser.add_argument("--api", default="https://vps-api.vnteki.com")
     parser.add_argument("--vision", default="http://127.0.0.1:18100")
+    parser.add_argument("--vision-key", default=os.environ.get("GOLF_VISION_API_KEY"),
+                        help="the vision service's shared secret. Defaults to "
+                             "GOLF_VISION_API_KEY in the environment, so it "
+                             "need not appear in a shell history or a process "
+                             "listing. The service refuses every trace without "
+                             "it, and refuses every trace when it is unset on "
+                             "the server too — an unauthenticated model "
+                             "endpoint on the open internet is not a default "
+                             "anyone should be able to fall into.")
     parser.add_argument("--identifier", required=True)
     parser.add_argument("--password", required=True)
     parser.add_argument("--holes", nargs="*", type=int,
@@ -122,6 +132,7 @@ def main() -> int:
         started = time.time()
         try:
             traced = _request(f"{args.vision}/trace/hole",
+                              token=args.vision_key,
                               payload={"courseId": args.course, **hole})
         except (urllib.error.URLError, TimeoutError) as error:
             print(f"  hole {number:2d}  vision service: {error}")

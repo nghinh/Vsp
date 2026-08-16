@@ -96,9 +96,16 @@ def _load():
         raise HTTPException(503, "GOLF_SEG_CHECKPOINT is not set or missing")
 
     state = torch.load(path, map_location="cpu", weights_only=False)
+    # How many channels this weight expects, read rather than assumed. The
+    # NAIP corpus made four the default — three colour bands and a
+    # near-infrared one that Esri tiles cannot supply — and a checkpoint from
+    # before that is still three. Guessing wrong fails at load with a shape
+    # error that reads like a corrupt file.
+    channels = state.get("inChannels", 3)
     model = build_model(len(GOLF_SEG_LABELS),
                         provider=state["args"].get("provider", "smp"),
-                        name=state["args"].get("model_name"))
+                        name=state["args"].get("model_name"),
+                        in_channels=channels)
     model.load_state_dict(state["model"])
     device = torch.device(os.environ.get("GOLF_VISION_DEVICE")
                           or ("cuda" if torch.cuda.is_available() else "cpu"))
@@ -110,8 +117,15 @@ def _load():
         "device": str(device),
         "provider": state["args"].get("provider"),
         "modelName": state["args"].get("model_name"),
+        "inChannels": channels,
         "trainedEpoch": state.get("epoch"),
         "commercialOk": state.get("commercialOk", False),
+        # Which corpora this weight has seen and whether their imagery
+        # licences permit selling the result. On /health because "which model
+        # is live" and "may we sell what it produces" have to be answerable
+        # from outside the process, months later, without reading a filename.
+        "lineage": state.get("lineage", []),
+        "shippable": state.get("shippable"),
         "scores": state.get("scores", {}),
     }
     return _model
@@ -148,6 +162,22 @@ def trace_hole(request: TraceRequest):
          - np.array([0.485, 0.456, 0.406], dtype=np.float32))
         / np.array([0.229, 0.224, 0.225], dtype=np.float32)
     ).permute(2, 0, 1).unsqueeze(0)
+
+    # The fourth channel, where the model wants one. Esri serves three bands
+    # and there is no near-infrared to be had from a tile server, so it is the
+    # same constant the training set used for a missing band — and the model
+    # spent half of its pretraining with that band hidden precisely so this
+    # would be ordinary rather than out of distribution.
+    if _model_meta.get("inChannels", 3) == 4:
+        # Imported here rather than at module scope: training.dataset pulls in
+        # torch, and this service loads torch lazily so a process with no
+        # model configured still answers /health immediately. Imported at all
+        # rather than written as 0.0, so the service and the training set
+        # cannot drift on what "no band" means.
+        from training.dataset import NIR_ABSENT
+        absent = torch.full((1, 1, pixels.shape[2], pixels.shape[3]),
+                            NIR_ABSENT, dtype=pixels.dtype)
+        pixels = torch.cat([pixels, absent], dim=1)
 
     device = next(model.parameters()).device
     with torch.no_grad():
