@@ -181,3 +181,62 @@ No LLM is involved anywhere in this path.
 Not yet built, in the order they are worth building: SAM boundary refinement
 (§19), the golf semantic inference engine (§11–§15), the topology engine
 (§26–§28), the FastAPI service boundary (§55), the training pipeline (§36–§44).
+
+---
+
+## 7. The semantic layer, measured
+
+§11–15 built and scored on the same three holes, same imagery, same ground
+truth. The land-cover model is untouched; the only change is that its
+bare-ground candidates now have to look like sand and lie where sand lies.
+
+| Hole | precision | recall | IoU | edge µ | found |
+|---|---|---|---|---|---|
+| 10 | 0.350 → **0.769** | 0.665 → 0.499 | 0.298 → 0.434 | 1.4 → 1.3 m | 19/19 → 13/19 |
+| 15 | 0.517 → **0.829** | 0.701 → 0.448 | 0.423 → 0.410 | 1.3 → 1.4 m | 29/29 → 19/29 |
+| 5 | 0.101 → **0.896** | 0.725 → 0.560 | 0.097 → 0.526 | 1.0 → 1.1 m | 11/11 → 9/11 |
+
+**Precision roughly doubles, and on hole 5 goes from 0.10 to 0.90.** The cost
+is a quarter of the recall: 124 candidates dropped across the three holes, of
+which some were real bunkers the shape test judged too thin or the position
+test judged too far.
+
+That is the right trade for a rangefinder. A bunker on screen that is not
+there produces a carry number a golfer clubs off; a bunker missing from the
+screen leaves them where they were before any of this existed.
+
+Two signals, and both are needed:
+
+* **shape** removes the cart path, which is bare, pale and runs straight up
+  the middle of the hole where no position test can touch it;
+* **position** removes the bare ground in the car park, which is exactly as
+  compact and exactly as sand-coloured as a bunker.
+
+### A metric that was lying
+
+The first run of this comparison reported boundary error jumping from 1.4 m
+to 30.8 m, which reads as the filter wrecking the geometry. It had not moved
+a single edge.
+
+The metric measured every true boundary against the nearest predicted
+boundary *anywhere*, so a true bunker with no prediction left near it
+contributed its whole distance to the mean — folding recall into a number
+that is supposed to be about accuracy. Measured over matched features only,
+edge error is 1.3–1.4 m before and after, and the recall cost appears in its
+own column where it belongs.
+
+Worth recording because §38 prioritises human review by confidence, and a
+metric that conflates two failures prioritises the wrong examples.
+
+### Still not inferred
+
+Green produces no golf class at all, deliberately. The land-cover model puts
+a green in the same class as the fairway and the rough, because mown turf is
+mown turf, and there is no shape or position rule that recovers it — a green
+is compact and sits at the end of the hole, and so does the apron around it,
+and so does a practice putting surface. Dressing that up as an inference
+would produce confident nonsense at exactly the place a golfer trusts most.
+
+The gap is left visible. It is the argument for GolfSeg, and it now has a
+number on both sides of it: bunker 0.90 precision from a generic model plus
+rules, green 0.006 IoU from anything short of training.

@@ -31,6 +31,9 @@ from golfvision.imagery.fetcher import TileFetcher              # noqa: E402
 from golfvision.masks.postprocess import MaskPostProcessor      # noqa: E402
 from golfvision.providers.flair import (                        # noqa: E402
     NATIVE_METRES_PER_PIXEL as NATIVE_MPP, FlairLandCoverProvider)
+from golfvision.semantics.inference import (                    # noqa: E402
+    GolfSemanticInferenceService, HoleAnchor)
+from golfvision.vector.vectorize import MaskVectorizationService  # noqa: E402
 
 API = "https://vps-api.vnteki.com"
 
@@ -84,26 +87,86 @@ def iou(prediction: np.ndarray, truth: np.ndarray) -> tuple[float, float, float]
             intersection / actual if actual else 0.0)
 
 
-def boundary_error_m(prediction: np.ndarray, truth: np.ndarray,
-                     metres_per_pixel: float) -> tuple[float, float]:
-    """Mean and 95th-percentile distance from a true edge to the nearest
-    predicted edge, in metres. Empty on either side gives no answer at all
-    rather than a flattering zero."""
+def _edge(mask: np.ndarray) -> np.ndarray:
     import cv2
-    if not prediction.any() or not truth.any():
-        return float("nan"), float("nan")
+    eroded = cv2.erode(mask.astype(np.uint8), np.ones((3, 3), np.uint8), 1)
+    return (mask.astype(np.uint8) - eroded).astype(bool)
 
-    def edge(mask: np.ndarray) -> np.ndarray:
-        eroded = cv2.erode(mask.astype(np.uint8),
-                           np.ones((3, 3), np.uint8), iterations=1)
-        return (mask.astype(np.uint8) - eroded).astype(bool)
 
-    predicted_edge = edge(prediction)
-    truth_edge = edge(truth)
+def boundary_error_m(prediction: np.ndarray, truth: np.ndarray,
+                     metres_per_pixel: float) -> tuple[float, float, int, int]:
+    """How far a found feature's edge is from the real one, in metres.
+
+    Measured over matched features only, and this matters. The first version
+    of this measured every true edge against the nearest predicted edge
+    anywhere, which quietly folds recall into the answer: filtering out half
+    the false positives made the number jump from 1.4 m to 30.8 m, not
+    because any edge moved but because the true bunkers that now had no
+    prediction at all contributed their whole distance to the mean.
+
+    Two numbers cannot share one metric. Recall says how many were found;
+    this says how well the found ones were drawn. A component of truth counts
+    as found when a prediction overlaps it at all.
+
+    :returns: mean, 95th percentile, matched components, total components
+    """
+    import cv2
+    if not truth.any():
+        return float("nan"), float("nan"), 0, 0
+
+    count, labels = cv2.connectedComponents(truth.astype(np.uint8), 8)
+    predicted_edge = _edge(prediction)
+    if not predicted_edge.any():
+        return float("nan"), float("nan"), 0, count - 1
+
     distance = cv2.distanceTransform(
         (~predicted_edge).astype(np.uint8), cv2.DIST_L2, 5)
-    errors = distance[truth_edge] * metres_per_pixel
-    return float(errors.mean()), float(np.percentile(errors, 95))
+
+    errors: list[float] = []
+    matched = 0
+    for index in range(1, count):
+        component = labels == index
+        if not (component & prediction).any():
+            continue                    # not found — that is recall's business
+        matched += 1
+        errors.extend(distance[_edge(component)] * metres_per_pixel)
+
+    if not errors:
+        return float("nan"), float("nan"), 0, count - 1
+    array = np.asarray(errors)
+    return (float(array.mean()), float(np.percentile(array, 95)),
+            matched, count - 1)
+
+
+def _through_semantics(mask, bounds, anchor):
+    """Vectorise, classify, and rasterise only what survived.
+
+    Scoring the filtered mask rather than the polygon list keeps the metric
+    identical on both sides of the comparison — the only thing that changes
+    is which candidates are still there.
+    """
+    import cv2
+    from golfvision.classes import LandCover
+
+    service = GolfSemanticInferenceService(anchor)
+    vectorizer = MaskVectorizationService(bounds)
+    kept = np.zeros_like(mask, dtype=np.uint8)
+    dropped = 0
+
+    for feature in vectorizer.vectorize(mask, "bunker", simplify_m=0.3):
+        if service.apply(feature, LandCover.BARE_LAND) is None:
+            dropped += 1
+            continue
+        geoms = ([feature.geometry] if feature.geometry.geom_type == "Polygon"
+                 else list(feature.geometry.geoms))
+        for geom in geoms:
+            points = np.array(
+                [bounds.lat_lng_to_pixel(y, x) for x, y in geom.exterior.coords],
+                dtype=np.int32)
+            cv2.fillPoly(kept, [points], 1)
+
+    print(f"  semantics dropped {dropped} candidate(s)")
+    return kept.astype(bool)
 
 
 def main() -> int:
@@ -116,6 +179,10 @@ def main() -> int:
                         metavar=("LAT", "LNG"))
     parser.add_argument("--margin", type=float, default=0.0010)
     parser.add_argument("--zoom", type=int, default=19)
+    parser.add_argument("--semantics", action="store_true",
+                        help="filter candidates through the golf inference "
+                             "engine before scoring, so its effect on "
+                             "precision is visible")
     args = parser.parse_args()
 
     south = min(args.green[0], args.tee[0]) - args.margin
@@ -142,7 +209,7 @@ def main() -> int:
           f"{tile.bounds.width}x{tile.bounds.height} px at "
           f"{tile.bounds.metres_per_pixel:.3f} m/px, zoom {tile.bounds.zoom}")
     print(f"{'layer':14s} {'IoU':>6s} {'prec':>6s} {'recall':>6s} "
-          f"{'edge µ':>8s} {'edge p95':>9s}   truth px")
+          f"{'edge µ':>8s} {'edge p95':>9s} {'found':>9s}")
 
     for layer, cover in SCORED.items():
         entry = result.by_label(cover.value)
@@ -158,12 +225,18 @@ def main() -> int:
                        "BUNKER": GolfFeature.BUNKER}[layer]
             prediction = cleaner.clean(prediction, feature)
 
+        if args.semantics and layer == "BUNKER":
+            prediction = _through_semantics(
+                prediction, tile.bounds,
+                HoleAnchor(args.tee[0], args.tee[1],
+                           args.green[0], args.green[1]))
+
         truth = rasterize(truth_features, layer, tile.bounds, None)
         score, precision, recall = iou(prediction, truth)
-        mean_error, p95 = boundary_error_m(
+        mean_error, p95, matched, total = boundary_error_m(
             prediction, truth, tile.bounds.metres_per_pixel)
         print(f"{layer:14s} {score:6.3f} {precision:6.3f} {recall:6.3f} "
-              f"{mean_error:7.1f}m {p95:8.1f}m   {int(truth.sum()):8d}")
+              f"{mean_error:7.1f}m {p95:8.1f}m {matched:4d}/{total:<4d}")
 
     return 0
 
