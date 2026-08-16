@@ -105,6 +105,13 @@ def main() -> int:
 
     confusion = ConfusionMatrix(NUM_CLASSES)
     edge_errors: dict[int, list[float]] = {i: [] for i in GOLF_SEG_LABELS}
+    # Predicted area against true area, per class. IoU cannot tell a shape
+    # that is too big from one that is offset, and the two want opposite
+    # fixes. On the live Long Biên data the model's greens came out at 1.46x
+    # the area a mapper drew — a bias in one direction, which is a threshold
+    # that wants moving off 0.5 rather than a model that wants retraining. A
+    # ratio near 1.0 with a poor IoU is a different problem entirely.
+    area = {index: [0, 0] for index in GOLF_SEG_LABELS}
     with torch.no_grad():
         for i in range(len(dataset)):
             pixels, target = dataset[i]
@@ -113,6 +120,11 @@ def main() -> int:
             true_np = target.numpy()
             confusion.update(prediction, target.to(device))
             for index in GOLF_SEG_LABELS:
+                # Only where the truth is known: an ignore pixel the model
+                # called green is not evidence either way.
+                known = true_np != 255
+                area[index][0] += int(((pred_np == index) & known).sum())
+                area[index][1] += int((true_np == index).sum())
                 edge_errors[index].extend(
                     boundary_errors_m(pred_np, true_np, index,
                                       args.metres_per_pixel))
@@ -121,7 +133,7 @@ def main() -> int:
     recall = confusion.per_class_recall()
     support = confusion.support()
     print(f"\n{'class':14s} {'IoU':>6s} {'recall':>7s} {'edge µ':>8s} "
-          f"{'edge p95':>9s}  {'test px':>10s}")
+          f"{'edge p95':>9s} {'area':>6s}  {'test px':>10s}")
     result = {"split": args.split, "meanIoU": round(confusion.mean_iou(), 4),
               "perClass": {}}
     for index, feature in GOLF_SEG_LABELS.items():
@@ -130,12 +142,16 @@ def main() -> int:
         errors = np.asarray(edge_errors[index]) if edge_errors[index] else None
         mean_e = float(errors.mean()) if errors is not None else float("nan")
         p95 = float(np.percentile(errors, 95)) if errors is not None else float("nan")
+        predicted_px, true_px = area[index]
+        ratio = predicted_px / true_px if true_px else float("nan")
         print(f"{feature.value:14s} {iou[index]:6.3f} {recall[index]:7.3f} "
-              f"{mean_e:7.1f}m {p95:8.1f}m  {int(support[index]):10d}")
+              f"{mean_e:7.1f}m {p95:8.1f}m {ratio:6.2f}  "
+              f"{int(support[index]):10d}")
         result["perClass"][feature.value] = {
             "iou": round(float(iou[index]), 4),
             "recall": round(float(recall[index]), 4),
-            "edgeMeanM": round(mean_e, 2), "edgeP95M": round(p95, 2)}
+            "edgeMeanM": round(mean_e, 2), "edgeP95M": round(p95, 2),
+            "areaRatio": round(float(ratio), 3)}
 
     print(f"\nmean IoU {result['meanIoU']:.3f}")
     out = Path(args.checkpoint).with_suffix(".test.json")
