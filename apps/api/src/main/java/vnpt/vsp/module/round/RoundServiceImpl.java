@@ -389,7 +389,7 @@ public class RoundServiceImpl implements RoundService {
         RoundResponse response = new RoundResponse();
         response.setId(round.getId());
         response.setCourseId(round.getCourseId());
-        response.setBackNineCourseId(round.getBackNineCourseId());
+        response.setBackNineCourseId(secondSegmentOf(round));
         response.setCourseName(courseName);
         response.setStatus(round.getStatus());
         response.setStartedAt(round.getStartedAt());
@@ -399,6 +399,26 @@ public class RoundServiceImpl implements RoundService {
         response.setTournamentId(round.getTournamentId());
         response.setTournamentPolicyVersion(round.getTournamentPolicyVersion());
         return response;
+    }
+
+    /**
+     * The second đường of a paired round, or null.
+     *
+     * Read from the segments rather than from {@code rounds.back_nine_course_id},
+     * because the segments are where a pairing is actually written down —
+     * saveSegments above says so, and the column is a legacy of the shape that
+     * preceded them. Reading the column instead returns null for every round
+     * ever created through this service, which is how the app came to believe
+     * that a round on Đường A + B had no second nine: correct field name,
+     * empty source.
+     */
+    private Long secondSegmentOf(Round round) {
+        if (round.getBackNineCourseId() != null) {
+            return round.getBackNineCourseId();
+        }
+        var segments = roundSegmentRepository
+                .findByIdRoundIdOrderByIdPositionAsc(round.getId());
+        return segments.size() > 1 ? segments.get(1).getCourseId() : null;
     }
 
     private String toJson(Round round, String courseName, List<Long> playerIds) {
