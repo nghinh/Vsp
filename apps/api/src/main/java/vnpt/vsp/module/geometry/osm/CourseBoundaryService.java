@@ -45,6 +45,16 @@ public class CourseBoundaryService {
     /// course rather than a line beside it.
     private static final int FEATURE_BUFFER_M = 35;
 
+    /// How much of a course's own tees and greens an outline must contain
+    /// before it is allowed to decide what is on the course.
+    ///
+    /// The measured split is not close. Six courses came out at 94-100%; the
+    /// one built from a single path segment came out at 6%. Anything in
+    /// between is a course whose path network is mapped in pieces, and the
+    /// honest answer there is to admit everything and say so rather than to
+    /// filter by a guess.
+    private static final double MINIMUM_HOLE_COVERAGE = 0.8;
+
     private final EntityManager em;
 
     public CourseBoundaryService(EntityManager em) {
@@ -126,7 +136,39 @@ public class CourseBoundaryService {
                     Map.of("course", "the boundary came out empty"));
         }
 
-        String source = cartPaths > 0 ? "cartpath+features" : "features-only";
+        // A boundary has to contain the holes it bounds.
+        //
+        // Six of the seven courses with cart paths came out containing every
+        // tee and every green on file. The seventh — Chí Linh's Đường C, built
+        // from a single mapped path segment — contained one point of eighteen,
+        // and 127 of its own 135 traced shapes fell outside it. That is not a
+        // course outline, it is a 120 m corridor down one side of the course,
+        // and stored it would have been worse than storing nothing: contains()
+        // treats a boundary that exists as authoritative, so the next trace of
+        // that đường would have had almost everything on it refused as
+        // somebody else's land.
+        //
+        // The check is the cheapest true one available. Every course being
+        // traced has real tee and green coordinates from a source that is not
+        // this pipeline, so they are independent of whatever the model drew,
+        // and a shape that excludes them is answering about the wrong ground.
+        double covered = holeCoverage(courseId, boundary);
+        if (covered < MINIMUM_HOLE_COVERAGE) {
+            throw VspApiException.forField(VspErrorCode.VALIDATION_001, "course",
+                    Map.of("course", String.format(
+                            "the outline drawn from %d cart path(s) contains only "
+                            + "%.0f%% of this course's own tees and greens; it is not "
+                            + "the course's edge. Map more of the path network first "
+                            + "— no boundary admits everything, which is the safer "
+                            + "wrong answer.", cartPaths, covered * 100)));
+        }
+
+        // Named after what it was actually built from. `hasPaths` excludes
+        // every non-path feature from the union above, so calling the result
+        // "cartpath+features" credited it with data it had deliberately not
+        // used — and the feature count printed beside it is the number of
+        // shapes that were *left out*.
+        String source = cartPaths > 0 ? "cartpath-only" : "features-only";
         em.createNativeQuery("""
                 INSERT INTO course_boundary
                     (course_id, geometry, source, cart_path_count, feature_count,
@@ -153,14 +195,21 @@ public class CourseBoundaryService {
                 "SELECT area_hectares FROM course_boundary WHERE course_id = :course")
                 .setParameter("course", courseId).getSingleResult();
 
+        int retired = retireShapesOutside(courseId, boundary);
+
         var result = new LinkedHashMap<String, Object>();
         result.put("courseId", courseId);
         result.put("source", source);
         result.put("cartPaths", cartPaths);
+        // What the union was built from is the paths; this is how many area
+        // features exist on the course, which the check below covers.
         result.put("features", features);
         result.put("areaHectares", hectares);
-        log.info("Course {} boundary from {} cart path(s) and {} feature(s): {} ha",
-                courseId, cartPaths, features, hectares);
+        result.put("holeCoverage", Math.round(covered * 100) / 100.0);
+        result.put("shapesRetired", retired);
+        log.info("Course {} boundary from {} cart path(s): {} ha, covers {}% of "
+                 + "its holes, retired {} shape(s) outside it",
+                courseId, cartPaths, hectares, Math.round(covered * 100), retired);
         return result;
     }
 
@@ -183,6 +232,75 @@ public class CourseBoundaryService {
                 .setParameter("lng", longitude)
                 .getResultList();
         return rows.isEmpty() || Boolean.TRUE.equals(rows.get(0));
+    }
+
+    /**
+     * The share of this course's own tee and green points that [boundary]
+     * contains.
+     *
+     * <p>1.0 where the course has no coordinates to check against — there is
+     * nothing to fail, and refusing a boundary for lack of evidence would
+     * block the courses that most need one.
+     */
+    private double holeCoverage(Long courseId, String boundary) {
+        Object[] row = (Object[]) em.createNativeQuery("""
+                SELECT count(*) * 2,
+                       count(*) FILTER (WHERE ST_Contains(
+                           ST_GeomFromText(:wkt, 4326),
+                           CAST(h.green_location AS geometry)))
+                     + count(*) FILTER (WHERE ST_Contains(
+                           ST_GeomFromText(:wkt, 4326),
+                           CAST(h.teeing_ground_location AS geometry)))
+                FROM holes h
+                WHERE h.course_id = :course
+                  AND h.green_location IS NOT NULL
+                  AND h.teeing_ground_location IS NOT NULL
+                """)
+                .setParameter("course", courseId)
+                .setParameter("wkt", boundary)
+                .getSingleResult();
+        long points = ((Number) row[0]).longValue();
+        if (points == 0) {
+            return 1.0;
+        }
+        return ((Number) row[1]).doubleValue() / points;
+    }
+
+    /**
+     * Retires the model's shapes that this boundary puts off the course.
+     *
+     * <p>Drawing the edge is the moment the database learns which of its own
+     * shapes were never on the course. Most of them were filed before any
+     * outline existed — the sweep that traced 862 holes ran with a boundary on
+     * three courses out of seventy-three — so the check the filing path
+     * performs had nothing to check against.
+     *
+     * <p>Only the model's. A shape a person drew that falls outside an outline
+     * this service derived means the outline is wrong, not the shape, and
+     * quietly retiring a mapper's work on the strength of a buffered path
+     * would be the worst trade in this file.
+     *
+     * <p>Marked invalid rather than deleted: it is a judgement about where the
+     * course ends, made from imperfect data, and the geometry costs nothing to
+     * keep for whoever revisits it.
+     */
+    private int retireShapesOutside(Long courseId, String boundary) {
+        return em.createNativeQuery("""
+                UPDATE draft_geometry_features d
+                SET is_valid = false,
+                    validity_message = 'outside the course boundary drawn from '
+                                       || 'its cart paths',
+                    updated_at = now()
+                WHERE d.course_id = :course
+                  AND d.is_valid
+                  AND d.source IN ('golfseg', 'ai-satellite')
+                  AND NOT ST_Contains(
+                        ST_GeomFromText(:wkt, 4326),
+                        ST_Centroid(ST_SetSRID(ST_GeomFromText(d.geometry), 4326)))
+                """)
+                .setParameter("course", courseId)
+                .setParameter("wkt", boundary)
+                .executeUpdate();
     }
 
     private int count(Long courseId, String layer) {
