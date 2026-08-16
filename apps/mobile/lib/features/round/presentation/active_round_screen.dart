@@ -33,6 +33,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../hole_map/hole_map.dart';
 import '../../hole_map/data/course_pin_api.dart';
+import '../../hole_map/data/hole_feature_api.dart';
 import '../../basemap/domain/satellite_imagery_config.dart';
 import 'active_round_target_view.dart';
 import '../../../features/correction/presentation/correction_submission_screen.dart';
@@ -520,6 +521,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             locationService: widget.locationService,
             telemetry: _telemetry,
             pinApi: CoursePinApi(),
+            featureApi: HoleFeatureApi(),
           )..add(
             LoadHoleMap(
               packageId: widget.packageId,

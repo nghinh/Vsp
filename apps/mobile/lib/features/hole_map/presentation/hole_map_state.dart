@@ -45,7 +45,14 @@ class HoleMapReady extends HoleMapState {
   final List<DistanceRingEntity> distanceRings;
   final Map<String, bool> layerVisibility;
 
+  /// True while shapes on this hole were traced from satellite imagery and
+  /// nobody has checked them against the ground. The screen says so — a
+  /// bunker drawn by a model looks exactly like a surveyed one, and a golfer
+  /// laying up to it deserves to know which they are looking at.
+  final bool tracedShapesUnverified;
+
   const HoleMapReady({
+    this.tracedShapesUnverified = false,
     required this.holeMap,
     this.golferPosition,
     this.target,
@@ -63,6 +70,7 @@ class HoleMapReady extends HoleMapState {
     WindRelativeEntity? windRelative,
     List<DistanceRingEntity>? distanceRings,
     Map<String, bool>? layerVisibility,
+    bool? tracedShapesUnverified,
   }) {
     return HoleMapReady(
       holeMap: holeMap ?? this.holeMap,
@@ -72,6 +80,8 @@ class HoleMapReady extends HoleMapState {
       windRelative: windRelative ?? this.windRelative,
       distanceRings: distanceRings ?? this.distanceRings,
       layerVisibility: layerVisibility ?? this.layerVisibility,
+      tracedShapesUnverified:
+          tracedShapesUnverified ?? this.tracedShapesUnverified,
     );
   }
 
@@ -84,6 +94,7 @@ class HoleMapReady extends HoleMapState {
     windRelative,
     distanceRings,
     layerVisibility,
+    tracedShapesUnverified,
   ];
 }
 

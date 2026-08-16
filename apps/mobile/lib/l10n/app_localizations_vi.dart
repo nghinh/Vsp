@@ -4107,4 +4107,8 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mapTargetToPin => 'Còn lại';
+
+  @override
+  String get mapTracedShapes =>
+      'Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng';
 }

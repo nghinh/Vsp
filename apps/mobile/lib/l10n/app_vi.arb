@@ -1736,5 +1736,6 @@
   "downloadCompleted": "Đã tải xong dữ liệu sân",
   "mapToPin": "Tới cờ",
   "mapToTarget": "Tới mục tiêu",
-  "mapTargetToPin": "Còn lại"
+  "mapTargetToPin": "Còn lại",
+  "mapTracedShapes": "Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng"
 }

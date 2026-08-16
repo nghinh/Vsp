@@ -7237,6 +7237,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Target to pin'**
   String get mapTargetToPin;
+
+  /// No description provided for @mapTracedShapes.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole shapes traced from satellite imagery by AI, not yet checked by a human'**
+  String get mapTracedShapes;
 }
 
 class _AppLocalizationsDelegate

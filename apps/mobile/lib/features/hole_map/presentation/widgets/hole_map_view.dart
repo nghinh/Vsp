@@ -442,6 +442,29 @@ class _HoleMapViewState extends State<HoleMapView> {
               ),
             ),
 
+          // Whose shapes these are. A traced bunker looks exactly like a
+          // surveyed one, and a golfer laying up to it should know which.
+          if (widget.state.tracedShapesUnverified)
+            Positioned(
+              left: 12,
+              right: 12,
+              bottom: 96,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withOpacity(0.92),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  AppLocalizations.of(context).mapTracedShapes,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Color(0xFFFBBF24), fontSize: 11),
+                ),
+              ),
+            ),
+
           // Distance rings legend
           if (widget.state.distanceRings.isNotEmpty)
             Positioned(

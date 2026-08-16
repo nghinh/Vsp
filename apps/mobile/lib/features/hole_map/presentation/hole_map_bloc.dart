@@ -14,6 +14,8 @@ import 'package:vsp_mobile/data/services/round_telemetry_recorder.dart';
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/data/course_pin_api.dart';
+import 'package:vsp_mobile/features/hole_map/data/hole_feature_api.dart';
+import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/wind_relative_entity.dart';
@@ -71,15 +73,22 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   /// the network has no business being reached.
   final CoursePinApi? _pinApi;
 
+  /// Reads the shapes a vision model traced from satellite imagery. Most
+  /// holes here have no surveyed polygons at all, so this is usually the
+  /// only geometry there is.
+  final HoleFeatureApi? _featureApi;
+
   HoleMapBloc({
     required HoleMapRepository repository,
     LocationService? locationService,
     RoundTelemetryRecorder? telemetry,
     CoursePinApi? pinApi,
+    HoleFeatureApi? featureApi,
   }) : _repository = repository,
        _locationService = locationService,
        _telemetry = telemetry,
        _pinApi = pinApi,
+       _featureApi = featureApi,
        super(const HoleMapInitial()) {
     on<LoadHoleMap>(_onLoadHoleMap);
     on<UpdateGolferPosition>(_onUpdateGolferPosition);
@@ -207,6 +216,11 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
       // Build initial state — windRelative will be computed after position/target
       emit(HoleMapReady(holeMap: holeMap, layerVisibility: layerVisibility));
 
+      // Then the traced shapes, where the package carried none. A hole with
+      // a tee point and a green point draws as two dots; the same hole with
+      // the model's greens, bunkers and water draws as golf.
+      await _applyTracedFeatures(emit, event.courseId, event.holeNumber);
+
       // Then today's flag, if the club publishes one. After the map is on
       // screen and after the latency is recorded, on purpose: the pin is a
       // network read, and making the drawn hole wait for it would turn an
@@ -225,6 +239,46 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
           holeNumber: event.holeNumber,
         ),
       );
+    }
+  }
+
+  /// Adds the traced shapes to whatever the package already had.
+  ///
+  /// The package wins where it has a layer: a surveyed green is better than
+  /// a traced one, and this must never quietly replace it. Everywhere else —
+  /// which is most layers on most holes — the model's shapes are all there
+  /// is.
+  Future<void> _applyTracedFeatures(
+    Emitter<HoleMapState> emit,
+    String courseId,
+    int holeNumber,
+  ) async {
+    final api = _featureApi;
+    if (api == null) return;
+    try {
+      final traced = await api.forHole(
+        courseId: courseId,
+        holeNumber: holeNumber,
+      );
+      if (traced.isEmpty || emit.isDone) return;
+      final current = state;
+      if (current is! HoleMapReady) return;
+
+      final merged = Map<MapLayerType, MapLayerEntity>.from(traced.layers)
+        ..addAll(current.holeMap.layers);
+      final visibility = Map<String, bool>.from(current.layerVisibility);
+      for (final layer in merged.keys) {
+        visibility.putIfAbsent(layer.name, () => true);
+      }
+
+      emit(current.copyWith(
+        holeMap: current.holeMap.copyWith(layers: merged),
+        layerVisibility: visibility,
+        tracedShapesUnverified: traced.anyUnverified,
+      ));
+    } catch (_) {
+      // Offline, or nothing traced for this hole. The map keeps whatever the
+      // package gave it.
     }
   }
 
