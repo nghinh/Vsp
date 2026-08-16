@@ -37,6 +37,9 @@ import java.util.Map;
 @Validated
 public class HoleFeatureController {
 
+    private static final org.slf4j.Logger log =
+            org.slf4j.LoggerFactory.getLogger(HoleFeatureController.class);
+
     private final EntityManager em;
     private final CourseMappingService mappingService;
     private final BigDecimal minimumConfidence;
@@ -73,6 +76,8 @@ public class HoleFeatureController {
             @PathVariable @Min(1) @Max(18) int holeNumber) {
 
         String requestedBy = "golfer:" + authentication.getPrincipal();
+        log.info("POST /courses/{}/holes/{}/features/request - {}",
+                courseId, holeNumber, requestedBy);
 
         // Already drawn: answer with that rather than pay to draw it twice.
         Object existing = features(courseId, holeNumber).get("features");
@@ -134,6 +139,12 @@ public class HoleFeatureController {
             feature.put("properties", properties);
             features.add(feature);
         }
+
+        // Logged because its absence was unreadable: a screen showing no
+        // shapes and a server showing no request look identical when the
+        // request writes nothing down.
+        log.info("GET /courses/{}/holes/{}/features - {} shape(s) above {}",
+                courseId, holeNumber, features.size(), minimumConfidence);
 
         var collection = new LinkedHashMap<String, Object>();
         collection.put("type", "FeatureCollection");
