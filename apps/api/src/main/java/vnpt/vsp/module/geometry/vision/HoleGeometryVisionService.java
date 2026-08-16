@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
-import vnpt.vsp.module.ai.LlmGateway;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,16 +52,16 @@ public class HoleGeometryVisionService {
 
     private final EntityManager em;
     private final SatelliteImageService satellite;
-    private final LlmGateway gateway;
+    private final VisionProvider vision;
     private final VisionGeometryReader reader;
 
     public HoleGeometryVisionService(EntityManager em,
                                      SatelliteImageService satellite,
-                                     LlmGateway gateway,
+                                     VisionProvider vision,
                                      ObjectMapper objectMapper) {
         this.em = em;
         this.satellite = satellite;
-        this.gateway = gateway;
+        this.vision = vision;
         this.reader = new VisionGeometryReader(objectMapper);
     }
 
@@ -81,7 +80,7 @@ public class HoleGeometryVisionService {
             throw VspApiException.forField(VspErrorCode.VALIDATION_001, "satellite",
                     Map.of("satellite", "no licensed satellite imagery is configured"));
         }
-        if (!gateway.isEnabled()) {
+        if (!vision.isConfigured()) {
             throw VspApiException.forField(VspErrorCode.VALIDATION_001, "model",
                     Map.of("model", "no vision model is configured on this server"));
         }
@@ -101,7 +100,7 @@ public class HoleGeometryVisionService {
                     Map.of("satellite", "the satellite imagery could not be fetched"));
         }
 
-        String answer = gateway.ask(image.png(), "image/png",
+        String answer = vision.analyzeImage(image.png(), "image/png",
                 prompt(hole, image.bounds()), MAX_TOKENS);
         List<DetectedFeature> detected = reader.read(answer, image.bounds());
 
@@ -185,8 +184,8 @@ public class HoleGeometryVisionService {
                     (feature_uuid, course_id, hole_id, layer_type, geometry,
                      is_valid, feature_name, external_feature_id,
                      publisher, source, license, accuracy_class,
-                     verification_status, confidence, effective_date, version,
-                     created_at, updated_at)
+                     verification_status, confidence, model_version,
+                     effective_date, version, created_at, updated_at)
                 VALUES (gen_random_uuid(), :course, :hole, :layer,
                         ST_AsText(ST_SetSRID(ST_GeomFromText(:wkt), 4326)),
                         true, :name, :externalId,
@@ -196,10 +195,12 @@ public class HoleGeometryVisionService {
                         -- nobody has looked yet, which is exactly what the
                         -- community class means.
                         'D_UNVERIFIED_COMMUNITY',
-                        'PENDING_REVIEW', :confidence, CURRENT_DATE, 0, now(), now())
+                        'PENDING_REVIEW', :confidence, :modelVersion,
+                        CURRENT_DATE, 0, now(), now())
                 ON CONFLICT (course_id, layer_type, hole_id, external_feature_id)
                 DO UPDATE SET geometry = EXCLUDED.geometry,
                               confidence = EXCLUDED.confidence,
+                              model_version = EXCLUDED.model_version,
                               updated_at = now()
                 """)
                 .setParameter("course", courseId)
@@ -214,6 +215,7 @@ public class HoleGeometryVisionService {
                 .setParameter("license", attribution)
                 .setParameter("confidence", BigDecimal.valueOf(feature.confidence() * 100)
                         .setScale(2, java.math.RoundingMode.HALF_UP))
+                .setParameter("modelVersion", vision.modelVersion())
                 .executeUpdate();
     }
 

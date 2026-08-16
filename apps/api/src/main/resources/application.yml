@@ -171,6 +171,16 @@ vsp:
   # club's orthophotos, a national imagery service. It wins over Mapbox, and it
   # is ignored unless satellite-attribution is also set: imagery we cannot
   # credit is imagery we do not display.
+  # The model that reads satellite imagery for course mapping. Left unset it
+  # falls back to the scorecard reader's endpoint, which is already
+  # multimodal — an operator can try the feature before deciding it deserves
+  # its own budget. Server-side only: a vision key on a phone is a key in
+  # everybody's hands.
+  vision:
+    base-url: "${AI_VISION_BASE_URL:}"
+    api-key: "${AI_VISION_API_KEY:}"
+    model: "${AI_VISION_MODEL:}"
+
   basemap:
     mapbox-access-token: "${MAPBOX_ACCESS_TOKEN:}"
     satellite-tile-url: "${VSP_SATELLITE_TILE_URL:}"

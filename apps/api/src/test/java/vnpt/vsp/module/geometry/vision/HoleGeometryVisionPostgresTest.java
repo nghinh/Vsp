@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import vnpt.vsp.api.error.VspApiException;
-import vnpt.vsp.module.ai.LlmGateway;
 import vnpt.vsp.persistence.PostgresTestSupport;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,15 +64,21 @@ class HoleGeometryVisionPostgresTest {
     }
 
     /// A model that answers with whatever the test hands it.
-    private static LlmGateway model(String answer) {
-        return new LlmGateway(new ObjectMapper(), "https://model.example", "key", "m") {
+    private static VisionProvider model(String answer) {
+        return new VisionProvider() {
             @Override
-            public boolean isEnabled() {
+            public boolean isConfigured() {
                 return answer != null;
             }
 
             @Override
-            public String ask(byte[] image, String mediaType, String prompt, int maxTokens) {
+            public String modelVersion() {
+                return "test-vision-1";
+            }
+
+            @Override
+            public String analyzeImage(byte[] image, String mediaType,
+                                       String prompt, int maxTokens) {
                 return answer;
             }
         };
@@ -127,6 +132,7 @@ class HoleGeometryVisionPostgresTest {
 
         Object[] row = (Object[]) em.createNativeQuery("""
                 SELECT layer_type, source, verification_status, confidence,
+                       model_version,
                        ST_IsValid(ST_GeomFromText(geometry, 4326)),
                        ST_Y(ST_Centroid(ST_GeomFromText(geometry, 4326))),
                        ST_X(ST_Centroid(ST_GeomFromText(geometry, 4326)))
@@ -139,10 +145,12 @@ class HoleGeometryVisionPostgresTest {
         // Never published, always reviewed.
         assertThat(row[2]).isEqualTo("PENDING_REVIEW");
         assertThat(((Number) row[3]).doubleValue()).isEqualTo(82.0);
-        assertThat(row[4]).isEqualTo(true);
+        // Which model drew it, so a later one's work can be told apart.
+        assertThat(row[4]).isEqualTo("test-vision-1");
+        assertThat(row[5]).isEqualTo(true);
         // Traced at the middle of the frame, so it lands between tee and green.
-        assertThat(((Number) row[5]).doubleValue()).isBetween(21.0340, 21.0380);
-        assertThat(((Number) row[6]).doubleValue()).isBetween(105.8900, 105.8975);
+        assertThat(((Number) row[6]).doubleValue()).isBetween(21.0340, 21.0380);
+        assertThat(((Number) row[7]).doubleValue()).isBetween(105.8900, 105.8975);
     }
 
     @Test

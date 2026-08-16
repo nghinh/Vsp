@@ -134,6 +134,9 @@ class AdminEndpointAuthorizationTest {
                 // and makes work for a reviewer, so a golfer cannot start one.
                 new Endpoint("HoleGeometryVisionController", HttpMethod.POST,
                         "/admin/courses/1/holes/1/geometry/detect", RoleName.COURSE_ADMIN),
+                // Eighteen metered model calls per run, so the same gate.
+                new Endpoint("CourseMappingController", HttpMethod.POST,
+                        "/admin/courses/1/geometry/analyze", RoleName.COURSE_ADMIN),
                 new Endpoint("CourseImportController", HttpMethod.POST, "/admin/courses/1/import/preview", RoleName.COURSE_ADMIN),
                 new Endpoint("DataLicenseController", HttpMethod.GET, "/admin/licenses", RoleName.SUPER_ADMIN),
                 new Endpoint("AdminMarketController", HttpMethod.GET, "/admin/markets", RoleName.SUPER_ADMIN),
