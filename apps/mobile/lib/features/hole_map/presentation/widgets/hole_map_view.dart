@@ -562,155 +562,124 @@ class _HoleMapViewState extends State<HoleMapView> {
             unit: DistanceUnitScope.watch(context),
           ),
 
-          // Wind arrow overlay (Flutter-rendered, positioned over map)
-          if (widget.state.wind != null)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 8,
-              right: 12,
-              child: WindArrowOverlay(
-                wind: widget.state.wind!,
-                windRelative: widget.state.windRelative,
-              ),
-            ),
-
-          // Layer toggle panel
-          Positioned(
-            right: 12,
-            bottom: 12,
-            child: LayerTogglePanel(
-              visibility: widget.state.layerVisibility,
-              onToggle: (layerId, visible) {
-                context.read<HoleMapBloc>().add(
-                  ToggleLayerVisibility(layerId: layerId, visible: visible),
-                );
-              },
-            ),
+          // ─── Panels ────────────────────────────────────────────────
+          //
+          // Four corners and a middle, each a column that stacks whatever it
+          // is given. Every panel used to place itself, and two pairs landed
+          // on the same coordinates: the flag badge and the play-line numbers
+          // both at (left 12, top 12), the wind arrow and the ring legend both
+          // at (right 12, top 12). They drew on top of each other, and the
+          // golfer position marker sat over the map attribution at the bottom
+          // of the same screen.
+          //
+          // Nothing is nudged to fix that. Absolute placement of ten floating
+          // elements is a collision waiting for the eleventh, so a panel now
+          // says which corner it belongs in and the corner does the stacking.
+          //
+          // The order within each corner is deliberate: what a golfer reads
+          // first sits nearest the top of the column, and controls sit
+          // furthest from it, in the bottom corners where a thumb reaches
+          // without shifting grip on the phone.
+          _MapCorner(
+            alignment: Alignment.topLeft,
+            top: MediaQuery.of(context).padding.top + 8,
+            children: [
+              // The distance a golfer opens this screen for.
+              if (_playLine(widget.state).isNotEmpty)
+                Builder(
+                  builder: (context) {
+                    final legs = _playLine(widget.state);
+                    final flag = widget.state.holeMap.pin;
+                    return PlayLinePanel(
+                      toTarget: legs.length > 1 ? legs.first.label : null,
+                      toPin: legs.last.label,
+                      aimsAtPublishedPin: flag != null && !flag.isExpired,
+                    );
+                  },
+                ),
+              // Whose flag position this is, under the number it explains
+              // rather than on top of it.
+              if (widget.state.holeMap.pin != null)
+                PinMarker(pin: widget.state.holeMap.pin!),
+            ],
           ),
 
-          // GPS accuracy indicator
-          if (widget.state.golferPosition != null)
-            Positioned(
-              left: 12,
-              bottom: 12,
-              child: GolferPositionMarker(
-                position: widget.state.golferPosition!,
-              ),
-            ),
+          _MapCorner(
+            alignment: Alignment.topRight,
+            top: MediaQuery.of(context).padding.top + 8,
+            children: [
+              if (widget.state.wind != null)
+                WindArrowOverlay(
+                  wind: widget.state.wind!,
+                  windRelative: widget.state.windRelative,
+                ),
+              if (widget.state.distanceRings.isNotEmpty)
+                DistanceRingOverlay(rings: widget.state.distanceRings),
+              // Front / centre / back — read before every approach, so it
+              // stays on the side the thumb does not cover.
+              if (_greenReference() != null)
+                Builder(
+                  builder: (context) {
+                    final green = _greenReference()!;
+                    return GreenReferencePanel(
+                      frontMeters: green.frontMeters,
+                      centreMeters: green.centreMeters,
+                      backMeters: green.backMeters,
+                      unit: DistanceUnitScope.watch(context),
+                    );
+                  },
+                ),
+            ],
+          ),
 
-          // Pin info badge
-          if (widget.state.holeMap.pin != null)
-            Positioned(
-              left: 12,
-              top: MediaQuery.of(context).padding.top + 8,
-              child: PinMarker(pin: widget.state.holeMap.pin!),
-            ),
+          _MapCorner(
+            alignment: Alignment.bottomLeft,
+            bottom: 12,
+            children: [
+              if (_featuresAhead().isNotEmpty)
+                FeatureDistancePanel(
+                  features: _featuresAhead(),
+                  unit: DistanceUnitScope.watch(context),
+                ),
+              // Whose shapes these are. Directly above the fix that measured
+              // them, because the two qualify each other.
+              if (widget.state.tracedShapesUnverified)
+                _TracedShapesNotice(
+                  text: AppLocalizations.of(context).mapTracedShapes,
+                ),
+              if (widget.state.golferPosition != null)
+                GolferPositionMarker(
+                  position: widget.state.golferPosition!,
+                ),
+              // ODbL requires the notice wherever the derived database is
+              // publicly used. Last in the column: it is a legal obligation,
+              // not something a golfer reads on a tee.
+              MapDataAttribution(includesCopernicus: _drawsCopernicusData),
+            ],
+          ),
 
-          // How far to the flag, and to the target where one is placed. The
-          // line itself is drawn on the map; these are its numbers.
-          if (_playLine(widget.state).isNotEmpty)
-            Positioned(
-              left: 12,
-              top: MediaQuery.of(context).padding.top + 8,
-              child: Builder(
-                builder: (context) {
-                  final legs = _playLine(widget.state);
-                  final flag = widget.state.holeMap.pin;
-                  return PlayLinePanel(
-                    toTarget: legs.length > 1 ? legs.first.label : null,
-                    toPin: legs.last.label,
-                    // aimPoint falls back to the middle of the green where no
-                    // club has published a flag, which is most holes most
-                    // days. Same number either way; the row says which.
-                    aimsAtPublishedPin: flag != null && !flag.isExpired,
+          _MapCorner(
+            alignment: Alignment.bottomRight,
+            bottom: 12,
+            children: [
+              LayerTogglePanel(
+                visibility: widget.state.layerVisibility,
+                onToggle: (layerId, visible) {
+                  context.read<HoleMapBloc>().add(
+                    ToggleLayerVisibility(layerId: layerId, visible: visible),
                   );
                 },
               ),
-            ),
+            ],
+          ),
 
-          // Whose shapes these are. A traced bunker looks exactly like a
-          // surveyed one, and a golfer laying up to it should know which.
-          if (widget.state.tracedShapesUnverified)
-            Positioned(
-              left: 12,
-              right: 12,
-              bottom: 96,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B).withOpacity(0.92),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  AppLocalizations.of(context).mapTracedShapes,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      color: Color(0xFFFBBF24), fontSize: 11),
-                ),
-              ),
-            ),
-
-          // Front / centre / back to the green — the number read before every
-          // approach. On the right, below the wind and rings that share that
-          // corner, clear of the layer toggle at the foot of it.
-          if (_greenReference() != null)
-            Positioned(
-              right: 12,
-              top: MediaQuery.of(context).size.height * 0.30,
-              child: Builder(
-                builder: (context) {
-                  final green = _greenReference()!;
-                  return GreenReferencePanel(
-                    frontMeters: green.frontMeters,
-                    centreMeters: green.centreMeters,
-                    backMeters: green.backMeters,
-                    unit: DistanceUnitScope.watch(context),
-                  );
-                },
-              ),
-            ),
-
-          // What is ahead, and how far to each edge of it.
-          if (_featuresAhead().isNotEmpty)
-            Positioned(
-              left: 12,
-              bottom: 150,
-              child: FeatureDistancePanel(
-                features: _featuresAhead(),
-                unit: DistanceUnitScope.watch(context),
-              ),
-            ),
-
-          // Distance rings legend
-          if (widget.state.distanceRings.isNotEmpty)
-            Positioned(
-              right: 12,
-              top: MediaQuery.of(context).padding.top + 8,
-              child: DistanceRingOverlay(rings: widget.state.distanceRings),
-            ),
-
-          // Basemap switch — satellite imagery is always one tap away
+          // Satellite is always one tap away, centred where neither thumb
+          // covers a distance.
           Positioned(
             left: 0,
             right: 0,
             bottom: 72,
             child: Center(child: _buildBasemapToggle()),
-          ),
-
-          // Credit for the geometry on screen. ODbL requires the notice
-          // wherever the derived database is publicly used, and this map — not
-          // the satellite view — is where OSM-derived greens, bunkers, water
-          // and fairways are actually drawn. It carried no attribution at all.
-          Positioned(
-            left: 12,
-            right: 12,
-            bottom: 48,
-            child: Align(
-              alignment: Alignment.bottomLeft,
-              child: MapDataAttribution(
-                includesCopernicus: _drawsCopernicusData,
-              ),
-            ),
           ),
       ],
     );
@@ -762,5 +731,88 @@ class _HoleMapViewState extends State<HoleMapView> {
       return LatLng(lat, lng);
     }
     return const LatLng(0, 0);
+  }
+}
+
+/// One corner of the map, stacking whatever panels belong in it.
+///
+/// The map's overlays used to place themselves with absolute coordinates, and
+/// two pairs chose the same ones — the flag badge under the play-line numbers,
+/// the ring legend under the wind arrow. Nothing warns about that: a Stack
+/// draws both and the golfer sees one.
+///
+/// A corner takes a list and lays it out, so a panel cannot collide with a
+/// panel it does not know about, and adding an eleventh is not a fresh
+/// arithmetic problem. `IgnorePointer` is deliberately not used — the layer
+/// toggle lives in a corner and has to stay tappable — but the column is
+/// sized to its children, so the map underneath stays draggable everywhere a
+/// panel is not.
+class _MapCorner extends StatelessWidget {
+  const _MapCorner({
+    required this.alignment,
+    required this.children,
+    this.top,
+    this.bottom,
+  });
+
+  final Alignment alignment;
+  final List<Widget> children;
+  final double? top;
+  final double? bottom;
+
+  /// Gap between stacked panels. Wide enough that two dark chips read as two
+  /// things in bright light, where their edges wash out.
+  static const double _gap = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = children.where((child) => child is! SizedBox).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
+
+    final left = alignment.x < 0;
+    return Positioned(
+      top: top,
+      bottom: bottom,
+      left: left ? 12 : null,
+      right: left ? null : 12,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment:
+            left ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        children: [
+          for (var i = 0; i < visible.length; i++) ...[
+            if (i > 0) const SizedBox(height: _gap),
+            visible[i],
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// "Nobody has checked these shapes against the ground."
+///
+/// Was a full-width bar across the map. It is a caveat on the shapes below it,
+/// not an alert, so it now sits in the column with them at the width of its
+/// own text.
+class _TracedShapesNotice extends StatelessWidget {
+  const _TracedShapesNotice({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 260),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withOpacity(0.92),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(color: Color(0xFFFBBF24), fontSize: 11),
+      ),
+    );
   }
 }
