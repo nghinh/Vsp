@@ -108,7 +108,25 @@ def main() -> int:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--resume", action="store_true",
                         help="skip courses already in the output manifest")
+    parser.add_argument("--shard", default=None, metavar="i/n",
+                        help="build only every nth course, starting at i. The "
+                             "work is one HTTPS fetch per course and almost no "
+                             "CPU, so four of these finish four times sooner. "
+                             "Patch filenames carry the OSM id and cannot "
+                             "collide; each shard keeps its own manifest and "
+                             "--merge joins them.")
+    parser.add_argument("--merge", action="store_true",
+                        help="combine the shard manifests into manifest.json "
+                             "and exit")
     args = parser.parse_args()
+
+    out = Path(args.out)
+    if args.merge:
+        return merge_shards(out)
+
+    shard_index, shard_count = 0, 1
+    if args.shard:
+        shard_index, shard_count = (int(part) for part in args.shard.split("/"))
 
     from PIL import Image
 
@@ -117,13 +135,16 @@ def main() -> int:
     courses = index["courses"]
     if args.limit:
         courses = courses[:args.limit]
+    if shard_count > 1:
+        courses = [c for i, c in enumerate(courses)
+                   if i % shard_count == shard_index]
 
-    out = Path(args.out)
     for kind in ("images", "nir", "masks"):
         for split in ("train", "val"):
             (out / kind / split).mkdir(parents=True, exist_ok=True)
 
-    manifest_path = out / "manifest.json"
+    manifest_path = out / (f"manifest.shard{shard_index}.json"
+                          if shard_count > 1 else "manifest.json")
     manifest = json.loads(manifest_path.read_text()) if (
         args.resume and manifest_path.exists()) else {
         "purpose": "pretraining corpus — the fine-tune and every evaluation "
@@ -221,6 +242,45 @@ def main() -> int:
     total = manifest["counts"]
     print(f"\ntrain {total['train']}  val {total['val']} patches -> {out}")
     print("class balance:", manifest.get("classPixelShare"))
+    return 0
+
+
+def merge_shards(out: Path) -> int:
+    """Join the per-shard manifests into the one every reader expects.
+
+    Counts and class pixels add; the course lists concatenate. Written as a
+    separate pass rather than as a lock around one shared file, because a lock
+    held across an HTTPS fetch would put the shards back in single file.
+    """
+    shards = sorted(out.glob("manifest.shard*.json"))
+    if not shards:
+        print(f"no shard manifests under {out}")
+        return 1
+
+    merged = json.loads(shards[0].read_text())
+    merged["courses"] = []
+    merged["counts"] = {"train": 0, "val": 0}
+    pixels: Counter[int] = Counter()
+
+    for shard in shards:
+        part = json.loads(shard.read_text())
+        merged["courses"].extend(part["courses"])
+        for split, count in part["counts"].items():
+            merged["counts"][split] = merged["counts"].get(split, 0) + count
+        pixels.update({int(k): v for k, v in part.get("_classPixels", {}).items()})
+
+    merged["_classPixels"] = {str(k): int(v) for k, v in pixels.items()}
+    total = max(1, sum(pixels.values()))
+    merged["classPixelShare"] = {
+        GOLF_SEG_LABELS[int(k)].value: round(v / total, 5)
+        for k, v in sorted(pixels.items())}
+    merged["shards"] = len(shards)
+    (out / "manifest.json").write_text(
+        json.dumps(merged, indent=2, ensure_ascii=False))
+
+    print(f"{len(shards)} shards, {len(merged['courses'])} courses, "
+          f"{merged['counts']} patches -> {out / 'manifest.json'}")
+    print("class balance:", merged["classPixelShare"])
     return 0
 
 

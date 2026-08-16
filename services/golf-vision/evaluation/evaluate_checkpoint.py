@@ -76,15 +76,32 @@ def main() -> int:
         args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
     state = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
 
+    # The checkpoint says how wide its stem is. Read rather than assumed: the
+    # near-infrared corpus made four channels the default, and scoring a
+    # three-channel checkpoint from before that against a four-channel model
+    # fails at load with a shape error that reads like a corrupt file.
     model = build_model(NUM_CLASSES,
                         provider=state["args"].get("provider", "segformer"),
-                        name=state["args"].get("model_name"))
+                        name=state["args"].get("model_name"),
+                        in_channels=state.get("inChannels", 3))
     model.load_state_dict(state["model"])
     model.eval().to(device)
 
     dataset = GolfSegDataset(args.data, args.split, augment=False,
                              crop=state["args"].get("crop", 512))
     print(f"scoring {len(dataset)} {args.split} patches with {args.checkpoint}")
+
+    # What this weight is allowed to be. A score is only half the question —
+    # the other half is whether the imagery underneath it may be sold, and the
+    # answer travels with the checkpoint rather than with whoever ran it.
+    for step in state.get("lineage", []):
+        mark = "ok " if step.get("permitsAutomatedExtraction") else "NO "
+        print(f"  [{mark}] {step.get('imagerySource'):20s} "
+              f"{step.get('patches', 0):6d} patches  "
+              f"{step.get('imageryLicense')}")
+    if "shippable" in state:
+        print("  shippable" if state["shippable"] else
+              "  RESEARCH ONLY — see the entries marked NO above")
 
     confusion = ConfusionMatrix(NUM_CLASSES)
     edge_errors: dict[int, list[float]] = {i: [] for i in GOLF_SEG_LABELS}
