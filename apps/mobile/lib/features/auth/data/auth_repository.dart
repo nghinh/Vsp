@@ -310,15 +310,44 @@ class AuthRepository {
         // attempt with a bar of signal picks them up.
         return false;
       }
-      // The server answered and refused. The refresh token is spent, revoked
-      // or expired, and there is nothing to keep.
-      await logout();
+      if (_refusedTheSession(ex)) {
+        // The server answered and refused. The refresh token is spent,
+        // revoked or expired, and there is nothing to keep.
+        await logout();
+      }
+      // Anything else the server said is a problem with this one exchange,
+      // not a verdict on the session. Keep the tokens and try again later.
       return false;
     } catch (_) {
-      await logout();
+      // An exception nobody anticipated. It is not evidence the session is
+      // over, and signing the golfer out on it is the most destructive
+      // possible reading of "something went wrong".
       return false;
     }
   }
+
+  /// Whether the server actually rejected the refresh token.
+  ///
+  /// The old test was "not a network error", which signed the golfer out on
+  /// everything the server said that was not a success. That is far more than
+  /// a refusal:
+  ///
+  ///   * a body the client cannot parse arrives as `PARSE_ERROR` carrying the
+  ///     response's own status code, so `isNetworkError` is false — a 200 the
+  ///     app failed to read logged the golfer out;
+  ///   * a 502 or a gateway timeout page from the tunnel in front of the API
+  ///     is HTML with a status code, and read the same way;
+  ///   * so does a 500 from a server that is merely having a bad minute.
+  ///
+  /// None of those is the server saying "this token is no good", and the
+  /// evidence says they were the cause: 48 hours of API logs carry not one
+  /// authentication failure, while sessions kept ending on the phone. The
+  /// server never refused. The client gave up.
+  ///
+  /// A real refusal is 401 or 403 — verified against the deployment, which
+  /// answers a malformed refresh token with 401 VSP-ERR-AUTH-003.
+  static bool _refusedTheSession(VspApiException ex) =>
+      ex.statusCode == 401 || ex.statusCode == 403;
 
   // ─── Session Management ───────────────────────────────────────────────────────
 

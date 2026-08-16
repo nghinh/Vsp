@@ -97,6 +97,14 @@ public final class OverpassGolfReader {
                 default -> null;
             };
         }
+        // A way a buggy may drive, tagged only for the access. `golf_cart=yes`
+        // says the same thing `golf=cartpath` does and a mapper who used one
+        // often did not use the other; without this the query could ask for
+        // the tag and then throw the answer away.
+        String cartAccess = tags.path("golf_cart").asText(null);
+        if (cartAccess != null && !"no".equals(cartAccess)) {
+            return LayerType.CART_PATH;
+        }
         // A pond inside a course is a hazard whether or not a mapper reached
         // for the golf schema — most tag it natural=water and stop there.
         if ("water".equals(tags.path("natural").asText(null))) {

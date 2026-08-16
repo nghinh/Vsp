@@ -79,14 +79,45 @@ public class OverpassClient {
         }
         // `out geom` returns each way's coordinates inline. Without it the
         // answer is node ids and a second round trip to resolve them.
+        // What is deliberately not asked for: `highway`.
+        //
+        // Only 7 of 73 courses have a cart path on file, and the obvious
+        // reading was that this query is too narrow — a cart path is a
+        // service road, so ask for service roads. Checked against OSM at
+        // three of the courses with none, that reading is wrong and the fix
+        // would be actively harmful. Tam Đảo, The Bluffs and Heron Lake carry
+        // no `golf` tag of any kind: what is inside their bounding boxes is
+        // 36, 1 and 20 ways tagged `highway=residential` and 19, 18 and 28
+        // tagged `highway=service` — the housing estate and its streets.
+        // Buffered 60 m as cart paths, those would draw a boundary around the
+        // neighbourhood, which is the one thing the boundary exists to keep
+        // out.
+        //
+        // Where a course *is* mapped the existing filter already finds the
+        // paths: Long Biên has 16 ways tagged `golf=cartpath`. The ceiling is
+        // OpenStreetMap's coverage of Vietnamese golf, not this string.
+        //
+        // Two additions that are safe and were missing:
+        //
+        //   * `golf_cart` — a way a buggy may use, mapped without reaching for
+        //     `golf=cartpath`. Every one of Long Biên's 16 carries it too, so
+        //     it costs nothing where the tag is already right and catches the
+        //     mapper who used only one of the two.
+        //   * relations — a golf feature mapped as a multipolygon was invisible
+        //     to a query that asks only for ways. A green with a bunker cut out
+        //     of it is exactly that shape.
         String query = """
                 [out:json][timeout:%d];
                 (
                   way["golf"](%f,%f,%f,%f);
+                  way["golf_cart"](%f,%f,%f,%f);
+                  relation["golf"](%f,%f,%f,%f);
                   way["natural"="water"](%f,%f,%f,%f);
                 );
                 out geom;
                 """.formatted(timeout.toSeconds(),
+                south, west, north, east,
+                south, west, north, east,
                 south, west, north, east,
                 south, west, north, east);
 

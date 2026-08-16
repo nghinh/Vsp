@@ -80,6 +80,105 @@ void main() {
         apiClient: ApiClient(),
       );
 
+  // The bug that kept ending sessions on a phone while the server's own logs
+  // carried not one authentication failure in 48 hours. The server never
+  // refused; the client gave up on it.
+  //
+  // The old rule was "if it is not a network error, the session is over",
+  // which is far wider than a refusal. A body the app cannot parse arrives as
+  // PARSE_ERROR carrying the response's status code, so it is not a network
+  // error — and a 200 the client failed to read logged the golfer out. So did
+  // a 502 from the tunnel in front of the API, and a 500 from a server having
+  // a bad minute.
+  group('the server answered, but did not refuse', () {
+    Future<_Storage> afterRefreshFailing(Object error) async {
+      final storage = _Storage();
+      await repositoryWith(storage, _Service(throws: error)).tryRefreshToken();
+      return storage;
+    }
+
+    test('a body the client cannot parse keeps the session', () async {
+      final storage = await afterRefreshFailing(
+        const VspApiException(
+          code: 'PARSE_ERROR',
+          message: 'could not read the answer',
+          statusCode: 200,
+        ),
+      );
+
+      expect(storage.refresh, 'stored-refresh');
+    });
+
+    test('a gateway error keeps the session', () async {
+      final storage = await afterRefreshFailing(
+        const VspApiException(
+          code: 'BAD_GATEWAY',
+          message: 'tunnel down',
+          statusCode: 502,
+        ),
+      );
+
+      expect(storage.refresh, 'stored-refresh');
+    });
+
+    test('a server fault keeps the session', () async {
+      final storage = await afterRefreshFailing(
+        const VspApiException(
+          code: 'SERVER_ERROR',
+          message: 'boom',
+          statusCode: 500,
+        ),
+      );
+
+      expect(storage.refresh, 'stored-refresh');
+    });
+
+    test('an exception nobody anticipated keeps the session', () async {
+      final storage = await afterRefreshFailing(StateError('unexpected'));
+
+      expect(storage.refresh, 'stored-refresh');
+    });
+  });
+
+  group('the server refused the token', () {
+    // Verified against the deployment: a malformed refresh token comes back
+    // 401 VSP-ERR-AUTH-003. That is the one answer that means the session is
+    // genuinely over, and it must still clear the tokens — a device holding a
+    // revoked token is a login screen that cannot be reached any other way.
+    test('a 401 clears the session', () async {
+      final storage = _Storage();
+      await repositoryWith(
+        storage,
+        _Service(
+          throws: const VspApiException(
+            code: 'VSP-ERR-AUTH-003',
+            message: 'Token malformed',
+            statusCode: 401,
+          ),
+        ),
+      ).tryRefreshToken();
+
+      expect(storage.refresh, isNull);
+      expect(storage.access, isNull);
+    });
+
+    test('a 403 clears it too', () async {
+      final storage = _Storage();
+      await repositoryWith(
+        storage,
+        _Service(
+          throws: const VspApiException(
+            code: 'FORBIDDEN',
+            message: 'session revoked',
+            statusCode: 403,
+          ),
+        ),
+      ).tryRefreshToken();
+
+      expect(storage.refresh, isNull);
+    });
+  });
+
   group('the server was never reached', () {
     test('the golfer stays signed in', () async {
       final storage = _Storage();
