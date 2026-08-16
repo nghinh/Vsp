@@ -43,3 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Compile-time settings for a dev build — a client id belongs to a
+# deployment, not to this repository. See tool/build_dev.sh.
+tool/dev.env
