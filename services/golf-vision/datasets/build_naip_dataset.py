@@ -158,6 +158,18 @@ def main() -> int:
             continue
         south, west, north, east = box
 
+        # Measure the frame before fetching it. The size check used to run on
+        # the returned scene, which meant a resort whose OSM relation spans
+        # eleven kilometres — Waldorf Astoria's is 9 216 x 46 592 — was
+        # downloaded from four NAIP quads, reprojected into a 1.7 GB canvas,
+        # and then discarded for being too big. The grid is pure arithmetic;
+        # asking it first costs nothing and saves the whole download.
+        frame = NaipFetcher._grid(south, west, north, east, args.zoom)
+        if max(frame.width, frame.height) > args.max_pixels:
+            print(f"! {name:38s} {frame.width}x{frame.height}px > cap, "
+                  f"skipped before fetching")
+            continue
+
         try:
             scene = fetcher.fetch(south, west, north, east, zoom=args.zoom)
         except Exception as error:      # noqa: BLE001
@@ -166,10 +178,6 @@ def main() -> int:
 
         if scene.coverage < MIN_COVERAGE:
             print(f"! {name:38s} NAIP covers {scene.coverage:.0%}, skipped")
-            continue
-        if max(scene.bounds.width, scene.bounds.height) > args.max_pixels:
-            print(f"! {name:38s} {scene.bounds.width}x{scene.bounds.height}px "
-                  f"> cap, skipped")
             continue
 
         mask = rasterize(features, scene.bounds, present)
