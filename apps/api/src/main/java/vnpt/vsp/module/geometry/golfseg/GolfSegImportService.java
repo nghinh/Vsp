@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
+import vnpt.vsp.module.geometry.osm.CourseBoundaryService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -80,10 +81,13 @@ public class GolfSegImportService {
 
     private final EntityManager em;
     private final GolfSegClient client;
+    private final CourseBoundaryService boundaries;
 
-    public GolfSegImportService(EntityManager em, GolfSegClient client) {
+    public GolfSegImportService(EntityManager em, GolfSegClient client,
+                                CourseBoundaryService boundaries) {
         this.em = em;
         this.client = client;
+        this.boundaries = boundaries;
     }
 
     /**
@@ -210,6 +214,7 @@ public class GolfSegImportService {
 
         // Gather, then keep the largest few of each. Sorting has to happen
         // across the whole answer, so it cannot be done in one pass.
+        int outside = 0;
         var candidates = new java.util.HashMap<String, java.util.List<double[]>>();
         var wkts = new java.util.HashMap<String, java.util.List<String>>();
         var visions = new java.util.HashMap<String, java.util.List<Double>>();
@@ -222,6 +227,16 @@ public class GolfSegImportService {
             }
             double area = feature.path("properties").path("areaM2").asDouble(0);
             if (!isPlausible(layer, area)) {
+                continue;
+            }
+            // Outside the course is not this course's, whatever it looks like.
+            // Shown the first hole at Long Biên the model painted the
+            // corrugated roofs next door as water — right about the pixels,
+            // answering a question the picture cannot answer. The cart path
+            // loop answers it.
+            double[] centre = centreOf(feature);
+            if (centre != null && !boundaries.contains(courseId, centre[0], centre[1])) {
+                outside++;
                 continue;
             }
             String wkt = toWkt(feature.path("geometry"));
@@ -247,6 +262,11 @@ public class GolfSegImportService {
                     .add(vision);
         }
 
+        if (outside > 0) {
+            log.info("Course {} hole {}: {} shape(s) fell outside the course",
+                    courseId, holeNumber, outside);
+        }
+
         var counts = new LinkedHashMap<String, Integer>();
         int index = 0;
         for (var entry : candidates.entrySet()) {
@@ -267,6 +287,21 @@ public class GolfSegImportService {
         return counts;
     }
 
+
+    /// A traced shape's centre, as latitude and longitude, or null.
+    private static double[] centreOf(JsonNode feature) {
+        JsonNode ring = feature.path("geometry").path("coordinates").path(0);
+        if (!ring.isArray() || ring.isEmpty()) {
+            return null;
+        }
+        double sumLat = 0;
+        double sumLng = 0;
+        for (JsonNode point : ring) {
+            sumLng += point.get(0).asDouble();
+            sumLat += point.get(1).asDouble();
+        }
+        return new double[]{sumLat / ring.size(), sumLng / ring.size()};
+    }
 
     /// Metres from a traced shape's centre to a point this database already
     /// holds.

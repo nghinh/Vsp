@@ -29,6 +29,18 @@ public record OsmGolfFeature(LayerType layer, long osmId, String name,
      * the one that puts Long Biên in Hanoi rather than in the Indian Ocean.
      */
     public String toWkt() {
+        // A cart path is a line; everything else closes into an area.
+        if (layer == vnpt.vsp.module.geometry.LayerType.CART_PATH) {
+            var line = new StringBuilder("LINESTRING(");
+            for (int i = 0; i < ring.size(); i++) {
+                if (i > 0) {
+                    line.append(", ");
+                }
+                line.append(String.format(Locale.ROOT, "%.9f %.9f",
+                        ring.get(i)[1], ring.get(i)[0]));
+            }
+            return line.append(")").toString();
+        }
         var wkt = new StringBuilder("POLYGON((");
         for (int i = 0; i < ring.size(); i++) {
             if (i > 0) {

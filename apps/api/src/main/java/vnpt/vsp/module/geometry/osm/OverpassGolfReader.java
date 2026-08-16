@@ -54,7 +54,10 @@ public final class OverpassGolfReader {
             if (layer == null) {
                 continue;
             }
-            List<double[]> ring = ringOf(element.path("geometry"));
+            // A cart path is a line and never closes; everything else is an
+            // area and must.
+            boolean isLine = layer == LayerType.CART_PATH;
+            List<double[]> ring = ringOf(element.path("geometry"), isLine);
             if (ring == null) {
                 continue;
             }
@@ -84,8 +87,13 @@ public final class OverpassGolfReader {
                 case "tee" -> LayerType.TEE;
                 case "rough" -> LayerType.ROUGH;
                 case "water_hazard", "lateral_water_hazard" -> LayerType.WATER_HAZARD;
-                // hole, cartpath, path, clubhouse, driving_range, pin: either
-                // not an area or not something to aim at.
+                // A cart path is a line rather than an area, and nobody aims
+                // at one — but the loop they form is the outline of the golf
+                // course, which is the only thing that tells a segmentation
+                // model that the houses next door are not part of it.
+                case "cartpath", "path", "cart_path" -> LayerType.CART_PATH;
+                // hole, clubhouse, driving_range, pin: either not a feature or
+                // not something on the course.
                 default -> null;
             };
         }
@@ -97,9 +105,9 @@ public final class OverpassGolfReader {
         return null;
     }
 
-    /// The closed ring of a way, or null where the way is a line.
-    private static List<double[]> ringOf(JsonNode geometry) {
-        if (!geometry.isArray() || geometry.size() < MIN_POINTS) {
+    /// The points of a way — closed for an area, open for a line.
+    private static List<double[]> ringOf(JsonNode geometry, boolean isLine) {
+        if (!geometry.isArray() || geometry.size() < (isLine ? 2 : MIN_POINTS)) {
             return null;
         }
         var ring = new ArrayList<double[]>(geometry.size());
@@ -109,6 +117,9 @@ public final class OverpassGolfReader {
             }
             ring.add(new double[]{point.get("lat").asDouble(),
                     point.get("lon").asDouble()});
+        }
+        if (isLine) {
+            return ring;
         }
         double[] first = ring.get(0);
         double[] last = ring.get(ring.size() - 1);

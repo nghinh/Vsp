@@ -70,13 +70,47 @@ class OverpassGolfReaderTest {
     @DisplayName("what is on a course but not part of playing it is skipped")
     void skipsWhatIsNotAFeature() {
         var features = reader.read(elements(
-                way(8, "\"golf\": \"cartpath\"", SQUARE),
                 way(9, "\"golf\": \"clubhouse\"", SQUARE),
                 way(10, "\"golf\": \"driving_range\"", SQUARE),
                 way(11, "\"golf\": \"hole\"", SQUARE),
                 way(12, "\"building\": \"yes\"", SQUARE)));
 
         assertThat(features).isEmpty();
+    }
+
+    /// A cart path is not something to aim at, and it is kept anyway: the loop
+    /// they form is the outline of the golf course, which is the only thing
+    /// that tells a segmentation model the houses next door are not part of
+    /// it. Long Biên's model painted their roofs as water.
+    @Test
+    @DisplayName("a cart path is kept, as a line, because it draws the course")
+    void keepsCartPathsAsLines() {
+        var open = """
+                {"lat": 21.0350, "lon": 105.8910},
+                {"lat": 21.0352, "lon": 105.8914},
+                {"lat": 21.0356, "lon": 105.8919}
+                """;
+
+        var features = reader.read(elements(way(21, "\"golf\": \"cartpath\"", open)));
+
+        assertThat(features).singleElement().satisfies(feature -> {
+            assertThat(feature.layer()).isEqualTo(LayerType.CART_PATH);
+            // A line, not a ring — closing it would enclose ground nobody
+            // drives on and inflate the course by whatever it wrapped.
+            assertThat(feature.toWkt()).startsWith("LINESTRING(");
+        });
+    }
+
+    @Test
+    @DisplayName("an open way that is not a path is still refused")
+    void refusesOtherOpenWays() {
+        var open = """
+                {"lat": 21.0350, "lon": 105.8910},
+                {"lat": 21.0352, "lon": 105.8914},
+                {"lat": 21.0356, "lon": 105.8919}
+                """;
+
+        assertThat(reader.read(elements(way(22, "\"golf\": \"green\"", open)))).isEmpty();
     }
 
     /// A way whose ends do not meet is a fence, a wall or a path, whatever

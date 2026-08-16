@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+import vnpt.vsp.module.geometry.osm.CourseBoundaryService;
 import vnpt.vsp.module.geometry.osm.OsmCourseImportService;
 
 import java.util.Map;
@@ -25,9 +26,12 @@ public class OsmImportController {
     private static final Logger log = LoggerFactory.getLogger(OsmImportController.class);
 
     private final OsmCourseImportService importService;
+    private final CourseBoundaryService boundaries;
 
-    public OsmImportController(OsmCourseImportService importService) {
+    public OsmImportController(OsmCourseImportService importService,
+                               CourseBoundaryService boundaries) {
         this.importService = importService;
+        this.boundaries = boundaries;
     }
 
     @PostMapping("/admin/courses/{courseId}/geometry/osm-import")
@@ -37,5 +41,20 @@ public class OsmImportController {
         String requestedBy = String.valueOf(authentication.getPrincipal());
         log.info("POST /admin/courses/{}/geometry/osm-import - {}", courseId, requestedBy);
         return importService.importCourse(courseId, requestedBy);
+    }
+
+    /**
+     * Draws the edge of the course from the path golfers drive round it.
+     *
+     * <p>Run after an import: it reads what is already filed, so a course whose
+     * cart paths have just arrived gets a boundary that uses them.
+     */
+    @PostMapping("/admin/courses/{courseId}/geometry/boundary")
+    @PreAuthorize("hasAnyRole('COURSE_ADMIN', 'SUPER_ADMIN')")
+    public Map<String, Object> boundary(Authentication authentication,
+                                        @PathVariable Long courseId) {
+        log.info("POST /admin/courses/{}/geometry/boundary - {}",
+                courseId, authentication.getPrincipal());
+        return boundaries.rebuild(courseId);
     }
 }

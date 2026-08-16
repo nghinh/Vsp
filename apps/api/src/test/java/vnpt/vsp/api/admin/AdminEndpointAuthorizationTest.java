@@ -142,6 +142,10 @@ class AdminEndpointAuthorizationTest {
                 // that a loop would get this deployment banned from.
                 new Endpoint("OsmImportController", HttpMethod.POST,
                         "/admin/courses/1/geometry/osm-import", RoleName.COURSE_ADMIN),
+                // Redraws where the course ends, which decides what every
+                // later trace is allowed to keep.
+                new Endpoint("OsmImportController", HttpMethod.POST,
+                        "/admin/courses/1/geometry/boundary", RoleName.COURSE_ADMIN),
                 // A GPU call that writes proposals across a hole, and — until
                 // the model is retrained on imagery licensed for automated
                 // extraction — research output rather than something to publish.
