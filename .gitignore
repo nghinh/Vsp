@@ -67,3 +67,7 @@ __pycache__/
 *.pyc
 venv/
 .venv/
+
+# Golf vision service: virtualenv and prototype output
+services/golf-vision/.venv/
+services/golf-vision/out/
