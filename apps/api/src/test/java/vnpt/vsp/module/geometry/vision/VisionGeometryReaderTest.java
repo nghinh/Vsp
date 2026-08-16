@@ -34,7 +34,7 @@ class VisionGeometryReaderTest {
     void convertsToGround() {
         var detected = reader.read(json("""
                 {"layer": "green", "confidence": 0.9,
-                 "polygon": [[0.5,0.5],[0.6,0.5],[0.6,0.6],[0.5,0.6]]}
+                 "polygon": [[0.5,0.5],[0.545,0.5],[0.545,0.55],[0.5,0.55]]}
                 """), BOUNDS);
 
         assertThat(detected).hasSize(1);
@@ -54,7 +54,7 @@ class VisionGeometryReaderTest {
     void closesTheRing() {
         var detected = reader.read(json("""
                 {"layer": "bunker",
-                 "polygon": [[0.1,0.1],[0.2,0.1],[0.2,0.2],[0.1,0.2]]}
+                 "polygon": [[0.1,0.1],[0.13,0.1],[0.13,0.13],[0.1,0.13]]}
                 """), BOUNDS);
 
         var ring = detected.get(0).ring();
@@ -69,8 +69,8 @@ class VisionGeometryReaderTest {
     void mapsSynonyms() {
         var detected = reader.read(json("""
                 {"layer": "water", "polygon": [[0.1,0.1],[0.2,0.1],[0.2,0.2],[0.1,0.2]]},
-                {"layer": "sand trap", "polygon": [[0.3,0.3],[0.4,0.3],[0.4,0.4],[0.3,0.4]]},
-                {"layer": "teeing ground", "polygon": [[0.5,0.5],[0.6,0.5],[0.6,0.6],[0.5,0.6]]}
+                {"layer": "sand trap", "polygon": [[0.3,0.3],[0.33,0.3],[0.33,0.33],[0.3,0.33]]},
+                {"layer": "teeing ground", "polygon": [[0.5,0.5],[0.53,0.5],[0.53,0.53],[0.5,0.53]]}
                 """), BOUNDS);
 
         assertThat(detected).extracting(DetectedFeature::layerType)
@@ -128,7 +128,7 @@ class VisionGeometryReaderTest {
         var detected = reader.read("""
                 ```json
                 {"features": [{"layer": "green",
-                  "polygon": [[0.5,0.5],[0.6,0.5],[0.6,0.6],[0.5,0.6]]}]}
+                  "polygon": [[0.5,0.5],[0.545,0.5],[0.545,0.55],[0.5,0.55]]}]}
                 ```
                 """, BOUNDS);
 
@@ -207,6 +207,49 @@ class VisionGeometryReaderTest {
         assertThat(detected.get(0).ring().size()).isLessThan(20);
     }
 
+    /// The failure this bound was built from. Traced against Long Biên, the
+    /// model's greens averaged 2000 m² where the twelve a human had already
+    /// drawn at the same course measure 491 to 712; hole 9 of Đường A came
+    /// back at 5501. What it outlines when it is unsure is the whole green
+    /// complex — surrounds, collar, approach — and a front edge fifty metres
+    /// from the real one is a number a golfer clubs off.
+    @Test
+    @DisplayName("a green the size of a green complex is not a green")
+    void refusesAnOversizeGreen() {
+        // A fifth of a 500 m frame each way: about 11,000 m².
+        var detected = reader.read(json("""
+                {"layer": "green",
+                 "polygon": [[0.4,0.4],[0.6,0.4],[0.6,0.6],[0.4,0.6]]}
+                """), BOUNDS);
+
+        assertThat(detected).isEmpty();
+    }
+
+    /// And the other end of it: a model that returns a dot where it cannot
+    /// see the green rather than admitting it cannot see the green.
+    @Test
+    @DisplayName("a green too small to putt on is not a green")
+    void refusesATinyGreen() {
+        var detected = reader.read(json("""
+                {"layer": "green",
+                 "polygon": [[0.5,0.5],[0.505,0.5],[0.505,0.505],[0.5,0.505]]}
+                """), BOUNDS);
+
+        assertThat(detected).isEmpty();
+    }
+
+    /// The bound has to admit what is real, or it costs more than it saves.
+    @Test
+    @DisplayName("a green of six hundred square metres is a green")
+    void acceptsARealGreen() {
+        var detected = reader.read(json("""
+                {"layer": "green",
+                 "polygon": [[0.5,0.5],[0.545,0.5],[0.545,0.55],[0.5,0.55]]}
+                """), BOUNDS);
+
+        assertThat(detected).hasSize(1);
+    }
+
     @Test
     @DisplayName("a green keeps the model's outline — grass has no edge to find")
     void doesNotRefineGrass() {
@@ -215,7 +258,7 @@ class VisionGeometryReaderTest {
 
         var detected = reader.read(json("""
                 {"layer": "green",
-                 "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}
+                 "polygon": [[0.48,0.48],[0.525,0.48],[0.525,0.53],[0.48,0.53]]}
                 """), BOUNDS, image);
 
         assertThat(detected.get(0).ring()).hasSize(5);

@@ -120,7 +120,7 @@ class HoleGeometryVisionPostgresTest {
         var service = service("""
                 {"features": [
                   {"layer": "green", "name": "Green 1", "confidence": 0.82,
-                   "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]},
+                   "polygon": [[0.48,0.48],[0.52,0.48],[0.52,0.52],[0.48,0.52]]},
                   {"layer": "bunker", "confidence": 0.6,
                    "polygon": [[0.30,0.40],[0.34,0.40],[0.34,0.44],[0.30,0.44]]}
                 ]}
@@ -170,12 +170,12 @@ class HoleGeometryVisionPostgresTest {
     void aRetraceReplaces() {
         service("""
                 {"features": [{"layer": "green",
-                  "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}]}
+                  "polygon": [[0.48,0.48],[0.52,0.48],[0.52,0.52],[0.48,0.52]]}]}
                 """, true).detect(courseId, 1, "tester");
         // A slightly different trace of the same green.
         service("""
                 {"features": [{"layer": "green",
-                  "polygon": [[0.44,0.44],[0.56,0.45],[0.55,0.56],[0.45,0.55]]}]}
+                  "polygon": [[0.47,0.47],[0.53,0.48],[0.52,0.53],[0.48,0.52]]}]}
                 """, true).detect(courseId, 1, "tester");
 
         assertThat(draftCount()).isEqualTo(1);
@@ -188,7 +188,7 @@ class HoleGeometryVisionPostgresTest {
     void keepsWhatAHumanTouched() {
         service("""
                 {"features": [{"layer": "green",
-                  "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}]}
+                  "polygon": [[0.48,0.48],[0.52,0.48],[0.52,0.52],[0.48,0.52]]}]}
                 """, true).detect(courseId, 1, "tester");
         em.createNativeQuery("""
                 UPDATE draft_geometry_features SET verification_status = 'VERIFIED'
@@ -198,7 +198,7 @@ class HoleGeometryVisionPostgresTest {
 
         service("""
                 {"features": [{"layer": "green",
-                  "polygon": [[0.40,0.40],[0.50,0.40],[0.50,0.50],[0.40,0.50]]}]}
+                  "polygon": [[0.40,0.40],[0.44,0.40],[0.44,0.44],[0.40,0.44]]}]}
                 """, true).detect(courseId, 1, "tester");
 
         // The verified one, plus the new proposal beside it.

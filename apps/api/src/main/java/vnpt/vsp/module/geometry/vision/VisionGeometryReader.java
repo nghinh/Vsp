@@ -96,6 +96,18 @@ public final class VisionGeometryReader {
                 }
             }
             List<double[]> ring = toGround(imageRing, bounds);
+            // The last gate, and the one that measurement forced. Traced
+            // against the greens a human had already drawn at the same
+            // course, this model's greens averaged 2000 m² where the real
+            // ones measure 491 to 712 — one came back at 5501, eleven times
+            // its true size. A green polygon that large is not a green, and
+            // serving it puts a front edge on a golfer's screen fifty metres
+            // from where the green actually starts.
+            if (!isPlausible(layer, imageRing, bounds)) {
+                log.info("Dropping a {} of {} m² — outside what that layer measures",
+                        layer, Math.round(areaMeters(ring)));
+                continue;
+            }
             detected.add(new DetectedFeature(
                     layer,
                     feature.path("name").asText(null),
@@ -148,16 +160,22 @@ public final class VisionGeometryReader {
 
     /// What a feature of this kind can plausibly measure, in square metres.
     ///
-    /// Not model output and not a guess: a bunker on a Vietnamese course is
-    /// tens to a few hundred square metres, and a pond is thousands. These
-    /// bounds are wide enough to admit anything real and narrow enough to
-    /// catch a flood fill that leaked.
+    /// Not model output and not a guess. The bunker and pond figures come
+    /// from what a Vietnamese course actually holds; the green figures come
+    /// from the twelve greens at Long Biên that a human had already drawn,
+    /// which measure 491 to 712. The bounds are wide enough to admit
+    /// anything real — a double green runs larger than a single one — and
+    /// narrow enough to catch a model outlining the whole green complex,
+    /// which is what it does when it is not sure.
     private static boolean isPlausible(LayerType layer, List<double[]> ring,
                                        ImageBounds bounds) {
         double area = areaMeters(toGround(ring, bounds));
         return switch (layer) {
             case BUNKER -> area >= 20 && area <= 1_500;
             case WATER_HAZARD, PENALTY_AREA -> area >= 100 && area <= 60_000;
+            case GREEN -> area >= 200 && area <= 1_400;
+            case TEE -> area >= 30 && area <= 2_000;
+            case FAIRWAY -> area >= 2_000 && area <= 60_000;
             default -> true;
         };
     }

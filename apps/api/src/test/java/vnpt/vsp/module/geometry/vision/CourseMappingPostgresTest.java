@@ -107,7 +107,7 @@ class CourseMappingPostgresTest {
 
     private static final String ONE_GREEN = """
             {"features": [{"layer": "green", "confidence": 0.9,
-              "polygon": [[0.45,0.45],[0.55,0.45],[0.55,0.55],[0.45,0.55]]}]}
+              "polygon": [[0.48,0.48],[0.52,0.48],[0.52,0.52],[0.48,0.52]]}]}
             """;
 
     @Test
