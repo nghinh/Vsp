@@ -44,12 +44,25 @@ abstract final class CourseMapStyleBuilder {
   // saturated greens do not tell a golfer which patch is fairway and which is
   // the green they are aiming at, because both are "bright green".
   //
-  // So: pale sky behind, grass in the greens grass is actually in, sand the
-  // colour of sand, paths the colour of concrete. The shapes are told apart by
-  // hue the way they are on the ground rather than by luminance, and the only
-  // things allowed to be loud are the three that are not scenery — the golfer,
-  // the flag, and the spot being aimed at.
-  static const String _backgroundColor = '#DCEAF6';
+  // So: grass in the greens grass is actually in, sand the colour of sand,
+  // paths the colour of concrete. The shapes are told apart by hue the way
+  // they are on the ground rather than by luminance, and the only things
+  // allowed to be loud are the three that are not scenery — the golfer, the
+  // flag, and the spot being aimed at.
+  //
+  // <strong>The background is ground, not sky.</strong> It was #DCEAF6, a pale
+  // blue, described here as "pale sky behind" — but this is a plan view and
+  // there is nothing behind. Every pixel no polygon covers is a piece of the
+  // course a golfer can walk on, and painting it sky blue says the opposite:
+  // on Long Biên's 10th, where the model had traced a fairway and a patch of
+  // rough and nothing else, the hole rendered as three pale islands in an
+  // ocean, and the first thing reported about it was that the lake was drawn
+  // wrong. There was no lake. There was a blue background.
+  //
+  // A turf tone that is duller and darker than the rough above it, so that
+  // rough still reads as a drawn shape where somebody drew one, and so that
+  // the one genuinely blue thing on the map is water.
+  static const String _backgroundColor = '#6E9C56';
   static const String _ringColor = '#43584C';
   static const String _golferColor = '#4A6E8F';
   static const String _pinColor = '#111827';
@@ -206,9 +219,17 @@ abstract final class CourseMapStyleBuilder {
 
     return [
       fill(_fillId(type), HoleMapGeoJson.fillKey, style.fillOpacity),
-      // Half strength for a shape nobody has confirmed.
+      // Softer for a shape nobody has confirmed — but still a shape.
+      //
+      // This was 0.45, chosen against the old blue background where a green
+      // fill at 45% still read as green because nothing else on screen was.
+      // Against turf it reads as turf: the fairway and the bunkers vanished
+      // into the ground they sit on, and every unreviewed course in this
+      // database — which is all of them GolfSeg has touched — looked empty.
+      // The dashed outline below is what says "provisional"; the fill only
+      // has to say "here". 0.8 keeps both.
       fill(_draftFillId(type), HoleMapGeoJson.draftFillKey,
-          style.fillOpacity * 0.45),
+          style.fillOpacity * 0.8),
       {
         'id': _lineId(type),
         'type': 'line',

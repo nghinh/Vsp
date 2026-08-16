@@ -405,11 +405,17 @@ class _RoundSetupScaffold extends StatelessWidget {
                       PackageStatusBanner(
                         packageReadiness: state.packageReadiness,
                         packageAvailable: state.coursePackageAvailable,
+                        // The đường that is missing, named. Passing the club
+                        // name here is what made a two-package round look like
+                        // one download that would not stick.
+                        missingCourseName: state.packageDownloadCourseName,
                         onDownloadPressed: state.packageDownloadCourseId == null
                             ? null
                             : () => _openDownload(
                                   context, state.packageDownloadCourseId!,
-                                  state.courseName ?? ''),
+                                  state.packageDownloadCourseName ??
+                                      state.courseName ??
+                                      ''),
                       ),
                       const SizedBox(height: 24),
                     ],

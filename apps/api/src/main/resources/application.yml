@@ -177,9 +177,15 @@ vsp:
   # its own budget. Server-side only: a vision key on a phone is a key in
   # everybody's hands.
   vision:
-    # Below this the shape is not served at all. A polygon the model itself
-    # doubts is a polygon a golfer would measure a distance to.
-    minimum-confidence: ${AI_VISION_MIN_CONFIDENCE:65}
+    # Below this the shape is not served at all.
+    #
+    # This is a garbage gate, not a quality grade — GolfSeg's confidence is a
+    # per-class mean softmax and does not compare across classes or rank
+    # shapes within one. It is set between the two populations it can actually
+    # tell apart: a model shown a blank tile answers at ~22, a model shown a
+    # golf course answers at 48 and up. See HoleFeatureController for the
+    # measurements, and for what raising this to 65 silently deleted.
+    minimum-confidence: ${AI_VISION_MIN_CONFIDENCE:40}
     base-url: "${AI_VISION_BASE_URL:}"
     api-key: "${AI_VISION_API_KEY:}"
     model: "${AI_VISION_MODEL:}"

@@ -256,6 +256,13 @@
   "packageChecking": "Checking package…",
   "packageOfflineReady": "Offline Ready",
   "packageNotDownloaded": "Course data not downloaded",
+  "packageNotDownloadedNamed": "{course} not downloaded",
+  "@packageNotDownloadedNamed": {
+    "description": "Package banner where the round is played on more than one nine, so the golfer can tell which one is still missing after downloading the other.",
+    "placeholders": {
+      "course": {"type": "String"}
+    }
+  },
   "packageNotDownloadedSubtitle": "Download for offline use, or play now (needs network)",
   "packagePlayNow": "Play now",
   "packageDownload": "Download",

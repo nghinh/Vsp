@@ -308,4 +308,63 @@ void provenanceTests() {
     expect(properties[HoleMapGeoJson.draftFillKey], MapLayerType.water.name);
     expect(properties[HoleMapGeoJson.fillKey], isNull);
   });
+
+  // What the map is made of where nothing has been drawn on it.
+  //
+  // This is a plan view of ground a golfer is standing on, so the ground is
+  // what shows through. It was a pale blue, called "sky" in the style — and on
+  // Long Biên's 10th, where GolfSeg had traced a fairway and a patch of rough
+  // and nothing else, the hole came out as three pale islands in an ocean.
+  // What got reported was that the lake was the wrong shape. There is no lake
+  // on that hole.
+  group('the ground under the hole', () {
+    Map<String, dynamic> layerNamed(String id) =>
+        layers.firstWhere((l) => l['id'] == id);
+
+    /// Roughly how blue a `#RRGGBB` string is against its own red and green.
+    int bluenessOf(String hex) {
+      int channel(int at) => int.parse(hex.substring(at, at + 2), radix: 16);
+      final red = channel(1), green = channel(3), blue = channel(5);
+      return blue - (red > green ? red : green);
+    }
+
+    test('is not blue', () {
+      final background =
+          (layerNamed('background')['paint'] as Map)['background-color'];
+
+      expect(bluenessOf(background as String), lessThan(0),
+          reason: 'a background bluer than it is green reads as water');
+    });
+
+    test('is duller than the rough drawn on top of it', () {
+      // So that a rough polygon somebody actually traced still reads as a
+      // shape rather than disappearing into the backdrop.
+      final background =
+          (layerNamed('background')['paint'] as Map)['background-color'];
+      final rough = (layerNamed('rough-fill')['paint'] as Map)['fill-color'];
+
+      expect(background, isNot(equals(rough)));
+    });
+
+    test('leaves water as the only blue thing on the map', () {
+      final water = (layerNamed('water-fill')['paint'] as Map)['fill-color'];
+      final background =
+          (layerNamed('background')['paint'] as Map)['background-color'];
+
+      expect(bluenessOf(water as String),
+          greaterThan(bluenessOf(background as String)));
+    });
+
+    test('an unconfirmed shape is still visible against it', () {
+      // 0.45 was picked against the blue background, where a green fill at
+      // 45% still read as green because nothing else on screen was. Against
+      // turf it read as turf, and every course GolfSeg has traced — none of
+      // which is reviewed — looked empty. The dashed outline is what says
+      // provisional; the fill only has to say "here".
+      final draft =
+          (layerNamed('fairway-fill-unverified')['paint'] as Map)['fill-opacity'];
+
+      expect(draft as double, greaterThanOrEqualTo(0.6));
+    });
+  });
 }

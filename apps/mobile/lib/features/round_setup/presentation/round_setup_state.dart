@@ -282,6 +282,29 @@ class RoundSetupReady extends RoundSetupState {
   int? get packageDownloadCourseId =>
       packageReadiness?.missingCourseId ?? courseId;
 
+  /// What to call that course on the button and in the banner.
+  ///
+  /// The đường's own name — "Đường B" — and not the club's, which is what the
+  /// screen used to pass. A round of A+B needs two packages and the readiness
+  /// check reports them one at a time, so a golfer downloads "Long Biên Golf
+  /// Course", is told it succeeded, comes back and is told to download "Long
+  /// Biên Golf Course". Both sentences are true and the second one is
+  /// unreadable: nothing on screen says the first download worked and this is
+  /// the other nine.
+  ///
+  /// Null on a round played on one course, which is most of them: there is
+  /// nothing to disambiguate there, and "Chưa tải dữ liệu Long Biên Golf
+  /// Course" is a worse sentence than "Chưa tải dữ liệu sân".
+  String? get packageDownloadCourseName {
+    if (segmentCourseIds.length < 2) return null;
+    final id = packageDownloadCourseId;
+    if (id == null) return null;
+    for (final layout in layouts) {
+      if (layout.id == id) return layout.name;
+    }
+    return null;
+  }
+
   /// The đường the round is played on, in playing order.
   ///
   /// One id for a round on a full eighteen. Two when the golfer paired nines —

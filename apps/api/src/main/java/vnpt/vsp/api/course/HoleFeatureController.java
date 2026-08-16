@@ -31,8 +31,10 @@ import java.util.Map;
  * feature says what it is: {@code source} and {@code confidence} travel with
  * it, and the app draws unreviewed shapes differently and says so.
  *
- * <p>Below the confidence floor nothing is served at all. A shape the model
- * itself doubts is a shape a golfer would measure a distance to.
+ * <p>Below the confidence floor nothing is served at all — but see
+ * {@code minimum-confidence} for what that floor can and cannot decide. It
+ * catches the model hallucinating over a blank tile. It does not rank one real
+ * shape above another.
  */
 @RestController
 @Validated
@@ -51,7 +53,7 @@ public class HoleFeatureController {
             EntityManager em,
             CourseMappingService mappingService,
             GolfSegImportService golfSeg,
-            @Value("${vsp.vision.minimum-confidence:65}") int minimumConfidence,
+            @Value("${vsp.vision.minimum-confidence:40}") int minimumConfidence,
             @Value("${vsp.vision.golfer-daily-limit:30}") int dailyLimit) {
         this.em = em;
         this.mappingService = mappingService;
@@ -136,6 +138,42 @@ public class HoleFeatureController {
                 JOIN holes h ON h.id = d.hole_id
                 WHERE d.course_id = :course AND h.hole_number = :hole
                   AND d.is_valid
+                  -- One floor, and it is set to catch garbage rather than to
+                  -- grade shapes. GolfSeg's "confidence" is the mean softmax
+                  -- probability over a class's own winning mask, which is a
+                  -- per-class quantity on a per-class scale: a fairway is one
+                  -- large homogeneous region and scores 82-93, a bunker is
+                  -- thirty pixels across and mostly soft edge and scores
+                  -- 49-88. Comparing them against one number compares nothing.
+                  --
+                  -- At 65 the effect, measured across every traced course, was
+                  -- to discard 29% of bunkers and 18% of water hazards and 0%
+                  -- of greens, fairways and tees. It was not a quality gate,
+                  -- it was a bunker-and-water gate that fired by accident of
+                  -- scale — and Long Biên's Đường B lost all eight bunkers on
+                  -- its 1st at 62.04 and all four ponds at 48.44, on a hole a
+                  -- golfer was standing on.
+                  --
+                  -- Nor does the number rank shapes within a class, which is
+                  -- the only comparison it could honestly make. Checked
+                  -- against the OSM-mapped courses: bunkers below 65 hit a
+                  -- mapped bunker 10% of the time and bunkers above it 9%;
+                  -- water 34% below and 36% above. The shapes it drops are the
+                  -- same size as the ones it keeps (median bunker 674 m2
+                  -- against 614 m2). It is not separating good from bad
+                  -- because it does not know which is which.
+                  --
+                  -- What it does separate is a photograph from a blank sheet.
+                  -- Shown Esri's flat placeholder the model returned 116
+                  -- shapes at 22; real shapes on real imagery bottom out at
+                  -- 48. The floor sits between those two populations and
+                  -- nowhere near anything a golfer would want to see. Blank
+                  -- imagery is now refused at the fetcher too (see
+                  -- looks_blank), so this is the second line, not the first.
+                  --
+                  -- The shapes this lets through are unreviewed and the app
+                  -- draws them as such: faint, dashed, and labelled. That is
+                  -- the trade this endpoint already exists to make.
                   AND coalesce(d.confidence, 0) >= :floor
                   AND d.verification_status <> 'REJECTED'
                   -- A model-drawn fairway is the one shape on this map that

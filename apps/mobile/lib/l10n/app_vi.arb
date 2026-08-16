@@ -189,6 +189,7 @@
   "packageChecking": "Đang kiểm tra gói dữ liệu…",
   "packageOfflineReady": "Sẵn sàng ngoại tuyến",
   "packageNotDownloaded": "Chưa tải dữ liệu sân",
+  "packageNotDownloadedNamed": "Chưa tải dữ liệu {course}",
   "packageNotDownloadedSubtitle": "Tải để dùng offline, hoặc chơi luôn (cần mạng)",
   "packagePlayNow": "Chơi luôn",
   "packageDownload": "Tải",

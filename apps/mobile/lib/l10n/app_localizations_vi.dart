@@ -582,6 +582,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get packageNotDownloaded => 'Chưa tải dữ liệu sân';
 
   @override
+  String packageNotDownloadedNamed(String course) {
+    return 'Chưa tải dữ liệu $course';
+  }
+
+  @override
   String get packageNotDownloadedSubtitle =>
       'Tải để dùng offline, hoặc chơi luôn (cần mạng)';
 

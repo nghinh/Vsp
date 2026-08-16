@@ -44,6 +44,11 @@ class HoleFeaturePostgresTest {
 
     @Autowired private EntityManager em;
 
+    /// Kept in step with {@code vsp.vision.minimum-confidence} by hand, and
+    /// asserted against below, because a floor that only exists in a YAML
+    /// default is a floor nothing tests.
+    private static final int DEFAULT_FLOOR = 40;
+
     private long courseId;
     private long holeId;
     private HoleFeatureController controller;
@@ -52,7 +57,13 @@ class HoleFeaturePostgresTest {
     void setUp() {
         // The mapping and vision services are only reached by the request
         // endpoint, which this test does not exercise.
-        controller = new HoleFeatureController(em, null, null, 65, 30);
+        //
+        // The floor is the shipped default, so what these tests say about it
+        // is what a golfer gets. It was 65 here and in application.yml, and at
+        // 65 this endpoint withheld 29% of every bunker GolfSeg had ever
+        // traced — see the query's own comment for why that number says
+        // nothing about the bunkers.
+        controller = new HoleFeatureController(em, null, null, DEFAULT_FLOOR, 30);
 
         long facilityId = ((Number) em.createNativeQuery("""
                 INSERT INTO golf_facilities (name, publisher, effective_date, confidence, version, created_at, updated_at)
@@ -196,11 +207,48 @@ class HoleFeaturePostgresTest {
     }
 
     @Test
-    @DisplayName("a shape the model doubts is not served")
-    void refusesLowConfidence() {
-        draft("BUNKER", "ai-satellite", "PENDING_REVIEW", 40);
+    @DisplayName("a shape traced off a blank tile is not served")
+    void refusesGarbage() {
+        // The failure the floor is actually for. Esri answers a request
+        // outside its high-resolution coverage with a flat placeholder rather
+        // than a 404, and the model, shown a blank sheet, does not say "I
+        // cannot see" — over Bắc Giang it returned 116 shapes at 22.
+        draft("BUNKER", "ai-satellite", "PENDING_REVIEW", 22);
 
         assertThat(servedLayers()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a bunker the model is merely unsure of is served")
+    void servesAnUncertainBunker() {
+        // 62.04 is not invented: it is what GolfSeg returned for all eight
+        // bunkers on the 1st of Long Biên's Đường B, which is round hole 10
+        // of an A+B pairing, on a hole a golfer was standing on when they
+        // reported that the map had no bunkers.
+        //
+        // The number is the mean softmax over the class's own mask, so it
+        // measures how crisp the edges of a thirty-pixel shape are and not
+        // whether there is sand there. Nothing in the database ranks by it:
+        // bunkers below 65 hit an OSM-mapped bunker 10% of the time and
+        // bunkers above it 9%. Withholding this shape buys no accuracy and
+        // costs the golfer the hazard.
+        draft("BUNKER", "golfseg", "PENDING_REVIEW", 62.04);
+
+        assertThat(servedLayers()).containsExactly("bunker:golfseg");
+    }
+
+    @Test
+    @DisplayName("a pond the model is unsure of is served too")
+    void servesAnUncertainPond() {
+        // Water scores lowest of every class — 48.44 on that same hole — and
+        // is the class the model is measurably best at: 0.766 IoU on the
+        // held-out Vietnamese courses against 0.450 for bunkers. The ranking
+        // by confidence and the ranking by accuracy point opposite ways,
+        // which is the clearest statement available that this number is not
+        // a quality score.
+        draft("WATER_HAZARD", "golfseg", "PENDING_REVIEW", 48.44);
+
+        assertThat(servedLayers()).containsExactly("water:golfseg");
     }
 
     @Test

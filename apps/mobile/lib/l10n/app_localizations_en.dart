@@ -582,6 +582,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get packageNotDownloaded => 'Course data not downloaded';
 
   @override
+  String packageNotDownloadedNamed(String course) {
+    return '$course not downloaded';
+  }
+
+  @override
   String get packageNotDownloadedSubtitle =>
       'Download for offline use, or play now (needs network)';
 

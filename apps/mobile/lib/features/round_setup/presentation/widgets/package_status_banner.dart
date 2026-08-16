@@ -36,12 +36,27 @@ class PackageStatusBanner extends StatelessWidget {
   /// noise standing between them and the first tee.
   final bool packageAvailable;
 
+  /// The đường this banner is actually about, where it is one of several.
+  ///
+  /// A round on Đường A + B needs two packages, and readiness reports them one
+  /// at a time. Unnamed, the banner says "Chưa tải dữ liệu sân" before the
+  /// first download and says it again, word for word, after that download
+  /// succeeded — so the golfer sees a button that appears not to work rather
+  /// than a second nine they have not fetched yet.
+  ///
+  /// Null, or the same as the course already named on screen, leaves the
+  /// wording alone: on a course with one layout there is nothing to
+  /// disambiguate and "Chưa tải dữ liệu Long Biên Golf Course" is worse than
+  /// "Chưa tải dữ liệu sân".
+  final String? missingCourseName;
+
   const PackageStatusBanner({
     super.key,
     this.packageReadiness,
     this.onDownloadPressed,
     this.onWarningAcknowledged,
     this.packageAvailable = false,
+    this.missingCourseName,
   });
 
   @override
@@ -75,7 +90,10 @@ class PackageStatusBanner extends StatelessWidget {
           context: context,
           icon: Icons.cloud_download_outlined,
           iconColor: const Color(0xFFF97316), // semantic amber
-          label: AppLocalizations.of(context).packageNotDownloaded,
+          label: missingCourseName == null || missingCourseName!.isEmpty
+              ? AppLocalizations.of(context).packageNotDownloaded
+              : AppLocalizations.of(context)
+                  .packageNotDownloadedNamed(missingCourseName!),
           subtitle: AppLocalizations.of(context).packageNotDownloadedSubtitle,
           backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
           textColor: const Color(0xFFF97316),

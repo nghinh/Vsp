@@ -1184,6 +1184,12 @@ abstract class AppLocalizations {
   /// **'Course data not downloaded'**
   String get packageNotDownloaded;
 
+  /// Package banner where the round is played on more than one nine, so the golfer can tell which one is still missing after downloading the other.
+  ///
+  /// In en, this message translates to:
+  /// **'{course} not downloaded'**
+  String packageNotDownloadedNamed(String course);
+
   /// No description provided for @packageNotDownloadedSubtitle.
   ///
   /// In en, this message translates to:

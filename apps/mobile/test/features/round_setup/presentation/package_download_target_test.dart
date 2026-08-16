@@ -102,4 +102,76 @@ void main() {
       expect(state.packageDownloadCourseId, 22);
     });
   });
+
+  // The third fault, found once the first two were fixed and the golfer was
+  // downloading the right nine: both downloads say the same thing.
+  //
+  // A+B needs two packages and readiness reports them one at a time, so the
+  // sequence is — banner, download, success, banner. Word for word the same
+  // banner, naming the club both times, because the screen passed
+  // `courseName` while passing the đường's id. The golfer read that as a
+  // button that does not work.
+  group('what the banner calls the package it wants', () {
+    test('names the đường when the round is played on two of them', () {
+      final state = form(
+        courseId: 21,
+        selected: 21,
+        second: 22,
+        readiness: const PackageReadiness(
+          status: PackageStatus.notDownloaded,
+          missingCourseId: 22,
+        ),
+      );
+
+      expect(state.packageDownloadCourseName, 'Đường B');
+    });
+
+    test('names the first đường while that is the one outstanding', () {
+      // The same round one download earlier. The two banners a golfer sees in
+      // a row must not be the same sentence.
+      final state = form(
+        courseId: 21,
+        selected: 21,
+        second: 22,
+        readiness: const PackageReadiness(
+          status: PackageStatus.notDownloaded,
+          missingCourseId: 21,
+        ),
+      );
+
+      expect(state.packageDownloadCourseName, 'Đường A');
+    });
+
+    test('says nothing extra on a round played on one course', () {
+      // Most rounds. "Chưa tải dữ liệu Long Biên Golf Course" is a worse
+      // sentence than "Chưa tải dữ liệu sân" when there is no second nine to
+      // tell it apart from, so the banner keeps its plain wording.
+      final state = form(
+        courseId: 21,
+        selected: 21,
+        readiness: const PackageReadiness(
+          status: PackageStatus.notDownloaded,
+          missingCourseId: 21,
+        ),
+      );
+
+      expect(state.packageDownloadCourseName, isNull);
+    });
+
+    test('says nothing when the id belongs to no đường on the form', () {
+      // The club-level course, which is not in `layouts`. Better an unnamed
+      // banner than one naming a course the golfer did not pick.
+      final state = form(
+        courseId: 99,
+        selected: 21,
+        second: 22,
+        readiness: const PackageReadiness(
+          status: PackageStatus.notDownloaded,
+          missingCourseId: 99,
+        ),
+      );
+
+      expect(state.packageDownloadCourseName, isNull);
+    });
+  });
 }
