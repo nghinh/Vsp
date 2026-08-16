@@ -99,6 +99,10 @@ def main() -> int:
         "ignoreIndex": IGNORE_INDEX,
         "patch": PATCH, "stride": STRIDE, "zoom": args.zoom,
         "maskLicense": "ODbL 1.0 — © OpenStreetMap contributors",
+        # Named as well as licensed, because the checkpoint lineage reads this
+        # and "© Esri, Maxar, Earthstar Geographics" is a credit line rather
+        # than an identifier.
+        "imagerySource": fetcher.provider.name,
         "imageryLicense": fetcher.provider.attribution,
         "imageryPermitsExtraction": fetcher.provider.permits_automated_extraction,
         "courses": [], "counts": {"train": 0, "val": 0, "test": 0},
