@@ -115,6 +115,15 @@ public class HoleFeatureController {
                   AND d.is_valid
                   AND coalesce(d.confidence, 0) >= :floor
                   AND d.verification_status <> 'REJECTED'
+                  -- A model-drawn fairway is the one shape on this map that
+                  -- is both the largest thing on screen and carries no number
+                  -- a golfer plays to. Long Biên's first came back as a
+                  -- teardrop 57 m wide over a corridor that plays 35, filling
+                  -- the screen and making the correct green beside it look
+                  -- like part of the same mistake. It stays in the review
+                  -- queue for somebody to correct; it does not go out.
+                  AND NOT (d.source = 'ai-satellite'
+                           AND d.layer_type IN ('FAIRWAY', 'ROUGH'))
                   AND (d.source <> 'ai-satellite' OR NOT EXISTS (
                         SELECT 1 FROM draft_geometry_features surveyed
                         WHERE surveyed.course_id = d.course_id
