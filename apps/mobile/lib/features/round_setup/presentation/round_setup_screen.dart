@@ -405,20 +405,11 @@ class _RoundSetupScaffold extends StatelessWidget {
                       PackageStatusBanner(
                         packageReadiness: state.packageReadiness,
                         packageAvailable: state.coursePackageAvailable,
-                        onDownloadPressed: state.courseId == null
+                        onDownloadPressed: state.packageDownloadCourseId == null
                             ? null
-                            : () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) => CourseDownloadScreen(
-                                      courseId: state.courseId!,
-                                      courseName: state.courseName ?? '',
-                                      manifestRepo: PackageManifestRepository(),
-                                      packageRepo: CoursePackageRepository(
-                                        apiClient: ApiClient(),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                            : () => _openDownload(
+                                  context, state.packageDownloadCourseId!,
+                                  state.courseName ?? ''),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -523,6 +514,35 @@ class _RoundSetupScaffold extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Opens the download screen and re-checks when it closes.
+  ///
+  /// The re-check is the fix for a banner that stayed on screen saying "course
+  /// data not downloaded" after the golfer had downloaded it. Nothing was
+  /// wrong with the download and nothing was wrong with the check — the check
+  /// simply never ran again. Readiness is read from disk once when the screen
+  /// builds, the download happens on another screen, and returning from it
+  /// changed nothing the banner was watching.
+  ///
+  /// Re-checking unconditionally, rather than only on a success result: a
+  /// golfer who backs out having downloaded nothing gets the same banner they
+  /// already had, which costs one file-system read, and a download that
+  /// reports failure but left a valid package on disk still clears.
+  Future<void> _openDownload(
+      BuildContext context, int courseId, String courseName) async {
+    final bloc = context.read<RoundSetupBloc>();
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => CourseDownloadScreen(
+          courseId: courseId,
+          courseName: courseName,
+          manifestRepo: PackageManifestRepository(),
+          packageRepo: CoursePackageRepository(apiClient: ApiClient()),
+        ),
+      ),
+    );
+    bloc.add(const PackageValidationRequested());
   }
 }
 

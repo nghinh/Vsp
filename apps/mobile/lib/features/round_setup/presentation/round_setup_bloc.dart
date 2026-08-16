@@ -540,9 +540,13 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       if (segments.isEmpty) return;
       var readiness =
           await _packageReadinessService.getOfflineReadiness(segments.first);
+      // Which đường is the one at fault, so the download button can offer it
+      // rather than offering whichever course the search returned.
+      var missing = segments.first;
       for (final segment in segments.skip(1)) {
         if (!readiness.isReady) break;
         readiness = await _packageReadinessService.getOfflineReadiness(segment);
+        missing = segment;
       }
 
       final status = _mapReadinessToStatus(readiness.reason);
@@ -553,11 +557,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       bool available = currentState.coursePackageAvailable;
       if (status == PackageStatus.notDownloaded) {
         try {
-          // The đường that is missing its package, not the club — a club whose
-          // A is published and whose B is not would otherwise offer a download
-          // for B that does not exist.
+          // The đường that is missing its package, not the club and not the
+          // first of the round — a club whose A is published and whose B is
+          // not would otherwise offer a download for B that does not exist.
           final result = await _courseSearchApi.getCourseSearchResult(
-            segments.first,
+            missing,
           );
           available = result.hasPackage;
         } catch (_) {
@@ -575,6 +579,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
             reason: readiness.reason.name,
             manifestVersion: readiness.manifest?.version,
             expiresAt: readiness.expiresAt,
+            missingCourseId: missing,
           ),
         ),
       );

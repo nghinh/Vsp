@@ -41,11 +41,21 @@ class PackageReadiness {
   final String? manifestVersion;
   final DateTime? expiresAt;
 
+  /// The đường whose package is actually missing.
+  ///
+  /// A round on Đường A + B checks both, and the one that fails is not always
+  /// the first. Offering to download the course the search happened to return
+  /// is how a golfer could download a package, come back, and be told again
+  /// that the data was not there — because it was a different nine that was
+  /// missing.
+  final int? missingCourseId;
+
   const PackageReadiness({
     required this.status,
     this.reason,
     this.manifestVersion,
     this.expiresAt,
+    this.missingCourseId,
   });
 
   bool get isReady => status == PackageStatus.valid;
@@ -260,6 +270,17 @@ class RoundSetupReady extends RoundSetupState {
     return holes.first;
   }
 
+
+  /// The course the download button should fetch a package for.
+  ///
+  /// The đường the readiness check found wanting, where it named one, and the
+  /// selected course otherwise. Not `courseId` alone: picking a club leaves
+  /// that on whichever đường the search returned, so on a round of A+B where B
+  /// is the one missing its package, the button downloaded A — which was
+  /// already on the phone — and the banner was still there afterwards saying
+  /// the data had not been downloaded.
+  int? get packageDownloadCourseId =>
+      packageReadiness?.missingCourseId ?? courseId;
 
   /// The đường the round is played on, in playing order.
   ///
