@@ -1,0 +1,1722 @@
+[
+  {
+    "epoch": 1,
+    "loss": 1.9154165682901862,
+    "meanIoU": 0.0879,
+    "perClass": {
+      "background": {
+        "iou": 0.0586,
+        "recall": 0.0598,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0233,
+        "recall": 0.1615,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0,
+        "recall": 0.0,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.0778,
+        "recall": 0.5367,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0272,
+        "recall": 0.8533,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0141,
+        "recall": 0.0158,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4143,
+        "recall": 0.5009,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.0778
+  },
+  {
+    "epoch": 2,
+    "loss": 1.5541248558131793,
+    "meanIoU": 0.1463,
+    "perClass": {
+      "background": {
+        "iou": 0.1296,
+        "recall": 0.1417,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0219,
+        "recall": 0.3983,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0008,
+        "recall": 0.002,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1415,
+        "recall": 0.4999,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1242,
+        "recall": 0.4903,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0037,
+        "recall": 0.0039,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6028,
+        "recall": 0.8604,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1415
+  },
+  {
+    "epoch": 3,
+    "loss": 1.467516740314833,
+    "meanIoU": 0.1674,
+    "perClass": {
+      "background": {
+        "iou": 0.3023,
+        "recall": 0.524,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.031,
+        "recall": 0.3187,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0003,
+        "recall": 0.0009,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1678,
+        "recall": 0.5028,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1953,
+        "recall": 0.4677,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.046,
+        "recall": 0.0899,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4294,
+        "recall": 0.487,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1678
+  },
+  {
+    "epoch": 4,
+    "loss": 1.3447795432942513,
+    "meanIoU": 0.1791,
+    "perClass": {
+      "background": {
+        "iou": 0.2724,
+        "recall": 0.3215,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0396,
+        "recall": 0.3784,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0221,
+        "recall": 0.3115,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1416,
+        "recall": 0.4976,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.2065,
+        "recall": 0.4804,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0018,
+        "recall": 0.0018,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5699,
+        "recall": 0.74,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1416
+  },
+  {
+    "epoch": 5,
+    "loss": 1.308126567884256,
+    "meanIoU": 0.1941,
+    "perClass": {
+      "background": {
+        "iou": 0.2774,
+        "recall": 0.3066,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0536,
+        "recall": 0.3905,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0206,
+        "recall": 0.7906,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2534,
+        "recall": 0.4799,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1818,
+        "recall": 0.4952,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0775,
+        "recall": 0.1798,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4944,
+        "recall": 0.5631,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2534
+  },
+  {
+    "epoch": 6,
+    "loss": 1.257197312271322,
+    "meanIoU": 0.1968,
+    "perClass": {
+      "background": {
+        "iou": 0.3614,
+        "recall": 0.6366,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0579,
+        "recall": 0.3508,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0004,
+        "recall": 0.0012,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2189,
+        "recall": 0.4529,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1668,
+        "recall": 0.4424,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1417,
+        "recall": 0.5171,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4308,
+        "recall": 0.4556,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2189
+  },
+  {
+    "epoch": 7,
+    "loss": 1.2275705651472544,
+    "meanIoU": 0.2338,
+    "perClass": {
+      "background": {
+        "iou": 0.3293,
+        "recall": 0.3611,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0737,
+        "recall": 0.2878,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0011,
+        "recall": 0.0037,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2133,
+        "recall": 0.5076,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1302,
+        "recall": 0.4976,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2298,
+        "recall": 0.4119,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6592,
+        "recall": 0.9016,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2133
+  },
+  {
+    "epoch": 8,
+    "loss": 1.1676921407685026,
+    "meanIoU": 0.2197,
+    "perClass": {
+      "background": {
+        "iou": 0.305,
+        "recall": 0.3297,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0864,
+        "recall": 0.2486,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0004,
+        "recall": 0.0016,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2412,
+        "recall": 0.4918,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0528,
+        "recall": 0.6779,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.26,
+        "recall": 0.4637,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.592,
+        "recall": 0.7711,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2412
+  },
+  {
+    "epoch": 9,
+    "loss": 1.2080732602199524,
+    "meanIoU": 0.2173,
+    "perClass": {
+      "background": {
+        "iou": 0.3118,
+        "recall": 0.3346,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0493,
+        "recall": 0.341,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0004,
+        "recall": 0.0006,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.232,
+        "recall": 0.5129,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.2146,
+        "recall": 0.5454,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0476,
+        "recall": 0.0571,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6654,
+        "recall": 0.9455,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.232
+  },
+  {
+    "epoch": 10,
+    "loss": 1.2350022105770257,
+    "meanIoU": 0.1885,
+    "perClass": {
+      "background": {
+        "iou": 0.2675,
+        "recall": 0.2922,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0269,
+        "recall": 0.0544,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0008,
+        "recall": 0.0024,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1926,
+        "recall": 0.4992,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.072,
+        "recall": 0.5732,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.14,
+        "recall": 0.5159,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6194,
+        "recall": 0.8285,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1926
+  },
+  {
+    "epoch": 11,
+    "loss": 1.1104188311191006,
+    "meanIoU": 0.2073,
+    "perClass": {
+      "background": {
+        "iou": 0.3034,
+        "recall": 0.3282,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0705,
+        "recall": 0.3414,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0005,
+        "recall": 0.0011,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2156,
+        "recall": 0.5148,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0417,
+        "recall": 0.7174,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2553,
+        "recall": 0.4741,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5642,
+        "recall": 0.7006,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2156
+  },
+  {
+    "epoch": 12,
+    "loss": 1.1317092899147791,
+    "meanIoU": 0.1861,
+    "perClass": {
+      "background": {
+        "iou": 0.3466,
+        "recall": 0.5012,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0674,
+        "recall": 0.3095,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0006,
+        "recall": 0.0011,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2125,
+        "recall": 0.5103,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0414,
+        "recall": 0.6222,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1875,
+        "recall": 0.5097,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4465,
+        "recall": 0.4882,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2125
+  },
+  {
+    "epoch": 13,
+    "loss": 1.1367948205416438,
+    "meanIoU": 0.1949,
+    "perClass": {
+      "background": {
+        "iou": 0.2388,
+        "recall": 0.2552,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0772,
+        "recall": 0.2885,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0007,
+        "recall": 0.0028,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.143,
+        "recall": 0.3256,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1881,
+        "recall": 0.4632,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.0902,
+        "recall": 0.5595,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6261,
+        "recall": 0.8608,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.143
+  },
+  {
+    "epoch": 14,
+    "loss": 1.182186432012165,
+    "meanIoU": 0.1721,
+    "perClass": {
+      "background": {
+        "iou": 0.2934,
+        "recall": 0.3463,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0601,
+        "recall": 0.1575,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0087,
+        "recall": 0.0397,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1323,
+        "recall": 0.5446,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0304,
+        "recall": 0.7686,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2426,
+        "recall": 0.4107,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4374,
+        "recall": 0.4855,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1323
+  },
+  {
+    "epoch": 15,
+    "loss": 1.1348104895526216,
+    "meanIoU": 0.2281,
+    "perClass": {
+      "background": {
+        "iou": 0.2844,
+        "recall": 0.3058,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1021,
+        "recall": 0.4274,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0018,
+        "recall": 0.0064,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2198,
+        "recall": 0.5171,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0903,
+        "recall": 0.5611,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2618,
+        "recall": 0.5084,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6366,
+        "recall": 0.8721,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2198
+  },
+  {
+    "epoch": 16,
+    "loss": 1.0945632439533264,
+    "meanIoU": 0.198,
+    "perClass": {
+      "background": {
+        "iou": 0.3206,
+        "recall": 0.3493,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0652,
+        "recall": 0.2545,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0005,
+        "recall": 0.0011,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2307,
+        "recall": 0.5123,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0348,
+        "recall": 0.8081,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2054,
+        "recall": 0.5239,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5291,
+        "recall": 0.6051,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2307
+  },
+  {
+    "epoch": 17,
+    "loss": 1.0568912108890882,
+    "meanIoU": 0.2155,
+    "perClass": {
+      "background": {
+        "iou": 0.3107,
+        "recall": 0.336,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0864,
+        "recall": 0.2761,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0009,
+        "recall": 0.0023,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2346,
+        "recall": 0.5186,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0619,
+        "recall": 0.5935,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1955,
+        "recall": 0.5274,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6185,
+        "recall": 0.8149,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2346
+  },
+  {
+    "epoch": 18,
+    "loss": 1.020838919031711,
+    "meanIoU": 0.217,
+    "perClass": {
+      "background": {
+        "iou": 0.3243,
+        "recall": 0.3542,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1126,
+        "recall": 0.342,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0038,
+        "recall": 0.0094,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2424,
+        "recall": 0.5149,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0522,
+        "recall": 0.6025,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1834,
+        "recall": 0.5343,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6002,
+        "recall": 0.7703,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2424
+  },
+  {
+    "epoch": 19,
+    "loss": 1.0137832565162017,
+    "meanIoU": 0.1696,
+    "perClass": {
+      "background": {
+        "iou": 0.316,
+        "recall": 0.3512,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.0651,
+        "recall": 0.2359,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0015,
+        "recall": 0.0034,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.1761,
+        "recall": 0.5283,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0276,
+        "recall": 0.8565,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1709,
+        "recall": 0.5265,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.4297,
+        "recall": 0.4475,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.1761
+  },
+  {
+    "epoch": 20,
+    "loss": 1.0119853825059555,
+    "meanIoU": 0.2152,
+    "perClass": {
+      "background": {
+        "iou": 0.3205,
+        "recall": 0.3471,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1213,
+        "recall": 0.414,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0009,
+        "recall": 0.0017,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2348,
+        "recall": 0.5231,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.043,
+        "recall": 0.6532,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2111,
+        "recall": 0.5219,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5751,
+        "recall": 0.7249,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2348
+  },
+  {
+    "epoch": 21,
+    "loss": 0.9954546965260542,
+    "meanIoU": 0.2448,
+    "perClass": {
+      "background": {
+        "iou": 0.3436,
+        "recall": 0.3735,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1157,
+        "recall": 0.4251,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0,
+        "recall": 0.0001,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2616,
+        "recall": 0.4875,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0976,
+        "recall": 0.5662,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2517,
+        "recall": 0.5314,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6437,
+        "recall": 0.8722,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2616
+  },
+  {
+    "epoch": 22,
+    "loss": 1.0199750291027185,
+    "meanIoU": 0.2442,
+    "perClass": {
+      "background": {
+        "iou": 0.3467,
+        "recall": 0.3751,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1383,
+        "recall": 0.4009,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0,
+        "recall": 0.0001,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2553,
+        "recall": 0.5083,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0841,
+        "recall": 0.5803,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2464,
+        "recall": 0.5349,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6383,
+        "recall": 0.8619,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2553
+  },
+  {
+    "epoch": 23,
+    "loss": 0.9560903661123669,
+    "meanIoU": 0.2683,
+    "perClass": {
+      "background": {
+        "iou": 0.3547,
+        "recall": 0.3849,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1307,
+        "recall": 0.4193,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0005,
+        "recall": 0.0012,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2767,
+        "recall": 0.5135,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1876,
+        "recall": 0.5228,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2584,
+        "recall": 0.5331,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6697,
+        "recall": 0.9259,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2767
+  },
+  {
+    "epoch": 24,
+    "loss": 0.9590522387555538,
+    "meanIoU": 0.2462,
+    "perClass": {
+      "background": {
+        "iou": 0.3301,
+        "recall": 0.3564,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1332,
+        "recall": 0.368,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0033,
+        "recall": 0.0093,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2519,
+        "recall": 0.5197,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.1662,
+        "recall": 0.5166,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1787,
+        "recall": 0.5338,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6604,
+        "recall": 0.9079,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2519
+  },
+  {
+    "epoch": 25,
+    "loss": 0.9423291485273201,
+    "meanIoU": 0.2108,
+    "perClass": {
+      "background": {
+        "iou": 0.3398,
+        "recall": 0.3698,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1238,
+        "recall": 0.4324,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0194,
+        "recall": 0.5694,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2748,
+        "recall": 0.5132,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0487,
+        "recall": 0.6228,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2071,
+        "recall": 0.5363,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.462,
+        "recall": 0.4965,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2748
+  },
+  {
+    "epoch": 26,
+    "loss": 0.9517740200039084,
+    "meanIoU": 0.2341,
+    "perClass": {
+      "background": {
+        "iou": 0.3551,
+        "recall": 0.387,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1569,
+        "recall": 0.4271,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0153,
+        "recall": 0.2388,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2701,
+        "recall": 0.52,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0491,
+        "recall": 0.6415,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2592,
+        "recall": 0.5351,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.533,
+        "recall": 0.6283,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2701
+  },
+  {
+    "epoch": 27,
+    "loss": 0.945790728539911,
+    "meanIoU": 0.23,
+    "perClass": {
+      "background": {
+        "iou": 0.3639,
+        "recall": 0.3994,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1389,
+        "recall": 0.447,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0205,
+        "recall": 0.4878,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2712,
+        "recall": 0.5225,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0554,
+        "recall": 0.6442,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.259,
+        "recall": 0.5373,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5009,
+        "recall": 0.5623,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2712
+  },
+  {
+    "epoch": 28,
+    "loss": 0.9238228522639238,
+    "meanIoU": 0.2463,
+    "perClass": {
+      "background": {
+        "iou": 0.3723,
+        "recall": 0.4061,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1904,
+        "recall": 0.4139,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0205,
+        "recall": 0.4911,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2697,
+        "recall": 0.525,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0816,
+        "recall": 0.5673,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2431,
+        "recall": 0.5401,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5463,
+        "recall": 0.6409,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2697
+  },
+  {
+    "epoch": 29,
+    "loss": 0.9183170825015498,
+    "meanIoU": 0.2562,
+    "perClass": {
+      "background": {
+        "iou": 0.3696,
+        "recall": 0.3997,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1969,
+        "recall": 0.4179,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0219,
+        "recall": 0.3082,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2644,
+        "recall": 0.5208,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0828,
+        "recall": 0.6109,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2714,
+        "recall": 0.5387,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5865,
+        "recall": 0.7352,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2644
+  },
+  {
+    "epoch": 30,
+    "loss": 0.907368695462933,
+    "meanIoU": 0.2282,
+    "perClass": {
+      "background": {
+        "iou": 0.3614,
+        "recall": 0.3954,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1693,
+        "recall": 0.378,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0212,
+        "recall": 0.5762,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2643,
+        "recall": 0.523,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0729,
+        "recall": 0.5635,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.1868,
+        "recall": 0.5389,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5214,
+        "recall": 0.5897,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2643
+  },
+  {
+    "epoch": 31,
+    "loss": 0.9104301494951467,
+    "meanIoU": 0.2472,
+    "perClass": {
+      "background": {
+        "iou": 0.3709,
+        "recall": 0.4068,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.2009,
+        "recall": 0.4074,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0001,
+        "recall": 0.0001,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2662,
+        "recall": 0.5204,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0524,
+        "recall": 0.6448,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2422,
+        "recall": 0.5404,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5978,
+        "recall": 0.7612,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2662
+  },
+  {
+    "epoch": 32,
+    "loss": 0.8914947539340449,
+    "meanIoU": 0.2601,
+    "perClass": {
+      "background": {
+        "iou": 0.375,
+        "recall": 0.4095,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.2071,
+        "recall": 0.4174,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0016,
+        "recall": 0.0034,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2833,
+        "recall": 0.5235,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0753,
+        "recall": 0.585,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2524,
+        "recall": 0.5388,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6257,
+        "recall": 0.8332,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2833
+  },
+  {
+    "epoch": 33,
+    "loss": 0.907198567199343,
+    "meanIoU": 0.2484,
+    "perClass": {
+      "background": {
+        "iou": 0.3646,
+        "recall": 0.3978,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1903,
+        "recall": 0.4015,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0254,
+        "recall": 0.0874,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2693,
+        "recall": 0.5238,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0596,
+        "recall": 0.6132,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2225,
+        "recall": 0.5414,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6074,
+        "recall": 0.7819,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2693
+  },
+  {
+    "epoch": 34,
+    "loss": 0.893728457561886,
+    "meanIoU": 0.2465,
+    "perClass": {
+      "background": {
+        "iou": 0.3731,
+        "recall": 0.4092,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1859,
+        "recall": 0.4214,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0026,
+        "recall": 0.0059,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2704,
+        "recall": 0.5249,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0545,
+        "recall": 0.6396,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2404,
+        "recall": 0.5424,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5984,
+        "recall": 0.7645,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2704
+  },
+  {
+    "epoch": 35,
+    "loss": 0.8771669025184544,
+    "meanIoU": 0.2585,
+    "perClass": {
+      "background": {
+        "iou": 0.3727,
+        "recall": 0.4076,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.2073,
+        "recall": 0.4177,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0012,
+        "recall": 0.0025,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2797,
+        "recall": 0.5239,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0812,
+        "recall": 0.6111,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2332,
+        "recall": 0.5425,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.634,
+        "recall": 0.8393,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2797
+  },
+  {
+    "epoch": 36,
+    "loss": 0.8662206255297624,
+    "meanIoU": 0.2498,
+    "perClass": {
+      "background": {
+        "iou": 0.3707,
+        "recall": 0.4046,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1964,
+        "recall": 0.4152,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0111,
+        "recall": 0.0675,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.273,
+        "recall": 0.5251,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0641,
+        "recall": 0.6112,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2293,
+        "recall": 0.5428,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6038,
+        "recall": 0.7691,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.273
+  },
+  {
+    "epoch": 37,
+    "loss": 0.8805991106360923,
+    "meanIoU": 0.2544,
+    "perClass": {
+      "background": {
+        "iou": 0.3712,
+        "recall": 0.4051,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1981,
+        "recall": 0.4119,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0048,
+        "recall": 0.0112,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.278,
+        "recall": 0.5248,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0706,
+        "recall": 0.6082,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2365,
+        "recall": 0.5421,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.6218,
+        "recall": 0.8181,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.278
+  },
+  {
+    "epoch": 38,
+    "loss": 0.8635945190455168,
+    "meanIoU": 0.2501,
+    "perClass": {
+      "background": {
+        "iou": 0.3723,
+        "recall": 0.4069,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1978,
+        "recall": 0.4035,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0158,
+        "recall": 0.1552,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2839,
+        "recall": 0.5233,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0659,
+        "recall": 0.6231,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.225,
+        "recall": 0.5426,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.59,
+        "recall": 0.7348,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2839
+  },
+  {
+    "epoch": 39,
+    "loss": 0.8676824999674586,
+    "meanIoU": 0.2564,
+    "perClass": {
+      "background": {
+        "iou": 0.3809,
+        "recall": 0.4287,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.2109,
+        "recall": 0.3955,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0045,
+        "recall": 0.0098,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2818,
+        "recall": 0.5234,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0734,
+        "recall": 0.6022,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2229,
+        "recall": 0.5428,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.62,
+        "recall": 0.8049,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2818
+  },
+  {
+    "epoch": 40,
+    "loss": 0.8697073009177929,
+    "meanIoU": 0.2448,
+    "perClass": {
+      "background": {
+        "iou": 0.3689,
+        "recall": 0.4025,
+        "supportPx": 4649228
+      },
+      "tee_box": {
+        "iou": 0.1935,
+        "recall": 0.3998,
+        "supportPx": 72268
+      },
+      "fairway": {
+        "iou": 0.0174,
+        "recall": 0.2893,
+        "supportPx": 102533
+      },
+      "green": {
+        "iou": 0.2858,
+        "recall": 0.5231,
+        "supportPx": 156606
+      },
+      "bunker": {
+        "iou": 0.0662,
+        "recall": 0.5995,
+        "supportPx": 164579
+      },
+      "rough": {
+        "iou": 0.2209,
+        "recall": 0.543,
+        "supportPx": 221291
+      },
+      "water_hazard": {
+        "iou": 0.5607,
+        "recall": 0.6752,
+        "supportPx": 6218833
+      }
+    },
+    "selected": 0.2858
+  }
+]
