@@ -7243,6 +7243,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hole shapes traced from satellite imagery by AI, not yet checked by a human'**
   String get mapTracedShapes;
+
+  /// No description provided for @mapFeatureDistances.
+  ///
+  /// In en, this message translates to:
+  /// **'AHEAD'**
+  String get mapFeatureDistances;
+
+  /// No description provided for @mapLayerGreen.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get mapLayerGreen;
+
+  /// No description provided for @mapLayerBunker.
+  ///
+  /// In en, this message translates to:
+  /// **'Bunker'**
+  String get mapLayerBunker;
+
+  /// No description provided for @mapLayerWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water'**
+  String get mapLayerWater;
+
+  /// No description provided for @mapLayerPenaltyArea.
+  ///
+  /// In en, this message translates to:
+  /// **'Penalty area'**
+  String get mapLayerPenaltyArea;
+
+  /// No description provided for @mapLayerOb.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of bounds'**
+  String get mapLayerOb;
 }
 
 class _AppLocalizationsDelegate

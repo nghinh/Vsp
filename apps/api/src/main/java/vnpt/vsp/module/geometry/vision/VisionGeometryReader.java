@@ -46,6 +46,16 @@ public final class VisionGeometryReader {
      * @param bounds the ground extent of the image it was shown
      */
     public List<DetectedFeature> read(String json, ImageBounds bounds) {
+        return read(json, bounds, null);
+    }
+
+    /**
+     * @param image the picture the model was shown, where the edges of the
+     *              shapes it named can be taken from the pixels instead of
+     *              from its description of them. Null skips the refinement.
+     */
+    public List<DetectedFeature> read(String json, ImageBounds bounds,
+                                      java.awt.image.BufferedImage image) {
         JsonNode root;
         try {
             root = objectMapper.readTree(strip(json));
@@ -66,10 +76,21 @@ public final class VisionGeometryReader {
             if (layer == null) {
                 continue;
             }
-            List<double[]> ring = ringOf(feature.path("polygon"), bounds);
-            if (ring == null) {
+            List<double[]> imageRing = fractionsOf(feature.path("polygon"));
+            if (imageRing == null) {
                 continue;
             }
+            // Sand and water are flat in colour and stand out from grass, so
+            // their edges can be taken from the picture. A fairway is grass
+            // beside grass — there is no edge to find — and a green is grass
+            // too, so those keep the model's own outline.
+            if (image != null && REFINABLE.contains(layer)) {
+                List<double[]> snapped = ShapeRefiner.refine(image, imageRing);
+                if (snapped != null) {
+                    imageRing = snapped;
+                }
+            }
+            List<double[]> ring = toGround(imageRing, bounds);
             detected.add(new DetectedFeature(
                     layer,
                     feature.path("name").asText(null),
@@ -115,13 +136,30 @@ public final class VisionGeometryReader {
         };
     }
 
+    /// The layers whose edges are worth taking from the pixels.
+    private static final java.util.Set<LayerType> REFINABLE =
+            java.util.EnumSet.of(LayerType.BUNKER, LayerType.WATER_HAZARD,
+                    LayerType.PENALTY_AREA);
+
+    /// Image fractions to latitude and longitude.
+    private static List<double[]> toGround(List<double[]> ring, ImageBounds bounds) {
+        var ground = new ArrayList<double[]>(ring.size());
+        for (double[] point : ring) {
+            ground.add(new double[]{
+                    bounds.latitudeAt(point[1]),
+                    bounds.longitudeAt(point[0]),
+            });
+        }
+        return ground;
+    }
+
     /**
-     * One ring, converted from image fractions to latitude and longitude.
+     * One ring as the model gave it: fractions of the image, validated.
      *
      * <p>Null for anything that is not a usable shape — too few points,
      * outside the frame, or covering almost all of it.
      */
-    private static List<double[]> ringOf(JsonNode polygon, ImageBounds bounds) {
+    private static List<double[]> fractionsOf(JsonNode polygon) {
         if (!polygon.isArray() || polygon.size() < MIN_POINTS) {
             return null;
         }
@@ -140,7 +178,7 @@ public final class VisionGeometryReader {
             maxX = Math.max(maxX, x);
             minY = Math.min(minY, y);
             maxY = Math.max(maxY, y);
-            ring.add(new double[]{bounds.latitudeAt(y), bounds.longitudeAt(x)});
+            ring.add(new double[]{x, y});
         }
         if ((maxX - minX) * (maxY - minY) > MAX_AREA_FRACTION) {
             return null;

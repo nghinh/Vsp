@@ -1737,5 +1737,11 @@
   "mapToPin": "Tới cờ",
   "mapToTarget": "Tới mục tiêu",
   "mapTargetToPin": "Còn lại",
-  "mapTracedShapes": "Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng"
+  "mapTracedShapes": "Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng",
+  "mapFeatureDistances": "PHÍA TRƯỚC",
+  "mapLayerGreen": "Green",
+  "mapLayerBunker": "Bunker",
+  "mapLayerWater": "Hồ nước",
+  "mapLayerPenaltyArea": "Khu phạt",
+  "mapLayerOb": "Ngoài biên"
 }

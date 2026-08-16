@@ -4113,4 +4113,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get mapTracedShapes =>
       'Hole shapes traced from satellite imagery by AI, not yet checked by a human';
+
+  @override
+  String get mapFeatureDistances => 'AHEAD';
+
+  @override
+  String get mapLayerGreen => 'Green';
+
+  @override
+  String get mapLayerBunker => 'Bunker';
+
+  @override
+  String get mapLayerWater => 'Water';
+
+  @override
+  String get mapLayerPenaltyArea => 'Penalty area';
+
+  @override
+  String get mapLayerOb => 'Out of bounds';
 }

@@ -102,7 +102,19 @@ public class HoleGeometryVisionService {
 
         String answer = vision.analyzeImage(image.png(), "image/png",
                 prompt(hole, image.bounds()), MAX_TOKENS);
-        List<DetectedFeature> detected = reader.read(answer, image.bounds());
+        // The picture goes to the reader too: the model says which blob is
+        // sand, the pixels say where its edge is. Every bunker it draws is
+        // the same smooth octagon otherwise.
+        java.awt.image.BufferedImage decoded = null;
+        try {
+            decoded = javax.imageio.ImageIO.read(
+                    new java.io.ByteArrayInputStream(image.png()));
+        } catch (Exception e) {
+            log.warn("Could not decode the satellite image for refinement: {}",
+                    e.getMessage());
+        }
+        List<DetectedFeature> detected =
+                reader.read(answer, image.bounds(), decoded);
 
         // A re-trace replaces this hole's previous proposals rather than
         // adding to them. The polygons differ slightly every run, so keying

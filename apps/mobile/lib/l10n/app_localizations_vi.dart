@@ -4111,4 +4111,22 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get mapTracedShapes =>
       'Hình dạng hố do AI đọc từ ảnh vệ tinh, chưa có người kiểm chứng';
+
+  @override
+  String get mapFeatureDistances => 'PHÍA TRƯỚC';
+
+  @override
+  String get mapLayerGreen => 'Green';
+
+  @override
+  String get mapLayerBunker => 'Bunker';
+
+  @override
+  String get mapLayerWater => 'Hồ nước';
+
+  @override
+  String get mapLayerPenaltyArea => 'Khu phạt';
+
+  @override
+  String get mapLayerOb => 'Ngoài biên';
 }

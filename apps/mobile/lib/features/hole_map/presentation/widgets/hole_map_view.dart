@@ -22,6 +22,8 @@ import 'pin_marker.dart';
 import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'play_line_panel.dart';
+import 'feature_distance_panel.dart';
+import 'package:vsp_mobile/features/hole_map/domain/feature_distances.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 // Satellite basemap + manual measuring, for holes we never surveyed.
@@ -181,6 +183,54 @@ class _HoleMapViewState extends State<HoleMapView> {
       ),
     );
   }
+
+  /// The hazards and the green in front of the golfer, measured.
+  ///
+  /// From where they stand, along the line to the flag. Before there is a
+  /// fix the tee stands in for them, which is where they are about to be.
+  List<FeatureDistance> _featuresAhead() {
+    final state = widget.state;
+    final aim = state.holeMap.aimPoint;
+    if (aim == null) return const [];
+    final golfer = state.golferPosition;
+    final from = golfer != null
+        ? geo.LatLng(latitude: golfer.latitude, longitude: golfer.longitude)
+        : state.holeMap.teeCenter;
+    if (from == null) return const [];
+
+    final l10n = AppLocalizations.of(context);
+    return FeatureDistances.ahead(
+      layers: state.holeMap.layers,
+      from: from,
+      target: aim,
+    ).map((measured) => FeatureDistance(
+          label: _labelOf(measured.layer, l10n),
+          nearMeters: measured.nearMeters,
+          farMeters: measured.farMeters,
+          colour: _colourOf(measured.layer),
+        )).toList();
+  }
+
+  static String _labelOf(MapLayerType layer, AppLocalizations l10n) =>
+      switch (layer) {
+        MapLayerType.green => l10n.mapLayerGreen,
+        MapLayerType.bunker => l10n.mapLayerBunker,
+        MapLayerType.water => l10n.mapLayerWater,
+        MapLayerType.penaltyArea => l10n.mapLayerPenaltyArea,
+        MapLayerType.ob => l10n.mapLayerOb,
+        _ => layer.name,
+      };
+
+  /// The same colours the polygons are drawn in, so the row and the shape
+  /// on the map are obviously the same thing.
+  static Color _colourOf(MapLayerType layer) => switch (layer) {
+        MapLayerType.green => const Color(0xFF22C55E),
+        MapLayerType.bunker => const Color(0xFFD6C6A0),
+        MapLayerType.water => const Color(0xFF3B82F6),
+        MapLayerType.penaltyArea => const Color(0xFFF97316),
+        MapLayerType.ob => const Color(0xFFDC2626),
+        _ => const Color(0xFF94A3B8),
+      };
 
   /// The line the golfer is playing along, in legs.
   ///
@@ -462,6 +512,17 @@ class _HoleMapViewState extends State<HoleMapView> {
                   style: const TextStyle(
                       color: Color(0xFFFBBF24), fontSize: 11),
                 ),
+              ),
+            ),
+
+          // What is ahead, and how far to each edge of it.
+          if (_featuresAhead().isNotEmpty)
+            Positioned(
+              left: 12,
+              bottom: 150,
+              child: FeatureDistancePanel(
+                features: _featuresAhead(),
+                unit: DistanceUnitScope.watch(context),
               ),
             ),
 

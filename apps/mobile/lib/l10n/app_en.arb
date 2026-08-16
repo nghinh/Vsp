@@ -2717,5 +2717,11 @@
   "mapToPin": "To pin",
   "mapToTarget": "To target",
   "mapTargetToPin": "Target to pin",
-  "mapTracedShapes": "Hole shapes traced from satellite imagery by AI, not yet checked by a human"
+  "mapTracedShapes": "Hole shapes traced from satellite imagery by AI, not yet checked by a human",
+  "mapFeatureDistances": "AHEAD",
+  "mapLayerGreen": "Green",
+  "mapLayerBunker": "Bunker",
+  "mapLayerWater": "Water",
+  "mapLayerPenaltyArea": "Penalty area",
+  "mapLayerOb": "Out of bounds"
 }
