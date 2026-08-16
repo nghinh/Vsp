@@ -753,7 +753,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     try {
       // Build RoundConfig
       final config = RoundConfig(
-        courseId: currentState.courseId!,
+        // The đường the golfer chose, not the club the picker landed on.
+        // The screen was taught this; the record that actually reaches the
+        // server was not, so every round was filed against whichever đường
+        // the search happened to return — Đường A, for a round of B.
+        courseId: currentState.playingCourseId!,
         courseName: currentState.courseName!,
         layoutId: currentState.selectedLayoutId,
         teeId: currentState.selectedTeeId,
@@ -762,7 +766,8 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         players: currentState.players,
         mode: currentState.mode,
         bagId: currentState.selectedBagId,
-        startHole: currentState.startHole,
+        // Clamped to the holes in play: a nine has no tenth hole to start on.
+        startHole: currentState.effectiveStartHole,
         holes: currentState.holes,
         startTime: DateTime.now(),
         packageId: currentState.packageId,
