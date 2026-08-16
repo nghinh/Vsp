@@ -228,7 +228,11 @@ class _HoleMapViewState extends State<HoleMapView> {
     return FeatureLabels.forLayers(layers: state.holeMap.layers, from: from)
         .map((label) => FeatureLabelChip(
               label: _labelOf(label.layer, l10n),
-              meters: label.meters,
+              meters: label.nearMeters,
+              // The carry, where the shape is deep enough for it to be a
+              // different club. A green's front and back are two clubs apart
+              // and its centre matches nothing on the ground.
+              farMeters: label.hasDepth ? label.farMeters : null,
               colour: _colourOf(label.layer),
               latitude: label.at.latitude,
               longitude: label.at.longitude,

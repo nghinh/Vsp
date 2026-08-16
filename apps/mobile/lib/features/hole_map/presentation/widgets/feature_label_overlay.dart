@@ -29,6 +29,7 @@ class FeatureLabelChip {
     required this.colour,
     required this.latitude,
     required this.longitude,
+    this.farMeters,
   }) : onLine = false;
 
   /// A number sitting on the play line itself, halfway along a leg.
@@ -43,11 +44,21 @@ class FeatureLabelChip {
     required this.latitude,
     required this.longitude,
   })  : label = '',
+        // A leg of the play line runs to a point, so it has no far edge.
+        farMeters = null,
         colour = const Color(0xFF111827),
         onLine = true;
 
   final String label;
+
+  /// The near edge: what it takes to reach this shape.
   final double meters;
+
+  /// The far edge, where the shape is deep enough for it to be a different
+  /// club. Null on a shape too small to have a second number, and on the
+  /// numbers written along the play line, which measure to a point.
+  final double? farMeters;
+
   final Color colour;
   final double latitude;
   final double longitude;
@@ -59,7 +70,7 @@ class FeatureLabelChip {
   /// Used to decide whether a camera-independent rebuild is needed at all.
   String get identity =>
       '$label|${latitude.toStringAsFixed(6)}|${longitude.toStringAsFixed(6)}'
-      '|${meters.round()}|$onLine';
+      '|${meters.round()}|${farMeters?.round()}|$onLine';
 }
 
 class FeatureLabelOverlay extends StatefulWidget {
@@ -205,7 +216,12 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
 
   /// Fixed, because the chip is positioned by its tip and that needs its
   /// height before it is laid out.
-  static const double _chipWidth = 96;
+  ///
+  /// Widened from 96 when the number became a pair: "142 / 158 yd" does not
+  /// fit where "142 yd" did, and a fixed-width chip clips rather than wraps —
+  /// which would have silently truncated the carry, the half of the pair that
+  /// is new.
+  static const double _chipWidth = 116;
   static const double _chipHeight = 34;
   static const double _pointer = 7;
 
@@ -280,7 +296,14 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
                 ),
               ),
               Text(
-                MeasureUnits.format(chip.meters, widget.unit),
+                // "142 / 158" — reach and carry, the pair that picks the
+                // club. One number only where the shape has no depth worth
+                // quoting; see FeatureLabel.hasDepth.
+                chip.farMeters == null
+                    ? MeasureUnits.format(chip.meters, widget.unit)
+                    : '${MeasureUnits.displayValue(chip.meters, widget.unit)}'
+                        ' / '
+                        '${MeasureUnits.format(chip.farMeters!, widget.unit)}',
                 maxLines: 1,
                 style: const TextStyle(
                   color: Color(0xFF111827),

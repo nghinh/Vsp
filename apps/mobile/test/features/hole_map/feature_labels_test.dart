@@ -56,9 +56,15 @@ void main() {
     expect(labels.first.at.longitude, closeTo(105.8905, 0.00001));
   });
 
-  /// A green is a target and a bunker is a thing to miss, so they are not
-  /// measured the same way. To the middle of one, to the edge of the other.
-  test('a green is measured to its centre and a bunker to its near edge', () {
+  /// Every shape is measured to its edges, and neither of them is its middle.
+  ///
+  /// This test used to assert the opposite for the green — "the green's number
+  /// is the distance to its centre" — on the reasoning that a green is a
+  /// target and the middle is what golfers think in. The middle is one of
+  /// three numbers golfers think in and the only one that matches nothing on
+  /// the ground: a green 40 m deep is two clubs front to back, and quoting
+  /// its centroid is wrong by a club whichever way they miss.
+  test('a shape is measured to its near edge and its far edge', () {
     final labels = FeatureLabels.forLayers(
       layers: {
         MapLayerType.green: square(MapLayerType.green, 21.0345, 105.8900, 0.0002),
@@ -71,11 +77,28 @@ void main() {
     final green = labels.firstWhere((l) => l.layer == MapLayerType.green);
     final bunker = labels.firstWhere((l) => l.layer == MapLayerType.bunker);
 
-    // The green's number is the distance to its centre.
-    expect(green.meters, closeTo(tee.distanceTo(green.at), 0.5));
-    // The bunker's is shorter than the distance to its centre, because its
-    // near edge is about twenty metres closer.
-    expect(bunker.meters, lessThan(tee.distanceTo(bunker.at) - 15));
+    for (final label in [green, bunker]) {
+      final toCentre = tee.distanceTo(label.at);
+      // The centre sits between the two edges and is neither of them.
+      expect(label.nearMeters, lessThan(toCentre));
+      expect(label.farMeters, greaterThan(toCentre));
+      expect(label.hasDepth, isTrue);
+    }
+  });
+
+  /// A shape too small for two numbers gets one, rather than two that differ
+  /// by less than the outline is accurate to.
+  test('a shape with no depth carries a single number', () {
+    final labels = FeatureLabels.forLayers(
+      layers: {
+        // About 4 m across.
+        MapLayerType.bunker:
+            square(MapLayerType.bunker, 21.0320, 105.8900, 0.00002),
+      },
+      from: tee,
+    );
+
+    expect(labels.single.hasDepth, isFalse);
   });
 
   test('the nearest shapes come first', () {

@@ -6,13 +6,31 @@ boundary, the place below anything a person drew. Nothing here decides what is
 worth keeping; it decides only what to ask about, and it writes down what it
 was told.
 
-<strong>What it deliberately does not touch.</strong> Holes whose coordinates
-say `synthetic:seed-arithmetic` are skipped and counted. Those are placeholder
-positions — a neat lattice, every tee and green on one longitude, evenly
-spaced — and pointing a segmentation model at them does not produce a bad map
-of the course, it produces a confident map of whatever farmland is at the fake
-coordinates. Six courses and 171 holes are in that state, Yên Dũng among them,
-and what they need is a survey, not a trace.
+<strong>What it deliberately does not touch, and how that went wrong once.</strong>
+Holes whose coordinates are the seed's invention are skipped: a neat lattice,
+every tee and green on one longitude, evenly spaced. Pointing a segmentation
+model at those does not produce a bad map of the course, it produces a
+confident map of whatever farmland is at the fake coordinates. 108 holes on
+six courses are in that state, Yên Dũng among them, and what they need is a
+survey rather than a trace.
+
+The filter for that was `source NOT LIKE 'synthetic:seed-arithmetic%'`, and it
+was wrong, because 63 further holes carry a source that begins the same way and
+means the opposite:
+
+    synthetic:seed-arithmetic par; osm:way/1017346962 geometry
+
+Those are holes whose *par* is invented and whose *coordinates* were measured
+and imported from OpenStreetMap — a dual label added precisely so a row could
+stop claiming provenance it did not have. Reading only the prefix threw away
+the good half of the sentence. 45 of the 63 sit on courses retired on
+2026-08-14 and are no loss; the other 18 are Vinpearl Golf Hải Phòng, a live
+course with real positions, and this sweep skipped it for a reason that was not
+true of it.
+
+So the test is on the geometry alone: `source = 'synthetic:seed-arithmetic'`,
+exactly, no wildcard. A prefix match on a field that carries two facts matches
+the fact you were not asking about.
 
 Holes with no coordinates at all are skipped for the plainer reason that there
 is no box to photograph.

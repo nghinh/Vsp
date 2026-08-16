@@ -5,11 +5,24 @@
 // tell them which of the three blobs on this screen is the one they must
 // carry. That has to be written on the blob.
 //
-// Where the label sits, and which distance it carries, is different per
-// layer. A green is a target, so it is labelled at its centre with the
-// distance to that centre — the number every golfer already thinks in. A
-// bunker is a thing to avoid, so it is labelled with the distance to its
-// near edge, which is where trouble starts.
+// Every chip carries two numbers: the near edge and the far edge.
+//
+// It used to carry one, and for the green that one was the distance to its
+// centroid — on the reasoning that a green is a target and the middle is the
+// number every golfer already thinks in. The middle is *a* number a golfer
+// thinks in, alongside the front and the back, and it is the only one of the
+// three that nothing on the ground corresponds to. A green 30 m deep is two
+// clubs from front to back. Quoting its centre and nothing else hands the
+// golfer a figure that is wrong by half that in whichever direction they
+// cannot see.
+//
+// The same goes the other way for a hazard. The near edge is where trouble
+// starts and it was the only number shown, so a bunker the golfer could not
+// carry looked identical to one they could: "bunker 142" says nothing about
+// whether 150 clears it. What decides the club is 142 *and* 158.
+//
+// So: near and far, for everything. One number only where the shape is too
+// small for the second to mean anything.
 
 import 'dart:math' as math;
 
@@ -20,7 +33,8 @@ class FeatureLabel {
   const FeatureLabel({
     required this.layer,
     required this.at,
-    required this.meters,
+    required this.nearMeters,
+    required this.farMeters,
   });
 
   /// Which layer, so the chip can carry the layer's own colour and name.
@@ -29,8 +43,21 @@ class FeatureLabel {
   /// Where on the ground the chip belongs.
   final LatLng at;
 
-  /// From the golfer: to the centre for a green, to the near edge otherwise.
-  final double meters;
+  /// Golfer to the near edge — what it takes to reach this shape.
+  final double nearMeters;
+
+  /// Golfer to the far edge — what it takes to carry it.
+  final double farMeters;
+
+  /// Below this the two edges are the same club and the same number, and
+  /// printing both would suggest the outline is more precise than it is.
+  /// The same threshold [FeatureDistancePanel] uses, so the chip on a shape
+  /// and the panel listing it never disagree about whether it has depth.
+  static const double depthThresholdMeters = 8.0;
+
+  /// True when the far edge is far enough past the near one to be worth
+  /// saying.
+  bool get hasDepth => farMeters - nearMeters > depthThresholdMeters;
 }
 
 abstract final class FeatureLabels {
@@ -66,11 +93,17 @@ abstract final class FeatureLabels {
         var sumLat = 0.0;
         var sumLng = 0.0;
         var near = double.infinity;
+        var far = 0.0;
         for (final point in ring) {
           sumLat += point.latitude;
           sumLng += point.longitude;
-          near = math.min(near, from.distanceTo(point));
+          final metres = from.distanceTo(point);
+          near = math.min(near, metres);
+          far = math.max(far, metres);
         }
+        // The chip still *sits* on the middle of the shape — that is where
+        // there is room for it and what it is pointing at. What it says is
+        // measured to the edges.
         final centre = LatLng(
           latitude: sumLat / ring.length,
           longitude: sumLng / ring.length,
@@ -79,14 +112,13 @@ abstract final class FeatureLabels {
         labels.add(FeatureLabel(
           layer: entry.key,
           at: centre,
-          meters: entry.key == MapLayerType.green
-              ? from.distanceTo(centre)
-              : near,
+          nearMeters: near,
+          farMeters: far,
         ));
       }
     }
 
-    labels.sort((a, b) => a.meters.compareTo(b.meters));
+    labels.sort((a, b) => a.nearMeters.compareTo(b.nearMeters));
     return labels.length <= limit ? labels : labels.sublist(0, limit);
   }
 
