@@ -4,7 +4,6 @@ import jakarta.persistence.EntityManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
@@ -35,12 +34,19 @@ public class CourseMappingService {
     private final HoleGeometryVisionService visionService;
     private final VisionProvider vision;
 
+    /// Writes the job row from its own transaction. A separate bean because
+    /// a self-call goes past the @Transactional proxy — which is how a
+    /// nine-hole job sat at 0/9 while its drafts piled up.
+    private final CourseMappingJobStore jobStore;
+
     public CourseMappingService(EntityManager em,
                                 HoleGeometryVisionService visionService,
-                                VisionProvider vision) {
+                                VisionProvider vision,
+                                CourseMappingJobStore jobStore) {
         this.em = em;
         this.visionService = visionService;
         this.vision = vision;
+        this.jobStore = jobStore;
     }
 
     /**
@@ -122,42 +128,14 @@ public class CourseMappingService {
                 log.warn("Hole {} of course {} could not be traced: {}",
                         holeNumber, courseId, e.getMessage());
             }
-            progress(jobId, analysed, failed, features);
+            jobStore.progress(jobId, analysed, failed, features);
         }
 
-        finish(jobId, failed > 0 && analysed == 0 ? "FAILED" : "READY",
+        jobStore.finish(jobId, failed > 0 && analysed == 0 ? "FAILED" : "READY",
                 failed > 0 && analysed == 0
                         ? "No hole on this course could be traced" : null);
         log.info("Course {} traced: {} hole(s), {} feature(s), {} failure(s)",
                 courseId, analysed, features, failed);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void progress(UUID jobId, int analysed, int failed, int features) {
-        em.createNativeQuery("""
-                UPDATE course_mapping_job
-                SET holes_analysed = :analysed, holes_failed = :failed,
-                    features_detected = :features
-                WHERE id = :id
-                """)
-                .setParameter("analysed", analysed)
-                .setParameter("failed", failed)
-                .setParameter("features", features)
-                .setParameter("id", jobId)
-                .executeUpdate();
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    protected void finish(UUID jobId, String status, String error) {
-        em.createNativeQuery("""
-                UPDATE course_mapping_job
-                SET status = :status, error_message = :error, completed_at = now()
-                WHERE id = :id
-                """)
-                .setParameter("status", status)
-                .setParameter("error", error)
-                .setParameter("id", jobId)
-                .executeUpdate();
     }
 
     /// What the app polls while it waits.

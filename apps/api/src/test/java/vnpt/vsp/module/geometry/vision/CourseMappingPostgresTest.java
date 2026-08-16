@@ -71,7 +71,8 @@ class CourseMappingPostgresTest {
     private CourseMappingService service(String answer) {
         var visionService = new HoleGeometryVisionService(
                 em, imagery(), model(answer), new ObjectMapper());
-        return new CourseMappingService(em, visionService, model(answer));
+        return new CourseMappingService(em, visionService, model(answer),
+                new CourseMappingJobStore(em));
     }
 
     @BeforeEach
