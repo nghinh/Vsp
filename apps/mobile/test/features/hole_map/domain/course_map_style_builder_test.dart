@@ -89,14 +89,15 @@ void main() {
     test('a course layer filters on its own features only', () {
       final greenFill = layers.firstWhere((l) => l['id'] == 'green-fill');
       expect(greenFill['source'], CourseMapStyleBuilder.courseSourceId);
-      // Now an `all` of two clauses: the layer type, and the geometry kind.
-      // The second was added because a circle layer with only the first drew a
-      // circle at every polygon vertex — a bunker came out as twenty
-      // overlapping discs instead of a bunker.
+      // One clause, and the same shape as the overlay's filters. The compound
+      // form this replaces — `all` over `==` over `match` over `geometry-type`
+      // over `coalesce` — drew nothing at all on device while reading
+      // correctly on paper. Which layer draws a feature is decided in
+      // HoleMapGeoJson now, and the feature arrives carrying the answer.
       expect(greenFill['filter'], [
-        'all',
-        ['==', ['get', 'layerType'], MapLayerType.green.name],
-        ['match', ['geometry-type'], ['Polygon', 'MultiPolygon'], true, false],
+        '==',
+        ['get', HoleMapGeoJson.fillKey],
+        MapLayerType.green.name,
       ]);
     });
 

@@ -38,6 +38,7 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/data/repositories/course_correction_repository.dart';
 import 'package:vsp_mobile/features/correction/domain/green_position_reporter.dart';
 
+import 'package:vsp_mobile/features/hole_map/presentation/widgets/feature_label_overlay.dart';
 import 'measure_panel.dart';
 
 /// Satellite map with the measuring tool bound to it.
@@ -74,6 +75,18 @@ class SatelliteMeasureView extends StatefulWidget {
   /// it instead.
   final Widget? mapOverlay;
 
+  /// The named shapes on this hole, to float over the imagery.
+  ///
+  /// The vector map has carried these since the labels were built; the
+  /// satellite view is where they earn the most. On the drawn map a golfer
+  /// can tell a bunker from a pond by its colour — on a photograph they can
+  /// see the sand but not how far it is, which is the whole question.
+  ///
+  /// Projected with this view's own controller: the two maps are separate
+  /// platform views with separate cameras, and the vector map's projection
+  /// would put every chip in the wrong place here.
+  final List<FeatureLabelChip> featureLabels;
+
   const SatelliteMeasureView({
     super.key,
     required this.config,
@@ -83,6 +96,7 @@ class SatelliteMeasureView extends StatefulWidget {
     this.holeId,
     this.greenReporter,
     this.mapOverlay,
+    this.featureLabels = const [],
   });
 
   /// Most of the column the readout may take before it starts scrolling.
@@ -297,6 +311,14 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
                 child: Stack(
                   children: [
                     _buildMap(context, state),
+                    // Under the chrome and over the picture: a chip must never
+                    // cover the basemap switch or the measuring readout.
+                    if (widget.featureLabels.isNotEmpty)
+                      FeatureLabelOverlay(
+                        controller: _controller,
+                        chips: widget.featureLabels,
+                        unit: state.unit,
+                      ),
                     if (widget.mapOverlay != null)
                       Positioned(
                         top: 8,

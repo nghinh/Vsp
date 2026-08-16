@@ -437,6 +437,9 @@ class _HoleMapViewState extends State<HoleMapView> {
           // existed, which hides the report action rather than filing it
           // against the hole with that number on another course.
           holeId: widget.state.holeMap.holeId,
+          // The same chips the drawn map carries. On a photograph they are
+          // worth more: a golfer can see the sand and not how far it is.
+          featureLabels: _featureLabels(),
           mapOverlay: _drawVectorHole
               ? Align(alignment: Alignment.topRight, child: toggle)
               : NoGeometryBanner(

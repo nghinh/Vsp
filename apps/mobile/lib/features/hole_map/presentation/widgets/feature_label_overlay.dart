@@ -160,17 +160,27 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
           for (final chip in widget.chips)
             if (_onScreen(_positions[chip.identity], size))
               Positioned(
-                // The chip is centred on the shape, so it is placed by its
-                // own centre rather than its corner.
-                left: _positions[chip.identity]!.dx - 44,
-                top: _positions[chip.identity]!.dy - 11,
-                width: 88,
+                // Placed by the tip of its pointer, not by its middle. A chip
+                // centred on the shape covers the shape — on a bunker the size
+                // of a thumbnail the label hides the thing it is labelling —
+                // and two shapes close together end up with two chips on top
+                // of each other and no way to tell which is which. Sitting
+                // above with a pointer down onto it says which one it means.
+                left: _positions[chip.identity]!.dx - _chipWidth / 2,
+                top: _positions[chip.identity]!.dy - _chipHeight - _pointer,
+                width: _chipWidth,
                 child: Center(child: _chip(chip)),
               ),
         ],
       ),
     );
   }
+
+  /// Fixed, because the chip is positioned by its tip and that needs its
+  /// height before it is laid out.
+  static const double _chipWidth = 96;
+  static const double _chipHeight = 34;
+  static const double _pointer = 7;
 
   /// A chip whose shape is off the edge is not clamped to the edge — a label
   /// pinned to the side of the screen points at nothing.
@@ -181,41 +191,101 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
       at.dx < size.width + 40 &&
       at.dy < size.height + 20;
 
+  /// A white callout with a pointer, on the reading that a label has two jobs
+  /// and they pull in opposite directions: it has to be legible against
+  /// anything — mown grass, sand, a satellite photograph of either — and it has
+  /// to not become the thing you look at. A dark translucent chip lost the
+  /// first job on light ground and a bright one lost the second everywhere.
+  /// White card, near-black number, the colour of the layer kept to a thin
+  /// strip down the side so the kind of shape is still readable at a glance
+  /// without the label shouting it.
   Widget _chip(FeatureLabelChip chip) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withOpacity(0.78),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: chip.colour.withOpacity(0.9), width: 1),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            chip.label.toUpperCase(),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: chip.colour,
-              fontSize: 8,
-              height: 1.2,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
+    return CustomPaint(
+      painter: _CalloutPainter(accent: chip.colour),
+      child: SizedBox(
+        width: _chipWidth,
+        height: _chipHeight + _pointer,
+        child: Padding(
+          // Room for the accent strip on the left and the pointer below.
+          padding: const EdgeInsets.fromLTRB(9, 4, 5, _pointer + 3),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                chip.label.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Color(0xFF6B7280),
+                  fontSize: 8,
+                  height: 1.1,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Text(
+                MeasureUnits.format(chip.meters, widget.unit),
+                maxLines: 1,
+                style: const TextStyle(
+                  color: Color(0xFF111827),
+                  fontSize: 14,
+                  height: 1.15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
           ),
-          Text(
-            MeasureUnits.format(chip.meters, widget.unit),
-            maxLines: 1,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              height: 1.2,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
+}
+
+/// The card behind a label: rounded white body, a pointer down onto the shape,
+/// a coloured strip naming the layer, and a shadow so it lifts off whatever it
+/// is sitting on.
+class _CalloutPainter extends CustomPainter {
+  const _CalloutPainter({required this.accent});
+
+  final Color accent;
+
+  static const double _radius = 7;
+  static const double _pointerWidth = 12;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bodyHeight = size.height - _FeatureLabelOverlayState._pointer;
+    final body = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, 0, size.width, bodyHeight),
+      const Radius.circular(_radius),
+    );
+
+    final tip = Path()
+      ..moveTo(size.width / 2 - _pointerWidth / 2, bodyHeight - 0.5)
+      ..lineTo(size.width / 2, size.height)
+      ..lineTo(size.width / 2 + _pointerWidth / 2, bodyHeight - 0.5)
+      ..close();
+
+    final shape = Path()
+      ..addRRect(body)
+      ..addPath(tip, Offset.zero);
+
+    canvas.drawShadow(shape, const Color(0xFF0B1F17), 3, false);
+    canvas.drawPath(shape, Paint()..color = Colors.white);
+
+    // The layer's colour, as a strip rather than as the text or the border:
+    // present, and not competing with the number for attention.
+    canvas.save();
+    canvas.clipRRect(body);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, 4, bodyHeight),
+      Paint()..color = accent,
+    );
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(_CalloutPainter oldDelegate) =>
+      oldDelegate.accent != accent;
 }

@@ -36,12 +36,24 @@ abstract final class CourseMapStyleBuilder {
   /// Source id for the live overlay (golfer, pin, target, rings).
   static const String overlaySourceId = 'hole-overlay';
 
-  // Palette — carried over from the style document this replaces.
-  static const String _backgroundColor = '#0F172A';
-  static const String _ringColor = '#F8FAFC';
-  static const String _golferColor = '#3B82F6';
-  static const String _pinColor = '#EA580C';
-  static const String _targetColor = '#22D3EE';
+  // Palette — daylight, the way a golfer sees the hole they are standing on.
+  //
+  // It was midnight navy with neon-bright shapes on it, inherited from the
+  // style document this replaces. That reads as a dashboard, not as a golf
+  // hole: on a phone held up in the sun the dark ground is a mirror, and the
+  // saturated greens do not tell a golfer which patch is fairway and which is
+  // the green they are aiming at, because both are "bright green".
+  //
+  // So: pale sky behind, grass in the greens grass is actually in, sand the
+  // colour of sand, paths the colour of concrete. The shapes are told apart by
+  // hue the way they are on the ground rather than by luminance, and the only
+  // things allowed to be loud are the three that are not scenery — the golfer,
+  // the flag, and the spot being aimed at.
+  static const String _backgroundColor = '#DCEAF6';
+  static const String _ringColor = '#43584C';
+  static const String _golferColor = '#4A6E8F';
+  static const String _pinColor = '#111827';
+  static const String _targetColor = '#DA2B3C';
 
   /// Course layers in draw order — rough underneath, hazards and tees on top.
   static const List<MapLayerType> courseLayerOrder = [
@@ -96,7 +108,11 @@ abstract final class CourseMapStyleBuilder {
       if (type.name == domainLayerName) {
         return [
           _fillId(type),
+          _draftFillId(type),
           _lineId(type),
+          // Left off this list once, so turning water off left every
+          // unconfirmed pond outlined on the map with nothing inside it.
+          _draftLineId(type),
           _pointId(type),
         ];
       }
@@ -113,7 +129,9 @@ abstract final class CourseMapStyleBuilder {
       case HoleMapFeatureKind.golfer:
         return const ['golfer-circle', 'golfer-accuracy-fill'];
       case HoleMapFeatureKind.target:
-        return const ['target-marker'];
+        // All three rings of the bullseye, or turning the target off leaves
+        // its outer ring on the map with a hole in the middle.
+        return const ['target-ring', 'target-ring-inner', 'target-marker'];
       default:
         return const [];
     }
@@ -121,7 +139,11 @@ abstract final class CourseMapStyleBuilder {
 
   static String _fillId(MapLayerType type) => '${_slug(type)}-fill';
 
+  static String _draftFillId(MapLayerType type) => '${_fillId(type)}-unverified';
+
   static String _lineId(MapLayerType type) => '${_slug(type)}-line';
+
+  static String _draftLineId(MapLayerType type) => '${_lineId(type)}-unverified';
 
   static String _pointId(MapLayerType type) => '${_slug(type)}-point';
 
@@ -133,98 +155,82 @@ abstract final class CourseMapStyleBuilder {
         (m) => '-${m.group(0)!.toLowerCase()}',
       );
 
-  /// Each course layer gets a fill, a line and a circle layer on the shared
-  /// source, and each is restricted to the geometry it is actually for.
+  /// Each course layer gets fills, outlines and a circle layer on the shared
+  /// source, and each draws only the features [HoleMapGeoJson] addressed to it.
   ///
-  /// <strong>Why the geometry-type guard.</strong> The three layers used to
-  /// share one filter, on the reasoning that "MapLibre draws only the geometry
-  /// a layer type can render, so a polygons-only layer costs two no-ops". Two
-  /// of the three are no-ops — a fill over a Point draws nothing, a line over a
-  /// Point draws nothing. A **circle layer over a Polygon is not**: it draws a
-  /// circle at every vertex. So a bunker traced with twenty points came out as
-  /// twenty overlapping orange discs, a green as a cluster of green ones, and
-  /// the tee boxes as a string of white beads. The hole was rendering its own
-  /// vertices instead of its shapes, and it looked like abstract art rather
-  /// than a golf hole.
+  /// <strong>Why the filters are this dumb.</strong> Which layer should draw a
+  /// feature depends on three things — its layer type, whether it is an area or
+  /// a line or a point, and whether anybody has confirmed it — and this style
+  /// used to ask MapLibre to work that out: `all` over `==` over `match` over
+  /// `geometry-type` over `coalesce`. On device the course map drew nothing at
+  /// all: no fills, no outlines. The overlay drew fine on the same map at the
+  /// same moment, and its filters are a single `==` against a property. So the
+  /// three questions are answered in Dart now, where they are unit-tested, and
+  /// each feature arrives carrying `fillOf` / `strokeOf` / `pointOf` naming the
+  /// layer that should draw it. A filter that cannot be misread cannot fail
+  /// silently, and a golfer standing on the 4th does not care how elegant the
+  /// expression was.
+  ///
+  /// The geometry question is still a real one, and worth keeping written
+  /// down: a fill over a Point draws nothing and a line over a Point draws
+  /// nothing, but a **circle layer over a Polygon draws a disc at every
+  /// vertex**. A bunker traced with twenty points came out as twenty
+  /// overlapping orange discs, a green as a cluster of green ones, the tees as
+  /// a string of white beads — the hole rendering its own vertices instead of
+  /// its shapes. `pointOf` is set on points only, which is what stops that.
+  ///
+  /// Provenance is per shape, not per hole. Long Thành's greens and bunkers
+  /// were confirmed by a reviewer looking at imagery; its water hazards are
+  /// 10 m Sentinel-2 pixels a script thresholded, and its fairway is a
+  /// rectangle derived from the tee–green line. All four were drawn identically
+  /// on a hole badged verified, so a golfer planning a lay-up could not tell
+  /// the bunker that is really there from the pond that might not be. Anything
+  /// unconfirmed is drawn faint and dashed — present, and visibly not a
+  /// promise.
   static List<Map<String, dynamic>> _courseLayers(MapLayerType type) {
     final style = _paletteFor(type);
-    final ofType = ['==', ['get', 'layerType'], type.name];
 
-    List<Object> withGeometry(List<String> kinds) => [
-      'all',
-      ofType,
-      ['match', ['geometry-type'], kinds, true, false],
+    List<Object> drawnBy(String property) => [
+      '==',
+      ['get', property],
+      type.name,
     ];
 
-    /// Same, plus whether the shape itself has been confirmed.
-    ///
-    /// Provenance is per shape, not per hole. Long Thành's greens and bunkers
-    /// were confirmed by a reviewer looking at imagery; its water hazards are
-    /// 10 m Sentinel-2 pixels a script thresholded, and its fairway is a
-    /// rectangle derived from the tee–green line. All four were drawn
-    /// identically on a hole badged verified, so a golfer planning a lay-up
-    /// could not tell the bunker that is really there from the pond that might
-    /// not be. Anything unconfirmed is drawn faint and dashed — present, and
-    /// visibly not a promise.
-    List<Object> withGeometryAnd(List<String> kinds, {required bool verified}) => [
-      'all',
-      ofType,
-      ['match', ['geometry-type'], kinds, true, false],
-      // Absent reads as unverified, the same way the reader treats a package
-      // with no provenance.
-      [verified ? '==' : '!=', ['coalesce', ['get', 'verified'], false], true],
-    ];
+    Map<String, dynamic> fill(String id, String property, double opacity) => {
+      'id': id,
+      'type': 'fill',
+      'source': courseSourceId,
+      'filter': drawnBy(property),
+      'paint': {'fill-color': style.fill, 'fill-opacity': opacity},
+    };
 
     return [
-      {
-        'id': _fillId(type),
-        'type': 'fill',
-        'source': courseSourceId,
-        'filter': withGeometry(const ['Polygon', 'MultiPolygon']),
-        'paint': {
-          'fill-color': style.fill,
-          // Half strength for a shape nobody has confirmed.
-          'fill-opacity': [
-            'case',
-            ['==', ['coalesce', ['get', 'verified'], false], true],
-            style.fillOpacity,
-            style.fillOpacity * 0.45,
-          ],
-        },
-      },
+      fill(_fillId(type), HoleMapGeoJson.fillKey, style.fillOpacity),
+      // Half strength for a shape nobody has confirmed.
+      fill(_draftFillId(type), HoleMapGeoJson.draftFillKey,
+          style.fillOpacity * 0.45),
       {
         'id': _lineId(type),
         'type': 'line',
         'source': courseSourceId,
         // Polygons too: the outline is what gives a bunker or a green its edge
         // against the fill underneath.
-        'filter': withGeometryAnd(const [
-          'LineString',
-          'MultiLineString',
-          'Polygon',
-          'MultiPolygon',
-        ], verified: true),
+        'filter': drawnBy(HoleMapGeoJson.strokeKey),
         'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {
           'line-color': style.line,
           'line-width': style.lineWidth,
           'line-opacity': style.lineOpacity,
-          if (style.lineDash != null) 'line-dasharray': style.lineDash,
         },
       },
       {
         // Unconfirmed shapes get a dashed edge. `line-dasharray` cannot be
         // driven by a property in MapLibre, so this is a second layer rather
-        // than an expression.
-        'id': '${_lineId(type)}-unverified',
+        // than an expression — the same trade the fills above make.
+        'id': _draftLineId(type),
         'type': 'line',
         'source': courseSourceId,
-        'filter': withGeometryAnd(const [
-          'LineString',
-          'MultiLineString',
-          'Polygon',
-          'MultiPolygon',
-        ], verified: false),
+        'filter': drawnBy(HoleMapGeoJson.draftStrokeKey),
         'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {
           'line-color': style.line,
@@ -237,10 +243,9 @@ abstract final class CourseMapStyleBuilder {
         'id': _pointId(type),
         'type': 'circle',
         'source': courseSourceId,
-        // Points only. A hole carries a few real ones — the tee and green
-        // reference points the package writes — and they are worth a marker.
-        // Every polygon vertex is not.
-        'filter': withGeometry(const ['Point', 'MultiPoint']),
+        // Points only — a hole carries a few real ones, the tee and green
+        // reference points the package writes, and they are worth a marker.
+        'filter': drawnBy(HoleMapGeoJson.pointKey),
         'paint': {
           'circle-color': style.fill,
           'circle-radius': 5.0,
@@ -269,8 +274,9 @@ abstract final class CourseMapStyleBuilder {
       String id,
       String kind,
       String color,
-      double radius,
-    ) => {
+      double radius, {
+      double strokeWidth = 2.0,
+    }) => {
       'id': id,
       'type': 'circle',
       'source': overlaySourceId,
@@ -278,7 +284,7 @@ abstract final class CourseMapStyleBuilder {
       'paint': {
         'circle-color': color,
         'circle-radius': radius,
-        'circle-stroke-width': 2.0,
+        'circle-stroke-width': strokeWidth,
         'circle-stroke-color': '#FFFFFF',
       },
     };
@@ -286,15 +292,33 @@ abstract final class CourseMapStyleBuilder {
     return [
       // The play line, under everything: from where the golfer stands (or the
       // tee) through the target to the flag, with the distance written on it.
+      //
+      // Two layers. A white line on grass is white-on-light — legible in the
+      // office, gone in the sun with a phone at arm's length — so a soft dark
+      // casing goes under it. Same trick the satellite view already uses,
+      // where the ground underneath is a photograph and even less predictable.
+      {
+        'id': 'play-line-casing',
+        'type': 'line',
+        'source': overlaySourceId,
+        'filter': ['==', ['get', 'layerType'], HoleMapFeatureKind.playLine],
+        'layout': {'line-cap': 'round', 'line-join': 'round'},
+        'paint': {
+          'line-color': '#1F2E23',
+          'line-width': 5.0,
+          'line-opacity': 0.22,
+        },
+      },
       {
         'id': 'play-line',
         'type': 'line',
         'source': overlaySourceId,
         'filter': ['==', ['get', 'layerType'], HoleMapFeatureKind.playLine],
+        'layout': {'line-cap': 'round', 'line-join': 'round'},
         'paint': {
           'line-color': '#FFFFFF',
-          'line-width': 2.0,
-          'line-opacity': 0.9,
+          'line-width': 3.0,
+          'line-opacity': 0.95,
         },
       },
       // The accuracy disc is a real geodesic polygon (see HoleMapGeoJson), so
@@ -314,75 +338,106 @@ abstract final class CourseMapStyleBuilder {
       ring('distance-ring-150', HoleMapFeatureKind.distanceRing150),
       ring('distance-ring-200', HoleMapFeatureKind.distanceRing200),
       marker('pin-circle', HoleMapFeatureKind.pin, _pinColor, 7.0),
-      marker('target-marker', HoleMapFeatureKind.target, _targetColor, 8.0),
+      // The target is a bullseye, not a dot: three circles stacked, because it
+      // is the one thing on the map the golfer put there themselves and it has
+      // to be findable among a dozen shapes the map put there. A single disc
+      // the same size reads as one more marker.
+      marker('target-ring', HoleMapFeatureKind.target, _targetColor, 11.0),
+      marker('target-ring-inner', HoleMapFeatureKind.target, '#FFFFFF', 7.0,
+          strokeWidth: 0.0),
+      marker('target-marker', HoleMapFeatureKind.target, _targetColor, 3.5,
+          strokeWidth: 0.0),
       marker('golfer-circle', HoleMapFeatureKind.golfer, _golferColor, 9.0),
     ];
   }
 
   static _LayerPalette _paletteFor(MapLayerType type) {
     switch (type) {
+      // The body of the hole. Everything else sits on this, so it is opaque
+      // and its outline is barely darker than its fill — a hard edge here
+      // would draw a black line round the whole hole.
       case MapLayerType.rough:
-        return const _LayerPalette(fill: '#14532D', line: '#166534');
+        return const _LayerPalette(
+          fill: '#79B356',
+          fillOpacity: 1.0,
+          line: '#6DA44C',
+          lineWidth: 1.0,
+          lineOpacity: 0.6,
+        );
+      // Lighter than the rough, the way mown grass is.
       case MapLayerType.fairway:
         return const _LayerPalette(
-          fill: '#166534',
-          fillOpacity: 0.85,
-          line: '#15803D',
+          fill: '#9BCE6C',
+          fillOpacity: 1.0,
+          line: '#8DC15E',
+          lineWidth: 1.2,
+          lineOpacity: 0.7,
         );
+      // Lighter again, and outlined white: this is the one shape on the hole
+      // a golfer is aiming at, and it has to be findable at a glance.
       case MapLayerType.green:
         return const _LayerPalette(
-          fill: '#22C55E',
-          fillOpacity: 0.9,
-          line: '#16A34A',
+          fill: '#B7E07A',
+          fillOpacity: 1.0,
+          line: '#FFFFFF',
+          lineWidth: 1.6,
+          lineOpacity: 0.85,
         );
       case MapLayerType.bunker:
         return const _LayerPalette(
-          fill: '#D4A853',
-          fillOpacity: 0.9,
-          line: '#A16207',
+          fill: '#F2E3B8',
+          fillOpacity: 1.0,
+          line: '#DCC68A',
+          lineWidth: 1.2,
         );
       case MapLayerType.water:
         return const _LayerPalette(
-          fill: '#1D4ED8',
-          fillOpacity: 0.8,
-          line: '#1E40AF',
-          lineWidth: 1.5,
+          fill: '#5EB3E4',
+          fillOpacity: 0.95,
+          line: '#3E96CC',
+          lineWidth: 1.4,
         );
       case MapLayerType.penaltyArea:
         return const _LayerPalette(
-          fill: '#9333EA',
-          fillOpacity: 0.6,
-          line: '#7E22CE',
+          fill: '#E9A9A9',
+          fillOpacity: 0.75,
+          line: '#C96A6A',
+          lineWidth: 1.4,
         );
       case MapLayerType.ob:
         return const _LayerPalette(
-          fill: '#1E293B',
-          fillOpacity: 0.9,
-          line: '#F87171',
+          fill: '#C7C2B6',
+          fillOpacity: 0.55,
+          line: '#B3453F',
+          lineWidth: 1.4,
         );
+      // A solid concrete ribbon, not a dashed hairline. The cart path is the
+      // one thing on the hole that tells a golfer where they are when nothing
+      // else on screen matches what they can see.
       case MapLayerType.cartPath:
         return const _LayerPalette(
-          fill: '#64748B',
-          fillOpacity: 0.4,
-          line: '#64748B',
-          lineWidth: 2.5,
-          lineOpacity: 0.8,
-          lineDash: [4.0, 2.0],
+          fill: '#CFC9BE',
+          fillOpacity: 0.9,
+          line: '#CFC9BE',
+          lineWidth: 3.0,
+          lineOpacity: 0.95,
         );
       case MapLayerType.tee:
         return const _LayerPalette(
-          fill: '#E2E8F0',
-          fillOpacity: 0.8,
-          line: '#94A3B8',
+          fill: '#C4E39A',
+          fillOpacity: 1.0,
+          line: '#A8CC79',
+          lineWidth: 1.2,
         );
       case MapLayerType.landmark:
         return const _LayerPalette(
-          fill: '#F8FAFC',
-          fillOpacity: 0.9,
-          line: '#0F172A',
+          fill: '#FFFFFF',
+          fillOpacity: 0.95,
+          line: '#5B6B57',
+          lineWidth: 1.2,
         );
       default:
-        return const _LayerPalette(fill: '#64748B', line: '#94A3B8');
+        return const _LayerPalette(fill: '#B9C3AE', line: '#94A38C');
     }
   }
 }
@@ -394,7 +449,6 @@ class _LayerPalette {
   final String line;
   final double lineWidth;
   final double lineOpacity;
-  final List<double>? lineDash;
 
   const _LayerPalette({
     required this.fill,
@@ -402,6 +456,5 @@ class _LayerPalette {
     required this.line,
     this.lineWidth = 1.0,
     this.lineOpacity = 0.9,
-    this.lineDash,
   });
 }
