@@ -133,12 +133,17 @@ public class HoleFeatureController {
                   -- regional cut makes the whole layer a Derivative Database.
                   -- Keeping each (course, layer) to a single source keeps it a
                   -- Collective Database, and our own work our own.
-                  AND (d.source <> 'ai-satellite' OR NOT EXISTS (
+                  --
+                  -- Model-drawn sources live in one list. A third arriving is
+                  -- a value here, not another branch: golfseg is judged by the
+                  -- rule the satellite reader was, because the question is the
+                  -- same one — did a person draw this layer?
+                  AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
                         SELECT 1 FROM draft_geometry_features surveyed
                         WHERE surveyed.course_id = d.course_id
                           AND surveyed.layer_type = d.layer_type
                           AND surveyed.is_valid
-                          AND surveyed.source <> 'ai-satellite'
+                          AND surveyed.source NOT IN ('ai-satellite', 'golfseg')
                           AND surveyed.verification_status <> 'REJECTED'))
                 ORDER BY d.layer_type
                 """)

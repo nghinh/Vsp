@@ -142,6 +142,11 @@ class AdminEndpointAuthorizationTest {
                 // that a loop would get this deployment banned from.
                 new Endpoint("OsmImportController", HttpMethod.POST,
                         "/admin/courses/1/geometry/osm-import", RoleName.COURSE_ADMIN),
+                // A GPU call that writes proposals across a hole, and — until
+                // the model is retrained on imagery licensed for automated
+                // extraction — research output rather than something to publish.
+                new Endpoint("GolfSegController", HttpMethod.POST,
+                        "/admin/courses/1/holes/1/geometry/golfseg", RoleName.COURSE_ADMIN),
                 new Endpoint("CourseImportController", HttpMethod.POST, "/admin/courses/1/import/preview", RoleName.COURSE_ADMIN),
                 new Endpoint("DataLicenseController", HttpMethod.GET, "/admin/licenses", RoleName.SUPER_ADMIN),
                 new Endpoint("AdminMarketController", HttpMethod.GET, "/admin/markets", RoleName.SUPER_ADMIN),
