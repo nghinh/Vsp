@@ -1744,5 +1744,9 @@
   "mapLayerWater": "Hồ nước",
   "mapLayerPenaltyArea": "Khu phạt",
   "mapLayerOb": "Ngoài biên",
-  "mapLayerTee": "Phát bóng"
+  "mapLayerTee": "Phát bóng",
+  "mapGreenLabel": "Green",
+  "mapGreenFront": "Đầu",
+  "mapGreenCentre": "Giữa",
+  "mapGreenBack": "Cuối"
 }

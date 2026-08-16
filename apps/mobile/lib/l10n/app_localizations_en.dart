@@ -4134,4 +4134,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mapLayerTee => 'Tee';
+
+  @override
+  String get mapGreenLabel => 'Green';
+
+  @override
+  String get mapGreenFront => 'Front';
+
+  @override
+  String get mapGreenCentre => 'Centre';
+
+  @override
+  String get mapGreenBack => 'Back';
 }

@@ -4132,4 +4132,16 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get mapLayerTee => 'Phát bóng';
+
+  @override
+  String get mapGreenLabel => 'Green';
+
+  @override
+  String get mapGreenFront => 'Đầu';
+
+  @override
+  String get mapGreenCentre => 'Giữa';
+
+  @override
+  String get mapGreenBack => 'Cuối';
 }

@@ -7285,6 +7285,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tee'**
   String get mapLayerTee;
+
+  /// No description provided for @mapGreenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get mapGreenLabel;
+
+  /// No description provided for @mapGreenFront.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get mapGreenFront;
+
+  /// No description provided for @mapGreenCentre.
+  ///
+  /// In en, this message translates to:
+  /// **'Centre'**
+  String get mapGreenCentre;
+
+  /// No description provided for @mapGreenBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get mapGreenBack;
 }
 
 class _AppLocalizationsDelegate

@@ -24,8 +24,11 @@ import 'distance_ring_overlay.dart';
 import 'play_line_panel.dart';
 import 'feature_distance_panel.dart';
 import 'feature_label_overlay.dart';
+import 'green_reference_panel.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_distances.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_labels.dart';
+import 'package:vsp_mobile/features/hole_map/domain/feature_rings.dart';
+import 'package:vsp_mobile/features/hole_map/domain/green_reference.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_vantage.dart';
 import 'layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
@@ -269,6 +272,31 @@ class _HoleMapViewState extends State<HoleMapView> {
       tee: widget.state.holeMap.teeCenter,
       green: widget.state.holeMap.greenCenter,
     );
+  }
+
+  /// Front, centre and back of the green, from where the shot is played.
+  ///
+  /// The single most-read number on the screen, so it comes from the traced
+  /// green outline where there is one — measured along the approach, §31 — and
+  /// is null where the hole has only a green point, which carries its own
+  /// centre distance already.
+  GreenReference? _greenReference() {
+    final from = _measuringPoint();
+    if (from == null) return null;
+    final green = widget.state.holeMap.layers[MapLayerType.green];
+    if (green == null) return null;
+
+    GreenReference? best;
+    for (final ring in FeatureRings.outerRings(green)) {
+      final reference = GreenReference.of(greenRing: ring, from: from);
+      // The green being played to is the nearest one — a course can have a
+      // practice green or the next hole's in frame.
+      if (reference != null &&
+          (best == null || reference.centreMeters < best.centreMeters)) {
+        best = reference;
+      }
+    }
+    return best;
   }
 
   /// The line the golfer is playing along, in legs.
@@ -556,6 +584,26 @@ class _HoleMapViewState extends State<HoleMapView> {
                   style: const TextStyle(
                       color: Color(0xFFFBBF24), fontSize: 11),
                 ),
+              ),
+            ),
+
+          // Front / centre / back to the green — the number read before every
+          // approach. On the right, below the wind and rings that share that
+          // corner, clear of the layer toggle at the foot of it.
+          if (_greenReference() != null)
+            Positioned(
+              right: 12,
+              top: MediaQuery.of(context).size.height * 0.30,
+              child: Builder(
+                builder: (context) {
+                  final green = _greenReference()!;
+                  return GreenReferencePanel(
+                    frontMeters: green.frontMeters,
+                    centreMeters: green.centreMeters,
+                    backMeters: green.backMeters,
+                    unit: DistanceUnitScope.watch(context),
+                  );
+                },
               ),
             ),
 

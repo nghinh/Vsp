@@ -2724,5 +2724,9 @@
   "mapLayerWater": "Water",
   "mapLayerPenaltyArea": "Penalty area",
   "mapLayerOb": "Out of bounds",
-  "mapLayerTee": "Tee"
+  "mapLayerTee": "Tee",
+  "mapGreenLabel": "Green",
+  "mapGreenFront": "Front",
+  "mapGreenCentre": "Centre",
+  "mapGreenBack": "Back"
 }
