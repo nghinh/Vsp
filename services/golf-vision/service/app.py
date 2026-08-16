@@ -28,7 +28,9 @@ from pydantic import BaseModel, Field                           # noqa: E402
 
 from golfvision.classes import APP_LAYER_TYPE, GOLF_SEG_LABELS  # noqa: E402
 from golfvision.geo import webmercator as wm                    # noqa: E402
-from golfvision.imagery.fetcher import TileFetcher              # noqa: E402
+from golfvision.imagery.fetcher import (                        # noqa: E402
+    TileFetcher, at_training_scale,
+)
 from golfvision.masks.postprocess import MaskPostProcessor      # noqa: E402
 from golfvision.vector.vectorize import (                       # noqa: E402
     MaskVectorizationService, feature_collection)
@@ -152,8 +154,20 @@ def trace_hole(request: TraceRequest):
 
     started = time.time()
     try:
-        tile = fetcher.fetch(south, west, north, east, zoom=request.zoom,
-                             max_pixels=100_000)
+        # The finest zoom that is actually a photograph, then resampled to the
+        # scale the model was trained at.
+        #
+        # Both halves earn their place. Esri answers a request outside its
+        # high-resolution coverage with a flat placeholder rather than a 404 —
+        # over Bắc Giang at zoom 19 that is 123 colours across 400 000 pixels,
+        # and two samples three kilometres apart come back byte-identical. The
+        # model, shown a blank, returned 116 shapes at 0.22 confidence, which
+        # the API's confidence floor then discarded: a course reported as
+        # having no features, when what it had was no imagery. Zoom 18 over the
+        # same ground is a real picture at 0.56 m.
+        tile = at_training_scale(
+            fetcher.fetch_best(south, west, north, east, zoom=request.zoom,
+                               max_pixels=100_000))
     except Exception as error:                    # noqa: BLE001
         raise HTTPException(502, f"imagery unavailable: {error}") from error
 
