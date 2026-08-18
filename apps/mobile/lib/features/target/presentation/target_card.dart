@@ -104,10 +104,10 @@ class TargetCard extends StatelessWidget {
     final isReducedMotion = MediaQuery.of(context).disableAnimations;
 
     final textColor = isDark
-        ? VspColorDark.textPrimary
+        ? VspTextTiers.of(context).primary
         : VspColorLight.textPrimary;
     final mutedColor = isDark
-        ? VspColorDark.textSecondary
+        ? VspTextTiers.of(context).secondary
         : VspColorLight.textSecondary;
     final primaryColor = isDark ? VspColorDark.primary : VspColorLight.primary;
 
@@ -147,7 +147,7 @@ class TargetCard extends StatelessWidget {
                       ),
                       const SizedBox(width: VspSpacing.xs),
                       Text(
-                        'TARGET',
+                        AppLocalizations.of(context).targetMarkerLabel,
                         style: VspTextStyles.label(context).copyWith(
                           color: primaryColor,
                           letterSpacing: VspLetterSpacing.widest,

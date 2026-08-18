@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'tokens/vsp_color.dart';
+import 'tokens/vsp_text_tiers.dart';
 import 'tokens/vsp_typography.dart';
 import 'tokens/vsp_spacing.dart';
 import 'tokens/vsp_elevation.dart';
@@ -42,6 +43,14 @@ abstract final class VspTheme {
       brightness: brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: colorScheme.surface,
+
+      // The three text tiers, which ColorScheme has no room for. Without them
+      // on the theme, a widget wanting the second tier had to name
+      // VspColorDark.textSecondary — and then rendered dark text in a light
+      // theme. See VspTextTiers.
+      extensions: <ThemeExtension<dynamic>>[
+        isDark ? VspTextTiers.dark : VspTextTiers.light,
+      ],
 
       // ─── Typography ──────────────────────────────────────────────────────────
       textTheme: _buildTextTheme(isDark: isDark),

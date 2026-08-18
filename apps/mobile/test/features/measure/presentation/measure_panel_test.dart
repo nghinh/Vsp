@@ -173,7 +173,17 @@ void main() {
     await pumpPanel(tester, stateWith(origin: fix()));
 
     expect(find.text('Measure any distance'), findsOneWidget);
-    expect(find.text('No points'), findsOneWidget);
+    // And says it once. "No points" used to sit in the header beside the
+    // title while the empty state below said the same thing at length — two
+    // statements of one fact, and the header one was squeezing the title into
+    // "Đo khoản…" to make room for itself.
+    expect(find.text('No points'), findsNothing);
+  });
+
+  testWidgets('and counts the points once there are some', (tester) async {
+    await pumpPanel(tester, stateWith(origin: fix(), withPoints: points));
+
+    expect(find.textContaining('1'), findsWidgets);
   });
 
   testWidgets('shows a total once there is more than one leg', (tester) async {

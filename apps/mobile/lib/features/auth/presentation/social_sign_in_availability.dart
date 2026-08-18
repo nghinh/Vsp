@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 /// What each social provider needs before its button can succeed, and a
@@ -54,6 +55,62 @@ bool get isGoogleSignInAvailable {
     return false;
   }
   return _isApplePlatform ? googleIosClientId.isNotEmpty : true;
+}
+
+/// Why a Google sign-in did not happen.
+///
+/// Both screens used to catch every failure into one sentence — "Đăng nhập
+/// Google thất bại. Vui lòng thử lại." — and the header of this file already
+/// says why that is wrong: a golfer cannot tell a misconfiguration from a bad
+/// connection. What it did not say is that the advice is false for one of
+/// them. A build whose signing certificate Google has never seen will fail
+/// this way on the first tap and on the thousandth, and "please try again" is
+/// the one instruction guaranteed not to help.
+///
+/// It cost a debugging session on a signed APK the day the release keystore
+/// was created: the app said what it always says, so nothing on screen
+/// distinguished "this certificate is not registered" from "the wifi dropped".
+enum GoogleSignInFailure {
+  /// Google does not recognise this build.
+  ///
+  /// On Android the client is resolved from the package name and the SHA-1 of
+  /// the signing certificate, so a new keystore — or a debug build against a
+  /// release-only registration — produces `ApiException: 10`,
+  /// DEVELOPER_ERROR. Nothing the golfer does changes it. Whoever built the
+  /// app has to register the certificate.
+  notRegistered,
+
+  /// The device could not reach Google. Retrying is exactly right here.
+  network,
+
+  /// Something else. The generic message is honest for this one.
+  unknown,
+}
+
+/// Reads the platform error, which is the only place the reason survives.
+///
+/// Pure and exported so the mapping is tested rather than trusted: the string
+/// below comes out of Google Play services, not out of this codebase, and a
+/// wrong guess here is invisible until somebody is standing in front of a
+/// broken build.
+GoogleSignInFailure classifyGoogleSignInFailure(Object error) {
+  if (error is! PlatformException) return GoogleSignInFailure.unknown;
+
+  if (error.code == 'network_error') return GoogleSignInFailure.network;
+
+  // `sign_in_failed` is the plugin's catch-all; the status code that says
+  // which failure it was is only in the message, as
+  // "com.google.android.gms.common.api.ApiException: 10: " — 10 being
+  // DEVELOPER_ERROR. Matched with the delimiters so a 10 inside some other
+  // number cannot trigger it.
+  final message = error.message ?? '';
+  if (message.contains('ApiException: 10:') ||
+      message.contains('ApiException: 10 ') ||
+      message.trimRight().endsWith('ApiException: 10')) {
+    return GoogleSignInFailure.notRegistered;
+  }
+
+  return GoogleSignInFailure.unknown;
 }
 
 /// A client configured for the platform it is running on.

@@ -37,12 +37,26 @@ class CourseDownloadScreen extends StatefulWidget {
   final PackageManifestRepository manifestRepo;
   final CoursePackageRepository packageRepo;
 
+  /// The club's other đường, fetched in the same go.
+  ///
+  /// A club like Long Biên is three nines and six ways of pairing them, and a
+  /// package covers one nine. Downloading only the nine that happened to be
+  /// asked for produced a sequence nobody could follow: fetch Đường B, see
+  /// "Sẵn sàng ngoại tuyến", pick Đường A → Đường B, be told to download
+  /// again. Every sentence true, the whole thing unreadable — and the golfer's
+  /// own summary of it was "rất linh tinh".
+  ///
+  /// A đường's package is about 8 KB. There was never a reason to ration
+  /// them, and "tải sân" ought to mean the sân.
+  final List<int> siblingCourseIds;
+
   const CourseDownloadScreen({
     super.key,
     required this.courseId,
     required this.courseName,
     required this.manifestRepo,
     required this.packageRepo,
+    this.siblingCourseIds = const [],
   });
 
   @override
@@ -108,6 +122,13 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
   /// False until the services above exist. Everything that touches them is
   /// gated on this rather than on `late final` throwing a LateInitializationError.
   bool _servicesReady = false;
+
+  /// How many of the club's other đường have been started, or 0 when idle.
+  ///
+  /// The progress bar belongs to the đường the golfer opened this screen for;
+  /// this is the line underneath saying the rest are on their way, so a
+  /// finished bar with the screen still working does not read as a hang.
+  int _siblingsFetched = 0;
 
   Future<void> _loadState() async {
     setState(() => _isLoading = true);
@@ -287,6 +308,32 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
 
           const SizedBox(height: VspSpacing.md),
 
+          // The rest of the club, while it is happening. Without this the bar
+          // reaches the end and the screen keeps working, which reads as a
+          // stall.
+          if (_siblingsFetched > 0)
+            Row(
+              children: [
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: VspSpacing.sm),
+                Expanded(
+                  child: Text(
+                    AppLocalizations.of(context).downloadOtherLayouts(
+                      '$_siblingsFetched',
+                      '${widget.siblingCourseIds.length}',
+                    ),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
           // Offline ready confirmation
           if (_state == DownloadServiceState.offlineReady)
             _buildOfflineReadyBanner(theme, colorScheme),
@@ -444,6 +491,31 @@ class _CourseDownloadScreenState extends State<CourseDownloadScreen> {
 
     final result = await _downloadService.downloadPackage(widget.courseId);
     if (!mounted) return;
+
+    // Then the rest of the club, so "sân đã tải" means the sân.
+    //
+    // Sequential on purpose: the download service keys its progress stream and
+    // its pause/resume state by course id, and running two at once would have
+    // them writing over each other's progress on the one screen. Three nines
+    // at 8 KB each is not worth parallelising.
+    //
+    // A sibling that fails does not fail the download the golfer asked for —
+    // they came here for this đường and they now have it. The banner on the
+    // setup screen still lists any nine that did not arrive, so nothing is
+    // hidden by carrying on.
+    if (result is DownloadPackageSuccess) {
+      for (final sibling in widget.siblingCourseIds) {
+        if (!mounted) return;
+        setState(() => _siblingsFetched++);
+        try {
+          await _downloadService.downloadPackage(sibling);
+        } catch (_) {
+          // Left for the setup screen to report against its own đường.
+        }
+      }
+      if (!mounted) return;
+      setState(() => _siblingsFetched = 0);
+    }
 
     // Tapping "Cập nhật" on a package that is already current returns
     // success having downloaded nothing, and the screen looked identical —

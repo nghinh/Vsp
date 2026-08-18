@@ -115,8 +115,8 @@ class DeletePackageDialog extends StatelessWidget {
               VspSemanticColorToken.syncFailed,
             ),
           ),
-          child: const Text(
-            'Remove',
+          child: Text(
+            AppLocalizations.of(context).commonRemove,
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),

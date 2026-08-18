@@ -302,7 +302,7 @@ class _HazardDistanceBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                hazardType != null ? 'To $hazardType' : 'To nearest hazard',
+                hazardType != null ? 'To $hazardType' : AppLocalizations.of(context).dispersionNearestHazard,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

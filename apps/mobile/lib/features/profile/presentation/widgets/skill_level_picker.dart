@@ -43,7 +43,7 @@ class SkillLevelPicker extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Skill Level',
+                      AppLocalizations.of(context).profileSkillLevel,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),

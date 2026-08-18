@@ -18,7 +18,7 @@ class SyncStateBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, icon, label) = _appearanceFor(syncState);
+    final (color, icon, label) = _appearanceFor(context, syncState);
 
     return Semantics(
       label: AppLocalizations.of(context).syncStatusLabel(label),
@@ -48,16 +48,27 @@ class SyncStateBadge extends StatelessWidget {
     );
   }
 
-  (Color, IconData, String) _appearanceFor(SyncState state) {
+  (Color, IconData, String) _appearanceFor(
+    BuildContext context,
+    SyncState state,
+  ) {
+    // Every label from l10n. These were 'Synced', 'Pending', 'Syncing...' and
+    // 'Failed' — English, on a badge a Vietnamese golfer sees on the scorecard
+    // and on the summary of every round they play. The strings already existed
+    // in both .arb files and nothing was reading them.
+    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     switch (state) {
       case SyncState.synced:
-        return (Colors.green, Icons.check_circle, 'Synced');
+        return (scheme.tertiary, Icons.check_circle, l10n.syncSaved);
       case SyncState.pending:
-        return (Colors.amber, Icons.cloud_upload, 'Pending');
+        return (scheme.secondary, Icons.cloud_upload, l10n.syncPending);
       case SyncState.syncing:
-        return (Colors.blue, Icons.sync, 'Syncing...');
+        // Blue is progress and has no role in the scheme; it is the one
+        // Material colour on this badge with nothing to map to.
+        return (Colors.blue, Icons.sync, l10n.syncSyncing);
       case SyncState.failed:
-        return (Colors.red, Icons.error, 'Failed');
+        return (scheme.error, Icons.error, l10n.syncFailed);
     }
   }
 }

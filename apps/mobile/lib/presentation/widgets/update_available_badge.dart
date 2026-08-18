@@ -45,7 +45,7 @@ class UpdateAvailableBadge extends StatelessWidget {
             ),
             const SizedBox(width: 4),
             Text(
-              'Update',
+              AppLocalizations.of(context).commonUpdate,
               style: TextStyle(
                 fontSize: compact ? 10 : 11,
                 fontWeight: FontWeight.w600,

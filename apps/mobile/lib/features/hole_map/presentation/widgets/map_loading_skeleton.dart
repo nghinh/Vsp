@@ -4,6 +4,7 @@
 // Uses shimmer animation with dark theme high-contrast colors.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Skeleton loading UI displayed while the map and geometry load.
@@ -45,7 +46,7 @@ class _MapLoadingSkeletonState extends State<MapLoadingSkeleton>
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF0F172A),
+      color: Theme.of(context).colorScheme.inverseSurface,
       child: Stack(
         children: [
           // Map placeholder with shimmer
@@ -54,7 +55,10 @@ class _MapLoadingSkeletonState extends State<MapLoadingSkeleton>
               animation: _animation,
               builder: (context, child) {
                 return CustomPaint(
-                  painter: _ShimmerPainter(progress: _animation.value),
+                  painter: _ShimmerPainter(
+                    progress: _animation.value,
+                    surface: Theme.of(context).colorScheme.surface,
+                  ),
                 );
               },
             ),
@@ -72,27 +76,27 @@ class _MapLoadingSkeletonState extends State<MapLoadingSkeleton>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const SizedBox(
+                SizedBox(
                   width: 40,
                   height: 40,
                   child: CircularProgressIndicator(
-                    color: Color(0xFFEA580C),
+                    color: Theme.of(context).colorScheme.primary,
                     strokeWidth: 3,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   AppLocalizations.of(context).mapLoadingHole('${widget.holeNumber ?? "…"}'),
-                  style: const TextStyle(
-                    color: Color(0xFFF8FAFC),
+                  style: TextStyle(
+                    color: VspTextTiers.of(context).primary,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Preparing your strategic map',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                Text(
+                  AppLocalizations.of(context).mapPreparing,
+                  style: TextStyle(color: VspTextTiers.of(context).tertiary, fontSize: 13),
                 ),
               ],
             ),
@@ -127,9 +131,9 @@ class _SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(color: const Color(0xFF334155), width: 1),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
       ),
     );
   }
@@ -138,13 +142,17 @@ class _SkeletonBox extends StatelessWidget {
 class _ShimmerPainter extends CustomPainter {
   final double progress;
 
-  _ShimmerPainter({required this.progress});
+  /// Handed in rather than looked up: a CustomPainter has no BuildContext, so
+  /// the widget that builds it reads the theme and passes the colour down.
+  final Color surface;
+
+  _ShimmerPainter({required this.progress, required this.surface});
 
   @override
   void paint(Canvas canvas, Size size) {
     // Draw a subtle grid pattern to suggest map area
     final paint = Paint()
-      ..color = const Color(0xFF1E293B)
+      ..color = surface
       ..style = PaintingStyle.fill;
 
     // Background
@@ -152,7 +160,7 @@ class _ShimmerPainter extends CustomPainter {
 
     // Subtle grid lines
     final gridPaint = Paint()
-      ..color = const Color(0xFF1E293B).withOpacity(0.5)
+      ..color = surface.withOpacity(0.5)
       ..strokeWidth = 1
       ..style = PaintingStyle.stroke;
 

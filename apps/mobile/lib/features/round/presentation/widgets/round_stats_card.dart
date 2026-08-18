@@ -43,7 +43,7 @@ class RoundStatsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Round Stats',
+              AppLocalizations.of(context).roundStatsHeading,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -113,9 +113,12 @@ class _StatItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
+        // Wrap: the figure and its "of 14" sit side by side until the golfer's
+        // text no longer allows it, and then the qualifier drops below rather
+        // than pushing the figure off the tile. Overflowed at 1.3x.
+        Wrap(
+          crossAxisAlignment: WrapCrossAlignment.end,
+          spacing: 4,
           children: [
             Text(
               value,

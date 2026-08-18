@@ -4,8 +4,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:mobile_theme/components/vsp_text_field.dart';
 import 'package:mobile_theme/tokens/vsp_color.dart';
+import 'package:mobile_theme/tokens/vsp_text_tiers.dart';
 import 'package:mobile_theme/tokens/vsp_spacing.dart';
 
+import 'package:vsp_mobile/core/locale/language_toggle.dart';
 import 'package:vsp_mobile/core/text/vietnam_phone.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/auth/presentation/social_sign_in_availability.dart';
@@ -40,8 +42,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _onGoogleSignIn() async {
-    // Resolved before the first await so the message survives the async gap.
-    final failedMessage = AppLocalizations.of(context).authGoogleFailed;
+    // Resolved before the first await so the messages survive the async gap.
+    final l10n = AppLocalizations.of(context);
+    final failedMessage = l10n.authGoogleFailed;
     try {
       final account = await buildGoogleSignIn().signIn();
       if (account == null) {
@@ -58,9 +61,16 @@ class _LoginScreenState extends State<LoginScreen> {
       context.read<AuthBloc>().add(
         GoogleSignInRequested(idToken: token, displayName: account.displayName),
       );
-    } catch (_) {
+    } catch (error) {
+      // Named, not swallowed. See GoogleSignInFailure — one of these three is
+      // permanent for this build, and telling that golfer to try again sends
+      // them round a loop that cannot end.
       if (mounted) {
-        _showError(failedMessage);
+        _showError(switch (classifyGoogleSignInFailure(error)) {
+          GoogleSignInFailure.notRegistered => l10n.authGoogleNotRegistered,
+          GoogleSignInFailure.network => l10n.authGoogleNoNetwork,
+          GoogleSignInFailure.unknown => failedMessage,
+        });
       }
     }
   }
@@ -114,6 +124,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Theme(
+      // This screen is dark whatever the phone is set to, and these constants
+      // are the definition of that — not a widget reaching for a colour. It is
+      // the one place naming VspColorDark is right: reading the ambient theme
+      // here to build an override that overrides the ambient theme would be
+      // circular.
       data: Theme.of(context).copyWith(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: VspColorDark.background,
@@ -124,6 +139,12 @@ class _LoginScreenState extends State<LoginScreen> {
           onSurface: VspColorDark.onSurface,
           error: VspColorDark.destructive,
         ),
+        // The tiers have to come with it. Everything below reads them from the
+        // theme now, and `copyWith` does not carry extensions from a parent
+        // that has different ones — so on a phone in light mode this subtree
+        // would have gone dark and its text would have stayed light-mode dark:
+        // near-black lettering on #0B1326.
+        extensions: const <ThemeExtension<dynamic>>[VspTextTiers.dark],
       ),
       child: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
@@ -150,7 +171,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const _WelcomeHeader(),
+                      Column(
+                        children: [
+                          // Before anything asks the golfer to read something.
+                          // The switch used to live inside Settings, which is
+                          // behind sign-in — so choosing a language meant
+                          // reading a sign-in screen in the language you
+                          // cannot read.
+                          const Align(
+                            alignment: Alignment.centerRight,
+                            child: LanguageToggle(),
+                          ),
+                          const _WelcomeHeader(),
+                        ],
+                      ),
                       _AuthActions(
                         onPhone: () => _openSignInSheet(usePhone: true),
                         onEmail: () => _openSignInSheet(usePhone: false),
@@ -188,13 +222,13 @@ class _WelcomeHeader extends StatelessWidget {
               width: 96,
               height: 96,
               decoration: BoxDecoration(
-                color: VspColorDark.surface,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(VspSpacing.sm),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.golf_course,
                 size: 56,
-                color: VspColorDark.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -203,7 +237,7 @@ class _WelcomeHeader extends StatelessWidget {
             l10n.authTagline,
             textAlign: TextAlign.center,
             style: textTheme.headlineLarge?.copyWith(
-              color: VspColorDark.textPrimary,
+              color: VspTextTiers.of(context).primary,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -212,7 +246,7 @@ class _WelcomeHeader extends StatelessWidget {
             l10n.authSubtitle,
             textAlign: TextAlign.center,
             style: textTheme.bodyLarge?.copyWith(
-              color: VspColorDark.textSecondary,
+              color: VspTextTiers.of(context).secondary,
             ),
           ),
         ],
@@ -364,7 +398,7 @@ class _SignInSheetState extends State<_SignInSheet> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     final l10n = AppLocalizations.of(context);
     return Material(
-      color: VspColorDark.surface,
+      color: Theme.of(context).colorScheme.surface,
       borderRadius: const BorderRadius.vertical(
         top: Radius.circular(VspSpacing.xl),
       ),
@@ -386,7 +420,7 @@ class _SignInSheetState extends State<_SignInSheet> {
                     width: 48,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: VspColorDark.borderStrong,
+                      color: Theme.of(context).colorScheme.outlineVariant,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),

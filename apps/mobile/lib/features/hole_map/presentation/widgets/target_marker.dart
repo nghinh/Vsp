@@ -39,8 +39,8 @@ class TargetMarker extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  'TARGET',
+                Text(
+                  AppLocalizations.of(context).targetMarkerLabel,
                   style: TextStyle(
                     color: Color(0xFF22D3EE),
                     fontSize: 10,

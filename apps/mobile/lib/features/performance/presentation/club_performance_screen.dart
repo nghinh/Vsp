@@ -146,7 +146,7 @@ class _ClubPerformanceBody extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Cached',
+                      AppLocalizations.of(context).commonCached,
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onTertiaryContainer,

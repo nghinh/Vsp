@@ -262,13 +262,13 @@ class _OtpScreenState extends State<OtpScreen> {
     return Theme(
       data: theme.copyWith(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: VspColorDark.background,
-        colorScheme: const ColorScheme.dark(
-          primary: VspColorDark.primary,
-          onPrimary: VspColorDark.onPrimary,
-          surface: VspColorDark.surface,
-          onSurface: VspColorDark.onSurface,
-          error: VspColorDark.destructive,
+        scaffoldBackgroundColor: Theme.of(context).colorScheme.inverseSurface,
+        colorScheme: ColorScheme.dark(
+          primary: Theme.of(context).colorScheme.primary,
+          onPrimary: Theme.of(context).colorScheme.onPrimary,
+          surface: Theme.of(context).colorScheme.surface,
+          onSurface: Theme.of(context).colorScheme.onSurface,
+          error: Theme.of(context).colorScheme.error,
         ),
       ),
       child: BlocListener<AuthBloc, AuthState>(

@@ -255,7 +255,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
           ),
           const SizedBox(height: VspSpacing.xs),
           Text(
-            'Start tracking shots during your round',
+            AppLocalizations.of(context).shotTrackingHint,
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -523,7 +523,7 @@ class _MergeShotSelector extends StatelessWidget {
 
             // Title
             Text(
-              'Merge Shot Into',
+              AppLocalizations.of(context).shotMergeInto,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -542,7 +542,7 @@ class _MergeShotSelector extends StatelessWidget {
               child: eligibleShots.isEmpty
                   ? Center(
                       child: Text(
-                        'No eligible shots to merge into',
+                        AppLocalizations.of(context).shotNoneToMerge,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),

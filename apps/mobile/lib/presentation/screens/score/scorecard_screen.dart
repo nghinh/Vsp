@@ -834,6 +834,9 @@ class _ScorecardBody extends StatelessWidget {
 
     return SingleChildScrollView(
       child: ScoreEntryCard(
+        // The hole's par, so a score can be one tap instead of four.
+        par: state.currentPar,
+        onSetScore: (playerId, score) => _setScore(context, playerId, score),
         playerIds: state.playerIds,
         playerNames: state.playerNames,
         grossScores: grossScores,
@@ -857,6 +860,11 @@ class _ScorecardBody extends StatelessWidget {
             _showNotesDialog(context, playerId, playerScores[playerId]?.notes),
       ),
     );
+  }
+
+  void _setScore(BuildContext context, String playerId, int score) {
+    HapticFeedback.lightImpact();
+    context.read<ScorecardCubit>().setGrossScore(playerId, score);
   }
 
   void _incrementScore(BuildContext context, String playerId) {

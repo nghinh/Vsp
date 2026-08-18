@@ -6,6 +6,7 @@
 // Shows lock icon, explanation, and guidance to add more shots.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Banner indicating that recommendations are locked due to insufficient sample size.
@@ -27,8 +28,8 @@ class LockedRecommendationsBanner extends StatelessWidget {
     final isDark = brightness == Brightness.dark;
 
     final accentColor = isDark
-        ? const Color(0xFFFBBF24)
-        : const Color(0xFFF97316);
+        ? Theme.of(context).colorScheme.secondary
+        : Theme.of(context).colorScheme.primary;
     final bgColor = isDark ? const Color(0x1AFBBF24) : const Color(0x1AF97316);
 
     return Semantics(

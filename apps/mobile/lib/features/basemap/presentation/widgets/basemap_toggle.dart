@@ -90,30 +90,47 @@ class BasemapToggle extends StatelessWidget {
         border: Border.all(color: _border),
         borderRadius: BorderRadius.circular(10),
       ),
+      // Flexible, not fixed.
+      //
+      // At twice the system text size the two labels together are wider than
+      // the phone. Nothing said so: the switch was positioned by its right
+      // edge with no width to fit inside, so it simply extended off the left
+      // of the screen and the golfer lost the control that gets them to the
+      // measuring tool. It only became an error — an 83px overflow — once the
+      // top of the map became a Row that had to hold both this and the
+      // provenance notice.
+      //
+      // Each half now yields, and the label ellipsises rather than the switch
+      // leaving the screen. The full wording stays in the Semantics label, so
+      // a screen reader still hears "switch to the course map".
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _Option(
-            icon: Icons.map_outlined,
-            label: l10n.basemapCourseMap,
-            semanticLabel: l10n.basemapSwitchToCourseMap,
-            selected: mode == BasemapMode.courseMap,
-            enabled: true,
-            onTap: () => onChanged(BasemapMode.courseMap),
+          Flexible(
+            child: _Option(
+              icon: Icons.map_outlined,
+              label: l10n.basemapCourseMap,
+              semanticLabel: l10n.basemapSwitchToCourseMap,
+              selected: mode == BasemapMode.courseMap,
+              enabled: true,
+              onTap: () => onChanged(BasemapMode.courseMap),
+            ),
           ),
-          _Option(
-            icon: satelliteAvailable
-                ? Icons.satellite_alt_outlined
-                : Icons.straighten,
-            label: satelliteAvailable
-                ? l10n.basemapSatellite
-                : l10n.basemapMeasure,
-            semanticLabel: satelliteAvailable
-                ? l10n.basemapSwitchToSatellite
-                : l10n.basemapSwitchToMeasure,
-            selected: mode == BasemapMode.satellite,
-            enabled: true,
-            onTap: () => onChanged(BasemapMode.satellite),
+          Flexible(
+            child: _Option(
+              icon: satelliteAvailable
+                  ? Icons.satellite_alt_outlined
+                  : Icons.straighten,
+              label: satelliteAvailable
+                  ? l10n.basemapSatellite
+                  : l10n.basemapMeasure,
+              semanticLabel: satelliteAvailable
+                  ? l10n.basemapSwitchToSatellite
+                  : l10n.basemapSwitchToMeasure,
+              selected: mode == BasemapMode.satellite,
+              enabled: true,
+              onTap: () => onChanged(BasemapMode.satellite),
+            ),
           ),
         ],
       ),
@@ -168,12 +185,16 @@ class _Option extends StatelessWidget {
             children: [
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  ),
                 ),
               ),
             ],

@@ -8,6 +8,7 @@
 // Entry point: accessible from "More" bottom nav or profile section.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../domain/course_correction.dart';
@@ -50,10 +51,10 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
 
   Widget _syncStateChip(CorrectionSyncState state) {
     final (color, label) = switch (state) {
-      CorrectionSyncState.pending => (const Color(0xFFEA580C), 'Pending'),
+      CorrectionSyncState.pending => (Theme.of(context).colorScheme.primary, 'Pending'),
       CorrectionSyncState.submitted => (const Color(0xFF2563EB), 'Submitted'),
-      CorrectionSyncState.accepted => (const Color(0xFF16A34A), 'Accepted'),
-      CorrectionSyncState.rejected => (const Color(0xFFDC2626), 'Rejected'),
+      CorrectionSyncState.accepted => (Theme.of(context).colorScheme.tertiary, 'Accepted'),
+      CorrectionSyncState.rejected => (Theme.of(context).colorScheme.error, 'Rejected'),
     };
 
     return Container(
@@ -81,20 +82,20 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
     return BlocProvider.value(
       value: _bloc,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1E293B),
-          title: const Text(
-            'My Corrections',
-            style: TextStyle(color: Color(0xFFF8FAFC)),
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          title: Text(
+            AppLocalizations.of(context).correctionsMine,
+            style: TextStyle(color: VspTextTiers.of(context).primary),
           ),
-          iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
+          iconTheme: IconThemeData(color: VspTextTiers.of(context).primary),
         ),
         body: BlocBuilder<CorrectionListBloc, CorrectionListState>(
           builder: (context, state) {
             if (state is CorrectionListLoading) {
-              return const Center(
-                child: CircularProgressIndicator(color: Color(0xFFEA580C)),
+              return Center(
+                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
               );
             }
 
@@ -103,15 +104,15 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline,
                       size: 48,
-                      color: Color(0xFFDC2626),
+                      color: Theme.of(context).colorScheme.error,
                     ),
                     const SizedBox(height: 16),
                     Text(
                       state.message,
-                      style: const TextStyle(color: Color(0xFFDC2626)),
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
@@ -125,20 +126,20 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
             }
 
             if (state is CorrectionListEmpty) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
                       Icons.flag_outlined,
                       size: 64,
-                      color: Color(0xFF64748B),
+                      color: VspTextTiers.of(context).tertiary,
                     ),
                     SizedBox(height: 16),
                     Text(
-                      'No corrections submitted yet',
+                      AppLocalizations.of(context).correctionsNoneYet,
                       style: TextStyle(
-                        color: Color(0xFFF8FAFC),
+                        color: VspTextTiers.of(context).primary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -147,7 +148,7 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
                     Text(
                       'Report an issue from the active round\nto see it listed here.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                      style: TextStyle(color: VspTextTiers.of(context).tertiary, fontSize: 14),
                     ),
                   ],
                 ),
@@ -164,12 +165,12 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
                   (s) => s is! CorrectionListLoading,
                 );
               },
-              color: const Color(0xFFEA580C),
+              color: Theme.of(context).colorScheme.primary,
               child: ListView.separated(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: corrections.length,
                 separatorBuilder: (_, __) =>
-                    const Divider(color: Color(0xFF334155), height: 1),
+                    Divider(color: Theme.of(context).colorScheme.outlineVariant, height: 1),
                 itemBuilder: (context, index) {
                   final c = corrections[index];
                   return _CorrectionListItem(
@@ -204,7 +205,7 @@ class _CorrectionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF0F172A),
+      color: Theme.of(context).colorScheme.inverseSurface,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,12 +215,12 @@ class _CorrectionListItem extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.flag_outlined,
-              color: Color(0xFFEA580C),
+              color: Theme.of(context).colorScheme.primary,
               size: 20,
             ),
           ),
@@ -234,8 +235,8 @@ class _CorrectionListItem extends StatelessWidget {
                     Expanded(
                       child: Text(
                         correction.issueType.label,
-                        style: const TextStyle(
-                          color: Color(0xFFF8FAFC),
+                        style: TextStyle(
+                          color: VspTextTiers.of(context).primary,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                         ),
@@ -250,8 +251,8 @@ class _CorrectionListItem extends StatelessWidget {
                     correction.note!,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -259,16 +260,16 @@ class _CorrectionListItem extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.location_on_outlined,
                       size: 12,
-                      color: Color(0xFF64748B),
+                      color: VspTextTiers.of(context).tertiary,
                     ),
                     const SizedBox(width: 2),
                     Text(
                       '${correction.reporterLat.toStringAsFixed(4)}, ${correction.reporterLng.toStringAsFixed(4)}',
-                      style: const TextStyle(
-                        color: Color(0xFF64748B),
+                      style: TextStyle(
+                        color: VspTextTiers.of(context).tertiary,
                         fontSize: 11,
                         fontFamily: 'monospace',
                       ),
@@ -278,8 +279,8 @@ class _CorrectionListItem extends StatelessWidget {
                       correction.accuracyLabel,
                       style: TextStyle(
                         color: correction.hasAcceptableAccuracy
-                            ? const Color(0xFF16A34A)
-                            : const Color(0xFFDC2626),
+                            ? Theme.of(context).colorScheme.tertiary
+                            : Theme.of(context).colorScheme.error,
                         fontSize: 11,
                       ),
                     ),
@@ -288,8 +289,8 @@ class _CorrectionListItem extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   _formatDate(correction.submittedAt),
-                  style: const TextStyle(
-                    color: Color(0xFF64748B),
+                  style: TextStyle(
+                    color: VspTextTiers.of(context).tertiary,
                     fontSize: 11,
                   ),
                 ),

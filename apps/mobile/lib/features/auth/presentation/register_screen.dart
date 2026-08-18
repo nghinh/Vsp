@@ -200,14 +200,22 @@ class RegisterScreen extends StatelessWidget {
     } catch (ex) {
       debugPrint('[RegisterScreen] Google sign-in error: $ex');
       if (!context.mounted) return;
-      _showGoogleFailure(context);
+      _showGoogleFailure(context, classifyGoogleSignInFailure(ex));
     }
   }
 
-  void _showGoogleFailure(BuildContext context) {
+  void _showGoogleFailure(
+    BuildContext context, [
+    GoogleSignInFailure reason = GoogleSignInFailure.unknown,
+  ]) {
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context).authGoogleFailed),
+        content: Text(switch (reason) {
+          GoogleSignInFailure.notRegistered => l10n.authGoogleNotRegistered,
+          GoogleSignInFailure.network => l10n.authGoogleNoNetwork,
+          GoogleSignInFailure.unknown => l10n.authGoogleFailed,
+        }),
         backgroundColor: Theme.of(context).colorScheme.error,
       ),
     );

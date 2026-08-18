@@ -87,7 +87,7 @@ class _PrivacyScreenBody extends StatelessWidget {
                       ],
                     ),
                     backgroundColor: (colorScheme.brightness == Brightness.dark
-                        ? VspColorDark.accent
+                        ? Theme.of(context).colorScheme.tertiary
                         : VspColorLight.accent),
                     duration: const Duration(seconds: 3),
                   ),
@@ -440,7 +440,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                 Icon(
                   Icons.warning,
                   color: (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.destructive
+                      ? Theme.of(context).colorScheme.error
                       : VspColorLight.destructive),
                 ),
                 const SizedBox(width: 8),
@@ -493,7 +493,7 @@ class _SubmitRequestSheetState extends State<_SubmitRequestSheet> {
                 },
                 style: TextButton.styleFrom(
                   foregroundColor: (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.destructive
+                      ? Theme.of(context).colorScheme.error
                       : VspColorLight.destructive),
                 ),
                 child: Text(AppLocalizations.of(context).privacyDeleteForever),
@@ -607,14 +607,14 @@ class _AccountDeletionWarning extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             (colorScheme.brightness == Brightness.dark
-                    ? VspColorDark.destructive
+                    ? Theme.of(context).colorScheme.error
                     : VspColorLight.destructive)
                 .withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
               (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.destructive
+                      ? Theme.of(context).colorScheme.error
                       : VspColorLight.destructive)
                   .withOpacity(0.3),
         ),
@@ -627,7 +627,7 @@ class _AccountDeletionWarning extends StatelessWidget {
               Icon(
                 Icons.warning,
                 color: (colorScheme.brightness == Brightness.dark
-                    ? VspColorDark.destructive
+                    ? Theme.of(context).colorScheme.error
                     : VspColorLight.destructive),
                 size: 20,
               ),
@@ -637,7 +637,7 @@ class _AccountDeletionWarning extends StatelessWidget {
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.destructive
+                      ? Theme.of(context).colorScheme.error
                       : VspColorLight.destructive),
                 ),
               ),
@@ -674,14 +674,14 @@ class _DataExportInfo extends StatelessWidget {
       decoration: BoxDecoration(
         color:
             (colorScheme.brightness == Brightness.dark
-                    ? VspColorDark.accent
+                    ? Theme.of(context).colorScheme.tertiary
                     : VspColorLight.accent)
                 .withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color:
               (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.accent
+                      ? Theme.of(context).colorScheme.tertiary
                       : VspColorLight.accent)
                   .withOpacity(0.3),
         ),
@@ -694,17 +694,17 @@ class _DataExportInfo extends StatelessWidget {
               Icon(
                 Icons.info_outline,
                 color: (colorScheme.brightness == Brightness.dark
-                    ? VspColorDark.accent
+                    ? Theme.of(context).colorScheme.tertiary
                     : VspColorLight.accent),
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
-                'Data Export',
+                AppLocalizations.of(context).privacyDataExport,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: (colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.accent
+                      ? Theme.of(context).colorScheme.tertiary
                       : VspColorLight.accent),
                 ),
               ),
@@ -765,7 +765,7 @@ class _RequestDetailSheet extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Request Details',
+                    AppLocalizations.of(context).privacyRequestDetails,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -928,7 +928,7 @@ class _DetailRow extends StatelessWidget {
             style: theme.textTheme.bodyMedium?.copyWith(
               color: isWarning
                   ? (colorScheme.brightness == Brightness.dark
-                        ? VspColorDark.destructive
+                        ? Theme.of(context).colorScheme.error
                         : VspColorLight.destructive)
                   : null,
             ),
@@ -998,17 +998,17 @@ class _StatusBadge extends StatelessWidget {
     switch (status) {
       case PrivacyRequestStatus.pending:
         return (brightness == Brightness.dark
-            ? VspColorDark.secondary
+            ? Theme.of(context).colorScheme.secondary
             : VspColorLight.secondary);
       case PrivacyRequestStatus.processing:
         return const Color(0xFF3B82F6);
       case PrivacyRequestStatus.completed:
         return (brightness == Brightness.dark
-            ? VspColorDark.accent
+            ? Theme.of(context).colorScheme.tertiary
             : VspColorLight.accent);
       case PrivacyRequestStatus.rejected:
         return (brightness == Brightness.dark
-            ? VspColorDark.destructive
+            ? Theme.of(context).colorScheme.error
             : VspColorLight.destructive);
     }
   }
@@ -1085,7 +1085,7 @@ class _EmptyView extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.md),
             Text(
-              'No Privacy Requests',
+              AppLocalizations.of(context).privacyNoRequests,
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),

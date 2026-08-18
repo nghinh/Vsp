@@ -3,6 +3,7 @@
 // Error state view for the hole map with retry action.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Error state view shown when the map fails to load.
@@ -15,7 +16,7 @@ class MapErrorView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color(0xFF0F172A),
+      color: Theme.of(context).colorScheme.inverseSurface,
       child: SafeArea(
         child: Center(
           child: Padding(
@@ -27,24 +28,24 @@ class MapErrorView extends StatelessWidget {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: Theme.of(context).colorScheme.surface,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: const Color(0xFFDC2626).withOpacity(0.4),
+                      color: Theme.of(context).colorScheme.error.withOpacity(0.4),
                       width: 2,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.map_outlined,
                     size: 36,
-                    color: Color(0xFFDC2626),
+                    color: Theme.of(context).colorScheme.error,
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
-                  'Could not load hole map',
+                Text(
+                  AppLocalizations.of(context).mapLoadFailedTitle,
                   style: TextStyle(
-                    color: Color(0xFFF8FAFC),
+                    color: VspTextTiers.of(context).primary,
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
                   ),
@@ -53,8 +54,8 @@ class MapErrorView extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   message,
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                   ),
                   textAlign: TextAlign.center,
@@ -68,7 +69,7 @@ class MapErrorView extends StatelessWidget {
                     icon: const Icon(Icons.refresh, size: 18),
                     label: Text(AppLocalizations.of(context).commonRetry),
                     style: FilledButton.styleFrom(
-                      backgroundColor: const Color(0xFFEA580C),
+                      backgroundColor: Theme.of(context).colorScheme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
@@ -78,9 +79,9 @@ class MapErrorView extends StatelessWidget {
                   ),
                 ],
                 const SizedBox(height: 16),
-                const Text(
-                  'Check that the course package is downloaded',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                Text(
+                  AppLocalizations.of(context).mapLoadFailedBody,
+                  style: TextStyle(color: VspTextTiers.of(context).tertiary, fontSize: 12),
                   textAlign: TextAlign.center,
                 ),
               ],

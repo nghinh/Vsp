@@ -100,12 +100,12 @@ class ClubTypePicker extends StatelessWidget {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: _typeColor(type).withOpacity(0.15),
+                              color: _typeColor(context, type).withOpacity(0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Icon(
                               Icons.golf_course,
-                              color: _typeColor(type),
+                              color: _typeColor(context, type),
                               size: VspIconSize.md,
                             ),
                           ),
@@ -162,14 +162,14 @@ class ClubTypePicker extends StatelessWidget {
     );
   }
 
-  Color _typeColor(ClubType type) {
+  Color _typeColor(BuildContext context, ClubType type) {
     switch (type) {
       case ClubType.driver:
-        return const Color(0xFFEA580C);
+        return Theme.of(context).colorScheme.primary;
       case ClubType.wood:
-        return const Color(0xFFF97316);
+        return Theme.of(context).colorScheme.primary;
       case ClubType.hybrid:
-        return const Color(0xFF059669);
+        return Theme.of(context).colorScheme.tertiary;
       case ClubType.iron:
         return const Color(0xFF3B82F6);
       case ClubType.wedge:

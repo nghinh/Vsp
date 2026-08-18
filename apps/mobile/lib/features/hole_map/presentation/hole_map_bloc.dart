@@ -16,6 +16,7 @@ import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/data/course_pin_api.dart';
 import 'package:vsp_mobile/features/hole_map/data/hole_feature_api.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_geometry_coverage.dart';
+import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
@@ -171,8 +172,22 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
     }
 
     if (packageId == null) {
-      // No package on the device. There is nothing to ask the repository for,
-      // and no geometry is not a failure — it is most of our 900 holes.
+      // No package on the device — which is not the same as no geometry, and
+      // treating it as such is what put a golfer on Long Biên's 1st in front
+      // of a bare satellite photograph reading "this hole has no surveyed
+      // map". The server had eight bunkers, two fairway segments, four tees
+      // and an OpenStreetMap green for that hole, and was never asked.
+      //
+      // The traced-shapes fetch below existed already; it just sat past the
+      // package branch, so the only holes that could reach it were holes on
+      // courses already downloaded — the ones least likely to need it.
+      if (await _emitServerOnlyMap(emit, event)) {
+        await _applyTodaysPin(emit, event.courseId, event.holeNumber);
+        return;
+      }
+
+      // Nothing anywhere. No geometry is not a failure — it is most of our
+      // 900 holes.
       //
       // Not recorded as a map load: nothing was loaded. Timing a branch that
       // reads one null would fill the dataset with sub-millisecond rows and
@@ -196,7 +211,13 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
 
       if (holeMap == null) {
         // A package that carries nothing for this hole is the same answer as
-        // no package: unsurveyed, so satellite + measuring is what helps.
+        // no package — including the part where the server may still have
+        // shapes for it. A package built before a hole was traced is exactly
+        // that case.
+        if (await _emitServerOnlyMap(emit, event)) {
+          await _applyTodaysPin(emit, event.courseId, event.holeNumber);
+          return;
+        }
         _recordMapLoad(event.holeNumber);
         emit(
           HoleMapUnsurveyed(
@@ -241,6 +262,70 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         ),
       );
     }
+  }
+
+  /// Draws the hole from the server's shapes alone, where nothing local can.
+  ///
+  /// The package path merges traced shapes into digitised ones. This is the
+  /// case with nothing to merge into: no package, or a package that skipped
+  /// this hole. Everything drawn here came off the wire and none of it has
+  /// been checked against the ground, so provenance stays `unknown` — the
+  /// header marks the length approximate and the caveat line appears, both
+  /// as they already do for a traced shape sitting on top of a package.
+  ///
+  /// Returns true when it put a map on screen.
+  ///
+  /// Par is left at zero rather than invented. The screen prints it only when
+  /// it is a real par; a package carries the number and the feature endpoint
+  /// does not, and quoting par 4 for every hole in the country to avoid a gap
+  /// in a header is the kind of small lie that gets believed.
+  Future<bool> _emitServerOnlyMap(
+    Emitter<HoleMapState> emit,
+    LoadHoleMap event,
+  ) async {
+    final api = _featureApi;
+    if (api == null) return false;
+
+    final TracedFeatures traced;
+    try {
+      traced = await api.forHole(
+        courseId: event.courseId,
+        holeNumber: event.holeNumber,
+      );
+    } catch (_) {
+      // Offline, or the server has no opinion. The caller falls through to
+      // satellite imagery and the measuring tool, which work without us.
+      return false;
+    }
+
+    if (traced.isEmpty) {
+      // Nothing has drawn this hole yet. Ask for it — one model call, gated by
+      // the server — and pick the shapes up on the next open.
+      await api.requestTrace(
+        courseId: event.courseId,
+        holeNumber: event.holeNumber,
+      );
+      return false;
+    }
+    if (emit.isDone) return false;
+
+    _recordMapLoad(event.holeNumber);
+    emit(
+      HoleMapReady(
+        holeMap: HoleMapEntity(
+          courseId: event.courseId,
+          courseName: event.courseName,
+          holeNumber: event.holeNumber,
+          par: 0,
+          layers: traced.layers,
+        ),
+        layerVisibility: {
+          for (final layer in traced.layers.keys) layer.name: true,
+        },
+        tracedShapesUnverified: traced.anyUnverified && traced.anyFromModel,
+      ),
+    );
+    return true;
   }
 
   /// Adds the traced shapes to whatever the package already had.

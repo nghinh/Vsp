@@ -330,7 +330,10 @@ void main() {
       // a leg between two points on a hole the golfer has left is not a
       // distance, it is a wrong distance.
       expect(find.text(l10n.holeNumberLabel('8')), findsOneWidget);
-      expect(find.text(l10n.measurePoints(0)), findsOneWidget);
+      // The count disappears with the points rather than reading "Chưa có
+      // điểm" beside the title — the empty state below says that, and the
+      // header was giving up its own words to repeat it.
+      expect(find.text(l10n.measurePoints(2)), findsNothing);
       expect(_measureCubit(tester).state.points, isEmpty);
     });
   });

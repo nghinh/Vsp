@@ -104,25 +104,25 @@ class _OfflineBadge extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          color: Colors.orange.withOpacity(0.15),
+          color: Theme.of(context).colorScheme.secondary.withOpacity(0.15),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.orange.withOpacity(0.3)),
+          border: Border.all(color: Theme.of(context).colorScheme.secondary.withOpacity(0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.cloud_off_outlined,
               size: 14,
-              color: Colors.orange,
+              color: Theme.of(context).colorScheme.secondary,
             ),
             const SizedBox(width: 4),
             Text(
-              cachedAt != null ? 'Cached' : AppLocalizations.of(context).commonOffline,
-              style: const TextStyle(
+              cachedAt != null ? AppLocalizations.of(context).commonCached : AppLocalizations.of(context).commonOffline,
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
-                color: Colors.orange,
+                color: Theme.of(context).colorScheme.secondary,
               ),
             ),
           ],
@@ -210,7 +210,7 @@ class _ConditionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isStale
-                ? Colors.red.withOpacity(0.4)
+                ? Theme.of(context).colorScheme.error.withOpacity(0.4)
                 : severityColor.withOpacity(0.3),
           ),
         ),
@@ -395,7 +395,7 @@ class _MetadataChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isWarning
-        ? Colors.red
+        ? Theme.of(context).colorScheme.error
         : Theme.of(context).colorScheme.onSurfaceVariant;
 
     return Row(

@@ -132,7 +132,18 @@ void main() {
     testWidgets('the unsurveyed banner takes no height from the map', (
       tester,
     ) async {
-      await _pump(tester, mapOverlay: const NoGeometryBanner());
+      // The overlay is handed the whole map area and the caller says where in
+      // it to sit — which is how a caller can put a control in a real bottom
+      // corner. It used to be a strip along the top, and a caller that asked
+      // for bottom-left got the bottom of the strip: the club-plan button
+      // printed across the banner at the top of the screen.
+      await _pump(
+        tester,
+        mapOverlay: const Align(
+          alignment: Alignment.topLeft,
+          child: NoGeometryBanner(),
+        ),
+      );
 
       // Inside the view, over the map — not a band stacked above it. A banner
       // that displaced the imagery would sit above the map's top edge.
@@ -142,6 +153,12 @@ void main() {
 
       expect(banner.top, greaterThanOrEqualTo(view.top));
       expect(banner.bottom, lessThan(panel.top));
+
+      // And it is a note, not a curtain. Four lines of text used to be laid
+      // across the full width of the only thing on this screen worth looking
+      // at.
+      expect(banner.width, lessThan(view.width));
+      expect(banner.height, lessThan(view.height / 2));
     });
 
     testWidgets('a view given no chrome draws none', (tester) async {

@@ -39,6 +39,7 @@ import 'widgets/format_selector.dart';
 import 'widgets/hole_picker.dart';
 import 'widgets/package_status_banner.dart';
 import 'widgets/player_card.dart';
+import 'package:vsp_mobile/presentation/widgets/scroll_edge_fade.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 import 'package:vsp_mobile/domain/models/course_selection.dart';
@@ -409,13 +410,20 @@ class _RoundSetupScaffold extends StatelessWidget {
                         // name here is what made a two-package round look like
                         // one download that would not stick.
                         missingCourseName: state.packageDownloadCourseName,
+                        // And what a green banner is claiming, so "ready" and
+                        // "not downloaded" are about the same kind of thing.
+                        readyCourseNames: state.readyCourseNames,
                         onDownloadPressed: state.packageDownloadCourseId == null
                             ? null
                             : () => _openDownload(
                                   context, state.packageDownloadCourseId!,
                                   state.packageDownloadCourseName ??
                                       state.courseName ??
-                                      ''),
+                                      '',
+                                  siblings: state.otherLayoutIds(
+                                    state.packageDownloadCourseId!,
+                                  ),
+                                ),
                       ),
                       const SizedBox(height: 24),
                     ],
@@ -503,6 +511,18 @@ class _RoundSetupScaffold extends StatelessWidget {
             ),
 
             // Start Round CTA
+            //
+            // The bar is opaque and the list above it ends wherever the scroll
+            // happens to be — so on Long Biên, whose nine layout options do
+            // not fit, the last row is sliced in half by the bar's top border
+            // with nothing to say the list continues. A row cut level with a
+            // hairline does not read as "scroll for more"; it reads as two
+            // blocks drawn on top of each other, which is what it was
+            // reported as.
+            //
+            // The fade above the bar is the cue: content dissolving into the
+            // bar is a boundary, content chopped by one is a bug.
+            ScrollEdgeFade(color: colorScheme.surface),
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -536,13 +556,21 @@ class _RoundSetupScaffold extends StatelessWidget {
   /// already had, which costs one file-system read, and a download that
   /// reports failure but left a valid package on disk still clears.
   Future<void> _openDownload(
-      BuildContext context, int courseId, String courseName) async {
+    BuildContext context,
+    int courseId,
+    String courseName, {
+    List<int> siblings = const [],
+  }) async {
     final bloc = context.read<RoundSetupBloc>();
     await Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (_) => CourseDownloadScreen(
           courseId: courseId,
           courseName: courseName,
+          // Every other đường of the club. One download, whole sân — so
+          // changing the pairing afterwards cannot turn a green banner back
+          // into a red one.
+          siblingCourseIds: siblings,
           manifestRepo: PackageManifestRepository(),
           packageRepo: CoursePackageRepository(apiClient: ApiClient()),
         ),
@@ -1225,7 +1253,7 @@ class _BagSection extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    state.activeBag?.name ?? 'No bag selected',
+                    state.activeBag?.name ?? AppLocalizations.of(context).roundSetupNoBag,
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onSurface,
                       fontWeight: FontWeight.w500,
@@ -1243,7 +1271,7 @@ class _BagSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      'Active',
+                      AppLocalizations.of(context).commonActive,
                       style: theme.textTheme.labelSmall?.copyWith(
                         color: colorScheme.primary,
                         fontWeight: FontWeight.w600,

@@ -52,7 +52,7 @@ class ScoringMetricRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: highlighted ? Colors.green : colorScheme.onSurface,
+                  color: highlighted ? Theme.of(context).colorScheme.tertiary : colorScheme.onSurface,
                 ),
               ),
               if (subLabel != null)

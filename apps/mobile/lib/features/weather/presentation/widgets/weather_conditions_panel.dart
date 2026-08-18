@@ -65,12 +65,20 @@ class WeatherConditionsPanel extends StatelessWidget {
               const SizedBox(height: 12),
             ],
 
-            // Header: source badge + timestamp + type badge
-            _buildHeaderRow(context),
-            const SizedBox(height: 16),
-
-            // Wind row
+            // Wind first — it is the only thing on this panel a golfer
+            // changes a club for.
+            //
+            // The row above it used to be the source badge, the timestamp and
+            // the forecast/measured chip: three pieces of provenance, ahead of
+            // the reading they qualify. Provenance matters and it is not the
+            // decision, so it now sits under the number it is about, the same
+            // way the traced-shapes caveat sits under the shapes and the
+            // course name sits under the score.
             _WindRow(wind: snapshot.wind),
+            const SizedBox(height: 12),
+
+            // Where this reading came from, and when.
+            _buildHeaderRow(context),
             const SizedBox(height: 12),
 
             // Temperature and humidity row
@@ -118,15 +126,19 @@ class WeatherConditionsPanel extends StatelessWidget {
 
   Widget _buildHeaderRow(BuildContext context) {
     final theme = Theme.of(context);
-    return Row(
+    // Wrap, not Row. Three chips of text whose width nobody controls — the
+    // provider's own name, a translated type label, and a relative time that
+    // is "vừa xong" one minute and "3 giờ trước" the next — inside a Row with
+    // a Spacer overflows the moment any of them grows. It does so here at a
+    // larger text scale, and it would do so on a phone the first time a
+    // provider with a longer name is configured.
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        // Source badge
         _SourceBadge(source: snapshot.source),
-        const SizedBox(width: 8),
-        // Measurement type badge
         _TypeBadge(type: snapshot.source.measurementType),
-        const Spacer(),
-        // Timestamp
         Text(
           snapshot.relativeTimeString,
           style: theme.textTheme.bodySmall?.copyWith(
@@ -415,7 +427,7 @@ class _ConditionTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Condition',
+                    AppLocalizations.of(context).weatherConditionTileLabel,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -541,7 +553,9 @@ class _TypeBadge extends StatelessWidget {
     final theme = Theme.of(context);
     final isForecast = type == MeasurementType.forecast;
     return Semantics(
-      label: isForecast ? 'Forecast data' : 'Current measurement',
+      label: isForecast
+          ? AppLocalizations.of(context).weatherForecastSemantics
+          : AppLocalizations.of(context).weatherMeasuredSemantics,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
@@ -556,7 +570,9 @@ class _TypeBadge extends StatelessWidget {
           ),
         ),
         child: Text(
-          isForecast ? 'Forecast' : 'Current',
+          isForecast
+              ? AppLocalizations.of(context).weatherForecastBadge
+              : AppLocalizations.of(context).weatherMeasuredBadge,
           style: theme.textTheme.labelSmall?.copyWith(
             color: isForecast
                 ? theme.colorScheme.onSecondaryContainer
@@ -623,7 +639,7 @@ class _StaleWarningBanner extends StatelessWidget {
                 onPressed: onRetry,
                 icon: Icon(Icons.refresh, size: 16, color: textColor),
                 label: Text(
-                  'Refresh',
+                  AppLocalizations.of(context).commonRefresh,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: textColor,
                     fontWeight: FontWeight.w600,

@@ -479,7 +479,7 @@ class _FavoritesTab extends StatelessWidget {
           return EmptySearchState(
             message: AppLocalizations.of(context).courseFavoritesLoadFailed,
             subtitle: context.tr(state.message),
-            actionLabel: 'Retry',
+            actionLabel: AppLocalizations.of(context).commonRetry,
             onAction: () {
               context.read<CourseSearchBloc>().add(const LoadFavorites());
             },
@@ -567,7 +567,7 @@ class _RecentTab extends StatelessWidget {
           return EmptySearchState(
             message: AppLocalizations.of(context).courseRecentLoadFailed,
             subtitle: context.tr(state.message),
-            actionLabel: 'Retry',
+            actionLabel: AppLocalizations.of(context).commonRetry,
             onAction: () {
               context.read<CourseSearchBloc>().add(const LoadRecent());
             },
@@ -786,7 +786,7 @@ class _FavoriteCourseTile extends StatelessWidget {
             ),
             IconButton(
               onPressed: onRemove,
-              icon: const Icon(Icons.favorite, color: Colors.red),
+              icon: Icon(Icons.favorite, color: Theme.of(context).colorScheme.error),
               tooltip: AppLocalizations.of(context).courseRemoveFavorite,
             ),
           ],

@@ -192,7 +192,7 @@ class _BagDetailBody extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: VspSpacing.xs),
             child: Text(
-              'CLUBS',
+              AppLocalizations.of(context).bagClubsHeading,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
                 letterSpacing: VspLetterSpacing.wide,
@@ -343,7 +343,7 @@ class _ActiveBadge extends StatelessWidget {
           Icon(Icons.check, size: 12, color: colorScheme.onPrimary),
           const SizedBox(width: 4),
           Text(
-            'Active',
+            AppLocalizations.of(context).bagActiveLabel,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -370,7 +370,7 @@ class _SyncBanner extends StatelessWidget {
     final color = isSyncing
         ? const Color(0xFF3B82F6)
         : brightness == Brightness.dark
-        ? VspColorDark.muted
+        ? Theme.of(context).colorScheme.surfaceContainerHighest
         : VspColorLight.muted;
 
     return Container(
@@ -392,7 +392,7 @@ class _SyncBanner extends StatelessWidget {
           ),
           const SizedBox(width: VspSpacing.sm),
           Text(
-            isSyncing ? 'Syncing...' : 'Changes saved offline',
+            isSyncing ? AppLocalizations.of(context).syncSyncing : AppLocalizations.of(context).syncChangesSavedOffline,
             style: theme.textTheme.bodySmall?.copyWith(color: color),
           ),
         ],

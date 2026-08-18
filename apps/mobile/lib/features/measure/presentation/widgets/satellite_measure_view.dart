@@ -65,14 +65,24 @@ class SatelliteMeasureView extends StatefulWidget {
   /// Files the report. Injectable so tests never touch SQLite.
   final GreenPositionReporter? greenReporter;
 
-  /// Chrome floated over the top of the imagery — the basemap switch, and the
-  /// unsurveyed-hole banner where there is one.
+  /// Chrome floated over the imagery — the basemap switch, the caveat about
+  /// where these shapes came from, the club-plan button.
   ///
   /// It floats because it used to be a full-width bar stacked above the map,
   /// and that bar cost about a fifteenth of the screen to say one short thing
   /// and hold one two-state control. The imagery is what the golfer came to
   /// look at; chrome that can sit on top of it should not take a slice out of
   /// it instead.
+  ///
+  /// Given the whole map area, not a strip along the top. It used to be
+  /// `Positioned(top: 8, left: 8, right: 8)`, which is a box as tall as
+  /// whatever it holds — so a caller that wrote
+  /// `Align(alignment: Alignment.bottomLeft, …)` for its club-plan button got
+  /// the bottom of *the banner*, and the button printed across the banner at
+  /// the top of the screen. Nothing in the caller was wrong; it was aligning
+  /// inside a box it could not see. The overlay now spans the map, so bottom
+  /// left means the bottom left of the map and a caller can use the same
+  /// corner layout the vector map uses.
   final Widget? mapOverlay;
 
   /// The named shapes on this hole, to float over the imagery.
@@ -98,6 +108,12 @@ class SatelliteMeasureView extends StatefulWidget {
     this.mapOverlay,
     this.featureLabels = const [],
   });
+
+  /// Height reserved at the foot of the map for the imagery credit.
+  ///
+  /// One line of small text plus its inset. Anything a caller anchors to the
+  /// bottom of the overlay sits above this.
+  static const double _creditStrip = 34;
 
   /// Most of the column the readout may take before it starts scrolling.
   ///
@@ -319,12 +335,26 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
                         chips: widget.featureLabels,
                         unit: state.unit,
                       ),
+                    // Spans the map so a corner means a corner. Hit testing
+                    // still falls through wherever the overlay draws nothing —
+                    // a Stack only claims a tap a child actually occupies — so
+                    // the golfer can still drag the imagery and drop points
+                    // everywhere a panel is not.
                     if (widget.mapOverlay != null)
-                      Positioned(
-                        top: 8,
-                        left: 8,
-                        right: 8,
-                        child: widget.mapOverlay!,
+                      Positioned.fill(
+                        // The strip along the bottom belongs to the imagery
+                        // credit, which is a licence obligation and cannot be
+                        // covered or moved. Reserving it here is what stops a
+                        // caller's bottom-left control from landing on it —
+                        // the club-plan button was printing through "Powered
+                        // by Esri" on Long Biên's 10th, and neither widget
+                        // knew the other existed.
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: SatelliteMeasureView._creditStrip,
+                          ),
+                          child: widget.mapOverlay!,
+                        ),
                       ),
                     Positioned(
                       left: 8,

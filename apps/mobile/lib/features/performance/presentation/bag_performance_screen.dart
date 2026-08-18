@@ -134,7 +134,7 @@ class _BagPerformanceBody extends StatelessWidget {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Cached',
+                      AppLocalizations.of(context).commonCached,
                       style: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onTertiaryContainer,
@@ -178,7 +178,7 @@ class _BagPerformanceBody extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: VspSpacing.xs),
           child: Text(
-            'CLUB PERFORMANCE',
+            AppLocalizations.of(context).clubPerformanceHeading,
             style: theme.textTheme.labelSmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
               letterSpacing: VspLetterSpacing.wide,
@@ -268,7 +268,7 @@ class _SummaryHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Bag Summary',
+            AppLocalizations.of(context).bagSummaryHeading,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),

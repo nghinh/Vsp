@@ -57,7 +57,7 @@ class WeatherErrorView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Weather Unavailable',
+              AppLocalizations.of(context).weatherUnavailable,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w600,

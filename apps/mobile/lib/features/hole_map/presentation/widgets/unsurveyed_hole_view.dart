@@ -72,7 +72,14 @@ class UnsurveyedHoleView extends StatelessWidget {
         // of the only thing worth looking at.
         child: SatelliteMeasureView(
           config: config,
-          mapOverlay: NoGeometryBanner(imageryAvailable: config.isAvailable),
+          // The overlay spans the map, so this says where in it to sit.
+          mapOverlay: Align(
+            alignment: Alignment.topLeft,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: NoGeometryBanner(imageryAvailable: config.isAvailable),
+            ),
+          ),
         ),
       ),
     );

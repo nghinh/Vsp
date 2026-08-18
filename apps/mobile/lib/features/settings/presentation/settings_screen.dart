@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/locale/locale_cubit.dart';
+import '../../../core/theme/theme_mode_cubit.dart';
 import '../../../l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/contributors/contributors.dart';
 import 'credits_screen.dart';
@@ -24,6 +25,8 @@ class SettingsScreen extends StatelessWidget {
       body: SafeArea(
         child: ListView(
           children: [
+            _SectionHeader(title: l10n.settingsAppearance),
+            const _AppearanceOptions(),
             _SectionHeader(title: l10n.settingsLanguage),
             const _LanguageOptions(),
             // Reachable rather than hidden behind a build flag: a field tester
@@ -65,6 +68,51 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Light, dark, or whatever the phone is set to.
+///
+/// The app was hard-wired to dark with no way out — correct while several
+/// hundred widgets named the dark tokens directly, because a light theme would
+/// have gone light behind text that stayed dark-mode pale. They all read the
+/// theme now, so this is the golfer's decision.
+///
+/// Dark stays the default and says why on screen: it is the palette measured
+/// for direct sun, which is where this app is used. Following the phone is
+/// listed first because it is what a golfer expects an app to offer.
+class _AppearanceOptions extends StatelessWidget {
+  const _AppearanceOptions();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return BlocBuilder<ThemeModeCubit, ThemeMode>(
+      builder: (context, selected) {
+        Widget option(String label, ThemeMode mode, {String? note}) {
+          return RadioListTile<ThemeMode>(
+            value: mode,
+            groupValue: selected,
+            title: Text(label),
+            subtitle: note == null ? null : Text(note),
+            onChanged: (_) => context.read<ThemeModeCubit>().setMode(mode),
+          );
+        }
+
+        return Column(
+          children: [
+            option(l10n.settingsAppearanceSystem, ThemeMode.system),
+            option(l10n.settingsAppearanceLight, ThemeMode.light),
+            option(
+              l10n.settingsAppearanceDark,
+              ThemeMode.dark,
+              note: l10n.settingsAppearanceDarkNote,
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -38,8 +38,21 @@ class NoGeometryBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    // As wide as it needs and no wider.
+    //
+    // This was `width: double.infinity` — a bar the width of the screen, laid
+    // across the top of the only thing on this screen worth looking at, to
+    // hold four lines of text. It also cannot live in a corner column that
+    // way: a column sized to its children hands it an unbounded width and
+    // infinity is not a width.
+    //
+    // The ceiling keeps the two short lines from running the full width of a
+    // phone held in landscape, where a 700px sentence is harder to read than
+    // a wrapped one.
+    final maxWidth = MediaQuery.sizeOf(context).width * 0.72;
+
     return Container(
-      width: double.infinity,
+      constraints: BoxConstraints(maxWidth: maxWidth),
       padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
       decoration: BoxDecoration(
         color: _surface,
@@ -49,8 +62,14 @@ class NoGeometryBanner extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
+          Flexible(
             child: Column(
+              // Sized to the two lines it holds. The default is `max`, and it
+              // was invisible while this banner sat in a box of unbounded
+              // height — nothing to expand into. Given a real height to fill,
+              // it filled it, and the banner became a translucent sheet down
+              // the whole left of the map.
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Wrap, not Row: the basemap toggle sits beside this banner

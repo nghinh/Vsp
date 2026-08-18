@@ -157,6 +157,299 @@ class AppLocalizationsVi extends AppLocalizations {
   String get authGoogleFailed => 'Đăng nhập Google thất bại. Vui lòng thử lại.';
 
   @override
+  String get summaryOut => '9 ĐẦU';
+
+  @override
+  String get summaryIn => '9 SAU';
+
+  @override
+  String get summaryTotal => 'TỔNG';
+
+  @override
+  String get scoreGrossLabel => 'gậy';
+
+  @override
+  String get weatherConditionTileLabel => 'Thời tiết';
+
+  @override
+  String get weatherForecastBadge => 'Dự báo';
+
+  @override
+  String get weatherMeasuredBadge => 'Đo thật';
+
+  @override
+  String get weatherForecastSemantics => 'Dữ liệu dự báo';
+
+  @override
+  String get weatherMeasuredSemantics => 'Số đo hiện tại';
+
+  @override
+  String get dispersionTitle => 'Độ phân tán';
+
+  @override
+  String get bagSavedOffline => 'Đã lưu thay đổi ngoại tuyến';
+
+  @override
+  String get bagActiveSavedOffline => 'Đã lưu túi gậy đang dùng, ngoại tuyến';
+
+  @override
+  String get clubSavedOffline => 'Đã lưu gậy ngoại tuyến';
+
+  @override
+  String get shotMarkers => 'Điểm đánh dấu cú đánh';
+
+  @override
+  String get shotClub => 'Gậy';
+
+  @override
+  String get shotResult => 'Kết quả';
+
+  @override
+  String get shotMergeInto => 'Gộp cú đánh vào';
+
+  @override
+  String get shotStart => 'Bắt đầu cú đánh';
+
+  @override
+  String get shotEnd => 'Kết thúc cú đánh';
+
+  @override
+  String get shotSaved => 'Đã lưu cú đánh';
+
+  @override
+  String get shotNoneToMerge => 'Không có cú đánh nào để gộp vào';
+
+  @override
+  String get shotTrackingHint =>
+      'Bắt đầu ghi lại các cú đánh trong vòng của bạn';
+
+  @override
+  String get privacyDataExport => 'Xuất dữ liệu';
+
+  @override
+  String get privacyRequestDetails => 'Chi tiết yêu cầu';
+
+  @override
+  String get privacyNoRequests => 'Chưa có yêu cầu nào';
+
+  @override
+  String get smartTargetTitle => 'Smart Target';
+
+  @override
+  String get smartTargetTournamentOff =>
+      'Mục tiêu thông minh tắt trong chế độ giải đấu';
+
+  @override
+  String get smartTargetUnavailable => 'Chưa có mục tiêu thông minh cho hố này';
+
+  @override
+  String get smartTargetHazards => 'Chướng ngại gần vùng bóng rơi';
+
+  @override
+  String get smartTargetRisk => 'Rủi ro';
+
+  @override
+  String get smartTargetConfidenceLabel => 'Độ tin cậy';
+
+  @override
+  String get bagClubsHeading => 'Gậy';
+
+  @override
+  String get bagActiveLabel => 'Đang dùng';
+
+  @override
+  String get bagSummaryHeading => 'Tổng quan túi gậy';
+
+  @override
+  String get clubPerformanceHeading => 'Hiệu suất từng gậy';
+
+  @override
+  String get commonCached => 'Đã lưu sẵn';
+
+  @override
+  String get correctionsMine => 'Báo lỗi của tôi';
+
+  @override
+  String get correctionsNoneYet => 'Chưa gửi báo lỗi nào';
+
+  @override
+  String get commonUpdate => 'Cập nhật';
+
+  @override
+  String get commonActive => 'Đang dùng';
+
+  @override
+  String get commonGenerated => 'Tạo lúc';
+
+  @override
+  String get commonUnknownCourse => 'Sân không rõ';
+
+  @override
+  String get targetMarkerLabel => 'Mục tiêu';
+
+  @override
+  String get clubFormEdit => 'Sửa gậy';
+
+  @override
+  String get clubFormAdd => 'Thêm gậy';
+
+  @override
+  String get clubFormUpdate => 'Cập nhật gậy';
+
+  @override
+  String get syncChangesSavedOffline => 'Đã lưu thay đổi ngoại tuyến';
+
+  @override
+  String get appNoServerConfigured => 'Bản dựng này chưa cấu hình máy chủ';
+
+  @override
+  String get appPreparing => 'Đang chuẩn bị…';
+
+  @override
+  String get mapPreparing => 'Đang chuẩn bị bản đồ hố';
+
+  @override
+  String get mapLoadFailedTitle => 'Không tải được bản đồ hố';
+
+  @override
+  String get mapLoadFailedBody => 'Kiểm tra xem đã tải dữ liệu sân chưa';
+
+  @override
+  String get privacyNoRounds => 'Không tìm thấy vòng đấu nào';
+
+  @override
+  String get weatherUnavailableBody =>
+      'Không có dữ liệu thời tiết cho vị trí này.';
+
+  @override
+  String get roundSetupNoBag => 'Chưa chọn túi gậy';
+
+  @override
+  String get performanceStatsHeading => 'Thống kê hiệu suất';
+
+  @override
+  String get performanceNotComputed => 'Chưa tính';
+
+  @override
+  String get watchPairTitle => 'Ghép Apple Watch';
+
+  @override
+  String get watchPackagesAbout => 'Về dữ liệu gửi sang đồng hồ';
+
+  @override
+  String get strokesGainedOverall => 'Strokes gained tổng';
+
+  @override
+  String get strokesGainedNoData => 'Chưa có dữ liệu cú đánh';
+
+  @override
+  String get strokesGainedConfidence => 'Độ tin cậy';
+
+  @override
+  String get updateAvailableTitle => 'Có bản cập nhật';
+
+  @override
+  String get updateNeedsInternet => 'Cập nhật cần kết nối mạng';
+
+  @override
+  String get shotNoClub => 'Chưa có gậy';
+
+  @override
+  String get shotNoClubAssigned => 'Chưa gán gậy';
+
+  @override
+  String get profileSkillLevel => 'Trình độ';
+
+  @override
+  String get windAdjustment => 'Bù gió';
+
+  @override
+  String get dispersionNearestHazard => 'Tới chướng ngại gần nhất';
+
+  @override
+  String get directionalDeviation => 'Độ lệch hướng';
+
+  @override
+  String get recommendationsDisabled => 'Đã tắt gợi ý gậy';
+
+  @override
+  String get teeSetsHeading => 'Các mốc phát bóng';
+
+  @override
+  String get roundStatsHeading => 'Thống kê vòng đấu';
+
+  @override
+  String get downloadToPlayOffline => 'Tải một sân về để chơi ngoại tuyến';
+
+  @override
+  String get drivingZonesHeading => 'Vùng bóng rơi';
+
+  @override
+  String get hazardsHeading => 'Chướng ngại';
+
+  @override
+  String get roundSummaryHeading => 'Tổng kết vòng';
+
+  @override
+  String get lieDistribution => 'Phân bố vị trí bóng';
+
+  @override
+  String get shotAnalyticsTitle => 'Phân tích cú đánh';
+
+  @override
+  String get settingsAppearance => 'Giao diện';
+
+  @override
+  String get settingsAppearanceSystem => 'Theo điện thoại';
+
+  @override
+  String get settingsAppearanceLight => 'Sáng';
+
+  @override
+  String get settingsAppearanceDark => 'Tối';
+
+  @override
+  String get settingsAppearanceDarkNote => 'Thiết kế để đọc dưới nắng gắt';
+
+  @override
+  String get profileHomeClubHint => 'ví dụ: Vietnam Golf & Country Club';
+
+  @override
+  String get scoreBirdie => 'Birdie';
+
+  @override
+  String get scorePar => 'Par';
+
+  @override
+  String get scoreBogey => 'Bogey';
+
+  @override
+  String get scoreOther => 'Khác';
+
+  @override
+  String downloadOtherLayouts(String done, String total) {
+    return 'Đang tải các đường còn lại của sân ($done/$total)…';
+  }
+
+  @override
+  String packageSegmentReady(String duong) {
+    return '$duong — đã tải';
+  }
+
+  @override
+  String packageSegmentMissing(String duong) {
+    return '$duong — chưa tải';
+  }
+
+  @override
+  String get authGoogleNotRegistered =>
+      'Bản cài này chưa được đăng ký với Google nên không đăng nhập được. Thử lại cũng không đổi — hãy báo người gửi bản cài.';
+
+  @override
+  String get authGoogleNoNetwork =>
+      'Không kết nối được tới Google. Kiểm tra mạng rồi thử lại.';
+
+  @override
   String get authAppleFailed => 'Đăng nhập Apple thất bại. Vui lòng thử lại.';
 
   @override
@@ -1284,9 +1577,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get bagSyncing => 'Đang đồng bộ…';
 
   @override
-  String get bagSavedOffline => 'Đã lưu thay đổi ngoại tuyến';
-
-  @override
   String get bagEmptyTitle => 'Chưa có túi gậy nào';
 
   @override
@@ -2149,6 +2439,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeRoundTargetHeading => 'Khoảng cách mục tiêu';
 
   @override
+  String get activeRoundTargetOpenMap => 'Mở bản đồ';
+
+  @override
   String get activeRoundTargetMessage =>
       'Chạm lên bản đồ chiến thuật ở tab Bản đồ để đặt mục tiêu; khoảng cách sẽ cập nhật theo vị trí GPS của bạn.';
 
@@ -2471,9 +2764,6 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get restrictedAiFeatures => 'Tính năng AI';
-
-  @override
-  String get smartTargetTitle => 'Smart Target';
 
   @override
   String get smartTargetRegenerate => 'Tạo lại';
@@ -2944,6 +3234,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get measureYouToGreen => 'Từ bạn tới green';
+
+  @override
+  String measureAwayFromHole(String distance) {
+    return 'Bạn đang cách hố này $distance. Tới nơi rồi cự ly tới green sẽ hiện ở đây.';
+  }
 
   @override
   String get measureWithoutImagery =>

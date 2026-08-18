@@ -243,11 +243,11 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
       case ConfidenceLevel.low:
         return theme.colorScheme.error;
       case ConfidenceLevel.medium:
-        return Colors.orange;
+        return theme.colorScheme.secondary;
       case ConfidenceLevel.high:
-        return Colors.green;
+        return theme.colorScheme.tertiary;
       case ConfidenceLevel.veryHigh:
-        return Colors.green;
+        return theme.colorScheme.tertiary;
     }
   }
 
@@ -256,11 +256,11 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
       case ConfidenceLevel.low:
         return theme.colorScheme.errorContainer;
       case ConfidenceLevel.medium:
-        return Colors.orange.withOpacity(0.15);
+        return theme.colorScheme.secondary.withOpacity(0.15);
       case ConfidenceLevel.high:
-        return Colors.green.withOpacity(0.15);
+        return theme.colorScheme.tertiary.withOpacity(0.15);
       case ConfidenceLevel.veryHigh:
-        return Colors.green.withOpacity(0.15);
+        return theme.colorScheme.tertiary.withOpacity(0.15);
     }
   }
 }

@@ -150,11 +150,11 @@ class StrategyOptionTile extends StatelessWidget {
   Color _selectedColor(ColorScheme colorScheme) {
     switch (option.strategyType) {
       case StrategyType.safe:
-        return Colors.green;
+        return colorScheme.tertiary;
       case StrategyType.balanced:
-        return Colors.amber.shade700;
+        return colorScheme.secondary;
       case StrategyType.aggressive:
-        return Colors.red;
+        return colorScheme.error;
     }
   }
 }
@@ -175,15 +175,15 @@ class _StrategyIcon extends StatelessWidget {
 
     switch (strategyType) {
       case StrategyType.safe:
-        color = Colors.green;
+        color = colorScheme.tertiary;
         icon = Icons.shield;
         break;
       case StrategyType.balanced:
-        color = Colors.amber.shade700;
+        color = colorScheme.secondary;
         icon = Icons.balance;
         break;
       case StrategyType.aggressive:
-        color = Colors.red;
+        color = colorScheme.error;
         icon = Icons.trending_up;
         break;
     }
@@ -219,13 +219,13 @@ class _RiskIndicator extends StatelessWidget {
 
     Color color;
     if (riskScore < 25) {
-      color = Colors.green;
+      color = colorScheme.tertiary;
     } else if (riskScore < 50) {
-      color = Colors.amber;
+      color = colorScheme.secondary;
     } else if (riskScore < 75) {
-      color = Colors.orange;
+      color = colorScheme.secondary;
     } else {
-      color = Colors.red;
+      color = colorScheme.error;
     }
 
     return Semantics(

@@ -30,7 +30,7 @@ class OfflineIndicator extends StatelessWidget {
 
     final (icon, label, color) = isSyncing
         ? (Icons.cloud_sync_outlined, 'Syncing…', Colors.blue)
-        : (Icons.cloud_off_outlined, 'Saved offline', Colors.orange);
+        : (Icons.cloud_off_outlined, 'Saved offline', Theme.of(context).colorScheme.secondary);
 
     return Semantics(
       label: label,

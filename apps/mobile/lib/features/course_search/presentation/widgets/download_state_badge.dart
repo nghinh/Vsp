@@ -62,13 +62,13 @@ class DownloadStateBadge extends StatelessWidget {
           // Tinted background so the accent label/icon stay legible; a solid
           // accent fill matched the text color and rendered the pill blank.
           backgroundColor: brightness == Brightness.dark
-              ? VspColorDark.accent.withOpacity(0.16)
+              ? Theme.of(context).colorScheme.tertiary.withOpacity(0.16)
               : VspColorLight.accent.withOpacity(0.12),
           textColor: brightness == Brightness.dark
-              ? VspColorDark.accent
+              ? Theme.of(context).colorScheme.tertiary
               : VspColorLight.accent,
           iconColor: brightness == Brightness.dark
-              ? VspColorDark.accent
+              ? Theme.of(context).colorScheme.tertiary
               : VspColorLight.accent,
         );
 
@@ -79,27 +79,35 @@ class DownloadStateBadge extends StatelessWidget {
           // Tinted background so the secondary label/icon stay legible; a solid
           // secondary fill matched the text color and rendered the pill blank.
           backgroundColor: brightness == Brightness.dark
-              ? VspColorDark.secondary.withOpacity(0.16)
+              ? Theme.of(context).colorScheme.secondary.withOpacity(0.16)
               : VspColorLight.secondary.withOpacity(0.12),
           textColor: brightness == Brightness.dark
-              ? VspColorDark.secondary
+              ? Theme.of(context).colorScheme.secondary
               : VspColorLight.secondary,
           iconColor: brightness == Brightness.dark
-              ? VspColorDark.secondary
+              ? Theme.of(context).colorScheme.secondary
               : VspColorLight.secondary,
         );
 
       case DownloadState.notDownloaded:
+        // The one badge on this card with something behind it.
+        //
+        // It was transparent-backed and painted in the third text tier — the
+        // quietest colour in the palette, the one the token file reserves for
+        // "units, timestamps, hints". So on a course list the state that needs
+        // a tap read as fainter than the state that needs nothing: "Đã tải"
+        // was a filled green pill and "Tải xuống" was grey text beside it.
+        //
+        // Same pill as its siblings, in the action colour, so the row reads as
+        // three comparable things and the one to act on is the one that draws
+        // the eye.
         return _BadgeConfig(
           label: AppLocalizations.of(context).downloadDownload,
           icon: Icons.download,
-          backgroundColor: Colors.transparent,
-          textColor: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
-              : VspColorLight.textTertiary,
-          iconColor: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
-              : VspColorLight.textTertiary,
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.16),
+          textColor: Theme.of(context).colorScheme.primary,
+          iconColor: Theme.of(context).colorScheme.primary,
         );
 
       case DownloadState.downloading:

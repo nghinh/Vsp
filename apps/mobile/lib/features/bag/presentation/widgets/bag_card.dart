@@ -195,7 +195,7 @@ class _ActiveBadge extends StatelessWidget {
           Icon(Icons.check, size: 12, color: colorScheme.onPrimary),
           const SizedBox(width: 4),
           Text(
-            'Active',
+            AppLocalizations.of(context).commonActive,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,

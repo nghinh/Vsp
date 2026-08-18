@@ -157,6 +157,298 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authGoogleFailed => 'Google sign-in failed. Please try again.';
 
   @override
+  String get summaryOut => 'OUT';
+
+  @override
+  String get summaryIn => 'IN';
+
+  @override
+  String get summaryTotal => 'TOTAL';
+
+  @override
+  String get scoreGrossLabel => 'gross';
+
+  @override
+  String get weatherConditionTileLabel => 'Condition';
+
+  @override
+  String get weatherForecastBadge => 'Forecast';
+
+  @override
+  String get weatherMeasuredBadge => 'Measured';
+
+  @override
+  String get weatherForecastSemantics => 'Forecast data';
+
+  @override
+  String get weatherMeasuredSemantics => 'Current measurement';
+
+  @override
+  String get dispersionTitle => 'Dispersion';
+
+  @override
+  String get bagSavedOffline => 'Changes saved offline';
+
+  @override
+  String get bagActiveSavedOffline => 'Active bag saved offline';
+
+  @override
+  String get clubSavedOffline => 'Club saved offline';
+
+  @override
+  String get shotMarkers => 'Shot markers';
+
+  @override
+  String get shotClub => 'Club';
+
+  @override
+  String get shotResult => 'Result';
+
+  @override
+  String get shotMergeInto => 'Merge shot into';
+
+  @override
+  String get shotStart => 'Start shot';
+
+  @override
+  String get shotEnd => 'End shot';
+
+  @override
+  String get shotSaved => 'Shot saved';
+
+  @override
+  String get shotNoneToMerge => 'No eligible shots to merge into';
+
+  @override
+  String get shotTrackingHint => 'Start tracking shots during your round';
+
+  @override
+  String get privacyDataExport => 'Data export';
+
+  @override
+  String get privacyRequestDetails => 'Request details';
+
+  @override
+  String get privacyNoRequests => 'No privacy requests';
+
+  @override
+  String get smartTargetTitle => 'Smart Target';
+
+  @override
+  String get smartTargetTournamentOff =>
+      'Smart target is off in tournament mode';
+
+  @override
+  String get smartTargetUnavailable => 'Smart target is not available';
+
+  @override
+  String get smartTargetHazards => 'Hazards near the landing zone';
+
+  @override
+  String get smartTargetRisk => 'Risk';
+
+  @override
+  String get smartTargetConfidenceLabel => 'Confidence';
+
+  @override
+  String get bagClubsHeading => 'Clubs';
+
+  @override
+  String get bagActiveLabel => 'Active';
+
+  @override
+  String get bagSummaryHeading => 'Bag summary';
+
+  @override
+  String get clubPerformanceHeading => 'Club performance';
+
+  @override
+  String get commonCached => 'Cached';
+
+  @override
+  String get correctionsMine => 'My corrections';
+
+  @override
+  String get correctionsNoneYet => 'No corrections submitted yet';
+
+  @override
+  String get commonUpdate => 'Update';
+
+  @override
+  String get commonActive => 'Active';
+
+  @override
+  String get commonGenerated => 'Generated';
+
+  @override
+  String get commonUnknownCourse => 'Unknown course';
+
+  @override
+  String get targetMarkerLabel => 'Target';
+
+  @override
+  String get clubFormEdit => 'Edit club';
+
+  @override
+  String get clubFormAdd => 'Add club';
+
+  @override
+  String get clubFormUpdate => 'Update club';
+
+  @override
+  String get syncChangesSavedOffline => 'Changes saved offline';
+
+  @override
+  String get appNoServerConfigured => 'This build has no server configured';
+
+  @override
+  String get appPreparing => 'Preparing your golf experience';
+
+  @override
+  String get mapPreparing => 'Preparing your strategic map';
+
+  @override
+  String get mapLoadFailedTitle => 'Could not load the hole map';
+
+  @override
+  String get mapLoadFailedBody => 'Check that the course package is downloaded';
+
+  @override
+  String get privacyNoRounds => 'No rounds found';
+
+  @override
+  String get weatherUnavailableBody =>
+      'Weather data is not available for this location.';
+
+  @override
+  String get roundSetupNoBag => 'No bag selected';
+
+  @override
+  String get performanceStatsHeading => 'Performance statistics';
+
+  @override
+  String get performanceNotComputed => 'Not yet computed';
+
+  @override
+  String get watchPairTitle => 'Pair Apple Watch';
+
+  @override
+  String get watchPackagesAbout => 'About watch packages';
+
+  @override
+  String get strokesGainedOverall => 'Overall strokes gained';
+
+  @override
+  String get strokesGainedNoData => 'No shot data';
+
+  @override
+  String get strokesGainedConfidence => 'Confidence';
+
+  @override
+  String get updateAvailableTitle => 'Update available';
+
+  @override
+  String get updateNeedsInternet => 'Updates require an internet connection';
+
+  @override
+  String get shotNoClub => 'No club';
+
+  @override
+  String get shotNoClubAssigned => 'No club assigned';
+
+  @override
+  String get profileSkillLevel => 'Skill level';
+
+  @override
+  String get windAdjustment => 'Wind adjustment';
+
+  @override
+  String get dispersionNearestHazard => 'To nearest hazard';
+
+  @override
+  String get directionalDeviation => 'Directional deviation';
+
+  @override
+  String get recommendationsDisabled => 'Recommendations disabled';
+
+  @override
+  String get teeSetsHeading => 'Tee sets';
+
+  @override
+  String get roundStatsHeading => 'Round stats';
+
+  @override
+  String get downloadToPlayOffline => 'Download a course to play offline';
+
+  @override
+  String get drivingZonesHeading => 'Landing zones';
+
+  @override
+  String get hazardsHeading => 'Hazards';
+
+  @override
+  String get roundSummaryHeading => 'Round summary';
+
+  @override
+  String get lieDistribution => 'Lie distribution';
+
+  @override
+  String get shotAnalyticsTitle => 'Shot analytics';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsAppearanceSystem => 'Follow the phone';
+
+  @override
+  String get settingsAppearanceLight => 'Light';
+
+  @override
+  String get settingsAppearanceDark => 'Dark';
+
+  @override
+  String get settingsAppearanceDarkNote => 'Designed for reading in bright sun';
+
+  @override
+  String get profileHomeClubHint => 'e.g. Vietnam Golf & Country Club';
+
+  @override
+  String get scoreBirdie => 'Birdie';
+
+  @override
+  String get scorePar => 'Par';
+
+  @override
+  String get scoreBogey => 'Bogey';
+
+  @override
+  String get scoreOther => 'Other';
+
+  @override
+  String downloadOtherLayouts(String done, String total) {
+    return 'Fetching the club\'s other đường ($done of $total)…';
+  }
+
+  @override
+  String packageSegmentReady(String duong) {
+    return '$duong — downloaded';
+  }
+
+  @override
+  String packageSegmentMissing(String duong) {
+    return '$duong — not downloaded';
+  }
+
+  @override
+  String get authGoogleNotRegistered =>
+      'This build is not registered with Google, so sign-in cannot work on it. Trying again will not change that — tell whoever gave you the app.';
+
+  @override
+  String get authGoogleNoNetwork =>
+      'No connection to Google. Check your network and try again.';
+
+  @override
   String get authAppleFailed => 'Apple sign-in failed. Please try again.';
 
   @override
@@ -1286,9 +1578,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bagSyncing => 'Syncing…';
 
   @override
-  String get bagSavedOffline => 'Changes saved offline';
-
-  @override
   String get bagEmptyTitle => 'No Golf Bags Yet';
 
   @override
@@ -2150,6 +2439,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRoundTargetHeading => 'Target distance';
 
   @override
+  String get activeRoundTargetOpenMap => 'Open the map';
+
+  @override
   String get activeRoundTargetMessage =>
       'Tap the strategic map on the Map tab to place a target; the distance updates as your GPS position changes.';
 
@@ -2471,9 +2763,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get restrictedAiFeatures => 'AI features';
-
-  @override
-  String get smartTargetTitle => 'Smart Target';
 
   @override
   String get smartTargetRegenerate => 'Regenerate';
@@ -2943,6 +3232,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get measureYouToGreen => 'From you to the green';
+
+  @override
+  String measureAwayFromHole(String distance) {
+    return 'You are $distance from this hole. The distance to the green appears here once you get there.';
+  }
 
   @override
   String get measureWithoutImagery =>

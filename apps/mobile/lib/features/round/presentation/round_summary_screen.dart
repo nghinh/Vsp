@@ -27,6 +27,7 @@ import 'widgets/score_row_widget.dart';
 import 'widgets/sync_state_badge.dart';
 import 'widgets/correction_dialog.dart';
 import 'widgets/round_recap_card.dart';
+import 'widgets/round_headline.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 
@@ -179,7 +180,7 @@ class _RoundSummaryView extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  Icon(Icons.error_outline, size: 48, color: Theme.of(context).colorScheme.error),
                   const SizedBox(height: 16),
                   Text(context.tr(state.message)),
                 ],
@@ -237,28 +238,18 @@ class _SummaryScaffold extends StatelessWidget {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // Header
+            // The result, first.
+            //
+            // This screen used to open with the course name, the date, and a
+            // sync banner — three facts the golfer already knows — and put
+            // the number they just spent four hours producing below all of
+            // them, in a row the same size as everything else. Whatever else
+            // a round summary is for, it is first for saying what you shot.
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      summary.courseName,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatDate(summary.startedAt),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
+              child: RoundHeadline(
+                players: summary.players,
+                courseName: summary.courseName,
+                date: _formatDate(summary.startedAt),
               ),
             ),
 
@@ -281,22 +272,6 @@ class _SummaryScaffold extends StatelessWidget {
               ),
             ),
 
-            // Stats card
-            if (summary.players.isNotEmpty)
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: RoundStatsCard(
-                    fairwaysHit: summary.players.first.fairwaysHit,
-                    par4Or5Count: summary.players.first.par4Or5Count,
-                    girCount: summary.players.first.girCount,
-                    totalHoles: summary.players.first.holes.length,
-                    totalPutts: summary.players.first.totalPutts,
-                    totalPenalties: summary.players.first.totalPenalties,
-                  ),
-                ),
-              ),
-
             // Per-player scorecards
             for (final player in summary.players) ...[
               SliverToBoxAdapter(
@@ -305,6 +280,29 @@ class _SummaryScaffold extends StatelessWidget {
                   child: _PlayerCardHeader(player: player),
                 ),
               ),
+
+              // This golfer's own numbers, under this golfer's own name.
+              //
+              // One stats card used to sit above every scorecard, built from
+              // `players.first` and labelled with nobody. On a four-ball that
+              // is somebody else's fairways and somebody else's putts,
+              // presented as the round's — true data answering a question it
+              // was not asked. Whoever was not first in the list was reading a
+              // stranger's round and had no way to know.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: RoundStatsCard(
+                    fairwaysHit: player.fairwaysHit,
+                    par4Or5Count: player.par4Or5Count,
+                    girCount: player.girCount,
+                    totalHoles: player.holes.length,
+                    totalPutts: player.totalPutts,
+                    totalPenalties: player.totalPenalties,
+                  ),
+                ),
+              ),
+
               SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   final hole = player.holes[index];
@@ -316,6 +314,18 @@ class _SummaryScaffold extends StatelessWidget {
                     ),
                   );
                 }, childCount: player.holes.length),
+              ),
+
+              // OUT / IN / total, the way a card is read.
+              //
+              // The model has carried frontNineStrokes and backNineStrokes all
+              // along and nothing showed them: eighteen identical rows, and a
+              // golfer wanting "what did I go out in" counted them by hand.
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: NineTotals(player: player),
+                ),
               ),
             ],
 
@@ -408,27 +418,20 @@ class _PlayerCardHeader extends StatelessWidget {
           '${player.totalStrokes}',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: _relativeColor(player.relativeScore),
+            color: relativeScoreColour(context, player.relativeScore),
           ),
         ),
         const SizedBox(width: 4),
         Text(
-          player.relativeScore >= 0
-              ? '+${player.relativeScore}'
-              : '${player.relativeScore}',
+          relativeScoreLabel(player.relativeScore),
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: _relativeColor(player.relativeScore),
+            color: relativeScoreColour(context, player.relativeScore),
           ),
         ),
       ],
     );
   }
 
-  Color _relativeColor(int relativeScore) {
-    if (relativeScore < 0) return Colors.green;
-    if (relativeScore > 0) return Colors.red;
-    return Colors.grey;
-  }
 }
 
 class _SyncStateBanner extends StatelessWidget {
@@ -442,12 +445,12 @@ class _SyncStateBanner extends StatelessWidget {
 
     final (color, icon, message) = switch (state) {
       SyncState.synced => (
-        Colors.green,
+        Theme.of(context).colorScheme.tertiary,
         Icons.check_circle,
         AppLocalizations.of(context).summarySynced,
       ),
       SyncState.pending => (
-        Colors.amber,
+        Theme.of(context).colorScheme.secondary,
         Icons.cloud_upload,
         AppLocalizations.of(context).summaryOffline,
       ),
@@ -457,7 +460,7 @@ class _SyncStateBanner extends StatelessWidget {
         AppLocalizations.of(context).summarySyncing,
       ),
       SyncState.failed => (
-        Colors.red,
+        Theme.of(context).colorScheme.error,
         Icons.error,
         AppLocalizations.of(context).summarySyncFailed,
       ),

@@ -31,6 +31,7 @@ import 'package:vsp_mobile/features/settings/presentation/credits_screen.dart';
 import 'package:vsp_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/core/theme/theme_mode_cubit.dart';
 
 // ─── Fakes ──────────────────────────────────────────────────────────────────
 
@@ -186,8 +187,12 @@ void main() {
   group('the credits screen', () {
     testWidgets('is reachable from settings', (tester) async {
       await tester.pumpWidget(
-        BlocProvider<LocaleCubit>(
-          create: (_) => LocaleCubit(),
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<LocaleCubit>(create: (_) => LocaleCubit()),
+            // Settings owns the light/dark choice as well as the language.
+            BlocProvider<ThemeModeCubit>(create: (_) => ThemeModeCubit()),
+          ],
           child: MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
@@ -198,6 +203,10 @@ void main() {
       await tester.pumpAndSettle();
 
       final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      // Settings grew an appearance section above this row, so it starts below
+      // the fold. Scrolling to it is what a golfer does; tapping a widget the
+      // screen has not shown yet is not.
+      await tester.scrollUntilVisible(find.text(l10n.creditsTitle), 200);
       await tester.tap(find.text(l10n.creditsTitle));
       await tester.pumpAndSettle();
 

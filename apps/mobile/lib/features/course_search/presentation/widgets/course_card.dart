@@ -130,8 +130,11 @@ class CourseCard extends StatelessWidget {
                       onPressed: onFavoriteToggle,
                       icon: Icon(
                         isFavorite ? Icons.favorite : Icons.favorite_border,
+                        // From the palette, like every other state colour in
+                        // this app. Theme.of(context).colorScheme.error belongs to Material and answers
+                        // to no contrast test written here.
                         color: isFavorite
-                            ? Colors.red
+                            ? colorScheme.error
                             : colorScheme.onSurfaceVariant,
                       ),
                       iconSize: compact ? 20 : 24,
@@ -156,16 +159,23 @@ class CourseCard extends StatelessWidget {
 
               if (!compact) ...[
                 // ─── Info Row: Holes + Rating/Slope ─────────────────────────
-                Row(
+                //
+                // Wrap, not Row. Three chips whose widths are translated text
+                // and course data, on the screen every round starts from.
+                Wrap(
+                  spacing: VspSpacing.sm,
+                  runSpacing: VspSpacing.xs,
                   children: [
                     // Holes
                     _InfoChip(
                       icon: Icons.flag,
-                      label: '${course.holesCount} holes',
+                      // Was the literal '9 holes' — English, on the screen
+                      // every golfer starts a round from.
+                      label: AppLocalizations.of(context)
+                          .roundSetupLayoutHoles(course.holesCount),
                     ),
 
                     if (course.parTotal != null) ...[
-                      const SizedBox(width: VspSpacing.sm),
                       _InfoChip(
                         icon: Icons.straighten,
                         label: AppLocalizations.of(context).coursePar('${course.parTotal}'),
@@ -173,19 +183,17 @@ class CourseCard extends StatelessWidget {
                     ],
 
                     if (course.rating != null || course.slope != null) ...[
-                      const SizedBox(width: VspSpacing.sm),
                       _InfoChip(
                         icon: Icons.star,
                         label: course.rating != null
                             ? '${course.rating!.toStringAsFixed(1)}'
                             : AppLocalizations.of(context).courseSlope('${course.slope}'),
-                        iconColor: Colors.amber,
+                        iconColor: Theme.of(context).colorScheme.secondary,
                       ),
                     ],
 
                     // Distance (nearby search)
                     if (course.distanceMeters != null) ...[
-                      const SizedBox(width: VspSpacing.sm),
                       _InfoChip(
                         icon: Icons.near_me,
                         label: course.formattedDistance(context.distanceUnit),
@@ -202,24 +210,14 @@ class CourseCard extends StatelessWidget {
                 spacing: 6,
                 runSpacing: VspSpacing.xs,
                 children: [
-                  // Verification badge. Reads the effective status, not the
-                  // raw one: a VERIFIED stamp on class-D community data is not
-                  // a verified course, and this badge is the first thing a
-                  // golfer sees about a course they may go and play.
-                  VerificationBadge(
-                    status:
-                        course.dataFreshness?.effectiveVerificationStatus ??
-                        VerificationStatus.unverified,
-                    compact: compact,
-                  ),
-
-                  // Freshness badge
-                  FreshnessBadge(
-                    dataFreshness: course.dataFreshness,
-                    compact: compact,
-                  ),
-
-                  // Download state badge — tappable to navigate to download screen
+                  // Whether this course can be played offline, first.
+                  //
+                  // It is the only badge here a golfer can act on, and the
+                  // question they are actually asking of a course list at
+                  // home the night before. Verification and freshness are
+                  // provenance — they qualify the data, they are not a
+                  // decision — so they follow it, the same way the weather
+                  // panel's source badges moved under the wind reading.
                   InkWell(
                     onTap: onDownloadTap,
                     borderRadius: BorderRadius.circular(16),
@@ -227,6 +225,21 @@ class CourseCard extends StatelessWidget {
                       state: downloadState,
                       compact: compact,
                     ),
+                  ),
+
+                  // Then where the data came from. Reads the effective
+                  // status, not the raw one: a VERIFIED stamp on class-D
+                  // community data is not a verified course.
+                  VerificationBadge(
+                    status:
+                        course.dataFreshness?.effectiveVerificationStatus ??
+                        VerificationStatus.unverified,
+                    compact: compact,
+                  ),
+
+                  FreshnessBadge(
+                    dataFreshness: course.dataFreshness,
+                    compact: compact,
                   ),
                 ],
               ),
@@ -238,12 +251,16 @@ class CourseCard extends StatelessWidget {
   }
 
   String _buildSemanticLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    // Every part translated. A screen reader set to Vietnamese was being read
+    // "9 holes, verified, stale data" — the three facts on this card that a
+    // sighted golfer gets in their own language.
     final parts = <String>[
       course.displayName,
-      '${course.holesCount} holes',
-      if (course.parTotal != null) AppLocalizations.of(context).coursePar('${course.parTotal}'),
-      if (course.dataFreshness?.isVerified == true) 'verified',
-      if (course.dataFreshness?.isStale == true) 'stale data',
+      l10n.roundSetupLayoutHoles(course.holesCount),
+      if (course.parTotal != null) l10n.coursePar('${course.parTotal}'),
+      if (course.dataFreshness?.isVerified == true) l10n.verificationVerified,
+      if (course.dataFreshness?.isStale == true) l10n.freshnessStale,
     ];
     return parts.join(', ');
   }

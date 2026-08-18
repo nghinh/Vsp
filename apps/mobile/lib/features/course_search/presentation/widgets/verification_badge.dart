@@ -46,13 +46,13 @@ class VerificationBadge extends StatelessWidget {
           label: AppLocalizations.of(context).verificationVerified,
           icon: Icons.verified,
           backgroundColor: brightness == Brightness.dark
-              ? VspColorDark.accent
+              ? Theme.of(context).colorScheme.tertiary
               : VspColorLight.accent,
           textColor: brightness == Brightness.dark
-              ? VspColorDark.onAccent
+              ? Theme.of(context).colorScheme.onTertiary
               : VspColorLight.onAccent,
           iconColor: brightness == Brightness.dark
-              ? VspColorDark.onAccent
+              ? Theme.of(context).colorScheme.onTertiary
               : VspColorLight.onAccent,
           borderColor: null,
         );
@@ -71,7 +71,7 @@ class VerificationBadge extends StatelessWidget {
             VspSemanticColorToken.estimated,
           ),
           borderColor: brightness == Brightness.dark
-              ? VspColorDark.secondary
+              ? Theme.of(context).colorScheme.secondary
               : VspColorLight.secondary,
         );
 
@@ -81,13 +81,13 @@ class VerificationBadge extends StatelessWidget {
           icon: Icons.help_outline,
           backgroundColor: Colors.transparent,
           textColor: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
+              ? VspTextTiers.of(context).tertiary
               : VspColorLight.textTertiary,
           iconColor: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
+              ? VspTextTiers.of(context).tertiary
               : VspColorLight.textTertiary,
           borderColor: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
+              ? VspTextTiers.of(context).tertiary
               : VspColorLight.textTertiary,
         );
 
@@ -133,11 +133,14 @@ class VerificationBadge extends StatelessWidget {
               ? Border.all(color: borderColor, width: 1.5)
               : null,
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
+        // A pill that has to survive its own label. "Đã xác minh" at 2x is
+        // wider than the row it sat in, and a badge that overflows is worse
+        // than one that wraps: it prints over whatever is beside it.
+        child: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 4,
           children: [
             Icon(config.icon, size: compact ? 12 : 14, color: config.iconColor),
-            const SizedBox(width: 4),
             Text(
               config.label,
               style: TextStyle(

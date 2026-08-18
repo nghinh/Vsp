@@ -93,7 +93,7 @@ class HoleFeatureApi {
       final type = _layerOf(properties['layerType'] as String?);
       if (type == null) continue;
       if (properties['verified'] != true) anyUnverified = true;
-      if (properties['source'] == 'ai-satellite') anyFromModel = true;
+      if (_modelSources.contains(properties['source'])) anyFromModel = true;
       byLayer.putIfAbsent(type, () => []).add(entry);
     }
 
@@ -114,6 +114,17 @@ class HoleFeatureApi {
       anyFromModel: anyFromModel,
     );
   }
+
+  /// Sources that are a model rather than a person.
+  ///
+  /// This was one string, `ai-satellite`, and the tracer stopped writing it.
+  /// GolfSeg files its shapes as `golfseg` — the server knows both names and
+  /// treats them the same everywhere it ranks a machine's outline below a
+  /// human's. The app knew one, so every hole GolfSeg drew came through with
+  /// `anyFromModel` false and the screen's "traced from imagery, unchecked"
+  /// line stayed hidden. GolfSeg draws nearly all of them now, so in practice
+  /// the caveat had switched itself off.
+  static const _modelSources = {'ai-satellite', 'golfseg'};
 
   static MapLayerType? _layerOf(String? name) {
     switch (name) {

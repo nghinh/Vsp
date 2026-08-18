@@ -8,6 +8,7 @@
 // Story 5.5 (reachability): most-recent-first list with per-round details.
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/features/round_setup/presentation/round_setup_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
@@ -628,6 +629,23 @@ class _RoundsEmptyState extends StatelessWidget {
               color: colorScheme.onSurfaceVariant,
             ),
           ),
+
+          // And a way to do the thing it just asked for.
+          //
+          // The screen said "finish a round to see your history here" and then
+          // offered nothing to finish a round with — a dead end that tells you
+          // what to do and leaves you to find where. An empty state is the one
+          // moment the screen knows exactly what the golfer needs next.
+          const SizedBox(height: VspSpacing.lg),
+          FilledButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const RoundSetupScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.golf_course),
+            label: Text(AppLocalizations.of(context).homeStartRound),
+          ),
         ],
       ),
     );
@@ -722,7 +740,7 @@ class _RoundStatusStyle {
           label: AppLocalizations.of(context).roundStatusAbandoned,
           icon: Icons.pause_circle_outline,
           color: brightness == Brightness.dark
-              ? VspColorDark.textTertiary
+              ? VspTextTiers.of(context).tertiary
               : VspColorLight.textTertiary,
         );
       case RoundStatus.cancelled:

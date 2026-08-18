@@ -61,6 +61,9 @@ abstract final class AppMessages {
   static const authSocialLinkFailed = 'msg.authSocialLinkFailed';
 
   // Feature data loading
+  static const bagSavedOffline = 'msg.bagSavedOffline';
+  static const bagActiveSavedOffline = 'msg.bagActiveSavedOffline';
+  static const clubSavedOffline = 'msg.clubSavedOffline';
   static const bagLoadFailed = 'msg.bagLoadFailed';
   static const bagDeleted = 'msg.bagDeleted';
   static const bagDetailLoadFailed = 'msg.bagDetailLoadFailed';
@@ -188,6 +191,9 @@ String resolveAppMessage(AppLocalizations l10n, String? raw) {
     AppMessages.authSocialEmailMismatch => l10n.msgAuthSocialEmailMismatch,
     AppMessages.authSocialLinkFailed => l10n.msgAuthSocialLinkFailed,
     AppMessages.bagLoadFailed => l10n.bagLoadFailedRetry,
+    AppMessages.bagSavedOffline => l10n.bagSavedOffline,
+    AppMessages.bagActiveSavedOffline => l10n.bagActiveSavedOffline,
+    AppMessages.clubSavedOffline => l10n.clubSavedOffline,
     AppMessages.bagDeleted => l10n.bagDeleted,
     AppMessages.bagDetailLoadFailed => l10n.bagDetailLoadFailed,
     AppMessages.clubDeleted => l10n.clubDeleted,

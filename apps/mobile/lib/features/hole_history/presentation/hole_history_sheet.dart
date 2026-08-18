@@ -8,6 +8,7 @@
 // on the tee has about four seconds of attention for it.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/features/hole_history/data/hole_history_api.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
@@ -37,7 +38,7 @@ class HoleHistorySheet extends StatefulWidget {
     return showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Theme.of(context).colorScheme.inverseSurface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
@@ -134,7 +135,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF475569),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -174,7 +175,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
     if (history.timesPlayed == 0) {
       return Text(
         l10n.holeHistoryNeverPlayed,
-        style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 13),
       );
     }
     return Row(
@@ -196,7 +197,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11)),
         Text(value,
             style: const TextStyle(
                 color: Colors.white, fontSize: 20, fontWeight: FontWeight.w800)),
@@ -211,8 +212,8 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.holeHistoryYourNotes,
-            style: const TextStyle(
-                color: Color(0xFFFBBF24),
+            style: TextStyle(
+                color: Theme.of(context).colorScheme.secondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5)),
@@ -223,7 +224,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
             margin: const EdgeInsets.only(bottom: 6),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: const Color(0x33FBBF24)),
             ),
@@ -235,8 +236,8 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
                       style: const TextStyle(color: Colors.white, fontSize: 13)),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close,
-                      size: 16, color: Color(0xFF64748B)),
+                  icon: Icon(Icons.close,
+                      size: 16, color: VspTextTiers.of(context).tertiary),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   tooltip: l10n.holeNoteDelete,
@@ -257,8 +258,8 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.holeHistoryPastRounds,
-            style: const TextStyle(
-                color: Color(0xFFCBD5E1),
+            style: TextStyle(
+                color: VspTextTiers.of(context).secondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5)),
@@ -280,14 +281,14 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
     // the numbers.
     final toPar = attempt.toPar;
     final colour = toPar == null
-        ? const Color(0xFF475569)
+        ? Theme.of(context).colorScheme.onSurfaceVariant
         : toPar < 0
             ? const Color(0xFF22C55E)
             : toPar == 0
-                ? const Color(0xFF64748B)
+                ? VspTextTiers.of(context).tertiary
                 : toPar == 1
-                    ? const Color(0xFFF59E0B)
-                    : const Color(0xFFDC2626);
+                    ? Theme.of(context).colorScheme.secondary
+                    : Theme.of(context).colorScheme.error;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -305,7 +306,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
           if (attempt.playedAt != null)
             Text(
               '${attempt.playedAt!.day}/${attempt.playedAt!.month}',
-              style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 10),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 10),
             ),
         ],
       ),
@@ -325,9 +326,9 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
           style: const TextStyle(color: Colors.white, fontSize: 14),
           decoration: InputDecoration(
             hintText: l10n.holeNoteHint,
-            hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+            hintStyle: TextStyle(color: VspTextTiers.of(context).tertiary, fontSize: 13),
             filled: true,
-            fillColor: const Color(0xFF1E293B),
+            fillColor: Theme.of(context).colorScheme.surface,
             counterText: '',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -339,7 +340,7 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
           Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text(_message!,
-                style: const TextStyle(color: Color(0xFFF87171), fontSize: 12)),
+                style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
           ),
         const SizedBox(height: 8),
         SizedBox(

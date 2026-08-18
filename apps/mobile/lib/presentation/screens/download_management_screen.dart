@@ -159,7 +159,7 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
           const SizedBox(height: 12),
           Text(AppLocalizations.of(context).downloadNoOfflineCourses, style: theme.textTheme.titleMedium),
           Text(
-            'Download a course to play offline',
+            AppLocalizations.of(context).downloadToPlayOffline,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

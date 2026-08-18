@@ -9,6 +9,7 @@
 // Story 5.1 — Slice B: Round Setup UI Screen
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/core/l10n/relative_time.dart';
 
@@ -57,7 +58,23 @@ class PackageStatusBanner extends StatelessWidget {
     this.onWarningAcknowledged,
     this.packageAvailable = false,
     this.missingCourseName,
+    this.readyCourseNames,
   });
+
+  /// What the green banner is claiming is ready — "Đường B", "Đường A + Đường
+  /// B".
+  ///
+  /// The missing branch has named its đường since a two-package round was
+  /// first got right. This one did not, and an unnamed success next to a named
+  /// failure is what made a download that worked look like a download that did
+  /// not: "Sẵn sàng ngoại tuyến" and then, one tap later, "Chưa tải dữ liệu
+  /// Đường A".
+  ///
+  /// Null on a club with one layout, where the name adds nothing.
+  final String? readyCourseNames;
+
+  /// The đường of a paired round with their individual states, or empty.
+  List<SegmentPackage> get _segments => packageReadiness?.segments ?? const [];
 
   @override
   Widget build(BuildContext context) {
@@ -75,10 +92,11 @@ class PackageStatusBanner extends StatelessWidget {
         return _buildBanner(
           context: context,
           icon: Icons.offline_pin,
-          iconColor: const Color(0xFF059669), // semantic green
+          iconColor: Theme.of(context).colorScheme.tertiary, // semantic green
           label: AppLocalizations.of(context).packageOfflineReady,
-          backgroundColor: const Color(0xFF059669).withOpacity(0.12),
-          textColor: const Color(0xFF059669),
+          subtitle: readyCourseNames,
+          backgroundColor: Theme.of(context).colorScheme.tertiary.withOpacity(0.12),
+          textColor: Theme.of(context).colorScheme.tertiary,
         );
 
       case PackageStatus.notDownloaded:
@@ -89,14 +107,14 @@ class PackageStatusBanner extends StatelessWidget {
         return _buildBanner(
           context: context,
           icon: Icons.cloud_download_outlined,
-          iconColor: const Color(0xFFF97316), // semantic amber
+          iconColor: Theme.of(context).colorScheme.primary, // semantic amber
           label: missingCourseName == null || missingCourseName!.isEmpty
               ? AppLocalizations.of(context).packageNotDownloaded
               : AppLocalizations.of(context)
                   .packageNotDownloadedNamed(missingCourseName!),
           subtitle: AppLocalizations.of(context).packageNotDownloadedSubtitle,
-          backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
-          textColor: const Color(0xFFF97316),
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+          textColor: Theme.of(context).colorScheme.primary,
           // No "play anyway": starting the round was never blocked on this.
           // The only thing on offer here is the download, which is the whole
           // point of the banner.
@@ -112,15 +130,15 @@ class PackageStatusBanner extends StatelessWidget {
         return _buildBanner(
           context: context,
           icon: Icons.warning_amber_rounded,
-          iconColor: const Color(0xFFF97316), // semantic amber
+          iconColor: Theme.of(context).colorScheme.primary, // semantic amber
           label: AppLocalizations.of(context).packageOutdated,
           subtitle: packageReadiness!.expiresAt != null
               ? AppLocalizations.of(context).packageExpiredOn(
                   _formatDate(context, packageReadiness!.expiresAt!),
                 )
               : AppLocalizations.of(context).packageExpired,
-          backgroundColor: const Color(0xFFF97316).withOpacity(0.12),
-          textColor: const Color(0xFFF97316),
+          backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+          textColor: Theme.of(context).colorScheme.primary,
           action: onWarningAcknowledged != null
               ? _Action(
                   label: AppLocalizations.of(context).packagePlayAnyway,
@@ -133,11 +151,11 @@ class PackageStatusBanner extends StatelessWidget {
         return _buildBanner(
           context: context,
           icon: Icons.error_outline,
-          iconColor: const Color(0xFFDC2626), // semantic red
+          iconColor: Theme.of(context).colorScheme.error, // semantic red
           label: AppLocalizations.of(context).packageCorrupted,
           subtitle: AppLocalizations.of(context).packageCorruptedSubtitle,
-          backgroundColor: const Color(0xFFDC2626).withOpacity(0.12),
-          textColor: const Color(0xFFDC2626),
+          backgroundColor: Theme.of(context).colorScheme.error.withOpacity(0.12),
+          textColor: Theme.of(context).colorScheme.error,
           action: onDownloadPressed != null
               ? _Action(
                   label: AppLocalizations.of(context).packageRedownload,
@@ -201,6 +219,19 @@ class PackageStatusBanner extends StatelessWidget {
                         color: textColor.withOpacity(0.8),
                       ),
                     ),
+                  // Both nines of a paired round, side by side.
+                  //
+                  // The banner could previously describe one đường per visit,
+                  // so a golfer who had fetched one of two saw a green banner,
+                  // changed the pairing, and saw a red one — with nothing on
+                  // screen ever holding the two facts at once. Shown together
+                  // the sequence stops being a contradiction and becomes a
+                  // list with one item left on it.
+                  if (_segments.length > 1) ...[
+                    const SizedBox(height: 6),
+                    for (final segment in _segments)
+                      _SegmentRow(segment: segment, textColor: textColor),
+                  ],
                 ],
               ),
             ),
@@ -253,4 +284,45 @@ class _Action {
   final VoidCallback onPressed;
 
   const _Action({required this.label, required this.onPressed});
+}
+
+/// One đường of a paired round: its name and whether its package is here.
+///
+/// A tick and a cloud rather than two colours, because the difference between
+/// "have it" and "need it" is the whole message and colour alone does not
+/// carry it for a golfer who cannot distinguish the two — nor for anyone at
+/// all in direct sun.
+class _SegmentRow extends StatelessWidget {
+  const _SegmentRow({required this.segment, required this.textColor});
+
+  final SegmentPackage segment;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 2),
+      child: Row(
+        children: [
+          Icon(
+            segment.isReady ? Icons.check_circle : Icons.cloud_download_outlined,
+            size: 14,
+            color: textColor.withOpacity(segment.isReady ? 0.9 : 0.7),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              segment.isReady
+                  ? l10n.packageSegmentReady(segment.name)
+                  : l10n.packageSegmentMissing(segment.name),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: textColor.withOpacity(segment.isReady ? 0.9 : 0.7),
+                  ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

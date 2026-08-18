@@ -538,16 +538,40 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       // being told to download.
       final segments = currentState.segmentCourseIds;
       if (segments.isEmpty) return;
-      var readiness =
-          await _packageReadinessService.getOfflineReadiness(segments.first);
-      // Which đường is the one at fault, so the download button can offer it
-      // rather than offering whichever course the search returned.
-      var missing = segments.first;
-      for (final segment in segments.skip(1)) {
-        if (!readiness.isReady) break;
-        readiness = await _packageReadinessService.getOfflineReadiness(segment);
-        missing = segment;
+      // Every đường, always — not "until one fails".
+      //
+      // Stopping at the first failure is why this banner could only describe
+      // half a paired round: it knew Đường A was missing and never asked about
+      // Đường B, so the screen could say "chưa tải A" or, on another visit,
+      // "sẵn sàng" — never "A chưa, B rồi", which is the only sentence that
+      // tells a golfer what to do. Two segments at most, so the extra check
+      // costs one file-existence test.
+      final perSegment = <SegmentPackage>[];
+      OfflineReadiness? firstProblem;
+      int? missingId;
+      for (final segment in segments) {
+        final result =
+            await _packageReadinessService.getOfflineReadiness(segment);
+        perSegment.add(
+          SegmentPackage(
+            courseId: segment,
+            name: currentState.layoutNameFor(segment) ??
+                currentState.courseName ??
+                '',
+            isReady: result.isReady,
+          ),
+        );
+        if (!result.isReady && firstProblem == null) {
+          firstProblem = result;
+          missingId = segment;
+        }
       }
+
+      // The first đường that needs something, in playing order, so the
+      // download button offers the one the golfer reaches first.
+      final readiness = firstProblem ?? await _packageReadinessService
+          .getOfflineReadiness(segments.first);
+      final missing = missingId ?? segments.first;
 
       final status = _mapReadinessToStatus(readiness.reason);
 
@@ -580,6 +604,9 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
             manifestVersion: readiness.manifest?.version,
             expiresAt: readiness.expiresAt,
             missingCourseId: missing,
+            // Only where there is more than one, because a single đường is
+            // already fully described by the status above it.
+            segments: perSegment.length > 1 ? perSegment : const [],
           ),
         ),
       );

@@ -8,6 +8,7 @@
 // - During active round, navigation becomes round-focused
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/presentation/widgets/scroll_edge_fade.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
@@ -198,14 +199,23 @@ class _SettingsTile extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Container(
+              // A box for alignment, and nothing painted behind the icon.
+              //
+              // There used to be a tinted tile here. Measured against the card
+              // it sits on it came out at 1.02:1 — not a tile, a rounded
+              // rectangle nobody can see, drawn on every row of the list. The
+              // obvious repair, tinting it with the action colour, measured
+              // 1.22:1: still invisible, and getting it past the 3:1 graphic
+              // floor would mean seven solid orange blocks down a settings
+              // list.
+              //
+              // So the container goes and the icon does the work: brand
+              // colour, 5.95:1 on the card, which makes the column scannable
+              // instead of a grey ladder.
+              SizedBox(
                 width: 44,
                 height: 44,
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: colorScheme.onSurfaceVariant),
+                child: Icon(icon, color: colorScheme.primary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -242,111 +252,135 @@ class _MoreTab extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
+      child: Stack(
         children: [
-          const SizedBox(height: VspSpacing.md),
-          Text(
-            l10n.moreTitle,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: VspFontWeight.semibold,
+          ListView(
+            // Room at the foot for the fade below, so the last row can rest
+            // clear of the navigation bar instead of being sliced by it.
+            padding: const EdgeInsets.fromLTRB(
+              VspSpacingSemantic.gutterMobile,
+              VspSpacingSemantic.gutterMobile,
+              VspSpacingSemantic.gutterMobile,
+              VspSpacingSemantic.gutterMobile + 20,
             ),
-          ),
-          const SizedBox(height: VspSpacing.sm),
-          Text(
-            l10n.moreSubtitle,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-          ),
-          const SizedBox(height: VspSpacing.lg),
-          _SettingsTile(
-            icon: Icons.insights,
-            title: l10n.homeAnalytics,
-            subtitle: l10n.homeAnalyticsSubtitle,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const AnalyticsHubScreen()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.golf_course,
-            title: l10n.homeMyBag,
-            subtitle: l10n.homeMyBagSubtitle,
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const BagScreen())),
-          ),
-          const SizedBox(height: 12),
-          // Both screens below were complete and reachable from nowhere:
-          // DownloadManagementScreen (388 LOC) and CorrectionListScreen
-          // (303 LOC) were each one tile away from a golfer.
-          _SettingsTile(
-            icon: Icons.download_outlined,
-            title: l10n.downloadOfflineCourses,
-            subtitle: l10n.downloadOfflineCoursesSubtitle,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => DownloadManagementScreen(
-                  manifestRepo: PackageManifestRepository(),
-                  packageRepo: CoursePackageRepository(apiClient: ApiClient()),
+            children: [
+              const SizedBox(height: VspSpacing.md),
+              Text(
+                l10n.moreTitle,
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: VspFontWeight.semibold,
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.report_outlined,
-            title: l10n.correctionListTitle,
-            subtitle: l10n.correctionListSubtitle,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const CorrectionListScreen()),
-            ),
-          ),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.shield_outlined,
-            title: l10n.homePrivacy,
-            subtitle: l10n.homePrivacySubtitle,
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const PrivacyScreen())),
-          ),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.devices,
-            title: l10n.authSessions,
-            subtitle: l10n.authSessionsSubtitle,
-            onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const SessionManagementScreen(),
+              const SizedBox(height: VspSpacing.sm),
+              Text(
+                l10n.moreSubtitle,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
+              const SizedBox(height: VspSpacing.lg),
+              _SettingsTile(
+                icon: Icons.insights,
+                title: l10n.homeAnalytics,
+                subtitle: l10n.homeAnalyticsSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const AnalyticsHubScreen()),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsTile(
+                icon: Icons.golf_course,
+                title: l10n.homeMyBag,
+                subtitle: l10n.homeMyBagSubtitle,
+                onTap: () => Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const BagScreen())),
+              ),
+              const SizedBox(height: 12),
+              // Both screens below were complete and reachable from nowhere:
+              // DownloadManagementScreen (388 LOC) and CorrectionListScreen
+              // (303 LOC) were each one tile away from a golfer.
+              _SettingsTile(
+                icon: Icons.download_outlined,
+                title: l10n.downloadOfflineCourses,
+                subtitle: l10n.downloadOfflineCoursesSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => DownloadManagementScreen(
+                      manifestRepo: PackageManifestRepository(),
+                      packageRepo: CoursePackageRepository(
+                        apiClient: ApiClient(),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsTile(
+                icon: Icons.report_outlined,
+                title: l10n.correctionListTitle,
+                subtitle: l10n.correctionListSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const CorrectionListScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsTile(
+                icon: Icons.shield_outlined,
+                title: l10n.homePrivacy,
+                subtitle: l10n.homePrivacySubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const PrivacyScreen()),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsTile(
+                icon: Icons.devices,
+                title: l10n.authSessions,
+                subtitle: l10n.authSessionsSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SessionManagementScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              _SettingsTile(
+                icon: Icons.settings_outlined,
+                title: l10n.settingsTitle,
+                subtitle: l10n.settingsLanguageSubtitle,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                ),
+              ),
+              const SizedBox(height: 32),
+              OutlinedButton.icon(
+                onPressed: () {
+                  context.read<AuthBloc>().add(const LogoutRequested());
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.logout),
+                label: Text(l10n.authSignOut),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: colorScheme.error,
+                  side: BorderSide(color: colorScheme.error),
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          _SettingsTile(
-            icon: Icons.settings_outlined,
-            title: l10n.settingsTitle,
-            subtitle: l10n.settingsLanguageSubtitle,
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen())),
-          ),
-          const SizedBox(height: 32),
-          OutlinedButton.icon(
-            onPressed: () {
-              context.read<AuthBloc>().add(const LogoutRequested());
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-                (route) => false,
-              );
-            },
-            icon: const Icon(Icons.logout),
-            label: Text(l10n.authSignOut),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: colorScheme.error,
-              side: BorderSide(color: colorScheme.error),
-            ),
+
+          // The list runs under the navigation bar, and a row cut level with
+          // its top edge reads as two blocks on top of each other rather than
+          // as "there is more below" — which is how it was reported on the
+          // round-setup screen, and the same cue fixes it here.
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: ScrollEdgeFade(color: colorScheme.surface),
           ),
         ],
       ),

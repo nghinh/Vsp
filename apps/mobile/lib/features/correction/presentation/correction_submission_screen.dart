@@ -8,6 +8,7 @@
 // optional note. Saves offline and queues for sync.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
@@ -85,10 +86,10 @@ class _CorrectionSubmissionScreenState
   // ─── Accuracy color ───────────────────────────────────────────────────────
 
   Color _accuracyColor(double? accuracy) {
-    if (accuracy == null) return const Color(0xFFDC2626); // red — no fix
-    if (accuracy <= 5) return const Color(0xFF16A34A); // green
-    if (accuracy <= 10) return const Color(0xFFEA580C); // amber
-    return const Color(0xFFDC2626); // red
+    if (accuracy == null) return Theme.of(context).colorScheme.error; // red — no fix
+    if (accuracy <= 5) return Theme.of(context).colorScheme.tertiary; // green
+    if (accuracy <= 10) return Theme.of(context).colorScheme.primary; // amber
+    return Theme.of(context).colorScheme.error; // red
   }
 
   String _accuracyLabel(BuildContext context, double? accuracy) {
@@ -156,14 +157,14 @@ class _CorrectionSubmissionScreenState
     return BlocProvider.value(
       value: _bloc,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
         appBar: AppBar(
-          backgroundColor: const Color(0xFF1E293B),
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             AppLocalizations.of(context).correctionReportTitle,
-            style: const TextStyle(color: Color(0xFFF8FAFC)),
+            style: TextStyle(color: VspTextTiers.of(context).primary),
           ),
-          iconTheme: const IconThemeData(color: Color(0xFFF8FAFC)),
+          iconTheme: IconThemeData(color: VspTextTiers.of(context).primary),
         ),
         body: BlocConsumer<CorrectionSubmissionBloc, CorrectionSubmissionState>(
           listener: (context, state) {
@@ -174,7 +175,7 @@ class _CorrectionSubmissionScreenState
                 ..showSnackBar(
                   SnackBar(
                     content: Text(AppLocalizations.of(context).correctionSavedOffline),
-                    backgroundColor: Color(0xFF16A34A),
+                    backgroundColor: Theme.of(context).colorScheme.tertiary,
                   ),
                 );
               Navigator.of(context).pop();
@@ -185,7 +186,7 @@ class _CorrectionSubmissionScreenState
                 ..showSnackBar(
                   SnackBar(
                     content: Text(context.tr(state.message)),
-                    backgroundColor: const Color(0xFFDC2626),
+                    backgroundColor: Theme.of(context).colorScheme.error,
                   ),
                 );
             }
@@ -226,8 +227,8 @@ class _CorrectionSubmissionScreenState
                   const SizedBox(height: 8),
                   Text(
                     AppLocalizations.of(context).correctionLayerHint,
-                    style: const TextStyle(
-                      color: Color(0xFF94A3B8),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
@@ -252,25 +253,25 @@ class _CorrectionSubmissionScreenState
                     controller: _noteController,
                     maxLength: 500,
                     maxLines: 4,
-                    style: const TextStyle(color: Color(0xFFF8FAFC)),
+                    style: TextStyle(color: VspTextTiers.of(context).primary),
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context).correctionNoteHint,
-                      hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                      hintStyle: TextStyle(color: VspTextTiers.of(context).tertiary),
                       filled: true,
-                      fillColor: const Color(0xFF1E293B),
+                      fillColor: Theme.of(context).colorScheme.surface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF334155)),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFF334155)),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
-                        borderSide: const BorderSide(color: Color(0xFFEA580C)),
+                        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
                       ),
-                      counterStyle: const TextStyle(color: Color(0xFF64748B)),
+                      counterStyle: TextStyle(color: VspTextTiers.of(context).tertiary),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -284,7 +285,7 @@ class _CorrectionSubmissionScreenState
                           ? null
                           : () => _submit(location!),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFEA580C),
+                        backgroundColor: Theme.of(context).colorScheme.primary,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -320,8 +321,8 @@ class _CorrectionSubmissionScreenState
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: blockingReason != null
-                            ? const Color(0xFFEA580C)
-                            : const Color(0xFF64748B),
+                            ? Theme.of(context).colorScheme.primary
+                            : VspTextTiers.of(context).tertiary,
                         fontSize: 12,
                       ),
                     ),
@@ -347,8 +348,8 @@ class _SectionLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFFF8FAFC),
+      style: TextStyle(
+        color: VspTextTiers.of(context).primary,
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
@@ -375,19 +376,19 @@ class _IssueTypeSelector extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color(0xFFEA580C)
-                  : const Color(0xFF1E293B),
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: isSelected
-                    ? const Color(0xFFEA580C)
-                    : const Color(0xFF334155),
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outlineVariant,
               ),
             ),
             child: Text(
               type.label,
               style: TextStyle(
-                color: isSelected ? Colors.white : const Color(0xFFF8FAFC),
+                color: isSelected ? Colors.white : VspTextTiers.of(context).primary,
                 fontSize: 13,
               ),
             ),
@@ -443,19 +444,19 @@ class _LayerSelector extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFFEA580C)
-                    : const Color(0xFF1E293B),
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFFEA580C)
-                      : const Color(0xFF334155),
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
               child: Text(
                 label,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : const Color(0xFFF8FAFC),
+                  color: isSelected ? Colors.white : VspTextTiers.of(context).primary,
                   fontSize: 13,
                 ),
               ),
@@ -485,9 +486,9 @@ class _LocationCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFF334155)),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -500,8 +501,8 @@ class _LocationCard extends StatelessWidget {
                 if (location != null) ...[
                   Text(
                     '${location!.latitude.toStringAsFixed(6)}, ${location!.longitude.toStringAsFixed(6)}',
-                    style: const TextStyle(
-                      color: Color(0xFFF8FAFC),
+                    style: TextStyle(
+                      color: VspTextTiers.of(context).primary,
                       fontSize: 13,
                       fontFamily: 'monospace',
                     ),
@@ -518,8 +519,8 @@ class _LocationCard extends StatelessWidget {
                 ] else ...[
                   Text(
                     capturingLabel,
-                    style: const TextStyle(
-                      color: Color(0xFF64748B),
+                    style: TextStyle(
+                      color: VspTextTiers.of(context).tertiary,
                       fontSize: 13,
                     ),
                   ),

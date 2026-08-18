@@ -308,7 +308,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
       case ShotTrackingState.error:
         return _ErrorIndicator(
           onRetry: _startShot,
-          message: _errorMessage ?? 'An error occurred',
+          message: _errorMessage ?? AppLocalizations.of(context).commonError,
         );
     }
   }
@@ -337,7 +337,7 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
       case ShotTrackingState.persisting:
         return colorScheme.tertiary;
       case ShotTrackingState.persisted:
-        return Colors.green;
+        return Theme.of(context).colorScheme.tertiary;
       case ShotTrackingState.error:
         return colorScheme.error;
     }
@@ -523,7 +523,7 @@ class _StartShotButton extends StatelessWidget {
               Icon(Icons.play_arrow_rounded, size: 28),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Start Shot',
+                AppLocalizations.of(context).shotStart,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: hasClub
@@ -569,7 +569,7 @@ class _EndShotButton extends StatelessWidget {
               Icon(Icons.stop_rounded, size: 28),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'End Shot',
+                AppLocalizations.of(context).shotEnd,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onPrimary,
@@ -630,19 +630,19 @@ class _PersistedIndicator extends StatelessWidget {
       height: 64,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.15),
+          color: Theme.of(context).colorScheme.tertiary.withOpacity(0.15),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.green),
+          border: Border.all(color: Theme.of(context).colorScheme.tertiary),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green),
+            Icon(Icons.check_circle, color: Theme.of(context).colorScheme.tertiary),
             const SizedBox(width: VspSpacing.sm),
             Text(
-              'Shot saved!',
+              AppLocalizations.of(context).shotSaved,
               style: theme.textTheme.titleMedium?.copyWith(
-                color: Colors.green,
+                color: Theme.of(context).colorScheme.tertiary,
                 fontWeight: FontWeight.w600,
               ),
             ),

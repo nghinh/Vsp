@@ -97,7 +97,7 @@ class ShotCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          clubName ?? 'No club assigned',
+                          clubName ?? AppLocalizations.of(context).shotNoClubAssigned,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w600,
                           ),
@@ -158,7 +158,7 @@ class ShotCard extends StatelessWidget {
                           _MarkerChip(
                             icon: Icons.refresh,
                             label: AppLocalizations.of(context).shotProvisional,
-                            color: Colors.orange,
+                            color: Theme.of(context).colorScheme.secondary,
                           ),
                         ],
                         if (shot.isMulligan) ...[
@@ -209,7 +209,7 @@ class ShotCard extends StatelessWidget {
                           color: colorScheme.error,
                         ),
                         label: Text(
-                          'Delete',
+                          AppLocalizations.of(context).commonDelete,
                           style: TextStyle(color: colorScheme.error),
                         ),
                         style: TextButton.styleFrom(
@@ -360,7 +360,7 @@ class _ResultChip extends StatelessWidget {
       case ShotResult.chipIn:
       case ShotResult.holeOut:
       case ShotResult.inTheHole:
-        return Colors.green;
+        return Theme.of(context).colorScheme.tertiary;
       case ShotResult.inBunker:
       case ShotResult.inWater:
       case ShotResult.outOfBounds:

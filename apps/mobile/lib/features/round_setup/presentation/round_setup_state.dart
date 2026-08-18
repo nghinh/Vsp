@@ -50,15 +50,51 @@ class PackageReadiness {
   /// missing.
   final int? missingCourseId;
 
+  /// Every đường this round needs a package for, and whether it has one.
+  ///
+  /// A paired round needs two packages and this banner could only ever talk
+  /// about one at a time. On Long Biên that produced a sequence no golfer can
+  /// assemble: download Đường B, see a green "Sẵn sàng ngoại tuyến"; pick
+  /// Đường A → Đường B, see a red "Chưa tải dữ liệu Đường A". Both true, and
+  /// read one after the other they say the download did not take. Checked
+  /// against the phone that reported it: one package on disk, 1352, and no
+  /// trace of 1351 ever having been fetched — the app was right and unreadable
+  /// at the same time.
+  ///
+  /// Empty on a round played on one đường, where the single status says it
+  /// all.
+  final List<SegmentPackage> segments;
+
   const PackageReadiness({
     required this.status,
     this.reason,
     this.manifestVersion,
     this.expiresAt,
     this.missingCourseId,
+    this.segments = const [],
   });
 
   bool get isReady => status == PackageStatus.valid;
+}
+
+/// One đường of a round, and whether its package is on the device.
+class SegmentPackage extends Equatable {
+  const SegmentPackage({
+    required this.courseId,
+    required this.name,
+    required this.isReady,
+  });
+
+  final int courseId;
+
+  /// The đường's own name — "Đường A". Never the club's: a golfer choosing
+  /// between two nines of the same club cannot act on the club's name.
+  final String name;
+
+  final bool isReady;
+
+  @override
+  List<Object?> get props => [courseId, name, isReady];
 }
 
 /// Base state for round setup.
@@ -303,6 +339,52 @@ class RoundSetupReady extends RoundSetupState {
       if (layout.id == id) return layout.name;
     }
     return null;
+  }
+
+  /// Every other đường of this club, so one download covers the sân.
+  ///
+  /// A package is per-nine and a club is several of them, so downloading only
+  /// the nine that was asked for left a golfer changing the pairing and being
+  /// sent back to download again — three times over, on a club with three
+  /// nines. They are about 8 KB each; rationing them bought nothing and cost
+  /// the whole screen its credibility.
+  List<int> otherLayoutIds(int downloading) => [
+    for (final layout in layouts)
+      if (layout.id != downloading) layout.id,
+  ];
+
+  /// The đường's own name for an id, or null where the club has no layouts.
+  String? layoutNameFor(int id) {
+    for (final layout in layouts) {
+      if (layout.id == id) return layout.name;
+    }
+    return null;
+  }
+
+  /// What "Sẵn sàng ngoại tuyến" is actually about.
+  ///
+  /// The missing side of this banner has named its đường since the two-package
+  /// round was fixed. The ready side never did, and that asymmetry is its own
+  /// bug: a golfer on Long Biên — three đường, six pairings — downloads Đường
+  /// B, is told "Sẵn sàng ngoại tuyến" with no subject, then picks A → B and
+  /// is told "Chưa tải dữ liệu Đường A". Both sentences are true. Read one
+  /// after the other they say the download did not stick, because the first
+  /// one never said what it covered.
+  ///
+  /// Null where the club has a single layout: there is nothing to confuse it
+  /// with, and naming it is noise.
+  String? get readyCourseNames {
+    if (layouts.length < 2) return null;
+    final names = <String>[];
+    for (final id in segmentCourseIds) {
+      for (final layout in layouts) {
+        if (layout.id == id) {
+          names.add(layout.name);
+          break;
+        }
+      }
+    }
+    return names.isEmpty ? null : names.join(' + ');
   }
 
   /// The đường the round is played on, in playing order.

@@ -23,9 +23,9 @@ class ScoreRowWidget extends StatelessWidget {
 
     // Color coding: under par = green, over par = red, par = neutral
     final diffColor = diff < 0
-        ? Colors.green
+        ? Theme.of(context).colorScheme.tertiary
         : diff > 0
-        ? Colors.red
+        ? Theme.of(context).colorScheme.error
         : theme.colorScheme.onSurface;
 
     return Semantics(

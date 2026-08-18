@@ -23,4 +23,5 @@ export 'tokens/vsp_elevation.dart';
 export 'tokens/vsp_motion.dart';
 export 'tokens/vsp_icon.dart';
 export 'tokens/vsp_focus.dart';
+export 'tokens/vsp_text_tiers.dart';
 export 'components/components.dart';

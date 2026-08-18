@@ -86,7 +86,7 @@ class _BagScreenBody extends StatelessWidget {
                   backgroundColor: state.hasPendingSync
                       ? const Color(0xFF3B82F6)
                       : colorScheme.brightness == Brightness.dark
-                      ? VspColorDark.accent
+                      ? Theme.of(context).colorScheme.tertiary
                       : VspColorLight.accent,
                   duration: const Duration(seconds: 3),
                 ),
@@ -257,7 +257,7 @@ class _SyncBanner extends StatelessWidget {
     final color = isSyncing
         ? const Color(0xFF3B82F6)
         : brightness == Brightness.dark
-        ? VspColorDark.muted
+        ? Theme.of(context).colorScheme.surfaceContainerHighest
         : VspColorLight.muted;
 
     return Container(

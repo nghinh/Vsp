@@ -9,6 +9,7 @@
 // Story 7.4 — Slice D: Restricted Feature UI
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 import 'package:flutter/semantics.dart';
 
 /// A small pill badge indicating a feature is restricted in tournament mode.

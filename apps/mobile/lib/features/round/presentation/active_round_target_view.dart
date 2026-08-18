@@ -64,12 +64,20 @@ class ActiveRoundTargetView extends StatefulWidget {
   /// Starting display unit when no ProfileBloc is in scope.
   final DistanceUnit? distanceUnit;
 
+  /// Switches the round to the Map tab.
+  ///
+  /// With no target placed this tab's whole content is a sentence telling the
+  /// golfer to go and tap the map — and it left them to find their own way
+  /// there. The instruction and the way to follow it belong together.
+  final VoidCallback? onOpenMap;
+
   const ActiveRoundTargetView({
     super.key,
     required this.holeNumber,
     this.par,
     this.yardage,
     this.distanceUnit,
+    this.onOpenMap,
   });
 
   @override
@@ -106,14 +114,14 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
       context: context,
       onUnit: (_, profileUnit) => setState(() => _unit = profileUnit),
       child: Scaffold(
-        backgroundColor: VspColorDark.background,
+        backgroundColor: Theme.of(context).colorScheme.inverseSurface,
         appBar: AppBar(
-          backgroundColor: VspColorDark.surface,
+          backgroundColor: Theme.of(context).colorScheme.surface,
           title: Text(
             l10n.activeRoundTarget,
-            style: const TextStyle(color: VspColorDark.textPrimary),
+            style: TextStyle(color: VspTextTiers.of(context).primary),
           ),
-          iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
+          iconTheme: IconThemeData(color: VspTextTiers.of(context).primary),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(VspSpacing.md),
@@ -194,7 +202,7 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (green.hasDistances) ...[
-          _GreenReadout(
+          GreenReadout(
             reading: green,
             unit: unit,
             onToggleUnit: _toggleUnit,
@@ -206,6 +214,10 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
             icon: Icons.gps_fixed,
             heading: l10n.activeRoundTargetHeading,
             message: l10n.activeRoundTargetMessage,
+            actionLabel: widget.onOpenMap == null
+                ? null
+                : l10n.activeRoundTargetOpenMap,
+            onAction: widget.onOpenMap,
           )
         else
           _TargetReadout(
@@ -221,12 +233,17 @@ class _ActiveRoundTargetViewState extends State<ActiveRoundTargetView> {
 // ─── Green readout ──────────────────────────────────────────────────────────
 
 /// Front, centre and back of the green from where the golfer is standing.
-class _GreenReadout extends StatelessWidget {
+/// Front, centre and back of the green from where the golfer is standing.
+///
+/// Public so the size hierarchy it exists for can be tested without standing
+/// up a round, a bloc and a GPS stream to find out whether one number is
+/// bigger than another.
+class GreenReadout extends StatelessWidget {
   final GreenDistanceReading reading;
   final DistanceUnit unit;
   final VoidCallback onToggleUnit;
 
-  const _GreenReadout({
+  const GreenReadout({
     required this.reading,
     required this.unit,
     required this.onToggleUnit,
@@ -240,26 +257,26 @@ class _GreenReadout extends StatelessWidget {
       key: activeRoundGreenReadoutKey,
       padding: const EdgeInsets.all(VspSpacing.md),
       decoration: BoxDecoration(
-        color: VspColorDark.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: VspColorDark.borderStrong),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.golf_course,
                 size: VspIconSize.sm,
-                color: VspColorDark.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: VspSpacing.xs),
               Expanded(
                 child: Text(
                   l10n.activeRoundGreenHeading,
-                  style: const TextStyle(
-                    color: VspColorDark.textPrimary,
+                  style: TextStyle(
+                    color: VspTextTiers.of(context).primary,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -269,27 +286,48 @@ class _GreenReadout extends StatelessWidget {
             ],
           ),
           const SizedBox(height: VspSpacing.sm),
-          _LegRow(
-            label: l10n.activeRoundGreenFront,
-            leg: reading.front!,
-            unit: unit,
-          ),
-          _LegRow(
+
+          // The number a club is chosen off, at the size that decision
+          // deserves.
+          //
+          // Front, centre and back used to be three identical rows: same
+          // 22pt figure, same weight, and "emphasised" changed the colour of
+          // the *label* while leaving the number indistinguishable. So the one
+          // distance a golfer actually plays looked exactly like the two that
+          // bracket it, on a screen read at arm's length, one-handed, in sun.
+          // Every rangefinder ever made leads with the centre and prints the
+          // edges small, and it is not a house style — it is which number the
+          // shot is played to.
+          _HeroDistance(
             label: l10n.activeRoundGreenCentre,
             leg: reading.centre!,
             unit: unit,
-            emphasised: true,
           ),
-          _LegRow(
-            label: l10n.activeRoundGreenBack,
-            leg: reading.back!,
-            unit: unit,
+          const SizedBox(height: VspSpacing.xs),
+          Row(
+            children: [
+              Expanded(
+                child: _EdgeDistance(
+                  label: l10n.activeRoundGreenFront,
+                  leg: reading.front!,
+                  unit: unit,
+                ),
+              ),
+              Expanded(
+                child: _EdgeDistance(
+                  label: l10n.activeRoundGreenBack,
+                  leg: reading.back!,
+                  unit: unit,
+                  alignEnd: true,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: VspSpacing.sm),
           Text(
             l10n.activeRoundGreenMeasuredNote,
-            style: const TextStyle(
-              color: VspColorDark.textTertiary,
+            style: TextStyle(
+              color: VspTextTiers.of(context).tertiary,
               fontSize: 11,
               height: 1.4,
             ),
@@ -322,26 +360,26 @@ class _TargetReadout extends StatelessWidget {
       key: activeRoundTargetReadoutKey,
       padding: const EdgeInsets.all(VspSpacing.md),
       decoration: BoxDecoration(
-        color: VspColorDark.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: VspColorDark.borderStrong),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.gps_fixed,
                 size: VspIconSize.sm,
-                color: VspColorDark.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(width: VspSpacing.xs),
               Expanded(
                 child: Text(
                   l10n.activeRoundTargetHeading,
-                  style: const TextStyle(
-                    color: VspColorDark.textPrimary,
+                  style: TextStyle(
+                    color: VspTextTiers.of(context).primary,
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
@@ -356,7 +394,7 @@ class _TargetReadout extends StatelessWidget {
           if (fix == null)
             _Notice(
               icon: Icons.gps_off,
-              color: VspColorDark.destructive,
+              color: Theme.of(context).colorScheme.error,
               message: l10n.measureNoFix,
             )
           else ...[
@@ -367,14 +405,14 @@ class _TargetReadout extends StatelessWidget {
                   accuracyMeters: fix.accuracyMeters,
                 ),
                 const SizedBox(width: VspSpacing.sm),
-                Expanded(child: _greenNote(l10n)),
+                Expanded(child: _greenNote(context, l10n)),
               ],
             ),
             if (fix.isStale) ...[
               const SizedBox(height: VspSpacing.xs),
               _Notice(
                 icon: Icons.warning_amber_rounded,
-                color: VspColorDark.secondary,
+                color: Theme.of(context).colorScheme.secondary,
                 message: l10n.measureStaleFix,
               ),
             ],
@@ -382,7 +420,7 @@ class _TargetReadout extends StatelessWidget {
               const SizedBox(height: VspSpacing.xs),
               _Notice(
                 icon: Icons.warning_amber_rounded,
-                color: VspColorDark.secondary,
+                color: Theme.of(context).colorScheme.secondary,
                 message: l10n.measureWeakFix,
               ),
             ],
@@ -409,15 +447,15 @@ class _TargetReadout extends StatelessWidget {
           else if (reading.greenUnknown)
             _Notice(
               icon: Icons.help_outline,
-              color: VspColorDark.textTertiary,
+              color: VspTextTiers.of(context).tertiary,
               message: l10n.measureGreenUnknown,
             ),
 
           const SizedBox(height: VspSpacing.sm),
           Text(
             l10n.activeRoundTargetMeasuredNote,
-            style: const TextStyle(
-              color: VspColorDark.textTertiary,
+            style: TextStyle(
+              color: VspTextTiers.of(context).tertiary,
               fontSize: 11,
               height: 1.4,
             ),
@@ -427,18 +465,18 @@ class _TargetReadout extends StatelessWidget {
     );
   }
 
-  Widget _greenNote(AppLocalizations l10n) {
+  Widget _greenNote(BuildContext context, AppLocalizations l10n) {
     final String text;
     final Color color;
     if (reading.greenUnknown) {
       text = l10n.measureGreenUnknown;
-      color = VspColorDark.textTertiary;
+      color = VspTextTiers.of(context).tertiary;
     } else if (reading.greenIsEstimated) {
       text = l10n.measureGreenEstimated;
-      color = VspColorDark.secondary;
+      color = Theme.of(context).colorScheme.secondary;
     } else {
       text = l10n.measureGreenSurveyed;
-      color = VspColorDark.textTertiary;
+      color = VspTextTiers.of(context).tertiary;
     }
     return Text(
       text,
@@ -454,6 +492,132 @@ class _TargetReadout extends StatelessWidget {
     if (accuracyMeters < 10) return GpsAccuracyLevel.good;
     if (accuracyMeters < 20) return GpsAccuracyLevel.moderate;
     return GpsAccuracyLevel.poor;
+  }
+}
+
+/// The distance the shot is played to.
+///
+/// Sized to be read without stopping to read it: a glance from a standing
+/// golfer holding a club in the other hand. The unit sits beside the figure
+/// rather than under it so the pair reads as one thing, and the error bar sits
+/// under both because it qualifies the number without competing with it.
+class _HeroDistance extends StatelessWidget {
+  const _HeroDistance({
+    required this.label,
+    required this.leg,
+    required this.unit,
+  });
+
+  final String label;
+  final MeasureLeg leg;
+  final DistanceUnit unit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final distance = MeasureUnits.format(leg.meters, unit);
+    final tolerance = MeasureUnits.formatTolerance(leg.uncertaintyMeters, unit);
+
+    return Semantics(
+      label: l10n.measureSemanticsLeg(label, distance, tolerance),
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            // Not upper-cased here. Styling an eyebrow is this widget's
+            // business; rewriting the words is the translation's, and a widget
+            // that transforms them makes the string on screen something no
+            // .arb file contains.
+            label,
+            style: TextStyle(
+              color: VspTextTiers.of(context).secondary,
+              fontSize: 11,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          // Wrap, not Row. The distance is the one thing on this screen that
+          // must not shrink, so at a larger text size it is the error bar that
+          // moves to the next line — a Row would have squeezed them both and
+          // then overflowed, which is what it did at 1.3x.
+          Wrap(
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: VspSpacing.xs,
+            children: [
+              Text(
+                distance,
+                style: TextStyle(
+                  color: VspTextTiers.of(context).primary,
+                  fontSize: 44,
+                  height: 1,
+                  fontWeight: FontWeight.w800,
+                  // Tabular, so the figure does not jump sideways as the
+                  // golfer walks and the distance ticks down.
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                ),
+              ),
+              Text(
+                tolerance,
+                style: TextStyle(
+                  color: _LegRow._toleranceColor(context, leg.quality),
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Front or back of the green — the bracket around the number above.
+class _EdgeDistance extends StatelessWidget {
+  const _EdgeDistance({
+    required this.label,
+    required this.leg,
+    required this.unit,
+    this.alignEnd = false,
+  });
+
+  final String label;
+  final MeasureLeg leg;
+  final DistanceUnit unit;
+  final bool alignEnd;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final distance = MeasureUnits.format(leg.meters, unit);
+    final tolerance = MeasureUnits.formatTolerance(leg.uncertaintyMeters, unit);
+
+    return Semantics(
+      label: l10n.measureSemanticsLeg(label, distance, tolerance),
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment:
+            alignEnd ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              color: VspTextTiers.of(context).tertiary,
+              fontSize: 11,
+            ),
+          ),
+          Text(
+            distance,
+            style: TextStyle(
+              color: VspTextTiers.of(context).secondary,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -488,8 +652,8 @@ class _LegRow extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: emphasised
-                      ? VspColorDark.primary
-                      : VspColorDark.textSecondary,
+                      ? Theme.of(context).colorScheme.primary
+                      : VspTextTiers.of(context).secondary,
                   fontSize: 12,
                   fontWeight: emphasised ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -497,8 +661,8 @@ class _LegRow extends StatelessWidget {
             ),
             Text(
               distance,
-              style: const TextStyle(
-                color: VspColorDark.textPrimary,
+              style: TextStyle(
+                color: VspTextTiers.of(context).primary,
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'monospace',
@@ -508,7 +672,7 @@ class _LegRow extends StatelessWidget {
             Text(
               tolerance,
               style: TextStyle(
-                color: _toleranceColor(leg.quality),
+                color: _toleranceColor(context, leg.quality),
                 fontSize: 11,
               ),
             ),
@@ -518,16 +682,16 @@ class _LegRow extends StatelessWidget {
     );
   }
 
-  static Color _toleranceColor(MeasureQuality quality) {
+  static Color _toleranceColor(BuildContext context, MeasureQuality quality) {
     switch (quality) {
       case MeasureQuality.good:
-        return VspColorDark.accent;
+        return Theme.of(context).colorScheme.tertiary;
       case MeasureQuality.fair:
-        return VspColorDark.textSecondary;
+        return VspTextTiers.of(context).secondary;
       case MeasureQuality.poor:
-        return VspColorDark.secondary;
+        return Theme.of(context).colorScheme.secondary;
       case MeasureQuality.unusable:
-        return VspColorDark.destructive;
+        return Theme.of(context).colorScheme.error;
     }
   }
 }
@@ -589,16 +753,16 @@ class _Chip extends StatelessWidget {
           vertical: VspSpacing.sm,
         ),
         decoration: BoxDecoration(
-          color: VspColorDark.surface,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: VspColorDark.borderStrong),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Column(
           children: [
             Text(
               value,
-              style: const TextStyle(
-                color: VspColorDark.textPrimary,
+              style: TextStyle(
+                color: VspTextTiers.of(context).primary,
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
               ),
@@ -606,8 +770,8 @@ class _Chip extends StatelessWidget {
             const SizedBox(height: VspSpacing.half),
             Text(
               label,
-              style: const TextStyle(
-                color: VspColorDark.textTertiary,
+              style: TextStyle(
+                color: VspTextTiers.of(context).tertiary,
                 fontSize: 11,
               ),
             ),
@@ -622,11 +786,15 @@ class _TargetMessageCard extends StatelessWidget {
   final IconData icon;
   final String heading;
   final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   const _TargetMessageCard({
     required this.icon,
     required this.heading,
     required this.message,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -636,13 +804,13 @@ class _TargetMessageCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 64, color: VspColorDark.primary),
+          Icon(icon, size: 64, color: Theme.of(context).colorScheme.primary),
           const SizedBox(height: VspSpacing.md),
           Text(
             heading,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: VspColorDark.textPrimary,
+            style: TextStyle(
+              color: VspTextTiers.of(context).primary,
               fontSize: 18,
               fontWeight: FontWeight.w600,
             ),
@@ -651,12 +819,20 @@ class _TargetMessageCard extends StatelessWidget {
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: VspColorDark.textSecondary,
+            style: TextStyle(
+              color: VspTextTiers.of(context).secondary,
               fontSize: 14,
               height: 1.4,
             ),
           ),
+          if (onAction != null && actionLabel != null) ...[
+            const SizedBox(height: VspSpacing.lg),
+            FilledButton.icon(
+              onPressed: onAction,
+              icon: const Icon(Icons.map_outlined),
+              label: Text(actionLabel!),
+            ),
+          ],
         ],
       ),
     );
@@ -712,13 +888,13 @@ class _UnitToggle extends StatelessWidget {
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: VspColorDark.borderStrong),
+            border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             MeasureUnits.suffix(unit),
-            style: const TextStyle(
-              color: VspColorDark.textPrimary,
+            style: TextStyle(
+              color: VspTextTiers.of(context).primary,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),

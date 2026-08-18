@@ -576,7 +576,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
 
   Widget _buildScaffold(BuildContext context) {
     return Scaffold(
-      backgroundColor: VspColorDark.background,
+      backgroundColor: Theme.of(context).colorScheme.inverseSurface,
       body: IndexedStack(
         index: _currentTab.index,
         children: [
@@ -630,6 +630,7 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
               holeNumber: widget.holeNumber,
               par: widget.par,
               yardage: widget.yardage,
+              onOpenMap: () => _onTabChanged(ActiveRoundTab.map),
             ),
           ),
 
@@ -852,14 +853,14 @@ class _ConditionsTabState extends State<_ConditionsTab> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: VspColorDark.background,
+      backgroundColor: Theme.of(context).colorScheme.inverseSurface,
       appBar: AppBar(
-        backgroundColor: VspColorDark.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           l10n.activeRoundConditions,
-          style: const TextStyle(color: VspColorDark.textPrimary),
+          style: TextStyle(color: VspTextTiers.of(context).primary),
         ),
-        iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
+        iconTheme: IconThemeData(color: VspTextTiers.of(context).primary),
       ),
       body: FutureBuilder<QualifiedLocation>(
         future: _location,
@@ -878,6 +879,15 @@ class _ConditionsTabState extends State<_ConditionsTab> {
               icon: Icons.location_disabled,
               text: l10n.activeRoundConditionsNoLocationMessage,
               heading: l10n.activeRoundConditionsNoLocationHeading,
+              actionLabel: l10n.commonTryAgain,
+              // A block, not an arrow: `() => _location = …` hands setState a
+              // closure whose value is the Future, which Flutter rejects as an
+              // async setState callback.
+              onAction: () {
+                setState(() {
+                  _location = _resolveLocation();
+                });
+              },
             );
           }
 
@@ -973,10 +983,22 @@ class _ConditionsMessage extends StatelessWidget {
   final String text;
   final String? heading;
 
+  /// What to do about it, when there is something to do.
+  ///
+  /// "Turn location on for this round to see them" was the whole screen: an
+  /// instruction with nothing to press. The golfer leaves for iOS Settings,
+  /// turns location on, comes back — and the tab is still showing the same
+  /// sentence, because the position was resolved once in initState and never
+  /// asked for again.
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
   const _ConditionsMessage({
     required this.icon,
     required this.text,
     this.heading,
+    this.actionLabel,
+    this.onAction,
   });
 
   @override
@@ -987,14 +1009,14 @@ class _ConditionsMessage extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: VspColorDark.textTertiary),
+            Icon(icon, size: 64, color: VspTextTiers.of(context).tertiary),
             const SizedBox(height: VspSpacing.md),
             if (heading != null) ...[
               Text(
                 heading!,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: VspColorDark.textPrimary,
+                style: TextStyle(
+                  color: VspTextTiers.of(context).primary,
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1004,12 +1026,20 @@ class _ConditionsMessage extends StatelessWidget {
             Text(
               text,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: VspColorDark.textSecondary,
+              style: TextStyle(
+                color: VspTextTiers.of(context).secondary,
                 fontSize: 14,
                 height: 1.4,
               ),
             ),
+            if (onAction != null && actionLabel != null) ...[
+              const SizedBox(height: VspSpacing.lg),
+              FilledButton.icon(
+                onPressed: onAction,
+                icon: const Icon(Icons.refresh),
+                label: Text(actionLabel!),
+              ),
+            ],
           ],
         ),
       ),
@@ -1041,29 +1071,29 @@ class _MoreTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      backgroundColor: VspColorDark.background,
+      backgroundColor: Theme.of(context).colorScheme.inverseSurface,
       appBar: AppBar(
-        backgroundColor: VspColorDark.surface,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: Text(
           l10n.navMore,
-          style: const TextStyle(color: VspColorDark.textPrimary),
+          style: TextStyle(color: VspTextTiers.of(context).primary),
         ),
-        iconTheme: const IconThemeData(color: VspColorDark.textPrimary),
+        iconTheme: IconThemeData(color: VspTextTiers.of(context).primary),
       ),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
+            Icon(
               Icons.more_horiz,
               size: 64,
-              color: VspColorDark.textTertiary,
+              color: VspTextTiers.of(context).tertiary,
             ),
             const SizedBox(height: 16),
             Text(
               l10n.activeRoundOptions,
-              style: const TextStyle(
-                color: VspColorDark.textPrimary,
+              style: TextStyle(
+                color: VspTextTiers.of(context).primary,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
@@ -1136,8 +1166,8 @@ class _MoreMenuTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = isDestructive
-        ? VspColorDark.destructive
-        : VspColorDark.textPrimary;
+        ? Theme.of(context).colorScheme.error
+        : VspTextTiers.of(context).primary;
 
     return ListTile(
       leading: Icon(icon, color: color),
@@ -1159,10 +1189,10 @@ class _BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Container(
-      decoration: const BoxDecoration(
-        color: VspColorDark.surface,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
-          top: BorderSide(color: VspColorDark.borderStrong, width: 1),
+          top: BorderSide(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
         ),
       ),
       child: SafeArea(
@@ -1228,7 +1258,7 @@ class _NavItem extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _NavItem({
+  _NavItem({
     required this.tab,
     required this.icon,
     required this.selectedIcon,
@@ -1239,8 +1269,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const activeColor = VspColorDark.primary;
-    const inactiveColor = VspColorDark.textTertiary;
+    final activeColor = Theme.of(context).colorScheme.primary;
+    final inactiveColor = VspTextTiers.of(context).tertiary;
 
     final l10n = AppLocalizations.of(context);
     return Semantics(

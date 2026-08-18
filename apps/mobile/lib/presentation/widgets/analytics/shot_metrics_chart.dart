@@ -215,7 +215,7 @@ class _LieDistributionSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Lie Distribution',
+          AppLocalizations.of(context).lieDistribution,
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),

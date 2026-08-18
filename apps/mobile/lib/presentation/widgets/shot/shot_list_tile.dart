@@ -123,7 +123,7 @@ class ShotListTile extends StatelessWidget {
                             ),
                           ] else
                             Text(
-                              'No club',
+                              AppLocalizations.of(context).shotNoClub,
                               style: theme.textTheme.bodyMedium?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                                 fontStyle: FontStyle.italic,
@@ -162,7 +162,7 @@ class ShotListTile extends StatelessWidget {
                             _FlagBadge(
                               icon: Icons.refresh,
                               label: AppLocalizations.of(context).shotProvisional,
-                              color: Colors.orange,
+                              color: Theme.of(context).colorScheme.secondary,
                             ),
                           ],
                           if (shot.isMulligan) ...[
@@ -365,7 +365,7 @@ class _ResultBadge extends StatelessWidget {
       case ShotResult.chipIn:
       case ShotResult.holeOut:
       case ShotResult.inTheHole:
-        return Colors.green;
+        return Theme.of(context).colorScheme.tertiary;
       case ShotResult.inBunker:
       case ShotResult.inWater:
       case ShotResult.outOfBounds:

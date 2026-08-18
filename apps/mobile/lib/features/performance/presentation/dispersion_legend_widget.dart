@@ -37,7 +37,7 @@ class DispersionLegendWidget extends StatelessWidget {
     final brightness = colorScheme.brightness;
     final isDark = brightness == Brightness.dark;
 
-    final bgColor = isDark ? const Color(0xFF1E293B) : colorScheme.surface;
+    final bgColor = isDark ? Theme.of(context).colorScheme.surface : colorScheme.surface;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -45,7 +45,7 @@ class DispersionLegendWidget extends StatelessWidget {
         color: bgColor.withOpacity(0.95),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : colorScheme.outlineVariant,
+          color: isDark ? Theme.of(context).colorScheme.outlineVariant : colorScheme.outlineVariant,
         ),
       ),
       child: Column(
@@ -54,7 +54,7 @@ class DispersionLegendWidget extends StatelessWidget {
         children: [
           // Header
           Text(
-            'Dispersion',
+            AppLocalizations.of(context).dispersionTitle,
             style: theme.textTheme.labelMedium?.copyWith(
               fontWeight: FontWeight.w600,
             ),
@@ -63,27 +63,27 @@ class DispersionLegendWidget extends StatelessWidget {
 
           // Outcome legend
           _OutcomeLegendItem(
-            color: _ResultColors.fairway(isDark),
+            color: _ResultColors.fairway(context),
             label: AppLocalizations.of(context).dispersionFairway,
             count: overlay.fairwayCount,
           ),
           _OutcomeLegendItem(
-            color: _ResultColors.rough(isDark),
+            color: _ResultColors.rough(context),
             label: AppLocalizations.of(context).dispersionRough,
             count: overlay.outcomeCounts['ROUGH'] ?? 0,
           ),
           _OutcomeLegendItem(
-            color: _ResultColors.bunker(isDark),
+            color: _ResultColors.bunker(context),
             label: AppLocalizations.of(context).dispersionBunker,
             count: overlay.outcomeCounts['BUNKER'] ?? 0,
           ),
           _OutcomeLegendItem(
-            color: _ResultColors.water(isDark),
+            color: _ResultColors.water(context),
             label: AppLocalizations.of(context).dispersionWater,
             count: overlay.outcomeCounts['WATER'] ?? 0,
           ),
           _OutcomeLegendItem(
-            color: _ResultColors.ob(isDark),
+            color: _ResultColors.ob(context),
             label: AppLocalizations.of(context).dispersionOb,
             count: overlay.obCount,
           ),
@@ -248,18 +248,21 @@ class _LayerToggle extends StatelessWidget {
 
 /// Color definitions for shot result categories.
 abstract final class _ResultColors {
-  static Color fairway(bool isDark) =>
-      isDark ? const Color(0xFF34D399) : const Color(0xFF059669);
+  static bool _dark(BuildContext context) =>
+      Theme.of(context).colorScheme.brightness == Brightness.dark;
 
-  static Color rough(bool isDark) =>
-      isDark ? const Color(0xFF84CC16) : const Color(0xFF65A30D);
+  static Color fairway(BuildContext context) =>
+      _dark(context) ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary;
 
-  static Color bunker(bool isDark) =>
-      isDark ? const Color(0xFFFBBF24) : const Color(0xFFF97316);
+  static Color rough(BuildContext context) =>
+      _dark(context) ? const Color(0xFF84CC16) : const Color(0xFF65A30D);
 
-  static Color water(bool isDark) =>
-      isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+  static Color bunker(BuildContext context) =>
+      Theme.of(context).colorScheme.secondary;
 
-  static Color ob(bool isDark) =>
-      isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626);
+  static Color water(BuildContext context) =>
+      _dark(context) ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6);
+
+  static Color ob(BuildContext context) =>
+      Theme.of(context).colorScheme.error;
 }

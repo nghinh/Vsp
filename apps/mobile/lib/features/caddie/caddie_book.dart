@@ -204,7 +204,7 @@ class _CaddieBookScreenState extends State<CaddieBookScreen> {
                                           ? Icons.star
                                           : Icons.star_border,
                                       size: 16,
-                                      color: const Color(0xFFF59E0B),
+                                      color: Theme.of(context).colorScheme.secondary,
                                     ),
                                 ],
                               ),
@@ -269,7 +269,7 @@ class _CaddieDialogState extends State<_CaddieDialog> {
                   onPressed: () => setState(() => _rating = s),
                   icon: Icon(
                     s <= _rating ? Icons.star : Icons.star_border,
-                    color: const Color(0xFFF59E0B),
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
                 ),
             ],

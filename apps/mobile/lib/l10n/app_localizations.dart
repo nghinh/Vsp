@@ -392,6 +392,570 @@ abstract class AppLocalizations {
   /// **'Google sign-in failed. Please try again.'**
   String get authGoogleFailed;
 
+  /// Front nine total on the round summary, the way a paper card labels it.
+  ///
+  /// In en, this message translates to:
+  /// **'OUT'**
+  String get summaryOut;
+
+  /// Back nine total on the round summary.
+  ///
+  /// In en, this message translates to:
+  /// **'IN'**
+  String get summaryIn;
+
+  /// Eighteen-hole total on the round summary.
+  ///
+  /// In en, this message translates to:
+  /// **'TOTAL'**
+  String get summaryTotal;
+
+  /// Caption under the score on a player's row. Was an untranslated English literal in the widget.
+  ///
+  /// In en, this message translates to:
+  /// **'gross'**
+  String get scoreGrossLabel;
+
+  /// Tile label above the sky condition on the conditions panel. Was an English literal. Distinct from weatherConditionLabel, which is the screen-reader sentence.
+  ///
+  /// In en, this message translates to:
+  /// **'Condition'**
+  String get weatherConditionTileLabel;
+
+  /// Badge marking a reading as forecast rather than measured.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast'**
+  String get weatherForecastBadge;
+
+  /// Badge marking a reading as a current measurement.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured'**
+  String get weatherMeasuredBadge;
+
+  /// Screen-reader form of the forecast badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Forecast data'**
+  String get weatherForecastSemantics;
+
+  /// Screen-reader form of the measured badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Current measurement'**
+  String get weatherMeasuredSemantics;
+
+  /// Heading of the shot dispersion legend.
+  ///
+  /// In en, this message translates to:
+  /// **'Dispersion'**
+  String get dispersionTitle;
+
+  /// Shown when a bag edit was queued because the phone had no connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved offline'**
+  String get bagSavedOffline;
+
+  /// Shown when the choice of active bag was queued offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Active bag saved offline'**
+  String get bagActiveSavedOffline;
+
+  /// Shown when a club edit was queued offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Club saved offline'**
+  String get clubSavedOffline;
+
+  /// Section heading over the start/end markers of a tracked shot.
+  ///
+  /// In en, this message translates to:
+  /// **'Shot markers'**
+  String get shotMarkers;
+
+  /// Field label for the club used on a shot.
+  ///
+  /// In en, this message translates to:
+  /// **'Club'**
+  String get shotClub;
+
+  /// Field label for where a shot finished.
+  ///
+  /// In en, this message translates to:
+  /// **'Result'**
+  String get shotResult;
+
+  /// Heading of the picker that merges one tracked shot into another.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge shot into'**
+  String get shotMergeInto;
+
+  /// Button that begins tracking a shot from the golfer's position.
+  ///
+  /// In en, this message translates to:
+  /// **'Start shot'**
+  String get shotStart;
+
+  /// Button that ends tracking and records the shot.
+  ///
+  /// In en, this message translates to:
+  /// **'End shot'**
+  String get shotEnd;
+
+  /// Confirmation after a tracked shot is recorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Shot saved'**
+  String get shotSaved;
+
+  /// Empty state of the merge picker.
+  ///
+  /// In en, this message translates to:
+  /// **'No eligible shots to merge into'**
+  String get shotNoneToMerge;
+
+  /// Empty state of the shot review screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking shots during your round'**
+  String get shotTrackingHint;
+
+  /// Name of the data-export privacy request type.
+  ///
+  /// In en, this message translates to:
+  /// **'Data export'**
+  String get privacyDataExport;
+
+  /// Heading of the privacy request detail sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Request details'**
+  String get privacyRequestDetails;
+
+  /// Empty state of the privacy requests list.
+  ///
+  /// In en, this message translates to:
+  /// **'No privacy requests'**
+  String get privacyNoRequests;
+
+  /// Heading of the smart target panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Target'**
+  String get smartTargetTitle;
+
+  /// Why the smart target panel is empty during a tournament round.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart target is off in tournament mode'**
+  String get smartTargetTournamentOff;
+
+  /// Shown when no smart target can be computed for this hole.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart target is not available'**
+  String get smartTargetUnavailable;
+
+  /// Heading over the hazards listed for a suggested landing zone.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazards near the landing zone'**
+  String get smartTargetHazards;
+
+  /// Label for the risk rating of a suggested target.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk'**
+  String get smartTargetRisk;
+
+  /// Short label beside the confidence figure. Distinct from smartTargetConfidence, which is the screen-reader sentence with placeholders.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence'**
+  String get smartTargetConfidenceLabel;
+
+  /// Section heading over the clubs in a bag.
+  ///
+  /// In en, this message translates to:
+  /// **'Clubs'**
+  String get bagClubsHeading;
+
+  /// Badge marking the bag currently in play.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get bagActiveLabel;
+
+  /// Heading of the bag performance summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Bag summary'**
+  String get bagSummaryHeading;
+
+  /// Heading of the per-club performance list.
+  ///
+  /// In en, this message translates to:
+  /// **'Club performance'**
+  String get clubPerformanceHeading;
+
+  /// Badge marking data served from the device rather than fetched.
+  ///
+  /// In en, this message translates to:
+  /// **'Cached'**
+  String get commonCached;
+
+  /// Title of the screen listing corrections this golfer submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'My corrections'**
+  String get correctionsMine;
+
+  /// Empty state of the corrections list.
+  ///
+  /// In en, this message translates to:
+  /// **'No corrections submitted yet'**
+  String get correctionsNoneYet;
+
+  /// Short action label on the update badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get commonUpdate;
+
+  /// Badge marking the item currently in use — a bag, a tee set.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get commonActive;
+
+  /// Label before the time an analysis was produced.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated'**
+  String get commonGenerated;
+
+  /// Stand-in where a round has no course name on file.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown course'**
+  String get commonUnknownCourse;
+
+  /// Label on the target marker dropped on the hole map.
+  ///
+  /// In en, this message translates to:
+  /// **'Target'**
+  String get targetMarkerLabel;
+
+  /// Title of the club form when editing an existing club.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit club'**
+  String get clubFormEdit;
+
+  /// Title of the club form when adding a club.
+  ///
+  /// In en, this message translates to:
+  /// **'Add club'**
+  String get clubFormAdd;
+
+  /// Submit button when editing an existing club.
+  ///
+  /// In en, this message translates to:
+  /// **'Update club'**
+  String get clubFormUpdate;
+
+  /// Shown where edits are queued because the phone has no connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes saved offline'**
+  String get syncChangesSavedOffline;
+
+  /// Startup failure when VSP_API_BASE_URL was not compiled in.
+  ///
+  /// In en, this message translates to:
+  /// **'This build has no server configured'**
+  String get appNoServerConfigured;
+
+  /// Startup progress message.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your golf experience'**
+  String get appPreparing;
+
+  /// Loading message on the hole map skeleton.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing your strategic map'**
+  String get mapPreparing;
+
+  /// Heading of the hole map error view.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the hole map'**
+  String get mapLoadFailedTitle;
+
+  /// Advice under the hole map error heading.
+  ///
+  /// In en, this message translates to:
+  /// **'Check that the course package is downloaded'**
+  String get mapLoadFailedBody;
+
+  /// Empty state of the round picker used for deletion requests.
+  ///
+  /// In en, this message translates to:
+  /// **'No rounds found'**
+  String get privacyNoRounds;
+
+  /// Body of the weather empty state.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather data is not available for this location.'**
+  String get weatherUnavailableBody;
+
+  /// Shown on round setup when the golfer has chosen no bag.
+  ///
+  /// In en, this message translates to:
+  /// **'No bag selected'**
+  String get roundSetupNoBag;
+
+  /// Heading of the per-club statistics card.
+  ///
+  /// In en, this message translates to:
+  /// **'Performance statistics'**
+  String get performanceStatsHeading;
+
+  /// Shown where a statistic has not been calculated yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not yet computed'**
+  String get performanceNotComputed;
+
+  /// Title of the Apple Watch pairing screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pair Apple Watch'**
+  String get watchPairTitle;
+
+  /// Link to an explanation of what is sent to the watch.
+  ///
+  /// In en, this message translates to:
+  /// **'About watch packages'**
+  String get watchPackagesAbout;
+
+  /// Heading of the strokes-gained summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall strokes gained'**
+  String get strokesGainedOverall;
+
+  /// Empty state of the strokes-gained screen.
+  ///
+  /// In en, this message translates to:
+  /// **'No shot data'**
+  String get strokesGainedNoData;
+
+  /// Label beside the confidence of a strokes-gained figure.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence'**
+  String get strokesGainedConfidence;
+
+  /// Title of the package update sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get updateAvailableTitle;
+
+  /// Why the update button is unavailable offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates require an internet connection'**
+  String get updateNeedsInternet;
+
+  /// Shown on a shot with no club recorded.
+  ///
+  /// In en, this message translates to:
+  /// **'No club'**
+  String get shotNoClub;
+
+  /// Longer form of shotNoClub, on the shot card.
+  ///
+  /// In en, this message translates to:
+  /// **'No club assigned'**
+  String get shotNoClubAssigned;
+
+  /// Label of the skill level picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill level'**
+  String get profileSkillLevel;
+
+  /// Toggle that applies wind to the suggested club.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind adjustment'**
+  String get windAdjustment;
+
+  /// Label of the distance to the closest hazard.
+  ///
+  /// In en, this message translates to:
+  /// **'To nearest hazard'**
+  String get dispersionNearestHazard;
+
+  /// Heading of the directional statistics card.
+  ///
+  /// In en, this message translates to:
+  /// **'Directional deviation'**
+  String get directionalDeviation;
+
+  /// Banner shown where club recommendations are switched off.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations disabled'**
+  String get recommendationsDisabled;
+
+  /// Heading of the tee set section on course detail.
+  ///
+  /// In en, this message translates to:
+  /// **'Tee sets'**
+  String get teeSetsHeading;
+
+  /// Heading of the round statistics card.
+  ///
+  /// In en, this message translates to:
+  /// **'Round stats'**
+  String get roundStatsHeading;
+
+  /// Empty state of the download management screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Download a course to play offline'**
+  String get downloadToPlayOffline;
+
+  /// Heading of the driving zone screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Landing zones'**
+  String get drivingZonesHeading;
+
+  /// Heading of the hazard distance list.
+  ///
+  /// In en, this message translates to:
+  /// **'Hazards'**
+  String get hazardsHeading;
+
+  /// Heading of the round summary analytics card.
+  ///
+  /// In en, this message translates to:
+  /// **'Round summary'**
+  String get roundSummaryHeading;
+
+  /// Heading of the lie distribution chart.
+  ///
+  /// In en, this message translates to:
+  /// **'Lie distribution'**
+  String get lieDistribution;
+
+  /// Title of the round review analytics screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Shot analytics'**
+  String get shotAnalyticsTitle;
+
+  /// Settings section for the light/dark choice.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// Use whatever light/dark setting the phone is on.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow the phone'**
+  String get settingsAppearanceSystem;
+
+  /// Always use the light palette.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsAppearanceLight;
+
+  /// Always use the dark palette — the one designed for bright sun.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsAppearanceDark;
+
+  /// Why dark is the default, shown under the dark option.
+  ///
+  /// In en, this message translates to:
+  /// **'Designed for reading in bright sun'**
+  String get settingsAppearanceDarkNote;
+
+  /// Placeholder in the home club field. Was an English literal in the widget.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Vietnam Golf & Country Club'**
+  String get profileHomeClubHint;
+
+  /// One under par, on the one-tap scoring strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Birdie'**
+  String get scoreBirdie;
+
+  /// Level par, on the one-tap scoring strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Par'**
+  String get scorePar;
+
+  /// One over par, on the one-tap scoring strip.
+  ///
+  /// In en, this message translates to:
+  /// **'Bogey'**
+  String get scoreBogey;
+
+  /// Opens the full keypad for a score outside birdie-to-triple.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get scoreOther;
+
+  /// Shown under the progress bar while the remaining nines of the same club are fetched, so a finished bar on a still-working screen does not read as a stall.
+  ///
+  /// In en, this message translates to:
+  /// **'Fetching the club\'s other đường ({done} of {total})…'**
+  String downloadOtherLayouts(String done, String total);
+
+  /// One nine of a paired round whose package is on the device. Shown beside the other nine so a golfer can see both at once.
+  ///
+  /// In en, this message translates to:
+  /// **'{duong} — downloaded'**
+  String packageSegmentReady(String duong);
+
+  /// One nine of a paired round whose package is still missing.
+  ///
+  /// In en, this message translates to:
+  /// **'{duong} — not downloaded'**
+  String packageSegmentMissing(String duong);
+
+  /// Shown for ApiException 10 (DEVELOPER_ERROR): Google does not recognise this build's signing certificate. Deliberately does not say 'try again', because this failure is permanent for this build.
+  ///
+  /// In en, this message translates to:
+  /// **'This build is not registered with Google, so sign-in cannot work on it. Trying again will not change that — tell whoever gave you the app.'**
+  String get authGoogleNotRegistered;
+
+  /// Shown when the Google sign-in plugin reports network_error — the one Google failure where retrying is the right advice.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection to Google. Check your network and try again.'**
+  String get authGoogleNoNetwork;
+
   /// No description provided for @authAppleFailed.
   ///
   /// In en, this message translates to:
@@ -2420,12 +2984,6 @@ abstract class AppLocalizations {
   /// **'Syncing…'**
   String get bagSyncing;
 
-  /// No description provided for @bagSavedOffline.
-  ///
-  /// In en, this message translates to:
-  /// **'Changes saved offline'**
-  String get bagSavedOffline;
-
   /// No description provided for @bagEmptyTitle.
   ///
   /// In en, this message translates to:
@@ -3980,6 +4538,12 @@ abstract class AppLocalizations {
   /// **'Target distance'**
   String get activeRoundTargetHeading;
 
+  /// No description provided for @activeRoundTargetOpenMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the map'**
+  String get activeRoundTargetOpenMap;
+
   /// No description provided for @activeRoundTargetMessage.
   ///
   /// In en, this message translates to:
@@ -4567,12 +5131,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI features'**
   String get restrictedAiFeatures;
-
-  /// No description provided for @smartTargetTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Smart Target'**
-  String get smartTargetTitle;
 
   /// No description provided for @smartTargetRegenerate.
   ///
@@ -5353,6 +5911,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'From you to the green'**
   String get measureYouToGreen;
+
+  /// Replaces the golfer-to-green yardage when the golfer is further away than any hole is long — they are not on this hole, and a golf number would be meaningless.
+  ///
+  /// In en, this message translates to:
+  /// **'You are {distance} from this hole. The distance to the green appears here once you get there.'**
+  String measureAwayFromHole(String distance);
 
   /// Notice shown over the plain measuring canvas when no imagery provider is configured.
   ///

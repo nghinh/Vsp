@@ -304,7 +304,57 @@ void _expectAbsent(String text) {
   expect(find.text(text, skipOffstage: false), findsNothing, reason: text);
 }
 
+/// Which tab the round is actually showing.
+int? _visibleTabIndex(WidgetTester tester) => tester
+    .widget<IndexedStack>(
+      find
+          .ancestor(
+            of: find.byType(ActiveRoundTargetView, skipOffstage: false),
+            matching: find.byType(IndexedStack),
+          )
+          .first,
+    )
+    .index;
+
 void main() {
+  group('the Target tab with nothing placed yet', () {
+    // Seen on a simulator: the tab's entire content was "Tap the strategic map
+    // on the Map tab to place a target" — an instruction to go somewhere else,
+    // printed on a screen with no way to go there. The nav bar can do it in a
+    // tap, which is precisely why leaving the golfer to work that out is a
+    // choice rather than a limitation.
+    testWidgets('offers the map it sends the golfer to', (tester) async {
+      final gps = _FakeLocationService(initial: _fix(_golferLat));
+      final l10n = await _pump(tester, locationService: gps);
+
+      _expectRendered(l10n.activeRoundTargetMessage);
+      expect(_visibleTabIndex(tester), ActiveRoundTab.target.index);
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.activeRoundTargetOpenMap),
+      );
+      await tester.pump();
+      await tester.pump();
+
+      expect(
+        _visibleTabIndex(tester),
+        ActiveRoundTab.map.index,
+        reason: 'the button should land on the map, not just describe it',
+      );
+    });
+
+    testWidgets('and stops offering it once a target is placed', (
+      tester,
+    ) async {
+      final gps = _FakeLocationService(initial: _fix(_golferLat));
+      final l10n = await _pump(tester, locationService: gps);
+
+      await _placeTarget(tester);
+
+      _expectAbsent(l10n.activeRoundTargetOpenMap);
+    });
+  });
+
   group('the Target tab and the target on the map', () {
     testWidgets('sees the target the golfer placed, and both distances', (
       tester,

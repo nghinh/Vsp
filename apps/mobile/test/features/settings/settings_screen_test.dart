@@ -5,15 +5,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vsp_mobile/core/locale/locale_cubit.dart';
+import 'package:vsp_mobile/core/theme/theme_mode_cubit.dart';
 import 'package:vsp_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Widget harness(LocaleCubit cubit) {
-    return BlocProvider.value(
-      value: cubit,
+  /// The screen's real dependencies. Settings owns both the language and the
+  /// light/dark choice, so a harness with only one of them is testing a screen
+  /// that cannot exist — which is what it was doing until the appearance
+  /// section arrived and the missing provider surfaced.
+  Widget harness(LocaleCubit cubit, {ThemeModeCubit? themeMode}) {
+    final theme = themeMode ?? ThemeModeCubit();
+    addTearDown(theme.close);
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: cubit),
+        BlocProvider.value(value: theme),
+      ],
       child: BlocBuilder<LocaleCubit, Locale?>(
         builder: (context, locale) => MaterialApp(
           locale: locale,

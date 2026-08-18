@@ -107,7 +107,7 @@ class WindAdjustmentToggle extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Wind adjustment',
+          AppLocalizations.of(context).windAdjustment,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             color: Theme.of(context).disabledColor,
           ),

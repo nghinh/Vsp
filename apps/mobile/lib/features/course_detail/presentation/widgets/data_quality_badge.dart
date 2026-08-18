@@ -119,7 +119,7 @@ class DataQualityBadge extends StatelessWidget {
               Icons.verified,
               size: compact ? 12 : 14,
               color: brightness == Brightness.dark
-                  ? VspColorDark.onAccent
+                  ? Theme.of(context).colorScheme.onTertiary
                   : VspColorLight.onAccent,
             ),
             const SizedBox(width: 4),
@@ -129,7 +129,7 @@ class DataQualityBadge extends StatelessWidget {
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
                 color: brightness == Brightness.dark
-                    ? VspColorDark.onAccent
+                    ? Theme.of(context).colorScheme.onTertiary
                     : VspColorLight.onAccent,
               ),
             ),
@@ -180,7 +180,7 @@ class DataQualityBadge extends StatelessWidget {
   Widget _buildCommunity(BuildContext context) {
     final brightness = Theme.of(context).colorScheme.brightness;
     final color = brightness == Brightness.dark
-        ? VspColorDark.textTertiary
+        ? VspTextTiers.of(context).tertiary
         : VspColorLight.textTertiary;
 
     return Semantics(
@@ -192,7 +192,7 @@ class DataQualityBadge extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: brightness == Brightness.dark
-              ? VspColorDark.muted
+              ? Theme.of(context).colorScheme.surfaceContainerHighest
               : VspColorLight.muted,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -203,7 +203,7 @@ class DataQualityBadge extends StatelessWidget {
               Icons.groups,
               size: compact ? 12 : 14,
               color: brightness == Brightness.dark
-                  ? VspColorDark.onMuted
+                  ? Theme.of(context).colorScheme.onSurfaceVariant
                   : VspColorLight.onMuted,
             ),
             const SizedBox(width: 4),
@@ -213,7 +213,7 @@ class DataQualityBadge extends StatelessWidget {
                 fontSize: compact ? 11 : 12,
                 fontWeight: FontWeight.w600,
                 color: brightness == Brightness.dark
-                    ? VspColorDark.onMuted
+                    ? Theme.of(context).colorScheme.onSurfaceVariant
                     : VspColorLight.onMuted,
               ),
             ),

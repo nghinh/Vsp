@@ -184,7 +184,7 @@ class SmartTargetCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Hazards Near Landing Zone',
+          AppLocalizations.of(context).smartTargetHazards,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -268,9 +268,9 @@ class SmartTargetCard extends StatelessWidget {
       case 'bunker':
         return Colors.brown;
       case 'ob':
-        return Colors.red;
+        return colorScheme.error;
       case 'penalty':
-        return Colors.orange;
+        return colorScheme.secondary;
       default:
         return colorScheme.error;
     }
@@ -293,18 +293,18 @@ class _StrategyTypeBadge extends StatelessWidget {
 
     switch (strategyType) {
       case StrategyType.safe:
-        backgroundColor = Colors.green.shade50;
-        textColor = Colors.green.shade700;
+        backgroundColor = colorScheme.tertiary.withOpacity(0.12);
+        textColor = colorScheme.tertiary;
         icon = Icons.shield;
         break;
       case StrategyType.balanced:
-        backgroundColor = Colors.amber.shade50;
-        textColor = Colors.amber.shade700;
+        backgroundColor = colorScheme.secondary.withOpacity(0.12);
+        textColor = colorScheme.secondary;
         icon = Icons.balance;
         break;
       case StrategyType.aggressive:
-        backgroundColor = Colors.red.shade50;
-        textColor = Colors.red.shade700;
+        backgroundColor = colorScheme.error.withOpacity(0.12);
+        textColor = colorScheme.error;
         icon = Icons.trending_up;
         break;
     }
@@ -409,16 +409,16 @@ class _RiskScoreDisplay extends StatelessWidget {
     String label;
 
     if (riskScore < 25) {
-      color = Colors.green;
+      color = colorScheme.tertiary;
       label = 'Low';
     } else if (riskScore < 50) {
-      color = Colors.amber;
+      color = colorScheme.secondary;
       label = 'Medium';
     } else if (riskScore < 75) {
-      color = Colors.orange;
+      color = colorScheme.secondary;
       label = 'High';
     } else {
-      color = Colors.red;
+      color = colorScheme.error;
       label = 'Extreme';
     }
 
@@ -439,7 +439,7 @@ class _RiskScoreDisplay extends StatelessWidget {
                 Icon(Icons.warning_amber, size: 14, color: color),
                 const SizedBox(width: 4),
                 Text(
-                  'Risk',
+                  AppLocalizations.of(context).smartTargetRisk,
                   style: TextStyle(
                     fontSize: 11,
                     color: colorScheme.onSurfaceVariant,
@@ -508,13 +508,13 @@ class _ConfidenceScoreDisplay extends StatelessWidget {
     String label;
 
     if (confidenceScore >= 0.8) {
-      color = Colors.green;
+      color = colorScheme.tertiary;
       label = 'High';
     } else if (confidenceScore >= 0.5) {
-      color = Colors.amber;
+      color = colorScheme.secondary;
       label = 'Med';
     } else {
-      color = Colors.red;
+      color = colorScheme.error;
       label = 'Low';
     }
 
@@ -535,7 +535,7 @@ class _ConfidenceScoreDisplay extends StatelessWidget {
                 Icon(Icons.verified_user, size: 14, color: color),
                 const SizedBox(width: 4),
                 Text(
-                  'Confidence',
+                  AppLocalizations.of(context).smartTargetConfidenceLabel,
                   style: TextStyle(
                     fontSize: 11,
                     color: colorScheme.onSurfaceVariant,

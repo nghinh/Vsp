@@ -46,6 +46,14 @@ class PlayerScoreRow extends StatelessWidget {
   /// Whether this row is currently expanded (showing controls).
   final bool isExpanded;
 
+  /// Whether the one-tap score strip is offered under this row.
+  ///
+  /// True hides the +/- steppers: they would be a second control for a number
+  /// the strip already sets in one tap. False — a hole with no par on file —
+  /// keeps them, because then the strip cannot exist and the alternative is
+  /// the keyboard.
+  final bool hasQuickScores;
+
   /// Minimum touch target size in logical pixels (44pt iOS / 48dp Android).
   static const double kMinTouchTarget = 44.0;
 
@@ -58,6 +66,7 @@ class PlayerScoreRow extends StatelessWidget {
     required this.onDecrement,
     required this.onScoreTap,
     this.isExpanded = false,
+    this.hasQuickScores = false,
   });
 
   @override
@@ -93,30 +102,40 @@ class PlayerScoreRow extends StatelessWidget {
               ),
             ),
 
-            // Score controls (shown when expanded or has score)
+            // The steppers, only where nothing better is offered.
+            //
+            // Two controls for one number is the definition of the clutter
+            // this screen was reported for. Where the hole's par is known the
+            // strip below this row sets any score in one tap — including
+            // changing one, since the current entry is shown selected — so
+            // +/- adds a second way to do the same thing and nothing else.
+            //
+            // Where par is unknown the strip cannot be built ("one under
+            // what?"), and then the steppers are the only thing standing
+            // between the golfer and the keyboard. They stay for that case.
             if (isExpanded || status == PlayerScoreStatus.entered) ...[
-              // Decrement button
-              _buildScoreButton(
-                icon: Icons.remove,
-                onPressed: onDecrement,
-                semanticLabel: AppLocalizations.of(
-                  context,
-                ).scoreDecreaseFor(playerName),
-                theme: theme,
-              ),
+              if (!hasQuickScores)
+                _buildScoreButton(
+                  icon: Icons.remove,
+                  onPressed: onDecrement,
+                  semanticLabel: AppLocalizations.of(
+                    context,
+                  ).scoreDecreaseFor(playerName),
+                  theme: theme,
+                ),
 
               // Score display / tap target
-              _buildScoreDisplay(theme),
+              _buildScoreDisplay(context, theme),
 
-              // Increment button
-              _buildScoreButton(
-                icon: Icons.add,
-                onPressed: onIncrement,
-                semanticLabel: AppLocalizations.of(
-                  context,
-                ).scoreIncreaseFor(playerName),
-                theme: theme,
-              ),
+              if (!hasQuickScores)
+                _buildScoreButton(
+                  icon: Icons.add,
+                  onPressed: onIncrement,
+                  semanticLabel: AppLocalizations.of(
+                    context,
+                  ).scoreIncreaseFor(playerName),
+                  theme: theme,
+                ),
             ] else
               // Placeholder when not expanded
               Text(
@@ -165,7 +184,7 @@ class PlayerScoreRow extends StatelessWidget {
     );
   }
 
-  Widget _buildScoreDisplay(ThemeData theme) {
+  Widget _buildScoreDisplay(BuildContext context, ThemeData theme) {
     return GestureDetector(
       onTap: onScoreTap,
       child: Container(
@@ -184,7 +203,9 @@ class PlayerScoreRow extends StatelessWidget {
               ),
             ),
             Text(
-              'gross',
+              // Was the literal 'gross' — English, on a Vietnamese screen,
+              // under every score in the flight.
+              AppLocalizations.of(context).scoreGrossLabel,
               style: theme.textTheme.labelSmall?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.5),
               ),

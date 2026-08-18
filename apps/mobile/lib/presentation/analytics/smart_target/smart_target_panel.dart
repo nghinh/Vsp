@@ -123,7 +123,7 @@ class SmartTargetPanel extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Smart Target',
+              AppLocalizations.of(context).smartTargetTitle,
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
@@ -175,7 +175,7 @@ class SmartTargetPanel extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Smart Target disabled in tournament mode',
+              AppLocalizations.of(context).smartTargetTournamentOff,
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: 14,
@@ -206,7 +206,7 @@ class SmartTargetPanel extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  reason ?? 'Smart Target not available',
+                  reason ?? AppLocalizations.of(context).smartTargetUnavailable,
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
                     fontSize: 14,
@@ -250,7 +250,7 @@ class SmartTargetPanel extends StatelessWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  message ?? 'An error occurred',
+                  message ?? AppLocalizations.of(context).commonError,
                   style: TextStyle(color: colorScheme.error, fontSize: 14),
                 ),
               ),

@@ -7,6 +7,7 @@
 // The banner uses VspColorSemantic.warning (secondary tier).
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 /// Banner widget shown when recommendations are disabled due to insufficient club data.
@@ -41,7 +42,7 @@ class RecommendationsDisabledBanner extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Recommendations Disabled',
+                    AppLocalizations.of(context).recommendationsDisabled,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: warningColor,
                       fontWeight: FontWeight.w600,
@@ -66,7 +67,7 @@ class RecommendationsDisabledBanner extends StatelessWidget {
   Color _warningColor(Brightness brightness) {
     // Use secondary tier from semantic colors
     if (brightness == Brightness.dark) {
-      return const Color(0xFFFBBF24); // VspColorDark.secondary
+      return const Color(0xFFFBBF24); // Theme.of(context).colorScheme.secondary
     }
     return const Color(0xFFF97316); // VspColorLight.secondary
   }

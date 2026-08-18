@@ -25,7 +25,7 @@ class RoundSummaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Round Summary',
+              AppLocalizations.of(context).roundSummaryHeading,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 16),
@@ -79,7 +79,7 @@ class RoundSummaryCard extends StatelessWidget {
                 _CountCell(
                   label: AppLocalizations.of(context).analyticsBirdiePlus,
                   count: scoring.birdieOrBetterCount,
-                  color: Colors.green,
+                  color: Theme.of(context).colorScheme.tertiary,
                 ),
                 _CountCell(
                   label: AppLocalizations.of(context).analyticsPar,
@@ -89,7 +89,7 @@ class RoundSummaryCard extends StatelessWidget {
                 _CountCell(
                   label: AppLocalizations.of(context).analyticsBogeyPlus,
                   count: scoring.bogeyOrWorseCount,
-                  color: Colors.orange,
+                  color: Theme.of(context).colorScheme.secondary,
                 ),
               ],
             ),
@@ -110,9 +110,9 @@ class _ScoreToParRow extends StatelessWidget {
     if (scoreToPar == null) return const SizedBox.shrink();
 
     final color = scoreToPar! < 0
-        ? Colors.green
+        ? Theme.of(context).colorScheme.tertiary
         : scoreToPar! > 0
-        ? Colors.red
+        ? Theme.of(context).colorScheme.error
         : Colors.grey;
 
     final sign = scoreToPar! > 0 ? '+' : '';

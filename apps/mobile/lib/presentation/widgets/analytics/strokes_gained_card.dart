@@ -345,7 +345,7 @@ class _ConfidenceMeter extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Confidence',
+                AppLocalizations.of(context).strokesGainedConfidence,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

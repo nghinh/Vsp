@@ -85,7 +85,7 @@ class PrivacyRequestCard extends StatelessWidget {
                         'Reason: ${request.rejectionReason}',
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: (colorScheme.brightness == Brightness.dark
-                              ? VspColorDark.destructive
+                              ? Theme.of(context).colorScheme.error
                               : VspColorLight.destructive),
                           fontStyle: FontStyle.italic,
                         ),
@@ -129,12 +129,12 @@ class PrivacyRequestCard extends StatelessWidget {
     switch (request.requestType) {
       case PrivacyRequestType.dataExport:
         return (brightness == Brightness.dark
-                ? VspColorDark.accent
+                ? Theme.of(context).colorScheme.tertiary
                 : VspColorLight.accent)
             .withOpacity(0.15);
       case PrivacyRequestType.accountDeletion:
         return (brightness == Brightness.dark
-                ? VspColorDark.destructive
+                ? Theme.of(context).colorScheme.error
                 : VspColorLight.destructive)
             .withOpacity(0.15);
       case PrivacyRequestType.roundDeletion:
@@ -149,11 +149,11 @@ class PrivacyRequestCard extends StatelessWidget {
     switch (request.requestType) {
       case PrivacyRequestType.dataExport:
         return (brightness == Brightness.dark
-            ? VspColorDark.accent
+            ? Theme.of(context).colorScheme.tertiary
             : VspColorLight.accent);
       case PrivacyRequestType.accountDeletion:
         return (brightness == Brightness.dark
-            ? VspColorDark.destructive
+            ? Theme.of(context).colorScheme.error
             : VspColorLight.destructive);
       case PrivacyRequestType.roundDeletion:
         return colorScheme.primary;
@@ -221,7 +221,7 @@ class _StatusBadge extends StatelessWidget {
       case PrivacyRequestStatus.pending:
         // Amber/warning for pending
         return (brightness == Brightness.dark
-            ? VspColorDark.secondary
+            ? Theme.of(context).colorScheme.secondary
             : VspColorLight.secondary);
       case PrivacyRequestStatus.processing:
         // Blue for processing
@@ -229,12 +229,12 @@ class _StatusBadge extends StatelessWidget {
       case PrivacyRequestStatus.completed:
         // Green/accent for completed
         return (brightness == Brightness.dark
-            ? VspColorDark.accent
+            ? Theme.of(context).colorScheme.tertiary
             : VspColorLight.accent);
       case PrivacyRequestStatus.rejected:
         // Red/destructive for rejected
         return (brightness == Brightness.dark
-            ? VspColorDark.destructive
+            ? Theme.of(context).colorScheme.error
             : VspColorLight.destructive);
     }
   }

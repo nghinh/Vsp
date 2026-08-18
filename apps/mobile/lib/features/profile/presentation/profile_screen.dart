@@ -13,6 +13,7 @@
 // - Loading, error, retry states
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/presentation/widgets/scroll_edge_fade.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
@@ -118,7 +119,10 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).profileEdit),
+        // The tab's own name. It read "Edit Profile" — the title of a mode
+        // you step into — on a destination reached from the bottom bar, which
+        // you do not step out of.
+        title: Text(AppLocalizations.of(context).navProfile),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
@@ -137,7 +141,11 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                 SnackBar(
                   content: Row(
                     children: [
-                      const Icon(Icons.cloud_off, color: Colors.white, size: 18),
+                      const Icon(
+                        Icons.cloud_off,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                       const SizedBox(width: 8),
                       Text(AppLocalizations.of(context).profileSavedOffline),
                     ],
@@ -235,63 +243,87 @@ class _ProfileContent extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return ListView(
-      padding: const EdgeInsets.all(VspSpacingSemantic.gutterMobile),
+    // The list runs under the bottom navigation bar, and the third screen in
+    // a row to have a card sliced level with its top edge — which reads as
+    // two blocks on top of each other, not as "there is more below".
+    return Stack(
       children: [
-        // ─── Sync Status Banner ────────────────────────────────────────────
-        if (state != null && state!.hasPendingSync) ...[
-          _SyncBanner(isSyncing: state!.isSyncing),
-          const SizedBox(height: 12),
-        ],
+        ListView(
+          padding: const EdgeInsets.fromLTRB(
+            VspSpacingSemantic.gutterMobile,
+            VspSpacingSemantic.gutterMobile,
+            VspSpacingSemantic.gutterMobile,
+            VspSpacingSemantic.gutterMobile + 20,
+          ),
+          children: [
+            // ─── Sync Status Banner ────────────────────────────────────────────
+            if (state != null && state!.hasPendingSync) ...[
+              _SyncBanner(isSyncing: state!.isSyncing),
+              const SizedBox(height: 12),
+            ],
 
-        // ─── What the golfer's own rounds say ───────────────────────────────
-        //
-        // Above the editable fields on purpose: the handicap typed into the
-        // profile is a claim, and this is the record. A golfer opening this
-        // tab is usually asking how they are playing, not changing their
-        // home club.
-        const PerformanceDashboard(),
-        const SizedBox(height: VspSpacing.lg),
+            // ─── What the golfer's own rounds say ───────────────────────────────
+            //
+            // Above the editable fields on purpose: the handicap typed into the
+            // profile is a claim, and this is the record. A golfer opening this
+            // tab is usually asking how they are playing, not changing their
+            // home club.
+            const PerformanceDashboard(),
+            const SizedBox(height: VspSpacing.lg),
 
-        // ─── Identity Section ───────────────────────────────────────────────
-        _SectionHeader(title: AppLocalizations.of(context).profileSectionIdentity),
-        const SizedBox(height: VspSpacing.sm),
-        _IdentitySection(profile: profile),
-        const SizedBox(height: VspSpacing.lg),
+            // ─── Identity Section ───────────────────────────────────────────────
+            _SectionHeader(
+              title: AppLocalizations.of(context).profileSectionIdentity,
+            ),
+            const SizedBox(height: VspSpacing.sm),
+            _IdentitySection(profile: profile),
+            const SizedBox(height: VspSpacing.lg),
 
-        // ─── Golf Stats Section ──────────────────────────────────────────────
-        _SectionHeader(title: AppLocalizations.of(context).profileSectionGolfStats),
-        const SizedBox(height: VspSpacing.sm),
-        _GolfStatsSection(
-          profile: profile,
-          state: state,
-          handicapController: handicapController,
-          homeClubController: homeClubController,
-          targetScoreController: targetScoreController,
+            // ─── Golf Stats Section ──────────────────────────────────────────────
+            _SectionHeader(
+              title: AppLocalizations.of(context).profileSectionGolfStats,
+            ),
+            const SizedBox(height: VspSpacing.sm),
+            _GolfStatsSection(
+              profile: profile,
+              state: state,
+              handicapController: handicapController,
+              homeClubController: homeClubController,
+              targetScoreController: targetScoreController,
+            ),
+            const SizedBox(height: VspSpacing.lg),
+
+            // ─── Distance Section ────────────────────────────────────────────────
+            _SectionHeader(
+              title: AppLocalizations.of(context).profileSectionDistance,
+            ),
+            const SizedBox(height: VspSpacing.sm),
+            _DistanceSection(
+              profile: profile,
+              state: state,
+              driverDistanceController: driverDistanceController,
+            ),
+            const SizedBox(height: VspSpacing.lg),
+
+            // ─── Personal Section ────────────────────────────────────────────────
+            _SectionHeader(
+              title: AppLocalizations.of(context).profileSectionPersonal,
+            ),
+            const SizedBox(height: VspSpacing.sm),
+            _PersonalSection(
+              profile: profile,
+              state: state,
+              swingSpeedController: swingSpeedController,
+              birthYearController: birthYearController,
+              countryController: countryController,
+            ),
+            const SizedBox(height: VspSpacing.xl),
+          ],
         ),
-        const SizedBox(height: VspSpacing.lg),
-
-        // ─── Distance Section ────────────────────────────────────────────────
-        _SectionHeader(title: AppLocalizations.of(context).profileSectionDistance),
-        const SizedBox(height: VspSpacing.sm),
-        _DistanceSection(
-          profile: profile,
-          state: state,
-          driverDistanceController: driverDistanceController,
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: ScrollEdgeFade(color: colorScheme.surface),
         ),
-        const SizedBox(height: VspSpacing.lg),
-
-        // ─── Personal Section ────────────────────────────────────────────────
-        _SectionHeader(title: AppLocalizations.of(context).profileSectionPersonal),
-        const SizedBox(height: VspSpacing.sm),
-        _PersonalSection(
-          profile: profile,
-          state: state,
-          swingSpeedController: swingSpeedController,
-          birthYearController: birthYearController,
-          countryController: countryController,
-        ),
-        const SizedBox(height: VspSpacing.xl),
       ],
     );
   }
@@ -348,9 +380,14 @@ class _IdentitySection extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(AppLocalizations.of(context).profileGolfer, style: theme.textTheme.titleMedium),
                     Text(
-                      AppLocalizations.of(context).profileIdLabel('${profile.golferAccountId}'),
+                      AppLocalizations.of(context).profileGolfer,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                    Text(
+                      AppLocalizations.of(
+                        context,
+                      ).profileIdLabel('${profile.golferAccountId}'),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -363,8 +400,16 @@ class _IdentitySection extends StatelessWidget {
           const SizedBox(height: 12),
           const Divider(),
           const SizedBox(height: VspSpacing.sm),
-          _InfoRow(label: AppLocalizations.of(context).profileHomeClub, value: profile.homeClub ?? '—'),
-          _InfoRow(label: AppLocalizations.of(context).profileCountry, value: profile.country ?? '—'),
+          // Home Club is not here.
+          //
+          // It was — read-only, showing "—", directly above a second Home Club
+          // in Golf Stats that could be edited. One field, two rows, the same
+          // label, and only one of them doing anything. The editable one is
+          // the one that is any use.
+          _InfoRow(
+            label: AppLocalizations.of(context).profileCountry,
+            value: profile.country ?? '—',
+          ),
         ],
       ),
     );
@@ -439,7 +484,7 @@ class _GolfStatsSection extends StatelessWidget {
           label: AppLocalizations.of(context).profileHomeClub,
           value: profile.homeClub ?? '',
           controller: homeClubController,
-          placeholder: 'e.g. Vietnam Golf & Country Club',
+          placeholder: AppLocalizations.of(context).profileHomeClubHint,
           savingField: state?.savingField == ProfileField.homeClub
               ? 'homeClub'
               : null,
@@ -530,12 +575,16 @@ class _DistanceSection extends StatelessWidget {
 
         // Driver Distance
         _EditableField(
-          label: AppLocalizations.of(context).profileDriverDistance(profile.distanceUnitLabel),
+          label: AppLocalizations.of(
+            context,
+          ).profileDriverDistance(profile.distanceUnitLabel),
           value: profile.displayDriverDistance?.toString() ?? '',
           controller: driverDistanceController,
           placeholder: 'e.g. 220',
           keyboardType: TextInputType.number,
-          helperText: AppLocalizations.of(context).profileDriverDistanceHelper(profile.distanceUnitLabel),
+          helperText: AppLocalizations.of(
+            context,
+          ).profileDriverDistanceHelper(profile.distanceUnitLabel),
           savingField: state?.savingField == ProfileField.driverDistance
               ? 'driverDistance'
               : null,
@@ -784,14 +833,14 @@ class _SyncBanner extends StatelessWidget {
         color: isSyncing
             ? const Color(0xFF3B82F6).withOpacity(0.1)
             : colorScheme.brightness == Brightness.dark
-            ? VspColorDark.muted
+            ? Theme.of(context).colorScheme.surfaceContainerHighest
             : VspColorLight.muted.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isSyncing
               ? const Color(0xFF3B82F6)
               : colorScheme.brightness == Brightness.dark
-              ? VspColorDark.muted
+              ? Theme.of(context).colorScheme.surfaceContainerHighest
               : VspColorLight.muted,
         ),
       ),
@@ -803,17 +852,19 @@ class _SyncBanner extends StatelessWidget {
             color: isSyncing
                 ? const Color(0xFF3B82F6)
                 : colorScheme.brightness == Brightness.dark
-                ? VspColorDark.muted
+                ? Theme.of(context).colorScheme.surfaceContainerHighest
                 : VspColorLight.muted,
           ),
           const SizedBox(width: VspSpacing.sm),
           Text(
-            isSyncing ? 'Syncing...' : 'Changes saved offline',
+            isSyncing
+                ? AppLocalizations.of(context).syncSyncing
+                : AppLocalizations.of(context).syncChangesSavedOffline,
             style: theme.textTheme.bodySmall?.copyWith(
               color: isSyncing
                   ? const Color(0xFF3B82F6)
                   : colorScheme.brightness == Brightness.dark
-                  ? VspColorDark.muted
+                  ? Theme.of(context).colorScheme.surfaceContainerHighest
                   : VspColorLight.muted,
             ),
           ),

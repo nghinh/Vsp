@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../domain/models/score.dart';
 import 'player_score_row.dart';
 import 'progressive_disclosure_panel.dart';
+import 'quick_score_strip.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Card widget containing score rows for all players on one hole.
@@ -64,7 +65,19 @@ class ScoreEntryCard extends StatefulWidget {
     required this.onGir,
     required this.onBunker,
     required this.onNotesTap,
+    this.par,
+    this.onSetScore,
   });
+
+  /// The hole's par, which is what the one-tap strip is built around.
+  ///
+  /// Null on a hole whose par nobody has recorded — most of this database —
+  /// and the strip is then simply not offered, because "one under what?" has
+  /// no answer. The +/- controls and the keypad are unaffected.
+  final int? par;
+
+  /// Records a score outright. Distinct from [onIncrement], which walks.
+  final void Function(String playerId, int score)? onSetScore;
 
   @override
   State<ScoreEntryCard> createState() => _ScoreEntryCardState();
@@ -132,17 +145,41 @@ class _ScoreEntryCardState extends State<ScoreEntryCard> {
                     ? PlayerScoreStatus.entered
                     : PlayerScoreStatus.notEntered;
 
-                return InkWell(
-                  onTap: () => _toggleExpand(playerId),
-                  child: PlayerScoreRow(
-                    playerName: widget.playerNames[playerId] ?? playerId,
-                    grossScore: widget.grossScores[playerId],
-                    status: status,
-                    isExpanded: expandedPlayerId == playerId,
-                    onIncrement: () => widget.onIncrement(playerId),
-                    onDecrement: () => widget.onDecrement(playerId),
-                    onScoreTap: () => widget.onScoreTap(playerId),
-                  ),
+                final expanded = expandedPlayerId == playerId;
+                final quickScores =
+                    widget.par != null && widget.onSetScore != null;
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InkWell(
+                      onTap: () => _toggleExpand(playerId),
+                      child: PlayerScoreRow(
+                        playerName: widget.playerNames[playerId] ?? playerId,
+                        grossScore: widget.grossScores[playerId],
+                        status: status,
+                        isExpanded: expanded,
+                        hasQuickScores: quickScores && expanded,
+                        onIncrement: () => widget.onIncrement(playerId),
+                        onDecrement: () => widget.onDecrement(playerId),
+                        onScoreTap: () => widget.onScoreTap(playerId),
+                      ),
+                    ),
+                    // Directly under the name it belongs to.
+                    //
+                    // The other panel on this screen opens below the whole
+                    // card, so on a four-ball the controls for the first
+                    // player sat under the fourth player's row with three
+                    // strangers' names in between. A control that far from
+                    // the thing it changes is a control you check twice.
+                    if (expanded && quickScores)
+                      QuickScoreStrip(
+                        par: widget.par!,
+                        score: widget.grossScores[playerId],
+                        onScore: (value) =>
+                            widget.onSetScore!(playerId, value),
+                        onOther: () => widget.onScoreTap(playerId),
+                      ),
+                  ],
                 );
               }),
             ],

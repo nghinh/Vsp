@@ -102,7 +102,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Update Available',
+                        AppLocalizations.of(context).updateAvailableTitle,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
@@ -174,7 +174,7 @@ class _UpdateBottomSheet extends StatelessWidget {
                 Icon(Icons.wifi, size: 16, color: colorScheme.onSurfaceVariant),
                 const SizedBox(width: VspSpacing.xs),
                 Text(
-                  'Updates require internet connection',
+                  AppLocalizations.of(context).updateNeedsInternet,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

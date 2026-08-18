@@ -293,12 +293,12 @@ class _DistributionRow extends StatelessWidget {
   /// Green for the good piles, amber and orange for the expensive ones —
   /// the colours a golfer already reads on a scorecard.
   Color _colour(ColorScheme scheme) => switch (bucket.label) {
-        'EAGLE_OR_BETTER' => const Color(0xFF059669),
+        'EAGLE_OR_BETTER' => scheme.tertiary,
         'BIRDIE' => const Color(0xFF10B981),
         'PAR' => scheme.primary,
-        'BOGEY' => const Color(0xFFF59E0B),
-        'DOUBLE_BOGEY' => const Color(0xFFF97316),
-        _ => const Color(0xFFDC2626),
+        'BOGEY' => scheme.secondary,
+        'DOUBLE_BOGEY' => scheme.primary,
+        _ => scheme.error,
       };
 
   String _label(AppLocalizations l10n) => switch (bucket.label) {

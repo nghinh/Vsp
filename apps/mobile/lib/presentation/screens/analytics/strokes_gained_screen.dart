@@ -239,7 +239,7 @@ class _OverallSGHeader extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Overall Strokes Gained',
+            AppLocalizations.of(context).strokesGainedOverall,
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
@@ -411,7 +411,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'No Shot Data',
+              AppLocalizations.of(context).strokesGainedNoData,
               style: theme.textTheme.titleLarge?.copyWith(
                 color: theme.colorScheme.onSurface,
               ),

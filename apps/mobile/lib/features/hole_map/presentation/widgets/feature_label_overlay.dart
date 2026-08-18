@@ -186,33 +186,74 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
       child: Stack(
         key: const Key('feature_label_overlay'),
         children: [
-          for (final chip in widget.chips)
-            if (chip.onLine && _onScreen(_positions[chip.identity], size))
-              Positioned(
-                // Centred on the line, because the line is what it belongs to.
-                left: _positions[chip.identity]!.dx - _chipWidth / 2,
-                top: _positions[chip.identity]!.dy - 13,
-                width: _chipWidth,
-                child: Center(child: _pill(chip)),
+          for (final placed in _placeWithoutCollisions(size))
+            Positioned(
+              left: placed.rect.left,
+              top: placed.rect.top,
+              width: _chipWidth,
+              child: Center(
+                child: placed.chip.onLine
+                    ? _pill(placed.chip)
+                    : _chip(placed.chip),
               ),
-          for (final chip in widget.chips)
-            if (!chip.onLine && _onScreen(_positions[chip.identity], size))
-              Positioned(
-                // Placed by the tip of its pointer, not by its middle. A chip
-                // centred on the shape covers the shape — on a bunker the size
-                // of a thumbnail the label hides the thing it is labelling —
-                // and two shapes close together end up with two chips on top
-                // of each other and no way to tell which is which. Sitting
-                // above with a pointer down onto it says which one it means.
-                left: _positions[chip.identity]!.dx - _chipWidth / 2,
-                top: _positions[chip.identity]!.dy - _chipHeight - _pointer,
-                width: _chipWidth,
-                child: Center(child: _chip(chip)),
-              ),
+            ),
         ],
       ),
     );
   }
+
+  /// Lays the chips out so no two of them cover each other.
+  ///
+  /// Every chip used to be drawn at its own projected position and nothing
+  /// else, so on a hole with a cluster of bunkers and four tees the screen
+  /// showed "PHÁT BÓNG 120 / 1…" under "BUNKER" under "PHÁT BÓNG 132 / 152",
+  /// with a water chip running off the right edge. Each label was correct and
+  /// the picture was unreadable.
+  ///
+  /// Greedy, in priority order, which is what map labelling does everywhere:
+  /// place a chip if its box is clear, skip it if it is not. Skipping is the
+  /// right answer rather than nudging — a nudged chip points at the wrong
+  /// shape, and a distance attached to the wrong bunker is worse than no
+  /// distance at all. The shape stays drawn either way; it is only its label
+  /// that yields.
+  ///
+  /// Play-line chips go first because they are the hole's own numbers — the
+  /// carry and the distance remaining — and they are what the golfer opened
+  /// the screen to read.
+  List<_PlacedChip> _placeWithoutCollisions(Size size) {
+    final ordered = [
+      ...widget.chips.where((chip) => chip.onLine),
+      ...widget.chips.where((chip) => !chip.onLine),
+    ];
+
+    final placed = <_PlacedChip>[];
+    for (final chip in ordered) {
+      final at = _positions[chip.identity];
+      if (!_onScreen(at, size)) continue;
+
+      final top = chip.onLine
+          ? at!.dy - 13
+          : at!.dy - _chipHeight - _pointer;
+      // Clamped horizontally, so a chip near the edge is readable rather than
+      // guillotined by it — "HỒ NƯỚC 116 / 185" was losing its last digits.
+      // Only sideways: moving it vertically would break the pointer's claim
+      // about which shape it belongs to.
+      final left = (at.dx - _chipWidth / 2).clamp(
+        _edgeInset,
+        size.width - _chipWidth - _edgeInset,
+      );
+      final rect = Rect.fromLTWH(left, top, _chipWidth, _chipHeight);
+
+      final collides = placed.any((other) => other.rect.overlaps(rect));
+      if (collides) continue;
+
+      placed.add(_PlacedChip(chip: chip, rect: rect));
+    }
+    return placed;
+  }
+
+  /// Breathing room at the screen edge, so a clamped chip is not flush.
+  static const double _edgeInset = 8;
 
   /// Fixed, because the chip is positioned by its tip and that needs its
   /// height before it is laid out.
@@ -323,6 +364,14 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
 /// The card behind a label: rounded white body, a pointer down onto the shape,
 /// a coloured strip naming the layer, and a shadow so it lifts off whatever it
 /// is sitting on.
+/// A chip and the box it was given, once collisions were resolved.
+class _PlacedChip {
+  const _PlacedChip({required this.chip, required this.rect});
+
+  final FeatureLabelChip chip;
+  final Rect rect;
+}
+
 class _CalloutPainter extends CustomPainter {
   const _CalloutPainter({required this.accent});
 

@@ -202,7 +202,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
               ),
               const SizedBox(height: 12),
               Text(
-                'No Rounds Found',
+                AppLocalizations.of(context).privacyNoRounds,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: VspSpacing.sm),
@@ -279,7 +279,7 @@ class _RoundPickerSheetState extends State<_RoundPickerSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          round.courseName ?? 'Unknown Course',
+                          round.courseName ?? AppLocalizations.of(context).commonUnknownCourse,
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(fontWeight: FontWeight.w600),
                         ),

@@ -8,6 +8,7 @@
 // measurement would be worse than showing nothing.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/domain/value_objects/distance_measurement.dart';
 import 'package:vsp_mobile/features/measure/domain/measure_leg.dart';
@@ -69,21 +70,23 @@ class MeasurePanel extends StatelessWidget {
   /// Coarsest fix the correction API accepts.
   static const double _maxReportableAccuracyMeters = 100;
 
-  static const Color _surface = Color(0xF2131C2F);
-  static const Color _border = Color(0x33FFFFFF);
-  static const Color _textPrimary = Color(0xFFF8FAFC);
-  static const Color _textMuted = Color(0xFF94A3B8);
-  static const Color _warning = Color(0xFFFBBF24);
-  static const Color _danger = Color(0xFFF87171);
+  /// Past this, the golfer is not on the hole.
+  ///
+  /// The longest hole ever played competitively is a shade over 900 m, so a
+  /// kilometre is beyond any hole's own ground with room to spare — a golfer
+  /// on the tee of a monstrous par 6 still gets their yardage. It is a floor
+  /// under "this cannot mean what the label says", not a judgement about how
+  /// far is too far to be interested.
+  static const double _offHoleMeters = 1000;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: _surface,
-        border: Border(top: BorderSide(color: _border)),
+      decoration: BoxDecoration(
+        color: _surface(context),
+        border: Border(top: BorderSide(color: _border(context))),
       ),
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: SafeArea(
@@ -105,7 +108,7 @@ class MeasurePanel extends StatelessWidget {
             ],
             if (state.isEmpty) ...[
               const SizedBox(height: 8),
-              _buildEmpty(l10n),
+              _buildEmpty(context, l10n),
             ],
           ],
         ),
@@ -118,7 +121,7 @@ class MeasurePanel extends StatelessWidget {
   Widget _buildHeader(BuildContext context, AppLocalizations l10n) {
     return Row(
       children: [
-        const Icon(Icons.straighten, size: 18, color: _textPrimary),
+        Icon(Icons.straighten, size: 18, color: _textPrimary(context)),
         const SizedBox(width: 6),
         // The title and the point count give way before the controls do.
         // "Đo khoảng cách" plus "Chưa có điểm" is wider than the 360 dp phones
@@ -132,22 +135,30 @@ class MeasurePanel extends StatelessWidget {
                   l10n.measureTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: _textPrimary,
+                  style: TextStyle(
+                    color: _textPrimary(context),
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Text(
-                  l10n.measurePoints(state.points.length),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: _textMuted, fontSize: 12),
+              // The point count, only once there are points.
+              //
+              // With none it read "Chưa có điểm" — while the empty state four
+              // lines below already said the same thing at length, and while
+              // it was squeezing the title into "Đo khoản…". Two statements of
+              // the same fact, one of them costing the other its words.
+              if (state.points.isNotEmpty) ...[
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    l10n.measurePoints(state.points.length),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: _textMuted(context), fontSize: 12),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -156,16 +167,16 @@ class MeasurePanel extends StatelessWidget {
         IconButton(
           onPressed: state.isEmpty ? null : onUndo,
           icon: const Icon(Icons.undo, size: 20),
-          color: _textPrimary,
-          disabledColor: _textMuted,
+          color: _textPrimary(context),
+          disabledColor: _textMuted(context),
           tooltip: l10n.measureUndo,
           constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         ),
         IconButton(
           onPressed: state.isEmpty ? null : onClear,
           icon: const Icon(Icons.layers_clear_outlined, size: 20),
-          color: _textPrimary,
-          disabledColor: _textMuted,
+          color: _textPrimary(context),
+          disabledColor: _textMuted(context),
           tooltip: l10n.measureClear,
           constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
         ),
@@ -184,9 +195,27 @@ class MeasurePanel extends StatelessWidget {
     // "On to green" number — measured from that point, so it did not need GPS
     // at all — with nothing saying the green position was a guess. Losing the
     // fix is a reason to say more, not less.
+    // One fix, one grade.
+    //
+    // These two lines used to be graded by two different rules. The chip
+    // beside them scores accuracy on 10 / 20 m — under 10 good, under 20
+    // "khá", over 20 "yếu" — while the sentence fired on `isLowAccuracy`,
+    // which is over 10 m flat. So between 11 and 19 m the screen printed
+    // "GPS khá ±20 yd" and directly under it "Tín hiệu GPS yếu": one number,
+    // two graders, both shown to the golfer. Over 20 m they agreed, and the
+    // panel then said the same thing twice in two shapes.
+    //
+    // The chip owns the grade because it is the thing showing the number. The
+    // sentence appears only where the chip has already said "yếu", and it
+    // earns its place by saying what the chip cannot — what to do about it.
+    final poorFix =
+        !state.hasNoFix && _accuracyLevel(accuracy) == GpsAccuracyLevel.poor;
+
     final warnings = <String>[
+      // Staleness is a separate fact the chip does not carry: an accurate fix
+      // from two minutes ago still reads "GPS tốt".
       if (!state.hasNoFix && origin!.isStale) l10n.measureStaleFix,
-      if (!state.hasNoFix && origin!.isLowAccuracy) l10n.measureWeakFix,
+      if (poorFix) l10n.measureWeakFix,
     ];
 
     return Column(
@@ -195,14 +224,14 @@ class MeasurePanel extends StatelessWidget {
         Row(
           children: [
             if (state.hasNoFix)
-              const Icon(Icons.gps_off, size: 14, color: _danger)
+              Icon(Icons.gps_off, size: 14, color: _danger(context))
             else
               GpsAccuracyChip(
                 level: _accuracyLevel(accuracy),
                 accuracyMeters: accuracy,
               ),
             const SizedBox(width: 8),
-            Expanded(child: _buildGreenNote(l10n)),
+            Expanded(child: _buildGreenNote(context, l10n)),
           ],
         ),
         if (_canReportGreen) ...[
@@ -220,7 +249,7 @@ class MeasurePanel extends StatelessWidget {
           const SizedBox(height: 6),
           _Notice(
             icon: Icons.gps_off,
-            color: _danger,
+            color: _danger(context),
             message: l10n.measureNoFix,
           ),
         ],
@@ -228,7 +257,7 @@ class MeasurePanel extends StatelessWidget {
           const SizedBox(height: 6),
           _Notice(
             icon: Icons.warning_amber_rounded,
-            color: _warning,
+            color: _warning(context),
             message: warning,
           ),
         ],
@@ -251,18 +280,18 @@ class MeasurePanel extends StatelessWidget {
     return accuracy <= _maxReportableAccuracyMeters;
   }
 
-  Widget _buildGreenNote(AppLocalizations l10n) {
+  Widget _buildGreenNote(BuildContext context, AppLocalizations l10n) {
     final String text;
     final Color color;
     if (state.green == null) {
       text = l10n.measureGreenUnknown;
-      color = _textMuted;
+      color = _textMuted(context);
     } else if (state.result.greenIsEstimated) {
       text = l10n.measureGreenEstimated;
-      color = _warning;
+      color = _warning(context);
     } else {
       text = l10n.measureGreenSurveyed;
-      color = _textMuted;
+      color = _textMuted(context);
     }
     return Text(
       text,
@@ -282,14 +311,14 @@ class MeasurePanel extends StatelessWidget {
 
   // ─── Distances ─────────────────────────────────────────────────────────────
 
-  Widget _buildEmpty(AppLocalizations l10n) {
+  Widget _buildEmpty(BuildContext context, AppLocalizations l10n) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           l10n.measureEmptyTitle,
-          style: const TextStyle(
-            color: _textPrimary,
+          style: TextStyle(
+            color: _textPrimary(context),
             fontSize: 13,
             fontWeight: FontWeight.w600,
           ),
@@ -299,7 +328,7 @@ class MeasurePanel extends StatelessWidget {
           imageryAvailable
               ? l10n.measureEmptyBody
               : l10n.measureEmptyBodyNoImagery,
-          style: const TextStyle(color: _textMuted, fontSize: 12),
+          style: TextStyle(color: _textMuted(context), fontSize: 12),
         ),
       ],
     );
@@ -325,16 +354,38 @@ class MeasurePanel extends StatelessWidget {
 
     final greenLeg = result.greenLeg;
     if (greenLeg != null) {
-      rows.add(
-        _LegRow(
-          label: result.greenLegIsFromGolfer
-              ? l10n.measureYouToGreen
-              : l10n.measureToGreen,
-          leg: greenLeg,
-          unit: unit,
-          emphasised: true,
-        ),
-      );
+      // A distance that is not a golf distance.
+      //
+      // This row is computed for the golfer wherever they are standing, and
+      // the golfer is usually not standing on the hole — checking tomorrow's
+      // course from the sofa, or opening the 7th while on the 3rd. It read
+      // "Từ bạn tới green  6.0 mi ±36 yd": a number in miles, carrying a
+      // yard-precision error bar, under a label that says it is the shot in
+      // front of them.
+      //
+      // No hole is a kilometre long, so past that the number cannot be a
+      // distance on this hole and there is nothing to round or hedge. The row
+      // says where they are instead, which is the fact that is actually true.
+      if (result.greenLegIsFromGolfer && greenLeg.meters > _offHoleMeters) {
+        rows.add(
+          _AwayFromHoleRow(
+            message: l10n.measureAwayFromHole(
+              MeasureUnits.format(greenLeg.meters, unit),
+            ),
+          ),
+        );
+      } else {
+        rows.add(
+          _LegRow(
+            label: result.greenLegIsFromGolfer
+                ? l10n.measureYouToGreen
+                : l10n.measureToGreen,
+            leg: greenLeg,
+            unit: unit,
+            emphasised: true,
+          ),
+        );
+      }
     }
 
     return Column(
@@ -342,7 +393,7 @@ class MeasurePanel extends StatelessWidget {
       children: [
         ...rows,
         if (result.legs.length > 1) ...[
-          const Divider(color: _border, height: 12),
+          Divider(color: _border(context), height: 12),
           _TotalRow(
             label: l10n.measureTotal,
             meters: result.totalMeters,
@@ -354,7 +405,7 @@ class MeasurePanel extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             l10n.measureNoFix,
-            style: const TextStyle(color: _danger, fontSize: 11),
+            style: TextStyle(color: _danger(context), fontSize: 11),
           ),
         ],
       ],
@@ -381,10 +432,7 @@ class _LegRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final distance = MeasureUnits.format(leg.meters, unit);
-    final tolerance = MeasureUnits.formatTolerance(
-      leg.uncertaintyMeters,
-      unit,
-    );
+    final tolerance = MeasureUnits.formatTolerance(leg.uncertaintyMeters, unit);
 
     return Semantics(
       label: l10n.measureSemanticsLeg(label, distance, tolerance),
@@ -398,8 +446,8 @@ class _LegRow extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: emphasised
-                      ? const Color(0xFF68DBA9)
-                      : MeasurePanel._textMuted,
+                      ? Theme.of(context).colorScheme.tertiary
+                      : _textMuted(context),
                   fontSize: 12,
                   fontWeight: emphasised ? FontWeight.w600 : FontWeight.w400,
                 ),
@@ -407,8 +455,8 @@ class _LegRow extends StatelessWidget {
             ),
             Text(
               distance,
-              style: const TextStyle(
-                color: MeasurePanel._textPrimary,
+              style: TextStyle(
+                color: _textPrimary(context),
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
                 fontFamily: 'monospace',
@@ -469,8 +517,8 @@ class _TotalRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: const TextStyle(
-                color: MeasurePanel._textPrimary,
+              style: TextStyle(
+                color: _textPrimary(context),
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
               ),
@@ -478,8 +526,8 @@ class _TotalRow extends StatelessWidget {
           ),
           Text(
             distance,
-            style: const TextStyle(
-              color: MeasurePanel._textPrimary,
+            style: TextStyle(
+              color: _textPrimary(context),
               fontSize: 20,
               fontWeight: FontWeight.w700,
               fontFamily: 'monospace',
@@ -488,10 +536,7 @@ class _TotalRow extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             tolerance,
-            style: const TextStyle(
-              color: MeasurePanel._textMuted,
-              fontSize: 11,
-            ),
+            style: TextStyle(color: _textMuted(context), fontSize: 11),
           ),
         ],
       ),
@@ -519,13 +564,13 @@ class _UnitToggle extends StatelessWidget {
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: MeasurePanel._border),
+            border: Border.all(color: _border(context)),
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             MeasureUnits.suffix(unit),
-            style: const TextStyle(
-              color: MeasurePanel._textPrimary,
+            style: TextStyle(
+              color: _textPrimary(context),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -555,12 +600,42 @@ class _Notice extends StatelessWidget {
         Icon(icon, size: 14, color: color),
         const SizedBox(width: 6),
         Expanded(
-          child: Text(
-            message,
-            style: TextStyle(color: color, fontSize: 11),
-          ),
+          child: Text(message, style: TextStyle(color: color, fontSize: 11)),
         ),
       ],
+    );
+  }
+}
+
+/// Stands in for the golfer-to-green yardage when the golfer is not on the
+/// hole.
+///
+/// Quiet on purpose. This is not a warning — nothing is wrong with being at
+/// home looking at tomorrow's course — so it does not borrow the amber of the
+/// GPS notices. It reads as the absence of a number with a reason attached,
+/// which is what it is.
+class _AwayFromHoleRow extends StatelessWidget {
+  const _AwayFromHoleRow({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.near_me_outlined, size: 14, color: _textMuted(context)),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              message,
+              style: TextStyle(color: _textMuted(context), fontSize: 12),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -582,9 +657,7 @@ class _GreenReportAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final sent = onTap == null;
-    final color = sent
-        ? MeasurePanel._textMuted
-        : MeasurePanel._textPrimary;
+    final color = sent ? _textMuted(context) : _textPrimary(context);
 
     return Semantics(
       button: !sent,
@@ -594,14 +667,16 @@ class _GreenReportAction extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
           decoration: BoxDecoration(
-            border: Border.all(color: MeasurePanel._border),
+            border: Border.all(color: _border(context)),
             borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                sent ? Icons.check_circle_outline : Icons.add_location_alt_outlined,
+                sent
+                    ? Icons.check_circle_outline
+                    : Icons.add_location_alt_outlined,
                 size: 14,
                 color: color,
               ),
@@ -619,3 +694,26 @@ class _GreenReportAction extends StatelessWidget {
     );
   }
 }
+
+// Screen furniture after all.
+//
+// These were argued to be map chrome — translucent dark glass over imagery,
+// dark whatever the theme, the way a map application's controls are. A
+// screenshot of the app in light mode settled it: this panel is not laid
+// over the photograph, it is a band of its own *below* the map, and in a
+// light app it read as a dark island under a white screen. The argument was
+// right about pin markers and wind arrows, which really do float on the
+// imagery. It was wrong about this.
+//
+// Instance getters rather than statics, because a colour that depends on the
+// theme depends on a BuildContext — which is what the compiler said when
+// this was first attempted as static fields.
+Color _surface(BuildContext context) =>
+    Theme.of(context).colorScheme.surface.withOpacity(0.95);
+Color _border(BuildContext context) =>
+    Theme.of(context).colorScheme.outlineVariant;
+Color _textPrimary(BuildContext context) => VspTextTiers.of(context).primary;
+Color _textMuted(BuildContext context) =>
+    Theme.of(context).colorScheme.onSurfaceVariant;
+Color _warning(BuildContext context) => Theme.of(context).colorScheme.secondary;
+Color _danger(BuildContext context) => Theme.of(context).colorScheme.error;

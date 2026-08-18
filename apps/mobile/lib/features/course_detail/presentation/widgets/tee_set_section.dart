@@ -42,7 +42,7 @@ class TeeSetSection extends StatelessWidget {
               ),
               const SizedBox(width: VspSpacing.sm),
               Text(
-                'Tee Sets',
+                AppLocalizations.of(context).teeSetsHeading,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                   color: colorScheme.onSurface,

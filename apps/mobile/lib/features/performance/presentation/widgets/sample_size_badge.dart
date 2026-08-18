@@ -6,6 +6,7 @@
 // Accessibility: includes semantic label for screen readers.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
@@ -62,15 +63,15 @@ class SampleSizeBadge extends StatelessWidget {
     switch (label) {
       case SampleSizeLabel.insufficient:
         return (
-          isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626), // Red
+          isDark ? Theme.of(context).colorScheme.error : Theme.of(context).colorScheme.error, // Red
           isDark ? const Color(0x1AF87171) : const Color(0x1ADC2626),
           'Insufficient',
         );
       case SampleSizeLabel.limited:
         return (
           isDark
-              ? const Color(0xFFFBBF24)
-              : const Color(0xFFF97316), // Amber/Orange
+              ? Theme.of(context).colorScheme.secondary
+              : Theme.of(context).colorScheme.primary, // Amber/Orange
           isDark ? const Color(0x1AFBBF24) : const Color(0x1AF97316),
           'Limited',
         );
@@ -82,7 +83,7 @@ class SampleSizeBadge extends StatelessWidget {
         );
       case SampleSizeLabel.robust:
         return (
-          isDark ? const Color(0xFF34D399) : const Color(0xFF059669), // Green
+          isDark ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary, // Green
           isDark ? const Color(0x1A34D399) : const Color(0x1A059669),
           'Robust',
         );

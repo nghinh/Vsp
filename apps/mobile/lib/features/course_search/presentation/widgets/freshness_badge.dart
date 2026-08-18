@@ -56,7 +56,7 @@ class FreshnessBadge extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: brightness == Brightness.dark
-                ? VspColorDark.textTertiary
+                ? VspTextTiers.of(context).tertiary
                 : VspColorLight.textTertiary,
             width: 1,
           ),
@@ -67,7 +67,7 @@ class FreshnessBadge extends StatelessWidget {
             fontSize: compact ? 10 : 11,
             fontWeight: FontWeight.w500,
             color: brightness == Brightness.dark
-                ? VspColorDark.textTertiary
+                ? VspTextTiers.of(context).tertiary
                 : VspColorLight.textTertiary,
           ),
         ),
@@ -102,7 +102,7 @@ class FreshnessBadge extends StatelessWidget {
           // Tinted background (not solid accent) so the accent-colored label
           // and icon stay legible in both light and dark modes.
           color: brightness == Brightness.dark
-              ? VspColorDark.accent.withOpacity(0.16)
+              ? Theme.of(context).colorScheme.tertiary.withOpacity(0.16)
               : VspColorLight.accent.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -149,7 +149,7 @@ class FreshnessBadge extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: brightness == Brightness.dark
-              ? VspColorDark.destructive
+              ? Theme.of(context).colorScheme.error
               : VspColorLight.destructive.withOpacity(0.08),
           borderRadius: BorderRadius.circular(12),
         ),

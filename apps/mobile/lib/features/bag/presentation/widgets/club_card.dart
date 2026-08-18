@@ -68,12 +68,12 @@ class ClubCard extends StatelessWidget {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color: _clubTypeColor(club.clubType).withOpacity(0.1),
+                    color: _clubTypeColor(context, club.clubType).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     _clubTypeIcon(club.clubType),
-                    color: _clubTypeColor(club.clubType),
+                    color: _clubTypeColor(context, club.clubType),
                     size: VspIconSize.md,
                   ),
                 ),
@@ -153,14 +153,14 @@ class ClubCard extends StatelessWidget {
     return Icons.golf_course;
   }
 
-  Color _clubTypeColor(ClubType type) {
+  Color _clubTypeColor(BuildContext context, ClubType type) {
     switch (type) {
       case ClubType.driver:
-        return const Color(0xFFEA580C); // Orange
+        return Theme.of(context).colorScheme.primary; // Orange
       case ClubType.wood:
-        return const Color(0xFFF97316); // Light orange
+        return Theme.of(context).colorScheme.primary; // Light orange
       case ClubType.hybrid:
-        return const Color(0xFF059669); // Emerald
+        return Theme.of(context).colorScheme.tertiary; // Emerald
       case ClubType.iron:
         return const Color(0xFF3B82F6); // Blue
       case ClubType.wedge:

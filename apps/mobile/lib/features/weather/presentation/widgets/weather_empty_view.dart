@@ -38,7 +38,7 @@ class WeatherEmptyView extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Weather Unavailable',
+              AppLocalizations.of(context).weatherUnavailable,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w600,
@@ -46,7 +46,7 @@ class WeatherEmptyView extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Weather data is not available for this location.',
+              AppLocalizations.of(context).weatherUnavailableBody,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

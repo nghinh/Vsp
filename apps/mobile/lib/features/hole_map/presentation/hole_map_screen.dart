@@ -102,7 +102,9 @@ class HoleMapScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      // The page behind the map. Was a hex constant, so it stayed dark while
+      // the theme went light.
+      backgroundColor: Theme.of(context).colorScheme.inverseSurface,
       // The map shows distances, so it needs the golfer's metres/yards
       // preference. ProfileScope is a no-op when the round flow already
       // provided one higher up.
@@ -186,11 +188,7 @@ class HoleMapScreen extends StatelessWidget {
 /// (stateless, below) already built. Threading it through would mean making
 /// the body stateful for a value it does not own.
 class ClubBagScope extends InheritedWidget {
-  const ClubBagScope({
-    super.key,
-    required this.clubs,
-    required super.child,
-  });
+  const ClubBagScope({super.key, required this.clubs, required super.child});
 
   final List<PlannedClub> clubs;
 
@@ -264,10 +262,12 @@ class _HoleSyncState extends State<_HoleSync> {
       final bloc = context.read<HoleMapBloc>();
       final loaded = bloc.loadedHoleNumber;
       if (loaded != null && loaded != widget.holeNumber) {
-        bloc.add(NavigateToHole(
-          holeNumber: widget.holeNumber,
-          courseId: widget.courseId,
-        ));
+        bloc.add(
+          NavigateToHole(
+            holeNumber: widget.holeNumber,
+            courseId: widget.courseId,
+          ),
+        );
       }
     });
   }
@@ -335,10 +335,14 @@ class _HoleMapBody extends StatelessWidget {
 
         return Column(
           children: [
-            _HoleHeader(
+            HoleHeader(
               courseName: _courseNameOf(state) ?? courseName,
               holeNumber: hole + displayHoleOffset,
-              par: state is HoleMapReady ? state.holeMap.par : null,
+              // Zero means nobody told us, not a par-0 hole. A map drawn
+              // from the server's traced shapes has no scorecard behind it.
+              par: state is HoleMapReady && state.holeMap.par > 0
+                  ? state.holeMap.par
+                  : null,
               lengthMeters: state is HoleMapReady
                   ? state.holeMap.yardage
                   : null,
@@ -459,7 +463,12 @@ class _HoleMapBody extends StatelessWidget {
 }
 
 /// Header bar showing hole number, course name, hole stats and hole navigation.
-class _HoleHeader extends StatelessWidget {
+///
+/// Public so its layout can be tested directly. The bug it carried — a club
+/// name rendering as "Long Biên G…" — is a layout fact, and reaching it
+/// through the whole screen means standing up a bloc, a repository and a GPS
+/// stream to find out how wide a piece of text is.
+class HoleHeader extends StatelessWidget {
   final String? courseName;
   final int? holeNumber;
   final int? par;
@@ -491,7 +500,8 @@ class _HoleHeader extends StatelessWidget {
   /// Null hides the control.
   final VoidCallback? onInfo;
 
-  const _HoleHeader({
+  const HoleHeader({
+    super.key,
     this.courseName,
     this.holeNumber,
     this.par,
@@ -515,80 +525,122 @@ class _HoleHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(navigable ? 4 : 16, 8, 16, 8),
-      decoration: const BoxDecoration(
-        color: Color(0xFF1E293B),
-        border: Border(bottom: BorderSide(color: Color(0xFF334155), width: 1)),
+      decoration: BoxDecoration(
+        // From the theme. This band is part of the screen, not chrome floating
+        // over the imagery — five hex constants here would have made it the
+        // one dark strip left on a phone set to light.
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (navigable)
-            _HoleStepButton(
-              icon: Icons.chevron_left,
-              label: l10n.holeMapPreviousHole,
-              onPressed: onPrevious,
-            ),
-          if (holeNumber != null) ...[
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEA580C),
-                borderRadius: BorderRadius.circular(6),
-              ),
-              child: Text(
-                l10n.holeNumberLabel('$holeNumber'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
+          Row(
+            children: [
+              if (navigable)
+                _HoleStepButton(
+                  icon: Icons.chevron_left,
+                  label: l10n.holeMapPreviousHole,
+                  onPressed: onPrevious,
                 ),
-              ),
-            ),
-            if (par != null) ...[
-              const SizedBox(width: 8),
-              Text(
-                l10n.holeParLabel('$par'),
-                style: const TextStyle(
-                  color: Color(0xFFF8FAFC),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+              // The hole's facts, as a group that can flow to a second line.
+              //
+              // A Row overflowed by 122px at 2x text: a badge, a par, a length
+              // and a not-surveyed chip whose widths all follow the golfer's
+              // text setting, in a row with two fixed navigation buttons.
+              // Wrapping is what a group of chips should do; overflowing is
+              // what it did.
+              if (holeNumber != null)
+                Flexible(
+                  child: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          l10n.holeNumberLabel('$holeNumber'),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      if (par != null)
+                        Text(
+                          l10n.holeParLabel('$par'),
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      if (lengthMeters != null) ...[
+                        if (!lengthIsSurveyed)
+                          const NotSurveyedChip(iconOnly: true),
+                        Text(
+                          MeasureUnits.format(lengthMeters!.toDouble(), unit),
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
-              ),
+              if (navigable)
+                _HoleStepButton(
+                  icon: Icons.chevron_right,
+                  label: l10n.holeMapNextHole,
+                  onPressed: onNext,
+                ),
+              if (onInfo != null)
+                IconButton(
+                  key: const Key('hole_advice_open'),
+                  onPressed: onInfo,
+                  icon: const Icon(Icons.tips_and_updates_outlined),
+                  color: Theme.of(context).colorScheme.onSurface,
+                  iconSize: 20,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: AppLocalizations.of(context).holeAdviceOpen,
+                ),
             ],
-            if (lengthMeters != null) ...[
-              const SizedBox(width: 8),
-              if (!lengthIsSurveyed) ...[
-                const NotSurveyedChip(iconOnly: true),
-                const SizedBox(width: 4),
-              ],
-              Text(
-                MeasureUnits.format(lengthMeters!.toDouble(), unit),
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-              ),
-            ],
-          ],
-          if (navigable)
-            _HoleStepButton(
-              icon: Icons.chevron_right,
-              label: l10n.holeMapNextHole,
-              onPressed: onNext,
-            ),
-          if (onInfo != null)
-            IconButton(
-              key: const Key('hole_advice_open'),
-              onPressed: onInfo,
-              icon: const Icon(Icons.tips_and_updates_outlined),
-              color: const Color(0xFFF8FAFC),
-              iconSize: 20,
-              visualDensity: VisualDensity.compact,
-              tooltip: AppLocalizations.of(context).holeAdviceOpen,
-            ),
-          const Spacer(),
+          ),
+          // The club, on its own line.
+          //
+          // It used to sit at the end of the row behind a `Spacer`, and a
+          // Spacer and a Flexible in one Row split what is left between them —
+          // so the name got half the leftover and "Long Biên Golf Course"
+          // rendered as "Long Biên G…". It is the one thing in this header the
+          // golfer already knows, having just chosen it, so it neither needs
+          // the room the numbers need nor deserves to be cut in half fighting
+          // them for it.
           if (courseName != null)
-            Flexible(
+            Padding(
+              padding: EdgeInsets.only(left: navigable ? 12 : 0, top: 2),
               child: Text(
                 courseName!,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
               ),
             ),
         ],
@@ -614,7 +666,7 @@ class _HoleStepButton extends StatelessWidget {
     return IconButton(
       onPressed: onPressed,
       icon: Icon(icon, size: 24),
-      color: const Color(0xFFF8FAFC),
+      color: Theme.of(context).colorScheme.onSurface,
       disabledColor: const Color(0xFF475569),
       tooltip: label,
       constraints: const BoxConstraints(minWidth: 44, minHeight: 44),

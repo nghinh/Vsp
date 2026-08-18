@@ -169,7 +169,7 @@ class _RoundReviewScreenState extends State<RoundReviewScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Shot Analytics',
+                    AppLocalizations.of(context).shotAnalyticsTitle,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 16),
@@ -211,7 +211,7 @@ class _RoundHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  metrics.courseName ?? 'Unknown Course',
+                  metrics.courseName ?? AppLocalizations.of(context).commonUnknownCourse,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                     fontWeight: FontWeight.bold,
@@ -233,7 +233,7 @@ class _RoundHeader extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                'Generated',
+                AppLocalizations.of(context).commonGenerated,
                 style: TextStyle(
                   fontSize: 10,
                   color: Theme.of(

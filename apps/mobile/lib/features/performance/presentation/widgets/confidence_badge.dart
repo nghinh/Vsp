@@ -6,6 +6,7 @@
 // Accessibility: uses icon + text + color, not color alone.
 
 import 'package:flutter/material.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
@@ -31,7 +32,7 @@ class ConfidenceBadge extends StatelessWidget {
     final brightness = colorScheme.brightness;
     final isDark = brightness == Brightness.dark;
 
-    final (icon, color, bgColor, labelText, description) = _styleFor(isDark);
+    final (icon, color, bgColor, labelText, description) = _styleFor(context);
     final iconWidget = Icon(icon, size: compact ? 14 : 16, color: color);
 
     if (compact) {
@@ -106,21 +107,25 @@ class ConfidenceBadge extends StatelessWidget {
     );
   }
 
-  (IconData, Color, Color, String, String) _styleFor(bool isDark) {
+  (IconData, Color, Color, String, String) _styleFor(BuildContext context) {
+    // Two of these are chart blues with no role in the scheme, and they do
+    // keep a real light/dark pair. Read the brightness off the theme rather
+    // than have every caller carry a flag beside the context it already has.
+    final isDark = Theme.of(context).colorScheme.brightness == Brightness.dark;
     switch (level) {
       case ConfidenceLevel.insufficient:
         return (
           Icons.warning_amber_rounded,
-          isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
-          isDark ? const Color(0xFFF87171) : const Color(0xFFDC2626),
+          Theme.of(context).colorScheme.error,
+          Theme.of(context).colorScheme.error,
           'Insufficient',
           'Not enough shots to provide reliable statistics.',
         );
       case ConfidenceLevel.low:
         return (
           Icons.info_outline,
-          isDark ? const Color(0xFFFBBF24) : const Color(0xFFF97316),
-          isDark ? const Color(0xFFFBBF24) : const Color(0xFFF97316),
+          Theme.of(context).colorScheme.secondary,
+          Theme.of(context).colorScheme.secondary,
           'Low',
           'Limited data — statistics may vary significantly.',
         );
@@ -135,8 +140,8 @@ class ConfidenceBadge extends StatelessWidget {
       case ConfidenceLevel.high:
         return (
           Icons.verified,
-          isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
-          isDark ? const Color(0xFF34D399) : const Color(0xFF059669),
+          isDark ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary,
+          isDark ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary,
           'High',
           'Robust data — statistics are highly reliable.',
         );

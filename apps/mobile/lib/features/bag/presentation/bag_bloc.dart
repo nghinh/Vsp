@@ -301,7 +301,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         activeBag: activeBag,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: result.wasQueued ? 'Bag saved offline' : null,
+        message: result.wasQueued ? AppMessages.bagSavedOffline : null,
       ),
     );
   }
@@ -328,7 +328,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         activeBag: activeBag,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: result.wasQueued ? 'Bag saved offline' : null,
+        message: result.wasQueued ? AppMessages.bagSavedOffline : null,
       ),
     );
   }
@@ -377,7 +377,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         activeBag: activeBag,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: result.wasQueued ? 'Active bag saved offline' : null,
+        message: result.wasQueued ? AppMessages.bagActiveSavedOffline : null,
       ),
     );
   }
@@ -438,7 +438,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         hasMinimumClubData: hasMinData,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: result.wasQueued ? 'Club saved offline' : null,
+        message: result.wasQueued ? AppMessages.clubSavedOffline : null,
       ),
     );
   }
@@ -465,7 +465,7 @@ class BagBloc extends Bloc<BagEvent, BagState> {
         hasMinimumClubData: hasMinData,
         hasPendingSync: hasPending,
         isSyncing: false,
-        message: result.wasQueued ? 'Club saved offline' : null,
+        message: result.wasQueued ? AppMessages.clubSavedOffline : null,
       ),
     );
   }

@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_theme/mobile_theme.dart';
 
 import 'core/locale/locale_cubit.dart';
+import 'core/theme/theme_mode_cubit.dart';
 import 'application/sync/offline_sync_runner.dart';
 import 'core/network/api_client.dart';
 import 'core/network/vsp_endpoints.dart';
@@ -48,6 +50,7 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
   late final AuthBloc _authBloc;
   late final bool _ownsAuthBloc;
   late final LocaleCubit _localeCubit;
+  late final ThemeModeCubit _themeModeCubit;
 
   /// Drains anything the last round left in the offline queue.
   ///
@@ -64,6 +67,7 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
     _authBloc = widget.authBloc ?? _createAuthBloc();
     _authBloc.add(const SessionRestoreRequested());
     _localeCubit = LocaleCubit()..load();
+    _themeModeCubit = ThemeModeCubit()..load();
     _startSync();
     _loadBasemapConfig();
     WidgetsBinding.instance.addObserver(this);
@@ -130,6 +134,7 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
       _authBloc.close();
     }
     _localeCubit.close();
+    _themeModeCubit.close();
     super.dispose();
   }
 
@@ -139,6 +144,7 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
       providers: [
         BlocProvider.value(value: _authBloc),
         BlocProvider.value(value: _localeCubit),
+        BlocProvider.value(value: _themeModeCubit),
       ],
       // The locale is app-wide state: rebuilding MaterialApp on change swaps
       // every localized string, including Material's own widgets.
@@ -147,30 +153,56 @@ class _VspAppState extends State<VspApp> with WidgetsBindingObserver {
         listener: (_, __) => _loadBasemapConfig(),
         child: BlocBuilder<LocaleCubit, Locale?>(
           builder: (context, locale) {
-            return MaterialApp(
-              onGenerateTitle: (context) =>
-                  AppLocalizations.of(context).appTitle,
-              debugShowCheckedModeBanner: false,
-              theme: _buildVspTheme(),
-              locale: locale,
-              supportedLocales: kSupportedLocales,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              // Above the Navigator, so every pushed route inherits it.
-              //
-              // A route pushed with Navigator.push is a child of the Navigator,
-              // not of the widget that pushed it, so wrapping HomeScreen would
-              // leave the bag, the club form, the shot list and the statistics
-              // screens with no ProfileBloc in scope — which is exactly where
-              // they were. DistanceUnitScope falls back to metres when it finds
-              // none, so a golfer who saved yards saw yards on the map and
-              // metres everywhere else, with nothing on screen to explain why.
-              //
-              // The bloc is created on first read, so the login screen — which
-              // reads no distances and has no session to fetch a profile with —
-              // never builds one.
-              builder: (context, child) =>
-                  ProfileScope(child: child ?? const SizedBox.shrink()),
-              home: const AuthStartupGate(),
+            return BlocBuilder<ThemeModeCubit, ThemeMode>(
+              builder: (context, themeMode) => MaterialApp(
+                onGenerateTitle: (context) =>
+                    AppLocalizations.of(context).appTitle,
+                debugShowCheckedModeBanner: false,
+                // The theme the token package builds, rather than one this file
+                // built for itself.
+                //
+                // `_buildVspTheme` used to live at the bottom of this file: a
+                // `ColorScheme.dark` of hex literals, owing nothing to
+                // packages/mobile-theme and referencing none of it. So the token
+                // file was not the app's palette — it was a second palette that
+                // happened to compile. Work on it landed nowhere: the contrast
+                // pass over `vsp_color.dart`, measured and covered by seven
+                // passing tests, changed not one pixel on a golfer's phone,
+                // because the phone never loaded the file those tests measure.
+                //
+                // Both themes are handed over, so the light palette is built and
+                // its tokens are real. What is not handed over yet is the
+                // decision to use it — see themeMode.
+                theme: VspTheme.light(),
+                darkTheme: VspTheme.dark(),
+                // The golfer's choice, from Settings.
+                //
+                // This was pinned to `ThemeMode.dark` while several hundred
+                // widgets named the dark tokens directly — a light theme would
+                // have gone light behind text that stayed dark-mode pale. They
+                // all read the theme now, so the decision is no longer the
+                // app's to make. Defaults to dark; see ThemeModeCubit.
+                themeMode: themeMode,
+                locale: locale,
+                supportedLocales: kSupportedLocales,
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                // Above the Navigator, so every pushed route inherits it.
+                //
+                // A route pushed with Navigator.push is a child of the Navigator,
+                // not of the widget that pushed it, so wrapping HomeScreen would
+                // leave the bag, the club form, the shot list and the statistics
+                // screens with no ProfileBloc in scope — which is exactly where
+                // they were. DistanceUnitScope falls back to metres when it finds
+                // none, so a golfer who saved yards saw yards on the map and
+                // metres everywhere else, with nothing on screen to explain why.
+                //
+                // The bloc is created on first read, so the login screen — which
+                // reads no distances and has no session to fetch a profile with —
+                // never builds one.
+                builder: (context, child) =>
+                    ProfileScope(child: child ?? const SizedBox.shrink()),
+                home: const AuthStartupGate(),
+              ),
             );
           },
         ),
@@ -242,7 +274,7 @@ class _UnconfiguredBuildView extends StatelessWidget {
               const Icon(Icons.cloud_off, size: 48),
               const SizedBox(height: 16),
               Text(
-                'This build has no server configured',
+                AppLocalizations.of(context).appNoServerConfigured,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
@@ -258,40 +290,6 @@ class _UnconfiguredBuildView extends StatelessWidget {
       ),
     );
   }
-}
-
-ThemeData _buildVspTheme() {
-  const scheme = ColorScheme.dark(
-    primary: Color(0xFFFFB599),
-    onPrimary: Color(0xFF5A1C00),
-    secondary: Color(0xFFFFB690),
-    onSecondary: Color(0xFF552100),
-    surface: Color(0xFF0B1326),
-    onSurface: Color(0xFFDAE2FD),
-    error: Color(0xFFFFB4AB),
-    onError: Color(0xFF690005),
-  );
-  return ThemeData(
-    colorScheme: scheme,
-    scaffoldBackgroundColor: scheme.surface,
-    useMaterial3: true,
-    fontFamily: 'Fira Sans',
-    inputDecorationTheme: const InputDecorationTheme(
-      filled: true,
-      fillColor: Color(0xFF2D3449),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)),
-        borderSide: BorderSide.none,
-      ),
-    ),
-    filledButtonTheme: FilledButtonThemeData(
-      style: FilledButton.styleFrom(
-        minimumSize: const Size.fromHeight(48),
-        backgroundColor: const Color(0xFFEC6A06),
-        foregroundColor: const Color(0xFF4A1C00),
-      ),
-    ),
-  );
 }
 
 class _SessionStartupView extends StatelessWidget {
@@ -318,7 +316,7 @@ class _SessionStartupView extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Preparing your golf experience',
+                    AppLocalizations.of(context).appPreparing,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.headlineSmall,
                   ),

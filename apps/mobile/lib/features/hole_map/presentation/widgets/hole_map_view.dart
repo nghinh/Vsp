@@ -425,6 +425,16 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// measuring tool, which state their own uncertainty.
   late final bool _drawVectorHole;
 
+  /// Whether a model read these shapes off a photograph.
+  ///
+  /// Not the same question as "are there shapes", and the difference decides
+  /// which sentence is true. A package hole carries a fairway corridor and a
+  /// green extent the importer computed from the hole's two reference points:
+  /// shapes, but derived from coordinates nobody checked, and calling those
+  /// "traced from satellite imagery" would be its own lie. GolfSeg's outlines
+  /// were read off an actual photograph and are a different claim.
+  bool get _shapesWereTraced => widget.state.tracedShapesUnverified;
+
   @override
   Widget build(BuildContext context) {
     // Rebuilds when the imagery provider resolves, which happens after this
@@ -444,6 +454,31 @@ class _HoleMapViewState extends State<HoleMapView> {
   Widget _buildSatelliteMode(BuildContext context) {
     final holeMap = widget.state.holeMap;
     final toggle = _buildBasemapToggle();
+
+    // What these shapes are worth, and only where it is true.
+    //
+    // One banner used to cover both of "we have not digitised this hole" and
+    // "a model digitised it and nobody checked", with the first one's words.
+    // So a hole drawn from traced shapes — eight bunkers, two fairway
+    // segments, a green, every one of them labelled with a distance on the
+    // same screen — carried a notice reading "we have not digitised this
+    // hole". The golfer is looking at the shapes while being told they do not
+    // exist, and the sentence that does matter, that nobody has checked them,
+    // never appears.
+    //
+    // Two different states, two different sentences.
+    final Widget? provenanceNotice;
+    if (!_drawVectorHole && _shapesWereTraced) {
+      provenanceNotice = _TracedShapesNotice(
+        text: AppLocalizations.of(context).mapTracedShapes,
+      );
+    } else if (!_drawVectorHole) {
+      provenanceNotice = NoGeometryBanner(
+        imageryAvailable: _imagery.isAvailable,
+      );
+    } else {
+      provenanceNotice = null;
+    }
 
     return BlocProvider<MeasureCubit>(
       create: (_) => MeasureCubit(
@@ -479,25 +514,56 @@ class _HoleMapViewState extends State<HoleMapView> {
           // The same chips the drawn map carries. On a photograph they are
           // worth more: a golfer can see the sand and not how far it is.
           featureLabels: _featureLabels(),
+          // The same four corners the vector map uses, for the same reason:
+          // this Stack had three things placing themselves and they landed on
+          // each other.
           mapOverlay: Stack(
             children: [
-              if (_drawVectorHole)
-                Align(alignment: Alignment.topRight, child: toggle)
-              else
-                NoGeometryBanner(
-                  trailing: toggle,
-                  imageryAvailable: _imagery.isAvailable,
+              // The switch, and under it the caveat — one band, two rows.
+              //
+              // These were a topLeft column and a topRight column at the same
+              // `top`, and the first photograph ever taken of this screen
+              // showed the sentence running underneath the switch:
+              // "…tellite imagery" and "human" printed behind two opaque
+              // buttons. Corners keep apart the things stacked *inside* one
+              // corner; nothing stopped a wide left column reaching across
+              // into the right one, and this sentence is wide in every
+              // language.
+              //
+              // Side by side in a Row was the first repair and it was worse:
+              // sharing one line, the switch was squeezed to "Cour… Meas…" at
+              // ordinary text size. A control that cannot be read is a worse
+              // trade than a caveat that takes an extra line, and the map
+              // below here is empty — so neither has to give anything up.
+              //
+              // A Column also bounds the switch's width, which is what makes
+              // the Flexible inside it work: laid out unbounded it sized to
+              // the 539dp its 2×-scaled labels wanted and ran off the screen.
+              Positioned(
+                key: const Key('hole-map-top-band'),
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 12,
+                right: 12,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(alignment: Alignment.centerRight, child: toggle),
+                    if (provenanceNotice != null) ...[
+                      const SizedBox(height: 8),
+                      provenanceNotice,
+                    ],
+                  ],
                 ),
+              ),
+
               // The suggested way round the hole. Sits over the photograph
               // because that is where a golfer can check it against the pond
               // they can see, and because the points it drops are the same
               // points the tool already lets them drag.
-              Align(
+              _MapCorner(
                 alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12, bottom: 96),
-                  child: ClubPlanButton(clubs: widget.clubs),
-                ),
+                bottom: 12,
+                children: [ClubPlanButton(clubs: widget.clubs)],
               ),
             ],
           ),
@@ -673,13 +739,21 @@ class _HoleMapViewState extends State<HoleMapView> {
             ],
           ),
 
-          // Satellite is always one tap away, centred where neither thumb
-          // covers a distance.
-          Positioned(
-            left: 0,
-            right: 0,
+          // Satellite is always one tap away.
+          //
+          // It used to be centred at the foot of the map, and a centred
+          // control is the one thing the corner system cannot see: on Long
+          // Biên's 10th it landed across the traced-shapes caveat sitting in
+          // the bottom-left column, hiding the sentence that says the shapes
+          // underneath were read by a model. Centring bought nothing — the
+          // toggle is not a distance and is pressed once a round, if that.
+          //
+          // In the corner instead, above the layer control, where the column
+          // guarantees it cannot cover anything.
+          _MapCorner(
+            alignment: Alignment.bottomRight,
             bottom: 72,
-            child: Center(child: _buildBasemapToggle()),
+            children: [_buildBasemapToggle()],
           ),
       ],
     );
@@ -763,6 +837,13 @@ class _MapCorner extends StatelessWidget {
   /// Gap between stacked panels. Wide enough that two dark chips read as two
   /// things in bright light, where their edges wash out.
   static const double _gap = 8;
+
+  // What this does not promise: that a corner stays out of the opposite
+  // corner. Each column is placed against its own edge and sized by its
+  // children, so a wide panel on the left will happily print underneath one on
+  // the right at the same height — which is how a traced-shapes caveat ended
+  // up behind the map/measure switch. Two things that must share a horizontal
+  // band belong in a Row, not in two corners.
 
   @override
   Widget build(BuildContext context) {

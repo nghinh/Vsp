@@ -42,6 +42,13 @@ import 'package:vsp_mobile/presentation/screens/score/scorecard_screen.dart';
 
 /// No GPS, which is the Conditions tab's honest empty state.
 class _FakeLocationService implements LocationService {
+  /// How many times the screen has asked where we are.
+  ///
+  /// The Conditions tab resolved the position once in initState. A golfer who
+  /// read its "turn location on" message, left for iOS Settings and came back
+  /// found the same message waiting, because nothing ever asked a second time.
+  int fixesRequested = 0;
+
   @override
   Stream<QualifiedLocation> get locationStream => const Stream.empty();
 
@@ -49,8 +56,10 @@ class _FakeLocationService implements LocationService {
   QualifiedLocation? get lastLocation => null;
 
   @override
-  Future<QualifiedLocation> getCurrentLocation() async =>
-      QualifiedLocation.unavailable();
+  Future<QualifiedLocation> getCurrentLocation() async {
+    fixesRequested++;
+    return QualifiedLocation.unavailable();
+  }
 
   @override
   void start() {}
@@ -117,6 +126,7 @@ Future<AppLocalizations> _pump(
   String? packageId = 'package-1',
   int? par = _par,
   SatelliteImageryConfig? imageryConfig,
+  _FakeLocationService? locationService,
 }) async {
   // A phone-shaped surface. The satellite view stacks a banner, a map and the
   // measuring panel, which does not fit the 800×600 test default.
@@ -137,7 +147,7 @@ Future<AppLocalizations> _pump(
         holeNumber: _holeNumber,
         par: par,
         yardage: _yardage,
-        locationService: _FakeLocationService(),
+        locationService: locationService ?? _FakeLocationService(),
         holeIds: const ['7', '8', '9'],
         playerIds: const ['me'],
         playerNames: const {'me': 'Nghi'},
@@ -349,6 +359,29 @@ void main() {
 
       _expectRendered(l10n.activeRoundConditionsNoLocationHeading);
       _expectRendered(l10n.activeRoundConditionsNoLocationMessage);
+    });
+
+    testWidgets('and asks again when the golfer says to', (tester) async {
+      // The message names a thing to go and do — turn location on. Coming back
+      // having done it has to change something, and a screen that resolved the
+      // position once in initState never looks again.
+      final gps = _FakeLocationService();
+      final l10n = await _pump(tester, const Locale('en'), locationService: gps);
+
+      await _openTab(tester, ActiveRoundTab.conditions);
+      await tester.pump();
+      final asked = gps.fixesRequested;
+
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.commonTryAgain),
+      );
+      await tester.pump();
+
+      expect(
+        gps.fixesRequested,
+        greaterThan(asked),
+        reason: 'Try Again should re-ask for a fix, not just rebuild',
+      );
     });
 
     testWidgets('an unknown par is omitted, not defaulted', (tester) async {

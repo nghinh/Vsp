@@ -112,6 +112,52 @@ void main() {
     });
   });
 
+  group('dark mode, on the card rather than the page', () {
+    // The surface most of this app's text actually sits on. The group below
+    // measures against the page — but a status word lives on a card, and the
+    // card is four steps lighter than the page, so passing on one says
+    // nothing about the other.
+    //
+    // This is not hypothetical. Four screens built their own palette out of
+    // raw hex instead of the tokens, and two of those colours failed here in
+    // the only mode this app has ever run in:
+    //
+    //   #DC2626 error red   on #1E293B  =  3.03:1   (needs 4.5)
+    //   #16A34A success grn on #1E293B  =  4.44:1   (needs 4.5)
+    //
+    // Nobody caught it because the contrast file measured light mode, which
+    // the app does not render, and the page colour, which those words are not
+    // on. The tokens they were replaced with clear it with room: 5.93:1 and
+    // 9.60:1.
+    const card = VspColorDark.surface;
+
+    test('every colour that carries meaning is readable on a card', () {
+      for (final entry in {
+        'primary': VspColorDark.primary,
+        'secondary': VspColorDark.secondary,
+        'accent': VspColorDark.accent,
+        'destructive': VspColorDark.destructive,
+        'textPrimary': VspColorDark.textPrimary,
+        'textSecondary': VspColorDark.textSecondary,
+      }.entries) {
+        expect(
+          contrast(entry.value, card),
+          greaterThanOrEqualTo(4.5),
+          reason: '${entry.key} on the card surface',
+        );
+      }
+    });
+
+    test('the quiet tier still clears the graphic floor', () {
+      // Units, timestamps, hints. Deliberately below the text threshold, and
+      // it must not fall below 3:1 as well.
+      expect(
+        contrast(VspColorDark.textTertiary, card),
+        greaterThanOrEqualTo(3.0),
+      );
+    });
+  });
+
   group('dark mode, which was already right', () {
     const page = VspColorDark.background;
 

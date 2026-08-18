@@ -229,7 +229,7 @@ class _NoWatchPairedTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Pair Apple Watch',
+                    AppLocalizations.of(context).watchPairTitle,
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
@@ -357,7 +357,7 @@ class _InfoSection extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               Text(
-                'About Watch Packages',
+                AppLocalizations.of(context).watchPackagesAbout,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 13,

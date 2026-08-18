@@ -6,6 +6,7 @@
 // Displays: carry avg/median, total avg/median, variability (stdDev).
 
 import 'package:flutter/material.dart';
+import 'package:vsp_mobile/core/l10n/relative_time.dart';
 
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'sample_size_badge.dart';
@@ -114,14 +115,14 @@ class ClubStatsCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Performance Statistics',
+                AppLocalizations.of(context).performanceStatsHeading,
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                _computedAtText(),
+                _computedAtText(context),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -189,13 +190,18 @@ class ClubStatsCard extends StatelessWidget {
     );
   }
 
-  String _computedAtText() {
-    if (stats.computedAt == null) return 'Not yet computed';
-    final diff = DateTime.now().difference(stats.computedAt!);
-    if (diff.inMinutes < 1) return 'Computed just now';
-    if (diff.inMinutes < 60) return 'Computed ${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return 'Computed ${diff.inHours}h ago';
-    return 'Computed ${diff.inDays}d ago';
+  /// When these figures were last computed.
+  ///
+  /// Was a private relative-time formatter emitting English — "Computed 3h
+  /// ago" — beside a Vietnamese screen. `RelativeTime` already does this
+  /// against l10n, handles clock skew, and is what every other timestamp in
+  /// the app goes through; a second implementation is a second thing to
+  /// translate and a second thing to get wrong.
+  String _computedAtText(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final computedAt = stats.computedAt;
+    if (computedAt == null) return l10n.performanceNotComputed;
+    return RelativeTime.format(l10n, computedAt);
   }
 
   String _semanticLabel(DistanceUnit unit) {

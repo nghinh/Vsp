@@ -131,7 +131,11 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
 
       // Empty state shows no shot data message
-      expect(find.text('No Shot Data'), findsOneWidget);
+      // Against the translation, not against English. Pinning the literal
+      // here is how a string ends up unable to be translated without
+      // "breaking" a test.
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      expect(find.text(l10n.strokesGainedNoData), findsOneWidget);
     });
 
     testWidgets('app bar shows title', (tester) async {
@@ -214,7 +218,8 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      expect(find.text('Overall Strokes Gained'), findsOneWidget);
+      final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+      expect(find.text(l10n.strokesGainedOverall), findsOneWidget);
     });
 
     // ─── Limitations Banner Tests ─────────────────────────────────────────────

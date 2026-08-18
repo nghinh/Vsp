@@ -75,7 +75,7 @@ class _RequestTypeTile extends StatelessWidget {
               color: isSelected
                   ? (isDestructive
                         ? (colorScheme.brightness == Brightness.dark
-                              ? VspColorDark.destructive
+                              ? Theme.of(context).colorScheme.error
                               : VspColorLight.destructive)
                         : colorScheme.primary)
                   : colorScheme.outlineVariant,
@@ -85,7 +85,7 @@ class _RequestTypeTile extends StatelessWidget {
             color: isSelected
                 ? (isDestructive
                       ? (colorScheme.brightness == Brightness.dark
-                                ? VspColorDark.destructive
+                                ? Theme.of(context).colorScheme.error
                                 : VspColorLight.destructive)
                             .withOpacity(0.05)
                       : colorScheme.primary.withOpacity(0.05))
@@ -101,7 +101,7 @@ class _RequestTypeTile extends StatelessWidget {
                   color: isSelected
                       ? (isDestructive
                             ? (colorScheme.brightness == Brightness.dark
-                                  ? VspColorDark.destructive
+                                  ? Theme.of(context).colorScheme.error
                                   : VspColorLight.destructive)
                             : colorScheme.primary)
                       : colorScheme.surfaceContainerHighest,
@@ -130,7 +130,7 @@ class _RequestTypeTile extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                         color: isDestructive && isSelected
                             ? (colorScheme.brightness == Brightness.dark
-                                  ? VspColorDark.destructive
+                                  ? Theme.of(context).colorScheme.error
                                   : VspColorLight.destructive)
                             : null,
                       ),
@@ -152,7 +152,7 @@ class _RequestTypeTile extends StatelessWidget {
                   Icons.check_circle,
                   color: isDestructive
                       ? (colorScheme.brightness == Brightness.dark
-                            ? VspColorDark.destructive
+                            ? Theme.of(context).colorScheme.error
                             : VspColorLight.destructive)
                       : colorScheme.primary,
                   size: VspIconSize.md,

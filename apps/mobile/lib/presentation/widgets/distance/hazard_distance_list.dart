@@ -61,7 +61,7 @@ class HazardDistanceList extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
           child: Text(
-            'HAZARDS',
+            AppLocalizations.of(context).hazardsHeading,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,

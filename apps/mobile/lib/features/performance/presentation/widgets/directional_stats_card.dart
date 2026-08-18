@@ -39,7 +39,7 @@ class DirectionalStatsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Directional Deviation',
+              AppLocalizations.of(context).directionalDeviation,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: colorScheme.onSurface,

@@ -176,7 +176,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
 
             // Penalty markers
             Text(
-              'Shot Markers',
+              AppLocalizations.of(context).shotMarkers,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -221,7 +221,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Club',
+          AppLocalizations.of(context).shotClub,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -279,7 +279,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Result',
+          AppLocalizations.of(context).shotResult,
           style: theme.textTheme.labelLarge?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -333,7 +333,7 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
                   onPressed: _isDeleting ? null : _confirmDelete,
                   icon: Icon(Icons.delete_outline, color: colorScheme.error),
                   label: Text(
-                    'Delete',
+                    AppLocalizations.of(context).commonDelete,
                     style: TextStyle(color: colorScheme.error),
                   ),
                   style: OutlinedButton.styleFrom(
@@ -733,7 +733,7 @@ class _MergeShotSelector extends StatelessWidget {
 
             // Title
             Text(
-              'Merge Shot Into',
+              AppLocalizations.of(context).shotMergeInto,
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),

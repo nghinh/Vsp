@@ -186,7 +186,7 @@ class _DrivingZoneScreenState extends State<DrivingZoneScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Landing Zones',
+                  AppLocalizations.of(context).drivingZonesHeading,
                   style: Theme.of(context).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 16),
