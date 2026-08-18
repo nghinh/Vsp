@@ -35,6 +35,7 @@ import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
 import '../../../domain/models/player.dart';
 import '../../../domain/models/course_package_manifest.dart';
+import '../../../domain/services/package_freshness.dart';
 import '../../../application/sync/round_queue_sync.dart';
 import '../../../core/storage/round_setup_store.dart';
 import '../../../core/storage/round_sync_store.dart';
@@ -344,19 +345,23 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       final latest = state;
       if (latest is! RoundSetupReady) return;
 
-      emit(
-        latest.copyWith(
-          layouts: layouts,
-          tees: tees,
-          // The đường the golfer actually picked, not the first alphabetically.
-          selectedLayoutId: layouts.any((l) => l.id == courseId)
-              ? courseId
-              : layouts.first.id,
-          clearSecondLayout: true,
-          selectedTeeId: tees.isNotEmpty ? tees.first.id : null,
-          holePars: holePars,
-        ),
+      // A club with one way to play it is not asking a question, so answer it
+      // and move on. A club with several is, and the answer is the golfer's:
+      // filling it in from the course id the search or the history happened to
+      // carry produced a nine-hole round nobody chose. See
+      // `RoundSetupReady.awaitingPlayOption`.
+      final withLayouts = latest.copyWith(
+        layouts: layouts,
+        tees: tees,
+        selectedLayoutId: layouts.any((l) => l.id == courseId)
+            ? courseId
+            : layouts.first.id,
+        clearSecondLayout: true,
+        selectedTeeId: tees.isNotEmpty ? tees.first.id : null,
+        holePars: holePars,
       );
+
+      emit(withLayouts.askForPlayOption());
     } catch (_) {
       // Course detail unavailable (offline / server error) — the golfer can
       // still start the round; the scorecard falls back to par 4 per hole.
@@ -561,11 +566,13 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
       // tells a golfer what to do. Two segments at most, so the extra check
       // costs one file-existence test.
       final perSegment = <SegmentPackage>[];
+      final heldVersions = <int, String?>{};
       OfflineReadiness? firstProblem;
       int? missingId;
       for (final segment in segments) {
         final result =
             await _packageReadinessService.getOfflineReadiness(segment);
+        heldVersions[segment] = result.manifest?.version;
         perSegment.add(
           SegmentPackage(
             courseId: segment,
@@ -587,7 +594,40 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           .getOfflineReadiness(segments.first);
       final missing = missingId ?? segments.first;
 
-      final status = _mapReadinessToStatus(readiness.reason);
+      var status = _mapReadinessToStatus(readiness.reason);
+      var staleId = missing;
+
+      // A package that is present, unexpired and intact can still be the wrong
+      // one.
+      //
+      // Reported from the course: the map drew a tee and a green and nothing
+      // else, and the layer count read "2". The server had twenty-one features
+      // for that hole — ponds, bunkers, the fairway — published after the club
+      // was re-traced. The phone was holding the package it downloaded before
+      // any of that existed, and every check here passed, because none of them
+      // had ever asked the server what the current version is. So the golfer
+      // was shown an empty hole by an app reporting itself ready for it.
+      if (status == PackageStatus.valid) {
+        for (final segment in segments) {
+          final held = heldVersions[segment];
+          if (held == null) continue;
+          try {
+            final latest =
+                (await _courseSearchApi.getCourseSearchResult(segment))
+                    .latestPackageVersion;
+            // The same rule the course list draws its badge from, so the two
+            // screens cannot disagree about the same package.
+            if (packageIsOutdated(held: held, latest: latest)) {
+              status = PackageStatus.outdated;
+              staleId = segment;
+              break;
+            }
+          } catch (_) {
+            // Offline, or the course is not on the server. What is on the
+            // phone is then the best there is, and it is playable.
+          }
+        }
+      }
 
       // Whether there is anything to download at all. "Not downloaded" is
       // only news where the server publishes a package; on the courses that
@@ -617,7 +657,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
             reason: readiness.reason.name,
             manifestVersion: readiness.manifest?.version,
             expiresAt: readiness.expiresAt,
-            missingCourseId: missing,
+            missingCourseId: staleId,
             // Only where there is more than one, because a single đường is
             // already fully described by the status above it.
             segments: perSegment.length > 1 ? perSegment : const [],
@@ -683,6 +723,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         return PackageReadinessReason.expired;
       case PackageStatus.notDownloaded:
         return PackageReadinessReason.notDownloaded;
+      // This one carries no "play anyway" button, so it never reaches here.
+      // The package on the phone is intact and in date; it is simply older
+      // than the course, which the readiness vocabulary has no word for.
+      case PackageStatus.outdated:
+        return PackageReadinessReason.ok;
     }
   }
 

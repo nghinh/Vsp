@@ -13,6 +13,7 @@ import '../../../../domain/models/data_freshness.dart';
 import 'download_state_badge.dart';
 import 'freshness_badge.dart';
 import 'verification_badge.dart';
+import 'package:vsp_mobile/domain/services/package_freshness.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
@@ -292,8 +293,7 @@ class CourseCard extends StatelessWidget {
       // when it is opened.
       return DownloadState.notDownloaded;
     }
-    final theirs = course.latestPackageVersion;
-    if (theirs != null && theirs != mine) {
+    if (packageIsOutdated(held: mine, latest: course.latestPackageVersion)) {
       return DownloadState.updateAvailable;
     }
     // Held, and current as far as anyone here knows. A server that did not say

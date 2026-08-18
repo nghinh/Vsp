@@ -126,6 +126,31 @@ class PackageStatusBanner extends StatelessWidget {
               : null,
         );
 
+      // The course changed under a package that is otherwise perfectly good.
+      // Offered, not enforced: the old map still draws, and a golfer standing
+      // on the first tee with one bar of signal should not be made to choose
+      // between waiting for 270KB and playing.
+      case PackageStatus.outdated:
+        return _buildBanner(
+          context: context,
+          icon: Icons.system_update_alt,
+          iconColor: Theme.of(context).colorScheme.primary,
+          label: missingCourseName == null || missingCourseName!.isEmpty
+              ? AppLocalizations.of(context).packageUpdateAvailable
+              : AppLocalizations.of(context)
+                  .packageUpdateAvailableNamed(missingCourseName!),
+          subtitle: AppLocalizations.of(context).packageUpdateAvailableSubtitle,
+          backgroundColor:
+              Theme.of(context).colorScheme.primary.withOpacity(0.12),
+          textColor: Theme.of(context).colorScheme.primary,
+          action: onDownloadPressed != null
+              ? _Action(
+                  label: AppLocalizations.of(context).packageUpdate,
+                  onPressed: onDownloadPressed!,
+                )
+              : null,
+        );
+
       case PackageStatus.expired:
         return _buildBanner(
           context: context,

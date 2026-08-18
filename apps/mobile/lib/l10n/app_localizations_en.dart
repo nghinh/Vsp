@@ -784,6 +784,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roundSetupSearchAll => 'Search all courses';
 
   @override
+  String get roundSetupLayoutPrompt =>
+      'Choose the round — this club has several nines';
+
+  @override
   String get roundSetupLayout => 'Layout';
 
   @override
@@ -909,6 +913,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get packageCorruptedSubtitle =>
       'Please re-download the course package';
+
+  @override
+  String get packageUpdateAvailable => 'Update available';
+
+  @override
+  String packageUpdateAvailableNamed(String course) {
+    return 'New course data for $course';
+  }
+
+  @override
+  String get packageUpdateAvailableSubtitle =>
+      'The copy on this phone is missing water, bunkers and fairways';
+
+  @override
+  String get packageUpdate => 'Update';
 
   @override
   String get packageRedownload => 'Re-download';
@@ -3101,9 +3120,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get packageNotAvailable =>
       'This course is not yet available for offline download.';
-
-  @override
-  String get packageUpdateAvailable => 'Update available';
 
   @override
   String packageDaysAgo(int days) {

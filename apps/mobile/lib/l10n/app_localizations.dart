@@ -1574,6 +1574,12 @@ abstract class AppLocalizations {
   /// **'Search all courses'**
   String get roundSetupSearchAll;
 
+  /// No description provided for @roundSetupLayoutPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the round — this club has several nines'**
+  String get roundSetupLayoutPrompt;
+
   /// No description provided for @roundSetupLayout.
   ///
   /// In en, this message translates to:
@@ -1813,6 +1819,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please re-download the course package'**
   String get packageCorruptedSubtitle;
+
+  /// A newer course package version exists on the server.
+  ///
+  /// In en, this message translates to:
+  /// **'Update available'**
+  String get packageUpdateAvailable;
+
+  /// No description provided for @packageUpdateAvailableNamed.
+  ///
+  /// In en, this message translates to:
+  /// **'New course data for {course}'**
+  String packageUpdateAvailableNamed(String course);
+
+  /// No description provided for @packageUpdateAvailableSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The copy on this phone is missing water, bunkers and fairways'**
+  String get packageUpdateAvailableSubtitle;
+
+  /// No description provided for @packageUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get packageUpdate;
 
   /// No description provided for @packageRedownload.
   ///
@@ -5695,12 +5725,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This course is not yet available for offline download.'**
   String get packageNotAvailable;
-
-  /// A newer course package version exists on the server.
-  ///
-  /// In en, this message translates to:
-  /// **'Update available'**
-  String get packageUpdateAvailable;
 
   /// How long ago the package was updated.
   ///

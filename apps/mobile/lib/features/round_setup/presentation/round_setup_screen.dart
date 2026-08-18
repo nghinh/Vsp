@@ -1014,6 +1014,19 @@ class _LayoutSelector extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(l10n.roundSetupLayout, style: theme.textTheme.labelLarge),
+        // Nothing is selected until the golfer selects it, so the heading has
+        // to say what is being asked. Before, the form arrived with the đường
+        // from the last round already ticked and the question read as an
+        // answer.
+        if (state.awaitingPlayOption) ...[
+          const SizedBox(height: 2),
+          Text(
+            l10n.roundSetupLayoutPrompt,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         // The rounds this club actually offers, worked out in advance. Two
         // dropdowns made the golfer assemble one — and let them assemble

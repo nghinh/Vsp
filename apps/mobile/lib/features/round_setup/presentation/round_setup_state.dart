@@ -32,6 +32,14 @@ enum PackageStatus {
 
   /// Package not downloaded for this course.
   notDownloaded,
+
+  /// A package is here, intact and in date, and the server has a newer one.
+  ///
+  /// Distinct from [expired], which is about the clock: this one is about the
+  /// course changing. Long Biên was re-traced and every hole gained its ponds
+  /// and bunkers; the phones that had already downloaded it kept drawing two
+  /// layers and reported themselves ready.
+  outdated,
 }
 
 /// Package readiness result with reason.
@@ -266,7 +274,10 @@ class RoundSetupReady extends RoundSetupState {
   /// on every course that has no package to acknowledge, which is most of
   /// them.
   bool get canStartRound =>
-      hasCourse && players.isNotEmpty && players.length <= 4;
+      hasCourse &&
+      !awaitingPlayOption &&
+      players.isNotEmpty &&
+      players.length <= 4;
 
   /// True when the banner has something worth saying: a package exists to
   /// download, or one is already here and is stale or broken.
@@ -478,12 +489,38 @@ class RoundSetupReady extends RoundSetupState {
     return first.isNotEmpty && first.first.holeCount < 18 && layouts.length > 1;
   }
 
+  /// True while the club offers several rounds and the golfer has picked none.
+  ///
+  /// Reported from the course: "Vào bắt đầu vòng đấu không thấy hỏi đường".
+  /// Picking Long Biên's Đường A from the recent list used to fill the answer
+  /// in — the đường is the course id the history stored, so the form arrived
+  /// with "Đường A, 9 hố" already selected and nothing left to answer. A
+  /// golfer who was there to play A+B started nine holes and found out at the
+  /// tenth tee.
+  ///
+  /// The club has ten ways to be played. Choosing one of them for the golfer
+  /// because it was the one they last played is a guess, and a guess that is
+  /// invisible is the expensive kind. So nothing is chosen, Start is held, and
+  /// the question gets asked.
+  bool get awaitingPlayOption =>
+      playOptions.length > 1 && selectedPlayOption == null;
+
+  /// The same form with the play option unanswered, where there is a question.
+  ///
+  /// A club that can only be played one way keeps its answer — presenting a
+  /// single radio button and refusing to start until it is pressed is a form
+  /// asking the golfer to agree with it.
+  RoundSetupReady askForPlayOption() => playOptions.length > 1
+      ? copyWith(clearLayout: true, clearSecondLayout: true)
+      : this;
+
   RoundSetupReady copyWith({
     int? courseId,
     String? courseName,
     String? packageId,
     List<LayoutOption>? layouts,
     int? selectedLayoutId,
+    bool clearLayout = false,
     int? selectedSecondLayoutId,
     bool clearSecondLayout = false,
     List<TeeOption>? tees,
@@ -514,7 +551,9 @@ class RoundSetupReady extends RoundSetupState {
       courseName: courseName ?? this.courseName,
       packageId: packageId ?? this.packageId,
       layouts: layouts ?? this.layouts,
-      selectedLayoutId: selectedLayoutId ?? this.selectedLayoutId,
+      selectedLayoutId: clearLayout
+          ? null
+          : (selectedLayoutId ?? this.selectedLayoutId),
       selectedSecondLayoutId: clearSecondLayout
           ? null
           : (selectedSecondLayoutId ?? this.selectedSecondLayoutId),

@@ -785,6 +785,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get roundSetupSearchAll => 'Tìm tất cả sân golf';
 
   @override
+  String get roundSetupLayoutPrompt =>
+      'Chọn vòng chơi — sân này có nhiều đường';
+
+  @override
   String get roundSetupLayout => 'Đường';
 
   @override
@@ -909,6 +913,21 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get packageCorruptedSubtitle => 'Vui lòng tải lại gói dữ liệu sân';
+
+  @override
+  String get packageUpdateAvailable => 'Có bản cập nhật';
+
+  @override
+  String packageUpdateAvailableNamed(String course) {
+    return 'Đã có bản dữ liệu mới cho $course';
+  }
+
+  @override
+  String get packageUpdateAvailableSubtitle =>
+      'Bản đang có trên máy vẽ thiếu hồ, bunker và fairway';
+
+  @override
+  String get packageUpdate => 'Cập nhật';
 
   @override
   String get packageRedownload => 'Tải lại';
@@ -3103,9 +3122,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get packageNotAvailable =>
       'Sân này chưa có gói dữ liệu để tải ngoại tuyến.';
-
-  @override
-  String get packageUpdateAvailable => 'Có bản cập nhật';
 
   @override
   String packageDaysAgo(int days) {

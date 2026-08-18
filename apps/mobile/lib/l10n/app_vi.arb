@@ -246,6 +246,7 @@
   "roundSetupRecent": "Gần đây",
   "roundSetupNoCoursesYet": "Chưa có sân gần bạn hoặc sân đã chơi — hãy tìm sân.",
   "roundSetupSearchAll": "Tìm tất cả sân golf",
+  "roundSetupLayoutPrompt": "Chọn vòng chơi — sân này có nhiều đường",
   "roundSetupLayout": "Đường",
   "roundSetupLayoutHoles": "{count} hố",
   "@roundSetupLayoutHoles": {
@@ -294,6 +295,13 @@
   "packagePlayAnyway": "Vẫn chơi",
   "packageCorrupted": "Dữ liệu sân bị hỏng",
   "packageCorruptedSubtitle": "Vui lòng tải lại gói dữ liệu sân",
+  "packageUpdateAvailable": "Đã có bản dữ liệu sân mới",
+  "packageUpdateAvailableNamed": "Đã có bản dữ liệu mới cho {course}",
+  "@packageUpdateAvailableNamed": {
+    "placeholders": { "course": { "type": "String" } }
+  },
+  "packageUpdateAvailableSubtitle": "Bản đang có trên máy vẽ thiếu hồ, bunker và fairway",
+  "packageUpdate": "Cập nhật",
   "packageRedownload": "Tải lại",
   "roundSetupRoundStartedAt": "Đã bắt đầu vòng đấu tại {course}",
   "roundSetupCourseTapToChange": "Sân: {course}. Chạm để đổi.",

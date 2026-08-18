@@ -613,6 +613,7 @@
   "roundSetupRecent": "Recent",
   "roundSetupNoCoursesYet": "No nearby or recent courses yet — search for one.",
   "roundSetupSearchAll": "Search all courses",
+  "roundSetupLayoutPrompt": "Choose the round — this club has several nines",
   "roundSetupLayout": "Layout",
   "roundSetupLayoutHoles": "{count} holes",
   "@roundSetupLayoutHoles": {
@@ -675,6 +676,13 @@
   "packagePlayAnyway": "Play Anyway",
   "packageCorrupted": "Course data is corrupted",
   "packageCorruptedSubtitle": "Please re-download the course package",
+  "packageUpdateAvailable": "New course data available",
+  "packageUpdateAvailableNamed": "New course data for {course}",
+  "@packageUpdateAvailableNamed": {
+    "placeholders": { "course": { "type": "String" } }
+  },
+  "packageUpdateAvailableSubtitle": "The copy on this phone is missing water, bunkers and fairways",
+  "packageUpdate": "Update",
   "packageRedownload": "Re-download",
   "roundSetupRoundStartedAt": "Round started at {course}",
   "@roundSetupRoundStartedAt": {
