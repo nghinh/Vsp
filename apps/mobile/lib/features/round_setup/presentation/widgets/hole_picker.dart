@@ -15,8 +15,13 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 class HolePicker extends StatelessWidget {
   final int selectedHole;
   final String? holes; // 'front9' or 'back9' for 9-hole start
-  final ValueChanged<int> onHoleChanged;
-  final ValueChanged<String?>? onHolesChanged;
+  /// The golfer's answer: which hole to start on, and whether they chose a
+  /// front or back nine rather than a hole.
+  ///
+  /// One callback and not two. Two meant two events, and the second was built
+  /// from state captured before the first — so it carried the hole the golfer
+  /// had just changed away from and put it straight back.
+  final void Function(int hole, String? holes) onSelected;
   final int suggestedHole;
 
   /// How many holes this round actually plays.
@@ -30,8 +35,7 @@ class HolePicker extends StatelessWidget {
     super.key,
     required this.selectedHole,
     this.holes,
-    required this.onHoleChanged,
-    this.onHolesChanged,
+    required this.onSelected,
     required this.suggestedHole,
     this.holeCount = 18,
   });
@@ -79,8 +83,7 @@ class HolePicker extends StatelessWidget {
         holeCount: holeCount,
         holes: holes,
         suggestedHole: suggestedHole,
-        onHoleChanged: onHoleChanged,
-        onHolesChanged: onHolesChanged,
+        onSelected: onSelected,
       ),
     );
   }
@@ -215,16 +218,14 @@ class _HolePickerSheet extends StatefulWidget {
   final int holeCount;
   final String? holes;
   final int suggestedHole;
-  final ValueChanged<int> onHoleChanged;
-  final ValueChanged<String?>? onHolesChanged;
+  final void Function(int hole, String? holes) onSelected;
 
   const _HolePickerSheet({
     required this.selectedHole,
     required this.holeCount,
     this.holes,
     required this.suggestedHole,
-    required this.onHoleChanged,
-    this.onHolesChanged,
+    required this.onSelected,
   });
 
   @override
@@ -247,8 +248,22 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    // Scrollable, because this sheet does not fit.
+    //
+    // Found by the tour that photographs a round: on an iPhone 17 Pro the
+    // sheet came back striped — "BOTTOM OVERFLOWED BY 50 PIXELS" — with the
+    // last row of hole numbers under the warning and "Xác nhận" pushed past
+    // the edge of what can be pressed. So the sheet opened, the golfer chose a
+    // hole, and the choice could not be confirmed: the round then started
+    // wherever the form had suggested, which is the 10th after midday.
+    //
+    // Two causes, both fixed here. The grid was given a hard 180 logical
+    // pixels for three rows that need about 184 of them, and the column had no
+    // way to scroll when the total came to more than the sheet's share of the
+    // screen. A taller phone would have hidden this; a shorter one makes it
+    // worse.
     return SafeArea(
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -330,31 +345,30 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
               ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 180,
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 6,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
                   childAspectRatio: 1,
                 ),
-                itemCount: widget.holeCount,
-                itemBuilder: (context, index) {
-                  final hole = index + 1;
-                  return _HoleNumberButton(
-                    hole: hole,
-                    isSelected: _holes == null && _selectedHole == hole,
-                    isSuggested: hole == widget.suggestedHole && _holes == null,
-                    onTap: () {
-                      setState(() {
-                        _holes = null;
-                        _selectedHole = hole;
-                      });
-                    },
-                  );
-                },
-              ),
+              itemCount: widget.holeCount,
+              itemBuilder: (context, index) {
+                final hole = index + 1;
+                return _HoleNumberButton(
+                  hole: hole,
+                  isSelected: _holes == null && _selectedHole == hole,
+                  isSuggested: hole == widget.suggestedHole && _holes == null,
+                  onTap: () {
+                    setState(() {
+                      _holes = null;
+                      _selectedHole = hole;
+                    });
+                  },
+                );
+              },
             ),
             const SizedBox(height: 16),
 
@@ -362,9 +376,19 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
             SizedBox(
               width: double.infinity,
               child: FilledButton(
+                // One report, carrying both halves of the answer.
+                //
+                // These were two calls, and the second undid the first. The
+                // form's `onHolesChanged` rebuilt its event from
+                // `state.startHole` — the state captured when the callback was
+                // created, which is the hole the golfer had just changed away
+                // from. So confirming "the 1st" sent hole 1 and then hole 10
+                // immediately behind it, and the chip went back to reading
+                // "Gợi ý: Hố 10". Choosing a start hole on an eighteen has
+                // therefore never worked; found by the tour, which could not
+                // make a round begin on the 1st however many times it tried.
                 onPressed: () {
-                  widget.onHoleChanged(_selectedHole);
-                  widget.onHolesChanged?.call(_holes);
+                  widget.onSelected(_selectedHole, _holes);
                   Navigator.pop(context);
                 },
                 child: Text(AppLocalizations.of(context).commonConfirm),

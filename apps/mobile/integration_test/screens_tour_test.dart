@@ -18,16 +18,14 @@
 //
 // Screenshots land in /tmp/vsp-tour.
 
-import 'dart:io';
-
-import 'package:crypto/crypto.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vsp_mobile/app.dart';
 import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
+
+import 'tour_support.dart';
 
 /// Which palette to tour in — `dark` (the app's default) or `light`.
 ///
@@ -38,181 +36,6 @@ import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
 /// leave every screen photographed in one palette only, and the screens that
 /// matter most here are the ones held in direct sun during a round.
 const _theme = String.fromEnvironment('VSP_TOUR_THEME', defaultValue: 'dark');
-
-final _outputDir = '/tmp/vsp-tour/$_theme';
-
-late final IntegrationTestWidgetsFlutterBinding binding;
-
-/// Digest of the last frame written, so the tour can tell a step that moved
-/// from a step that did nothing.
-///
-/// Three times today a diagnostic said the tour had advanced when it had not:
-/// blank PNGs from a stuck simulator surface, a describe() that read the
-/// screen *under* an open sheet, and a landmark check where 'Hole' matched
-/// 'Start Hole'. Pixels are the one thing that cannot be argued with.
-String? _lastFrame;
-
-/// Every frame written, in order, so the run can be judged as a whole.
-///
-/// A tour that photographs the same stuck surface seventeen times used to end
-/// with "All tests passed!". That is the worst thing a diagnostic can do, and
-/// no amount of care inside the app fixes it — so the run now fails when the
-/// pictures stop moving. See [_expectTheTourMoved].
-final List<String> _frames = [];
-
-Future<void> shoot(WidgetTester tester, String name) async {
-  await tester.pumpAndSettle(const Duration(milliseconds: 500));
-  // Converted before every shot, not once at the start. Converting once was
-  // tried and produced twelve blank PNGs.
-  //
-  // Blank frames also come from a simulator whose surface is stuck after an
-  // earlier run — `simctl shutdown` then `boot` between runs is what clears
-  // it. That was misdiagnosed once as "MapLibre platform views cannot be
-  // captured", which may also be true and was not what was happening.
-  await binding.convertFlutterSurfaceToImage();
-  await tester.pumpAndSettle();
-  final bytes = await binding.takeScreenshot(name);
-  final file = File('$_outputDir/$name.png');
-  await file.create(recursive: true);
-  await file.writeAsBytes(bytes);
-
-  final digest = md5.convert(bytes).toString();
-  final moved = _lastFrame == null || digest != _lastFrame;
-  _lastFrame = digest;
-  _frames.add(digest);
-  debugPrint(
-    'shot $name${moved ? '' : '  ← IDENTICAL to the previous frame'}',
-  );
-}
-
-/// Fails a run that photographed nothing.
-///
-/// The stuck-surface failure cannot be prevented from inside the test — it is
-/// the simulator's compositor, and the remedy is to cycle it, which is what
-/// `tool/tour.sh` does before every run. What can be prevented is the run
-/// claiming success anyway. Half the frames distinct is a wide margin: a
-/// healthy tour repeats one or two, a stuck one repeats every single frame.
-void _expectTheTourMoved() {
-  final distinct = _frames.toSet().length;
-  debugPrint('TOUR: $distinct distinct frames of ${_frames.length}');
-  expect(
-    distinct,
-    greaterThan(_frames.length ~/ 2),
-    reason:
-        'only $distinct of ${_frames.length} frames differ — the simulator '
-        'surface is stuck. Run tool/tour.sh, which cycles it first.',
-  );
-}
-
-/// Taps the first match if there is one, and reports when there is not — a
-/// tour that silently stops halfway is worse than one that says where it got.
-///
-/// Taps the row rather than the label. A `Text` is not what handles the tap:
-/// the gesture lives on an InkWell or a ListTile wrapping it, and tapping the
-/// glyphs is a hit on a widget with no callback. With `warnIfMissed: false`
-/// that failed in complete silence — the tour reported four steps and had not
-/// moved from the first screen for any of them.
-///
-/// Scrolls the row into view first, and that is not a nicety. "Cài đặt" is the
-/// last row on the More screen and sits below the fold. Being in the widget
-/// tree, it was found; being off-screen, its centre lay under the bottom
-/// navigation bar — so the tap landed on whichever tab happened to be at that
-/// x, which is the middle one. The tour then photographed the Rounds screen
-/// and filed it as `10-settings`, byte-identical to `07-rounds`. Nothing in
-/// the run said otherwise, and the one screen light mode is chosen on had
-/// never been photographed at all.
-Future<bool> tapIfPresent(WidgetTester tester, Finder finder) async {
-  if (finder.evaluate().isEmpty) return false;
-
-  Finder target = finder.first;
-  for (final wrapper in [InkWell, ListTile, GestureDetector]) {
-    final row = find.ancestor(of: finder.first, matching: find.byType(wrapper));
-    if (row.evaluate().isNotEmpty) {
-      target = row.first;
-      break;
-    }
-  }
-
-  // Not every tappable thing lives in a scrollable — a bottom-nav item does
-  // not, and asking to scroll to it throws.
-  try {
-    await tester.ensureVisible(target);
-    await tester.pumpAndSettle(const Duration(milliseconds: 300));
-  } catch (_) {}
-
-  await tester.tap(target, warnIfMissed: false);
-  await tester.pumpAndSettle(const Duration(milliseconds: 800));
-  return true;
-}
-
-/// Comes back out of a pushed screen.
-///
-/// Settings is a route on top of the tab shell, not a tab, so the bottom
-/// navigation is not on screen while it is open. The first version of the tour
-/// never noticed: its Settings tap missed and left it inside the shell the
-/// whole time. Once the tap landed, every step after it — the whole round —
-/// photographed the Settings screen and the run still called that six distinct
-/// frames.
-///
-/// Pops the innermost navigator that has anything to pop, rather than
-/// `pageBack()`, which looks for a back button with a standard tooltip and
-/// this app draws its own chevron.
-Future<void> popBack(WidgetTester tester) async {
-  for (final element in find.byType(Navigator).evaluate().toList().reversed) {
-    final nav = (element as StatefulElement).state as NavigatorState;
-    if (nav.canPop()) {
-      nav.pop();
-      await tester.pumpAndSettle(const Duration(milliseconds: 800));
-      return;
-    }
-  }
-  debugPrint('TOUR: nothing to pop');
-}
-
-/// Fails the run when a step did not arrive where it claimed to.
-///
-/// The tour's own frame-distinctness check cannot catch this: a tap that lands
-/// on the wrong control still produces a different picture, so the run stays
-/// green while a named screenshot shows a different screen. Only the step
-/// itself knows what it was aiming at.
-void _expectArrived(String step, List<String> landmarks) {
-  expect(
-    landmarks.any((l) => find.textContaining(l).evaluate().isNotEmpty),
-    isTrue,
-    reason:
-        '$step never reached its screen — none of $landmarks on it. The '
-        'screenshot filed under that name is of somewhere else.',
-  );
-}
-
-Future<void> signIn(WidgetTester tester) async {
-  if (!await tapIfPresent(tester, find.textContaining('email'))) {
-    debugPrint('TOUR: no way in from the welcome screen');
-    return;
-  }
-  await shoot(tester, '03-sign-in');
-
-  final fields = find.byType(TextField);
-  if (fields.evaluate().length < 2) {
-    debugPrint('TOUR: sheet has ${fields.evaluate().length} fields — stopping');
-    return;
-  }
-
-  await tester.enterText(fields.at(0), 'admin@vsp.local');
-  await tester.pumpAndSettle();
-  await tester.enterText(fields.at(1), 'Admin2026');
-  await tester.pumpAndSettle();
-  await shoot(tester, '04-credentials');
-
-  // The button, not the sheet's heading — "Đăng nhập" is both, and
-  // find.text().first is the heading.
-  for (final label in ['Đăng nhập', 'Sign In', 'Sign in']) {
-    if (await tapIfPresent(tester, find.widgetWithText(FilledButton, label))) {
-      break;
-    }
-  }
-  await tester.pumpAndSettle(const Duration(seconds: 6));
-}
 
 /// Whether a few landmarks are on screen, so a wandering tour can say where
 /// it got to.
@@ -305,7 +128,7 @@ Future<void> startARound(WidgetTester tester) async {
   // Same reason as the Settings check: a round that never started still
   // photographs something, and the four screens below are the ones every claim
   // in this sweep is about.
-  _expectArrived('14-round-open', ['Hố', 'Hole']);
+  expectArrived('14-round-open', ['Hố', 'Hole']);
 
   for (final entry in <String, List<String>>{
     '15-map': ['Bản đồ', 'Map'],
@@ -404,11 +227,12 @@ void main() {
     // photographed the app in English and a run that did not photographed it
     // in Vietnamese. Two sets of screenshots in two languages cannot be
     // compared, and the difference is invisible until you read the words.
+    tourOutputDir = '/tmp/vsp-tour/$_theme';
     SharedPreferences.setMockInitialValues({
       'app_theme_mode': _theme,
       'app_locale': 'vi',
     });
-    debugPrint('TOUR: touring in $_theme, writing to $_outputDir');
+    debugPrint('TOUR: touring in $_theme, writing to $tourOutputDir');
 
     await tester.pumpWidget(
       const VspApp(syncOfflineQueue: false, loadBasemapConfig: false),
@@ -432,7 +256,12 @@ void main() {
         .any((label) => find.text(label).evaluate().isNotEmpty);
     debugPrint('TOUR: already signed in = $signedIn');
     if (!signedIn) {
-      await signIn(tester);
+      await signIn(
+        tester,
+        email: 'admin@vsp.local',
+        password: 'Admin2026',
+        shotPrefix: '0',
+      );
     }
     // The imagery provider, fetched the way the app fetches it.
     //
@@ -474,13 +303,13 @@ void main() {
       }
     }
     // The screen the palette is chosen on has to be the screen in the picture.
-    _expectArrived('10-settings', ['Giao diện', 'Appearance']);
+    expectArrived('10-settings', ['Giao diện', 'Appearance']);
     // Back to the tab shell, or the round below never starts.
     await popBack(tester);
 
     await startARound(tester);
 
     debugPrint('TOUR: finished');
-    _expectTheTourMoved();
+    expectTheTourMoved();
   });
 }

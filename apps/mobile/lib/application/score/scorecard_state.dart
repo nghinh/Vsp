@@ -87,6 +87,39 @@ class ScorecardScreenState extends Equatable {
 
   int get totalHoles => holeIds.length;
 
+  /// Where to move when the round says the golfer is on hole [holeNumber], or
+  /// null to stay where the card already is.
+  ///
+  /// ─── Why this is not `holeIds.indexOf` ────────────────────────────────────
+  ///
+  /// A round on Đường A + Đường B has eighteen holes numbered 1-9 and then 1-9
+  /// again, because each đường numbers its own from one. `indexOf` answers with
+  /// the first match. So on reaching index 9 — hole 1 of Đường B, the tenth
+  /// hole of the round — the card reported "hole 1" outward, that number came
+  /// back, `indexOf('1')` said 0, and the golfer was returned to the first tee
+  /// of Đường A. Pressing "Hố sau" from the 9th therefore replayed the front
+  /// nine on top of the scores already on it, and the back nine could not be
+  /// reached at all — on the app's only genuine eighteen.
+  ///
+  /// Found by the tour that photographs a round: it walked eighteen holes and
+  /// came back with a card of ten.
+  ///
+  /// The fix is that a card already showing a hole with this number has
+  /// nowhere to go. The sync exists so that detection moving the golfer moves
+  /// the card; it was never meant to answer a report of where the card already
+  /// is.
+  int? holeIndexToShow(int holeNumber) {
+    if (currentHoleIndex >= 0 &&
+        currentHoleIndex < holeIds.length &&
+        holeIds[currentHoleIndex] == '$holeNumber') {
+      return null;
+    }
+    final index = holeIds.indexOf('$holeNumber');
+    // indexOf answers -1 for a hole this round does not play.
+    if (index < 0 || index == currentHoleIndex) return null;
+    return index;
+  }
+
   int? get currentPar => currentHoleId != null ? holePars[currentHoleId] : null;
 
   /// Gets the score for a specific player and hole.

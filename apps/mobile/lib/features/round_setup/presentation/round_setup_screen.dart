@@ -492,15 +492,22 @@ class _RoundSetupScaffold extends StatelessWidget {
                       // has no hole 10 to start on.
                       holeCount: state.holeNumbersInPlay.length,
                       holes: state.holes,
-                      suggestedHole: state.effectiveStartHole,
-                      onHoleChanged: (hole) {
+                      // The hole the clock suggests, not the hole that is
+                      // chosen. These were the same expression, so the
+                      // condition "is the selection still the suggestion"
+                      // could never be false: a golfer who picked the 1st
+                      // was shown "Gợi ý: Hố 1 — Vòng buổi chiều", which
+                      // calls their own choice a suggestion and then gets
+                      // the reason for it wrong.
+                      suggestedHole: RoundSetupReady.suggestedStartHole(),
+                      // One event. This was two, and the second was built from
+                      // `state.startHole` — the value captured when this
+                      // callback was created, which is the hole the golfer had
+                      // just changed away from. Confirming "the 1st" therefore
+                      // sent hole 1 and then hole 10 straight behind it.
+                      onSelected: (hole, holes) {
                         context.read<RoundSetupBloc>().add(
-                          StartHoleChanged(hole),
-                        );
-                      },
-                      onHolesChanged: (holes) {
-                        context.read<RoundSetupBloc>().add(
-                          StartHoleChanged(state.startHole, holes: holes),
+                          StartHoleChanged(hole, holes: holes),
                         );
                       },
                     ),

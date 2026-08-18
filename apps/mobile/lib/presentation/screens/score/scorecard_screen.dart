@@ -194,11 +194,11 @@ class _ScorecardHoleSyncState extends State<_ScorecardHoleSync> {
     if (hole == null || hole == oldWidget.holeNumber) return;
 
     final cubit = context.read<ScorecardCubit>();
-    final index = cubit.state.holeIds.indexOf('$hole');
-    // indexOf answers -1 for a hole this round does not play.
-    if (index >= 0 && index != cubit.state.currentHoleIndex) {
-      cubit.navigateToHoleIndex(index);
-    }
+    // Not `indexOf`: on a paired round two holes carry each number, and from
+    // the turn onward the first match is the wrong one. See
+    // `ScorecardState.holeIndexToShow`.
+    final index = cubit.state.holeIndexToShow(hole);
+    if (index != null) cubit.navigateToHoleIndex(index);
   }
 
   @override

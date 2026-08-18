@@ -42,16 +42,17 @@ class HoleHistorySheet extends StatefulWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
       ),
-      builder: (_) => Padding(
-        // Above the keyboard, so the note field is not covered while typing.
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: HoleHistorySheet(
-          courseId: courseId,
-          holeNumber: holeNumber,
-          roundId: roundId,
-          api: api,
-        ),
+      // The keyboard is handled inside the sheet, where the context updates
+      // when it opens. It used to be handled here, and could not work: the
+      // `context` in scope is the caller's — a scorecard that is not part of
+      // this route — so `viewInsets.bottom` was read once, as zero, and never
+      // read again. The comment said "above the keyboard" and the padding was
+      // always nothing.
+      builder: (_) => HoleHistorySheet(
+        courseId: courseId,
+        holeNumber: holeNumber,
+        roundId: roundId,
+        api: api,
       ),
     );
   }
@@ -125,7 +126,20 @@ class _HoleHistorySheetState extends State<HoleHistorySheet> {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+        // The keyboard's own height, from this sheet's context, so the note
+        // field and the button under it rise with it.
+        //
+        // Reported from the course with a screenshot of the 17th: the keyboard
+        // came up over "Lưu ghi chú" and there was no way to reach it — a note
+        // could be typed and not saved. `viewInsetsOf` rather than
+        // `MediaQuery.of(...).viewInsets`, so this widget depends on the
+        // insets alone and actually rebuilds when they change.
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          16 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
