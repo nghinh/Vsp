@@ -27,6 +27,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vsp_mobile/app.dart';
+import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
 
 /// Which palette to tour in — `dark` (the app's default) or `light`.
 ///
@@ -331,10 +332,28 @@ Future<void> startARound(WidgetTester tester) async {
           break;
         }
       }
+      await stepToTheNextHole(tester);
     }
   }
 
   await finishTheRound(tester);
+}
+
+/// Walks to the next hole, which is where the map is rebuilt from nothing.
+///
+/// Every tour before this one looked at hole 1 of Long Biên and no other hole,
+/// so every claim about the map was a claim about one hole in one state. The
+/// code is explicit that this is the interesting transition — "the hole map is
+/// rebuilt from scratch on every hole: a hole change is a new camera, a new
+/// basemap decision and a new measuring session" — and it is the path the
+/// controller-lifecycle bugs live on. Nothing had ever taken it.
+Future<void> stepToTheNextHole(WidgetTester tester) async {
+  for (final tip in ['Hố sau', 'Next hole']) {
+    if (await tapIfPresent(tester, find.byTooltip(tip))) break;
+  }
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+  describe('hole 2', ['Hố 2', 'Hole 2']);
+  await shoot(tester, '15c-next-hole');
 }
 
 /// Ends the round, which is the half of the round nobody had ever run here.
@@ -415,6 +434,22 @@ void main() {
     if (!signedIn) {
       await signIn(tester);
     }
+    // The imagery provider, fetched the way the app fetches it.
+    //
+    // The tour ran with `loadBasemapConfig: false` from the day it was
+    // written, so `SatelliteImagery.current` was always "none" and every
+    // photograph of the measuring tool showed the same screen: the one that
+    // says this build has no satellite imagery. The Map tab opens on that
+    // tool by default. So the single screen a golfer sees most of a round had
+    // never been photographed in the state a golfer actually meets.
+    //
+    // Loaded here rather than at start-up because `/config/basemap` needs a
+    // bearer token, and at start-up the request races session restore — the
+    // race the app itself works around by asking twice.
+    await SatelliteImagery.load(BasemapConfigService());
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+    debugPrint('TOUR: imagery = ${SatelliteImagery.current.provider.name}');
+
     await shoot(tester, '05-home');
 
     for (final entry in <String, List<String>>{
