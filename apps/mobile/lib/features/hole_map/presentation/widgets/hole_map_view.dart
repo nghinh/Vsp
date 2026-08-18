@@ -568,7 +568,7 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   Widget _buildSatelliteMode(BuildContext context) {
     final holeMap = widget.state.holeMap;
-    final toggle = _buildBasemapToggle();
+    final toggle = _buildBasemapToggle(compact: true);
 
     // What these shapes are worth, and only where it is true.
     //
@@ -664,11 +664,7 @@ class _HoleMapViewState extends State<HoleMapView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Align(alignment: Alignment.centerRight, child: toggle),
-                    if (provenanceNotice != null) ...[
-                      const SizedBox(height: 8),
-                      provenanceNotice,
-                    ],
+                    if (provenanceNotice != null) provenanceNotice,
                   ],
                 ),
               ),
@@ -681,6 +677,23 @@ class _HoleMapViewState extends State<HoleMapView> {
                 alignment: Alignment.bottomLeft,
                 bottom: 12,
                 children: [ClubPlanButton(clubs: widget.clubs)],
+              ),
+
+              // The same corner the drawn map keeps it in.
+              //
+              // It used to sit top-right here and bottom-right there, so the
+              // control a golfer taps to compare the two views of a hole was
+              // in a different place depending on which of them they were
+              // looking at — reported from a course as "vị trí nút switch ở 2
+              // vị trí khác nhau rất bất tiện".
+              //
+              // Icons in both, which also retires the width problem this
+              // file's top band was arranged around: labelled, the switch
+              // wanted 539dp at twice the system text size.
+              _MapCorner(
+                alignment: Alignment.bottomRight,
+                bottom: 12,
+                children: [toggle],
               ),
             ],
           ),
@@ -934,6 +947,13 @@ class _HoleMapViewState extends State<HoleMapView> {
           if (camera != null) _rememberCamera(camera);
         },
         myLocationEnabled: false,
+        // Without this the controller's `cameraPosition` never moves off the
+        // value it was constructed with, so asking it where the golfer left
+        // the map answers with where the map opened. The camera carried
+        // between the two basemaps was therefore always the default one, and
+        // on a phone the two views stayed as unrelated as before — which is
+        // how a fix that passed its tests arrived on a device doing nothing.
+        trackCameraPosition: true,
         // Rotatable, so a golfer can turn the hole to face the way they are
         // standing. Stated rather than left to the default, because the
         // measuring view beside it had this turned off and the two screens
@@ -1043,6 +1063,11 @@ class _MapBottomBand extends StatelessWidget {
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
+            // Pinned to the two edges. Flexible sizes to its content, so with
+            // a short left column the Row packed both against the left and the
+            // switch drifted into the middle of the map — which is where a
+            // photograph from a course found it.
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Flexible(
                 flex: 3,

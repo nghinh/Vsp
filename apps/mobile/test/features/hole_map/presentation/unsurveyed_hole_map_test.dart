@@ -466,7 +466,11 @@ void main() {
         holeMap: _syntheticHole(),
       );
 
-      await tester.tap(find.text(l10n.basemapCourseMap, skipOffstage: false));
+      // Icons in both views now, so the switch is reached the way a screen
+      // reader reaches it.
+      await tester.tap(
+        find.bySemanticsLabel(l10n.basemapSwitchToCourseMap).first,
+      );
       await tester.pump();
       expect(
         find.byType(SatelliteMeasureView, skipOffstage: false),

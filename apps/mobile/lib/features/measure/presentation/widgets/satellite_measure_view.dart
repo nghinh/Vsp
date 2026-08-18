@@ -494,7 +494,13 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
                     color: theme.colorScheme.onSurface,
                   ),
                   const SizedBox(width: 10),
-                  Expanded(
+                  // The title gets the larger share, and the hint yields
+                  // first. Given equal claims both ellipsised and the strip
+                  // read "Đo khoảng c… Chạm để đo" on a phone — the name of
+                  // the tool truncated to make room for the instruction about
+                  // it.
+                  Flexible(
+                    flex: 5,
                     child: Text(
                       l10n.measureTitle,
                       maxLines: 1,
@@ -504,8 +510,11 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Flexible(
+                    flex: 3,
                     child: Text(
+                      textAlign: TextAlign.end,
                       l10n.measureExpandHint,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -679,6 +688,13 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
         },
         onMapClick: (_, point) => _onMapClick(context, point),
         myLocationEnabled: false,
+        // Without this the controller's `cameraPosition` never moves off the
+        // value it was constructed with, so asking it where the golfer left
+        // the map answers with where the map opened. The camera carried
+        // between the two basemaps was therefore always the default one, and
+        // on a phone the two views stayed as unrelated as before — which is
+        // how a fix that passed its tests arrived on a device doing nothing.
+        trackCameraPosition: true,
         // Off while a point is being dragged, or the map slides away under the
         // finger and the point never moves.
         scrollGesturesEnabled: _draggingPointId == null,

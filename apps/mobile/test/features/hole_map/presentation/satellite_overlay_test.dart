@@ -208,42 +208,25 @@ void main() {
       }
     });
 
-    testWidgets('and the map/measure switch keeps its words', (tester) async {
+    testWidgets('and the map/measure switch still says what it is', (
+      tester,
+    ) async {
       // The first repair for the overlap put the notice and the switch on one
-      // line, sharing the width. The switch lost: at ordinary text size it
+      // line, sharing the width, and the switch lost: at ordinary text size it
       // read "Cour… Meas…" — a control whose two states could no longer be
       // told apart, to make room for prose that could simply have wrapped.
       //
-      // Measured against the same switch with nothing competing for the room,
-      // because "is it ellipsised" is not a question a Text can be asked.
+      // It carries icons now, in the same corner the drawn map keeps it in,
+      // which retires the width contest entirely. What it must not lose is the
+      // meaning: a screen reader still hears which state each half selects.
       await _pump(tester, _tracedHole());
-      final onTheMap = tester.getSize(find.byType(BasemapToggle).first).width;
-
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('vi'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: Align(
-              alignment: Alignment.topRight,
-              child: BasemapToggle(
-                mode: BasemapMode.satellite,
-                onChanged: (_) {},
-                satelliteAvailable: false,
-              ),
-            ),
-          ),
-        ),
-      );
-      await tester.pump();
-      final unhindered = tester.getSize(find.byType(BasemapToggle)).width;
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
 
       expect(
-        onTheMap,
-        unhindered,
-        reason: 'the switch is being squeezed on the map',
+        find.bySemanticsLabel(l10n.basemapSwitchToCourseMap),
+        findsWidgets,
       );
+      expect(find.bySemanticsLabel(l10n.basemapSwitchToMeasure), findsWidgets);
     });
 
     testWidgets('and still do not at twice the text size', (tester) async {
