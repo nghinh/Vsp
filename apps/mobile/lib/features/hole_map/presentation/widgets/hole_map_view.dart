@@ -94,6 +94,38 @@ class _HoleMapViewState extends State<HoleMapView> {
   MapLibreMapController? _mapController;
   bool _isInitialized = false;
 
+  /// The golfer's metres/yards preference, subscribed to once and held.
+  ///
+  /// It used to be read where it was needed, with `DistanceUnitScope.watch`.
+  /// That is legal inside `build` and it was not legal in [_playLine], which
+  /// bakes the leg labels into the overlay GeoJSON and is reached from
+  /// MapLibre's style-loaded callback — outside the widget tree entirely.
+  /// Debug builds threw there the moment the vector hole map opened; release
+  /// builds took the dependency on a context that would never deliver it.
+  ///
+  /// Subscribing here also fixes what the `watch` was put there to fix and
+  /// did not. Marking the element dirty rebuilds the widget, but the overlay
+  /// is pushed to the map imperatively — `didUpdateWidget` re-pushes it for a
+  /// new position, target, pin or ring set and for nothing else. So a golfer
+  /// who saved yards, opened the map before their profile finished loading and
+  /// then watched it arrive kept metres on the play line for the rest of the
+  /// round. [didChangeDependencies] is where a dependency is allowed to be
+  /// taken and where the change can be acted on.
+  DistanceUnit _unit = DistanceUnit.meters;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final next = DistanceUnitScope.watch(
+      context,
+      fallback: widget.distanceUnit ?? DistanceUnit.meters,
+    );
+    if (next == _unit) return;
+    _unit = next;
+    // The labels live in the overlay, so the map has to be told again.
+    _updateOverlaySource(widget.state);
+  }
+
   /// Imagery configuration in force for this view.
   /// Imagery provider for this view.
   ///
@@ -129,11 +161,23 @@ class _HoleMapViewState extends State<HoleMapView> {
   ///     source#setGeoJson on channel plugins.flutter.io/maplibre_gl_0)
   ///
   /// Unhandled, once every few seconds, for as long as the golfer stayed on
-  /// the measuring tool — which on an unverified hole is the whole round. The
-  /// controller was also never disposed, so its channel handler leaked with it.
+  /// the measuring tool — which on an unverified hole is the whole round.
+  ///
+  /// Drops the reference and does not dispose it. The controller belongs to
+  /// `MapLibreMap`, whose own State disposes it when the platform view goes —
+  /// which happens on both paths out of here, the toggle to satellite and the
+  /// screen closing. Disposing it here as well was a second dispose of the
+  /// same ChangeNotifier, and children unmount before parents, so the map had
+  /// always got there first:
+  ///
+  ///     A MapLibreMapController was used after being disposed.
+  ///
+  /// It fired every time a golfer left the vector hole map. Nothing caught it
+  /// because nothing had opened that map: it is only reachable behind the
+  /// basemap switch, on a hole verified enough to draw, and the screens tour
+  /// walked past it until it was taught to tap through.
   void _releaseVectorMap() {
     _isInitialized = false;
-    _mapController?.dispose();
     _mapController = null;
   }
 
@@ -351,9 +395,8 @@ class _HoleMapViewState extends State<HoleMapView> {
     final start = _measuringPoint();
     if (start == null) return const [];
 
-    final unit = DistanceUnitScope.watch(context);
     String label(geo.LatLng from, geo.LatLng to) =>
-        MeasureUnits.format(from.distanceTo(to), unit);
+        MeasureUnits.format(from.distanceTo(to), _unit);
 
     final target = state.target;
     if (target != null) {
@@ -625,7 +668,7 @@ class _HoleMapViewState extends State<HoleMapView> {
           FeatureLabelOverlay(
             controller: _mapController,
             chips: [..._featureLabels(), ..._playLineLabels()],
-            unit: DistanceUnitScope.watch(context),
+            unit: _unit,
           ),
 
           // ─── Panels ────────────────────────────────────────────────
@@ -691,21 +734,41 @@ class _HoleMapViewState extends State<HoleMapView> {
                       frontMeters: green.frontMeters,
                       centreMeters: green.centreMeters,
                       backMeters: green.backMeters,
-                      unit: DistanceUnitScope.watch(context),
+                      unit: _unit,
                     );
                   },
                 ),
             ],
           ),
 
-          _MapCorner(
-            alignment: Alignment.bottomLeft,
-            bottom: 12,
-            children: [
+          // The foot of the map, as one row rather than as three corners.
+          //
+          // _MapCorner says plainly what it does not promise: a wide panel on
+          // the left will print underneath one on the right at the same
+          // height, and two things sharing a horizontal band belong in a Row.
+          // The map/measure switch was moved out of the centre and into the
+          // bottom-right to stop it covering the traced-shapes caveat, and
+          // that was still two corners — a third absolutely placed column at a
+          // hardcoded 72, wide enough to reach back across the panel it was
+          // supposed to have stopped covering.
+          //
+          // The first photograph ever taken of this screen shows it sitting on
+          // the fourth bunker row, "270 / 3", and across the caveat again. It
+          // was never fixed, only moved, and nothing could see that because
+          // nothing had looked.
+          //
+          // The switch gets a line of its own, above both columns. Sharing the
+          // band was tried first and the pictures said no: the distances came
+          // back whole and the switch came back as "B…" and "Th…". Two things
+          // that each want half the phone do not share a row; they take turns.
+          _MapBottomBand(
+            // Satellite is always one tap away, and still legible.
+            wide: _buildBasemapToggle(),
+            left: [
               if (_featuresAhead().isNotEmpty)
                 FeatureDistancePanel(
                   features: _featuresAhead(),
-                  unit: DistanceUnitScope.watch(context),
+                  unit: _unit,
                 ),
               // Whose shapes these are. Directly above the fix that measured
               // them, because the two qualify each other.
@@ -722,12 +785,7 @@ class _HoleMapViewState extends State<HoleMapView> {
               // not something a golfer reads on a tee.
               MapDataAttribution(includesCopernicus: _drawsCopernicusData),
             ],
-          ),
-
-          _MapCorner(
-            alignment: Alignment.bottomRight,
-            bottom: 12,
-            children: [
+            right: [
               LayerTogglePanel(
                 visibility: widget.state.layerVisibility,
                 onToggle: (layerId, visible) {
@@ -737,23 +795,6 @@ class _HoleMapViewState extends State<HoleMapView> {
                 },
               ),
             ],
-          ),
-
-          // Satellite is always one tap away.
-          //
-          // It used to be centred at the foot of the map, and a centred
-          // control is the one thing the corner system cannot see: on Long
-          // Biên's 10th it landed across the traced-shapes caveat sitting in
-          // the bottom-left column, hiding the sentence that says the shapes
-          // underneath were read by a model. Centring bought nothing — the
-          // toggle is not a distance and is pressed once a round, if that.
-          //
-          // In the corner instead, above the layer control, where the column
-          // guarantees it cannot cover anything.
-          _MapCorner(
-            alignment: Alignment.bottomRight,
-            bottom: 72,
-            children: [_buildBasemapToggle()],
           ),
       ],
     );
@@ -834,39 +875,108 @@ class _MapCorner extends StatelessWidget {
   final double? top;
   final double? bottom;
 
-  /// Gap between stacked panels. Wide enough that two dark chips read as two
-  /// things in bright light, where their edges wash out.
-  static const double _gap = 8;
-
   // What this does not promise: that a corner stays out of the opposite
   // corner. Each column is placed against its own edge and sized by its
   // children, so a wide panel on the left will happily print underneath one on
   // the right at the same height — which is how a traced-shapes caveat ended
   // up behind the map/measure switch. Two things that must share a horizontal
-  // band belong in a Row, not in two corners.
+  // band belong in a Row, not in two corners: see [_MapBottomBand], which is
+  // where the bottom of the map went for that reason.
 
   @override
   Widget build(BuildContext context) {
-    final visible = children.where((child) => child is! SizedBox).toList();
-    if (visible.isEmpty) return const SizedBox.shrink();
-
     final left = alignment.x < 0;
     return Positioned(
       top: top,
       bottom: bottom,
       left: left ? 12 : null,
       right: left ? null : 12,
+      child: _MapColumn(alignLeft: left, children: children),
+    );
+  }
+}
+
+/// The bottom of the map: a full-width line, then two columns that cannot
+/// reach into each other.
+///
+/// [wide] gets a line to itself because the thing that goes there does not
+/// fit beside anything. The distances panel wants about 205dp and so does the
+/// map/measure switch, on a 402dp phone with 24 of margin — sharing a band,
+/// one of them has to give up a third of itself. Made to share, the switch
+/// came out reading "B…" and "Th…", which is not a control any more.
+///
+/// Below it the two columns are [Flexible], so neither can print into the
+/// other. What is left there does fit: the layer count is a chip.
+class _MapBottomBand extends StatelessWidget {
+  const _MapBottomBand({
+    required this.wide,
+    required this.left,
+    required this.right,
+  });
+
+  /// Right-aligned on its own line above the columns.
+  final Widget wide;
+  final List<Widget> left;
+  final List<Widget> right;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 12,
+      right: 12,
+      bottom: 12,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment:
-            left ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          for (var i = 0; i < visible.length; i++) ...[
-            if (i > 0) const SizedBox(height: _gap),
-            visible[i],
-          ],
+          wide,
+          const SizedBox(height: _MapColumn.gap),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Flexible(
+                flex: 3,
+                child: _MapColumn(alignLeft: true, children: left),
+              ),
+              const SizedBox(width: _MapColumn.gap),
+              Flexible(
+                flex: 2,
+                child: _MapColumn(alignLeft: false, children: right),
+              ),
+            ],
+          ),
         ],
       ),
+    );
+  }
+}
+
+/// A stack of floating panels against one edge.
+class _MapColumn extends StatelessWidget {
+  const _MapColumn({required this.alignLeft, required this.children});
+
+  final bool alignLeft;
+  final List<Widget> children;
+
+  /// Gap between stacked panels. Wide enough that two dark chips read as two
+  /// things in bright light, where their edges wash out.
+  static const double gap = 8;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = children.where((child) => child is! SizedBox).toList();
+    if (visible.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment:
+          alignLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      children: [
+        for (var i = 0; i < visible.length; i++) ...[
+          if (i > 0) const SizedBox(height: gap),
+          visible[i],
+        ],
+      ],
     );
   }
 }

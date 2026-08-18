@@ -8,7 +8,6 @@
 // behind the golfer is scenery.
 
 import 'package:flutter/material.dart';
-import 'package:mobile_theme/mobile_theme.dart';
 
 import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
 import 'package:vsp_mobile/features/profile/data/profile_dto.dart'
@@ -91,31 +90,53 @@ class FeatureDistancePanel extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                   ),
-                  SizedBox(
-                    width: 86,
-                    child: Text(
-                      feature.label,
-                      style: const TextStyle(
-                        color: Color(0xFFF8FAFC),
-                        fontSize: 12,
+                  // 86 wide when there is room, so the numbers line up in a
+                  // column; narrower when there is not.
+                  //
+                  // It was a plain SizedBox, which is a promise about width
+                  // that a panel cannot keep once it has a width of its own.
+                  // Nothing had ever given this one a bound — it sat in a
+                  // corner of a Stack taking whatever it liked, and what it
+                  // liked was wide enough to print underneath the map/measure
+                  // switch. Now that the foot of the map is a Row, this half
+                  // has a half, and a fixed 86 plus a distance is more than a
+                  // half at twice the system text size.
+                  //
+                  // The noun gives way before the number does. "Bunker" is
+                  // recoverable from the dot's colour and the shape on the
+                  // map; "222 / 272" is not recoverable from anything.
+                  Flexible(
+                    child: SizedBox(
+                      width: 86,
+                      child: Text(
+                        feature.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: Color(0xFFF8FAFC),
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ),
-                  Text(
-                    // Two numbers where the far edge is meaningfully past
-                    // the near one — "142 / 158" is what a golfer needs to
-                    // pick a club. One number where they are close enough
-                    // that the second says nothing.
-                    feature.farMeters - feature.nearMeters > 8
-                        ? '${MeasureUnits.displayValue(feature.nearMeters, unit)}'
-                            ' / '
-                            '${MeasureUnits.format(feature.farMeters, unit)}'
-                        : MeasureUnits.format(feature.nearMeters, unit),
-                    style: const TextStyle(
-                      color: Color(0xFFF8FAFC),
-                      fontFamily: 'Fira Code',
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                  Flexible(
+                    child: Text(
+                      // Two numbers where the far edge is meaningfully past
+                      // the near one — "142 / 158" is what a golfer needs to
+                      // pick a club. One number where they are close enough
+                      // that the second says nothing.
+                      feature.farMeters - feature.nearMeters > 8
+                          ? '${MeasureUnits.displayValue(feature.nearMeters, unit)}'
+                                ' / '
+                                '${MeasureUnits.format(feature.farMeters, unit)}'
+                          : MeasureUnits.format(feature.nearMeters, unit),
+                      maxLines: 1,
+                      style: const TextStyle(
+                        color: Color(0xFFF8FAFC),
+                        fontFamily: 'Fira Code',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ],
