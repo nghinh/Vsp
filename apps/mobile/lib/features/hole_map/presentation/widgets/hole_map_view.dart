@@ -120,6 +120,30 @@ class _HoleMapViewState extends State<HoleMapView> {
   final GlobalKey _readoutKey = GlobalKey();
   final GlobalKey _footKey = GlobalKey();
 
+  /// Where the golfer was looking, kept across the two basemaps.
+  ///
+  /// They are separate MapLibre instances with separate cameras. Turning the
+  /// hole to face the way you are standing on the photograph and then tapping
+  /// across to the drawn map gave you the same hole north-up at a different
+  /// zoom — nothing wrong with either picture, but not the same picture, so
+  /// the golfer had to find the green again on every switch.
+  ///
+  /// Cleared when the hole changes: a new hole should frame itself rather than
+  /// inherit the last one's corner.
+  CameraPosition? _sharedCamera;
+
+  /// Deliberately without setState: the camera settles constantly while a
+  /// golfer moves the map, and rebuilding the whole view on every idle would
+  /// be a rebuild per gesture. It is read when the basemap switches, and
+  /// switching is itself a setState.
+  void _rememberCamera(CameraPosition camera) => _sharedCamera = camera;
+
+  /// Test seam: the same assignment, plus the rebuild a real switch brings.
+  @visibleForTesting
+  void rememberCameraForTesting(CameraPosition camera) {
+    setState(() => _sharedCamera = camera);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -219,6 +243,10 @@ class _HoleMapViewState extends State<HoleMapView> {
   }
 
   void _moveCameraToHole() {
+    // Only when nothing else has said where to look. Framing the hole on every
+    // style load would undo the camera carried over from the other basemap the
+    // instant it arrived.
+    if (_sharedCamera != null) return;
     final holeMap = widget.state.holeMap;
     final centerLat = holeMap.mapCenterLat;
     final centerLng = holeMap.mapCenterLng;
@@ -457,6 +485,14 @@ class _HoleMapViewState extends State<HoleMapView> {
   void didUpdateWidget(HoleMapView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
+    // A different hole is a different picture, so it frames itself rather
+    // than inheriting where the golfer happened to be looking on the last one.
+    if (widget.state.holeMap.holeNumber !=
+        oldWidget.state.holeMap.holeNumber) {
+      _sharedCamera = null;
+      _moveCameraToHole();
+    }
+
     // Redraw the hole itself when the map moves to another hole.
     if (widget.state.holeMap.layers != oldWidget.state.holeMap.layers) {
       _updateCourseGeometrySource(widget.state);
@@ -584,6 +620,8 @@ class _HoleMapViewState extends State<HoleMapView> {
         // satellite view now does the same, and gets that band back.
         child: SatelliteMeasureView(
           config: _imagery,
+          initialCamera: _sharedCamera,
+          onCameraIdle: _rememberCamera,
           fallbackCenter: _fallbackCenter(),
           courseId: widget.state.holeMap.courseId,
           // The package's own row id. Null on a package built before the field
@@ -885,10 +923,16 @@ class _HoleMapViewState extends State<HoleMapView> {
         onMapCreated: _onMapCreated,
         onStyleLoadedCallback: _onStyleLoaded,
         onMapClick: (_, point) => _onMapTap(point),
-        initialCameraPosition: CameraPosition(
-          target: _holeCenter,
-          zoom: widget.state.holeMap.defaultZoom,
-        ),
+        initialCameraPosition:
+            _sharedCamera ??
+            CameraPosition(
+              target: _holeCenter,
+              zoom: widget.state.holeMap.defaultZoom,
+            ),
+        onCameraIdle: () {
+          final camera = _mapController?.cameraPosition;
+          if (camera != null) _rememberCamera(camera);
+        },
         myLocationEnabled: false,
         // Rotatable, so a golfer can turn the hole to face the way they are
         // standing. Stated rather than left to the default, because the

@@ -54,6 +54,22 @@ class SatelliteMeasureView extends StatefulWidget {
   /// Initial zoom. 17 frames roughly one golf hole.
   final double initialZoom;
 
+  /// Where the other map was looking, so switching tabs does not move the
+  /// hole.
+  ///
+  /// The two basemaps are separate MapLibre instances with separate cameras,
+  /// so turning the hole to face the way you are standing on one of them and
+  /// then switching handed you a north-up default of the same hole at a
+  /// different zoom. Nothing was wrong with either picture; they were simply
+  /// not the same picture, and the golfer had to find the green again.
+  ///
+  /// Null on first open, when the hole frames itself.
+  final ml.CameraPosition? initialCamera;
+
+  /// Reports this map's camera whenever it settles, so the other one can be
+  /// opened looking at the same thing.
+  final ValueChanged<ml.CameraPosition>? onCameraIdle;
+
   /// Course and hole a green-position report would be filed against.
   ///
   /// Both null anywhere the screen does not know them — a standalone measuring
@@ -102,6 +118,8 @@ class SatelliteMeasureView extends StatefulWidget {
     required this.config,
     this.fallbackCenter,
     this.initialZoom = 17,
+    this.initialCamera,
+    this.onCameraIdle,
     this.courseId,
     this.holeId,
     this.greenReporter,
@@ -642,10 +660,16 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
       child: ml.MapLibreMap(
         key: ValueKey('measure-map-${widget.config.styleKey}'),
         styleString: SatelliteStyleBuilder.build(config: widget.config),
-        initialCameraPosition: ml.CameraPosition(
-          target: _initialTarget(state),
-          zoom: widget.initialZoom,
-        ),
+        initialCameraPosition:
+            widget.initialCamera ??
+            ml.CameraPosition(
+              target: _initialTarget(state),
+              zoom: widget.initialZoom,
+            ),
+        onCameraIdle: () {
+          final camera = _controller?.cameraPosition;
+          if (camera != null) widget.onCameraIdle?.call(camera);
+        },
         onMapCreated: _onMapCreated,
         onStyleLoadedCallback: () {
           _styleReady = true;
