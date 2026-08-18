@@ -50,7 +50,7 @@ class DeletePackageDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'This will remove "$courseName" maps and data from your device.',
+            AppLocalizations.of(context).deletePackageBody(courseName),
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 12),
@@ -84,7 +84,7 @@ class DeletePackageDialog extends StatelessWidget {
                 const SizedBox(width: VspSpacing.sm),
                 Expanded(
                   child: Text(
-                    'Your rounds and scores will NOT be deleted and will remain available.',
+                    AppLocalizations.of(context).deletePackageKeepsRounds,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: VspColorSemantic.of(
                         colorScheme.brightness,

@@ -131,7 +131,9 @@ class _HoleZoneCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'Hole ${hole.holeNumber}',
+                  AppLocalizations.of(
+                    context,
+                  ).holeNumberLabel('${hole.holeNumber}'),
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(width: 8),

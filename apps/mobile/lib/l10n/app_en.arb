@@ -53,197 +53,390 @@
   "authEnterEmail": "Please enter your email",
   "authGoogleFailed": "Google sign-in failed. Please try again.",
   "summaryOut": "OUT",
-  "@summaryOut": {"description": "Front nine total on the round summary, the way a paper card labels it."},
+  "@summaryOut": {
+    "description": "Front nine total on the round summary, the way a paper card labels it."
+  },
   "summaryIn": "IN",
-  "@summaryIn": {"description": "Back nine total on the round summary."},
+  "@summaryIn": {
+    "description": "Back nine total on the round summary."
+  },
   "summaryTotal": "TOTAL",
-  "@summaryTotal": {"description": "Eighteen-hole total on the round summary."},
+  "@summaryTotal": {
+    "description": "Eighteen-hole total on the round summary."
+  },
   "scoreGrossLabel": "gross",
-  "@scoreGrossLabel": {"description": "Caption under the score on a player's row. Was an untranslated English literal in the widget."},
+  "@scoreGrossLabel": {
+    "description": "Caption under the score on a player's row. Was an untranslated English literal in the widget."
+  },
   "weatherConditionTileLabel": "Condition",
-  "@weatherConditionTileLabel": {"description": "Tile label above the sky condition on the conditions panel. Was an English literal. Distinct from weatherConditionLabel, which is the screen-reader sentence."},
+  "@weatherConditionTileLabel": {
+    "description": "Tile label above the sky condition on the conditions panel. Was an English literal. Distinct from weatherConditionLabel, which is the screen-reader sentence."
+  },
   "weatherForecastBadge": "Forecast",
-  "@weatherForecastBadge": {"description": "Badge marking a reading as forecast rather than measured."},
+  "@weatherForecastBadge": {
+    "description": "Badge marking a reading as forecast rather than measured."
+  },
   "weatherMeasuredBadge": "Measured",
-  "@weatherMeasuredBadge": {"description": "Badge marking a reading as a current measurement."},
+  "@weatherMeasuredBadge": {
+    "description": "Badge marking a reading as a current measurement."
+  },
   "weatherForecastSemantics": "Forecast data",
-  "@weatherForecastSemantics": {"description": "Screen-reader form of the forecast badge."},
+  "@weatherForecastSemantics": {
+    "description": "Screen-reader form of the forecast badge."
+  },
   "weatherMeasuredSemantics": "Current measurement",
-  "@weatherMeasuredSemantics": {"description": "Screen-reader form of the measured badge."},
+  "@weatherMeasuredSemantics": {
+    "description": "Screen-reader form of the measured badge."
+  },
   "dispersionTitle": "Dispersion",
-  "@dispersionTitle": {"description": "Heading of the shot dispersion legend."},
-  "bagSavedOffline": "Bag saved offline",
-  "@bagSavedOffline": {"description": "Shown when a bag edit was queued because the phone had no connection."},
+  "@dispersionTitle": {
+    "description": "Heading of the shot dispersion legend."
+  },
+  "bagSavedOffline": "Changes saved offline",
+  "@bagSavedOffline": {
+    "description": "Shown when a bag edit was queued because the phone had no connection."
+  },
   "bagActiveSavedOffline": "Active bag saved offline",
-  "@bagActiveSavedOffline": {"description": "Shown when the choice of active bag was queued offline."},
+  "@bagActiveSavedOffline": {
+    "description": "Shown when the choice of active bag was queued offline."
+  },
   "clubSavedOffline": "Club saved offline",
-  "@clubSavedOffline": {"description": "Shown when a club edit was queued offline."},
+  "@clubSavedOffline": {
+    "description": "Shown when a club edit was queued offline."
+  },
   "shotMarkers": "Shot markers",
-  "@shotMarkers": {"description": "Section heading over the start/end markers of a tracked shot."},
+  "@shotMarkers": {
+    "description": "Section heading over the start/end markers of a tracked shot."
+  },
   "shotClub": "Club",
-  "@shotClub": {"description": "Field label for the club used on a shot."},
+  "@shotClub": {
+    "description": "Field label for the club used on a shot."
+  },
   "shotResult": "Result",
-  "@shotResult": {"description": "Field label for where a shot finished."},
+  "@shotResult": {
+    "description": "Field label for where a shot finished."
+  },
   "shotMergeInto": "Merge shot into",
-  "@shotMergeInto": {"description": "Heading of the picker that merges one tracked shot into another."},
+  "@shotMergeInto": {
+    "description": "Heading of the picker that merges one tracked shot into another."
+  },
   "shotStart": "Start shot",
-  "@shotStart": {"description": "Button that begins tracking a shot from the golfer's position."},
+  "@shotStart": {
+    "description": "Button that begins tracking a shot from the golfer's position."
+  },
   "shotEnd": "End shot",
-  "@shotEnd": {"description": "Button that ends tracking and records the shot."},
+  "@shotEnd": {
+    "description": "Button that ends tracking and records the shot."
+  },
   "shotSaved": "Shot saved",
-  "@shotSaved": {"description": "Confirmation after a tracked shot is recorded."},
+  "@shotSaved": {
+    "description": "Confirmation after a tracked shot is recorded."
+  },
   "shotNoneToMerge": "No eligible shots to merge into",
-  "@shotNoneToMerge": {"description": "Empty state of the merge picker."},
+  "@shotNoneToMerge": {
+    "description": "Empty state of the merge picker."
+  },
   "shotTrackingHint": "Start tracking shots during your round",
-  "@shotTrackingHint": {"description": "Empty state of the shot review screen."},
+  "@shotTrackingHint": {
+    "description": "Empty state of the shot review screen."
+  },
   "privacyDataExport": "Data export",
-  "@privacyDataExport": {"description": "Name of the data-export privacy request type."},
+  "@privacyDataExport": {
+    "description": "Name of the data-export privacy request type."
+  },
   "privacyRequestDetails": "Request details",
-  "@privacyRequestDetails": {"description": "Heading of the privacy request detail sheet."},
+  "@privacyRequestDetails": {
+    "description": "Heading of the privacy request detail sheet."
+  },
   "privacyNoRequests": "No privacy requests",
-  "@privacyNoRequests": {"description": "Empty state of the privacy requests list."},
-  "smartTargetTitle": "Smart target",
-  "@smartTargetTitle": {"description": "Heading of the smart target panel."},
+  "@privacyNoRequests": {
+    "description": "Empty state of the privacy requests list."
+  },
+  "smartTargetTitle": "Smart Target",
+  "@smartTargetTitle": {
+    "description": "Heading of the smart target panel."
+  },
   "smartTargetTournamentOff": "Smart target is off in tournament mode",
-  "@smartTargetTournamentOff": {"description": "Why the smart target panel is empty during a tournament round."},
+  "@smartTargetTournamentOff": {
+    "description": "Why the smart target panel is empty during a tournament round."
+  },
   "smartTargetUnavailable": "Smart target is not available",
-  "@smartTargetUnavailable": {"description": "Shown when no smart target can be computed for this hole."},
+  "@smartTargetUnavailable": {
+    "description": "Shown when no smart target can be computed for this hole."
+  },
   "smartTargetHazards": "Hazards near the landing zone",
-  "@smartTargetHazards": {"description": "Heading over the hazards listed for a suggested landing zone."},
+  "@smartTargetHazards": {
+    "description": "Heading over the hazards listed for a suggested landing zone."
+  },
   "smartTargetRisk": "Risk",
-  "@smartTargetRisk": {"description": "Label for the risk rating of a suggested target."},
+  "@smartTargetRisk": {
+    "description": "Label for the risk rating of a suggested target."
+  },
   "smartTargetConfidenceLabel": "Confidence",
-  "@smartTargetConfidenceLabel": {"description": "Short label beside the confidence figure. Distinct from smartTargetConfidence, which is the screen-reader sentence with placeholders."},
+  "@smartTargetConfidenceLabel": {
+    "description": "Short label beside the confidence figure. Distinct from smartTargetConfidence, which is the screen-reader sentence with placeholders."
+  },
   "bagClubsHeading": "Clubs",
-  "@bagClubsHeading": {"description": "Section heading over the clubs in a bag."},
+  "@bagClubsHeading": {
+    "description": "Section heading over the clubs in a bag."
+  },
   "bagActiveLabel": "Active",
-  "@bagActiveLabel": {"description": "Badge marking the bag currently in play."},
+  "@bagActiveLabel": {
+    "description": "Badge marking the bag currently in play."
+  },
   "bagSummaryHeading": "Bag summary",
-  "@bagSummaryHeading": {"description": "Heading of the bag performance summary."},
+  "@bagSummaryHeading": {
+    "description": "Heading of the bag performance summary."
+  },
   "clubPerformanceHeading": "Club performance",
-  "@clubPerformanceHeading": {"description": "Heading of the per-club performance list."},
+  "@clubPerformanceHeading": {
+    "description": "Heading of the per-club performance list."
+  },
   "commonCached": "Cached",
-  "@commonCached": {"description": "Badge marking data served from the device rather than fetched."},
+  "@commonCached": {
+    "description": "Badge marking data served from the device rather than fetched."
+  },
   "correctionsMine": "My corrections",
-  "@correctionsMine": {"description": "Title of the screen listing corrections this golfer submitted."},
+  "@correctionsMine": {
+    "description": "Title of the screen listing corrections this golfer submitted."
+  },
   "correctionsNoneYet": "No corrections submitted yet",
-  "@correctionsNoneYet": {"description": "Empty state of the corrections list."},
+  "@correctionsNoneYet": {
+    "description": "Empty state of the corrections list."
+  },
   "commonUpdate": "Update",
-  "@commonUpdate": {"description": "Short action label on the update badge."},
+  "@commonUpdate": {
+    "description": "Short action label on the update badge."
+  },
   "commonActive": "Active",
-  "@commonActive": {"description": "Badge marking the item currently in use — a bag, a tee set."},
+  "@commonActive": {
+    "description": "Badge marking the item currently in use — a bag, a tee set."
+  },
   "commonGenerated": "Generated",
-  "@commonGenerated": {"description": "Label before the time an analysis was produced."},
+  "@commonGenerated": {
+    "description": "Label before the time an analysis was produced."
+  },
   "commonUnknownCourse": "Unknown course",
-  "@commonUnknownCourse": {"description": "Stand-in where a round has no course name on file."},
+  "@commonUnknownCourse": {
+    "description": "Stand-in where a round has no course name on file."
+  },
   "targetMarkerLabel": "Target",
-  "@targetMarkerLabel": {"description": "Label on the target marker dropped on the hole map."},
+  "@targetMarkerLabel": {
+    "description": "Label on the target marker dropped on the hole map."
+  },
   "clubFormEdit": "Edit club",
-  "@clubFormEdit": {"description": "Title of the club form when editing an existing club."},
+  "@clubFormEdit": {
+    "description": "Title of the club form when editing an existing club."
+  },
   "clubFormAdd": "Add club",
-  "@clubFormAdd": {"description": "Title of the club form when adding a club."},
+  "@clubFormAdd": {
+    "description": "Title of the club form when adding a club."
+  },
   "clubFormUpdate": "Update club",
-  "@clubFormUpdate": {"description": "Submit button when editing an existing club."},
+  "@clubFormUpdate": {
+    "description": "Submit button when editing an existing club."
+  },
   "syncChangesSavedOffline": "Changes saved offline",
-  "@syncChangesSavedOffline": {"description": "Shown where edits are queued because the phone has no connection."},
+  "@syncChangesSavedOffline": {
+    "description": "Shown where edits are queued because the phone has no connection."
+  },
   "appNoServerConfigured": "This build has no server configured",
-  "@appNoServerConfigured": {"description": "Startup failure when VSP_API_BASE_URL was not compiled in."},
+  "@appNoServerConfigured": {
+    "description": "Startup failure when VSP_API_BASE_URL was not compiled in."
+  },
   "appPreparing": "Preparing your golf experience",
-  "@appPreparing": {"description": "Startup progress message."},
+  "@appPreparing": {
+    "description": "Startup progress message."
+  },
   "mapPreparing": "Preparing your strategic map",
-  "@mapPreparing": {"description": "Loading message on the hole map skeleton."},
+  "@mapPreparing": {
+    "description": "Loading message on the hole map skeleton."
+  },
   "mapLoadFailedTitle": "Could not load the hole map",
-  "@mapLoadFailedTitle": {"description": "Heading of the hole map error view."},
+  "@mapLoadFailedTitle": {
+    "description": "Heading of the hole map error view."
+  },
   "mapLoadFailedBody": "Check that the course package is downloaded",
-  "@mapLoadFailedBody": {"description": "Advice under the hole map error heading."},
+  "@mapLoadFailedBody": {
+    "description": "Advice under the hole map error heading."
+  },
   "privacyNoRounds": "No rounds found",
-  "@privacyNoRounds": {"description": "Empty state of the round picker used for deletion requests."},
+  "@privacyNoRounds": {
+    "description": "Empty state of the round picker used for deletion requests."
+  },
   "weatherUnavailableBody": "Weather data is not available for this location.",
-  "@weatherUnavailableBody": {"description": "Body of the weather empty state."},
+  "@weatherUnavailableBody": {
+    "description": "Body of the weather empty state."
+  },
   "roundSetupNoBag": "No bag selected",
-  "@roundSetupNoBag": {"description": "Shown on round setup when the golfer has chosen no bag."},
+  "@roundSetupNoBag": {
+    "description": "Shown on round setup when the golfer has chosen no bag."
+  },
   "performanceStatsHeading": "Performance statistics",
-  "@performanceStatsHeading": {"description": "Heading of the per-club statistics card."},
+  "@performanceStatsHeading": {
+    "description": "Heading of the per-club statistics card."
+  },
   "performanceNotComputed": "Not yet computed",
-  "@performanceNotComputed": {"description": "Shown where a statistic has not been calculated yet."},
+  "@performanceNotComputed": {
+    "description": "Shown where a statistic has not been calculated yet."
+  },
   "watchPairTitle": "Pair Apple Watch",
-  "@watchPairTitle": {"description": "Title of the Apple Watch pairing screen."},
+  "@watchPairTitle": {
+    "description": "Title of the Apple Watch pairing screen."
+  },
   "watchPackagesAbout": "About watch packages",
-  "@watchPackagesAbout": {"description": "Link to an explanation of what is sent to the watch."},
+  "@watchPackagesAbout": {
+    "description": "Link to an explanation of what is sent to the watch."
+  },
   "strokesGainedOverall": "Overall strokes gained",
-  "@strokesGainedOverall": {"description": "Heading of the strokes-gained summary."},
+  "@strokesGainedOverall": {
+    "description": "Heading of the strokes-gained summary."
+  },
   "strokesGainedNoData": "No shot data",
-  "@strokesGainedNoData": {"description": "Empty state of the strokes-gained screen."},
+  "@strokesGainedNoData": {
+    "description": "Empty state of the strokes-gained screen."
+  },
   "strokesGainedConfidence": "Confidence",
-  "@strokesGainedConfidence": {"description": "Label beside the confidence of a strokes-gained figure."},
+  "@strokesGainedConfidence": {
+    "description": "Label beside the confidence of a strokes-gained figure."
+  },
   "updateAvailableTitle": "Update available",
-  "@updateAvailableTitle": {"description": "Title of the package update sheet."},
+  "@updateAvailableTitle": {
+    "description": "Title of the package update sheet."
+  },
   "updateNeedsInternet": "Updates require an internet connection",
-  "@updateNeedsInternet": {"description": "Why the update button is unavailable offline."},
+  "@updateNeedsInternet": {
+    "description": "Why the update button is unavailable offline."
+  },
   "shotNoClub": "No club",
-  "@shotNoClub": {"description": "Shown on a shot with no club recorded."},
+  "@shotNoClub": {
+    "description": "Shown on a shot with no club recorded."
+  },
   "shotNoClubAssigned": "No club assigned",
-  "@shotNoClubAssigned": {"description": "Longer form of shotNoClub, on the shot card."},
+  "@shotNoClubAssigned": {
+    "description": "Longer form of shotNoClub, on the shot card."
+  },
   "profileSkillLevel": "Skill level",
-  "@profileSkillLevel": {"description": "Label of the skill level picker."},
+  "@profileSkillLevel": {
+    "description": "Label of the skill level picker."
+  },
   "windAdjustment": "Wind adjustment",
-  "@windAdjustment": {"description": "Toggle that applies wind to the suggested club."},
+  "@windAdjustment": {
+    "description": "Toggle that applies wind to the suggested club."
+  },
   "dispersionNearestHazard": "To nearest hazard",
-  "@dispersionNearestHazard": {"description": "Label of the distance to the closest hazard."},
+  "@dispersionNearestHazard": {
+    "description": "Label of the distance to the closest hazard."
+  },
   "directionalDeviation": "Directional deviation",
-  "@directionalDeviation": {"description": "Heading of the directional statistics card."},
+  "@directionalDeviation": {
+    "description": "Heading of the directional statistics card."
+  },
   "recommendationsDisabled": "Recommendations disabled",
-  "@recommendationsDisabled": {"description": "Banner shown where club recommendations are switched off."},
+  "@recommendationsDisabled": {
+    "description": "Banner shown where club recommendations are switched off."
+  },
   "teeSetsHeading": "Tee sets",
-  "@teeSetsHeading": {"description": "Heading of the tee set section on course detail."},
+  "@teeSetsHeading": {
+    "description": "Heading of the tee set section on course detail."
+  },
   "roundStatsHeading": "Round stats",
-  "@roundStatsHeading": {"description": "Heading of the round statistics card."},
+  "@roundStatsHeading": {
+    "description": "Heading of the round statistics card."
+  },
   "downloadToPlayOffline": "Download a course to play offline",
-  "@downloadToPlayOffline": {"description": "Empty state of the download management screen."},
+  "@downloadToPlayOffline": {
+    "description": "Empty state of the download management screen."
+  },
   "drivingZonesHeading": "Landing zones",
-  "@drivingZonesHeading": {"description": "Heading of the driving zone screen."},
+  "@drivingZonesHeading": {
+    "description": "Heading of the driving zone screen."
+  },
   "hazardsHeading": "Hazards",
-  "@hazardsHeading": {"description": "Heading of the hazard distance list."},
+  "@hazardsHeading": {
+    "description": "Heading of the hazard distance list."
+  },
   "roundSummaryHeading": "Round summary",
-  "@roundSummaryHeading": {"description": "Heading of the round summary analytics card."},
+  "@roundSummaryHeading": {
+    "description": "Heading of the round summary analytics card."
+  },
   "lieDistribution": "Lie distribution",
-  "@lieDistribution": {"description": "Heading of the lie distribution chart."},
+  "@lieDistribution": {
+    "description": "Heading of the lie distribution chart."
+  },
   "shotAnalyticsTitle": "Shot analytics",
-  "@shotAnalyticsTitle": {"description": "Title of the round review analytics screen."},
+  "@shotAnalyticsTitle": {
+    "description": "Title of the round review analytics screen."
+  },
   "settingsAppearance": "Appearance",
-  "@settingsAppearance": {"description": "Settings section for the light/dark choice."},
+  "@settingsAppearance": {
+    "description": "Settings section for the light/dark choice."
+  },
   "settingsAppearanceSystem": "Follow the phone",
-  "@settingsAppearanceSystem": {"description": "Use whatever light/dark setting the phone is on."},
+  "@settingsAppearanceSystem": {
+    "description": "Use whatever light/dark setting the phone is on."
+  },
   "settingsAppearanceLight": "Light",
-  "@settingsAppearanceLight": {"description": "Always use the light palette."},
+  "@settingsAppearanceLight": {
+    "description": "Always use the light palette."
+  },
   "settingsAppearanceDark": "Dark",
-  "@settingsAppearanceDark": {"description": "Always use the dark palette — the one designed for bright sun."},
+  "@settingsAppearanceDark": {
+    "description": "Always use the dark palette — the one designed for bright sun."
+  },
   "settingsAppearanceDarkNote": "Designed for reading in bright sun",
-  "@settingsAppearanceDarkNote": {"description": "Why dark is the default, shown under the dark option."},
+  "@settingsAppearanceDarkNote": {
+    "description": "Why dark is the default, shown under the dark option."
+  },
   "profileHomeClubHint": "e.g. Vietnam Golf & Country Club",
-  "@profileHomeClubHint": {"description": "Placeholder in the home club field. Was an English literal in the widget."},
+  "@profileHomeClubHint": {
+    "description": "Placeholder in the home club field. Was an English literal in the widget."
+  },
   "scoreBirdie": "Birdie",
-  "@scoreBirdie": {"description": "One under par, on the one-tap scoring strip."},
+  "@scoreBirdie": {
+    "description": "One under par, on the one-tap scoring strip."
+  },
   "scorePar": "Par",
-  "@scorePar": {"description": "Level par, on the one-tap scoring strip."},
+  "@scorePar": {
+    "description": "Level par, on the one-tap scoring strip."
+  },
   "scoreBogey": "Bogey",
-  "@scoreBogey": {"description": "One over par, on the one-tap scoring strip."},
+  "@scoreBogey": {
+    "description": "One over par, on the one-tap scoring strip."
+  },
   "scoreOther": "Other",
-  "@scoreOther": {"description": "Opens the full keypad for a score outside birdie-to-triple."},
+  "@scoreOther": {
+    "description": "Opens the full keypad for a score outside birdie-to-triple."
+  },
   "downloadOtherLayouts": "Fetching the club's other đường ({done} of {total})…",
   "@downloadOtherLayouts": {
     "description": "Shown under the progress bar while the remaining nines of the same club are fetched, so a finished bar on a still-working screen does not read as a stall.",
-    "placeholders": {"done": {"type": "String"}, "total": {"type": "String"}}
+    "placeholders": {
+      "done": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
   },
   "packageSegmentReady": "{duong} — downloaded",
   "@packageSegmentReady": {
     "description": "One nine of a paired round whose package is on the device. Shown beside the other nine so a golfer can see both at once.",
-    "placeholders": {"duong": {"type": "String"}}
+    "placeholders": {
+      "duong": {
+        "type": "String"
+      }
+    }
   },
   "packageSegmentMissing": "{duong} — not downloaded",
   "@packageSegmentMissing": {
     "description": "One nine of a paired round whose package is still missing.",
-    "placeholders": {"duong": {"type": "String"}}
+    "placeholders": {
+      "duong": {
+        "type": "String"
+      }
+    }
   },
   "authGoogleNotRegistered": "This build is not registered with Google, so sign-in cannot work on it. Trying again will not change that — tell whoever gave you the app.",
   "@authGoogleNotRegistered": {
@@ -469,7 +662,9 @@
   "@packageNotDownloadedNamed": {
     "description": "Package banner where the round is played on more than one nine, so the golfer can tell which one is still missing after downloading the other.",
     "placeholders": {
-      "course": {"type": "String"}
+      "course": {
+        "type": "String"
+      }
     }
   },
   "packageNotDownloadedSubtitle": "Download for offline use, or play now (needs network)",
@@ -933,7 +1128,6 @@
   "bagName": "Bag Name",
   "bagCreate": "Create",
   "bagSyncing": "Syncing…",
-  "bagSavedOffline": "Changes saved offline",
   "bagEmptyTitle": "No Golf Bags Yet",
   "bagEmptySubtitle": "Create your first bag to start tracking your clubs.",
   "bagCreateFirst": "Create First Bag",
@@ -1594,7 +1788,6 @@
   "restrictedGreenContours": "Green contours",
   "restrictedPuttingHelp": "Putting help",
   "restrictedAiFeatures": "AI features",
-  "smartTargetTitle": "Smart Target",
   "smartTargetRegenerate": "Regenerate",
   "watchAppleWatch": "Apple Watch",
   "watchStatus": "WATCH STATUS",
@@ -2014,7 +2207,9 @@
   "@measureAwayFromHole": {
     "description": "Replaces the golfer-to-green yardage when the golfer is further away than any hole is long — they are not on this hole, and a golf number would be meaningless.",
     "placeholders": {
-      "distance": {"type": "String"}
+      "distance": {
+        "type": "String"
+      }
     }
   },
   "measureWithoutImagery": "No satellite imagery in this build — the ruler still works.",
@@ -2904,17 +3099,38 @@
   "roundSetupCountsHandicapOff": "This round will not affect your handicap",
   "msgNoPackagePublished": "No offline map has been built for this course yet. You can still play and score; the map just needs a connection.",
   "strategyHandicapRated": "Handicap {index} → course handicap {playing} (from this tee's slope and rating)",
-  "@strategyHandicapRated": {"placeholders": {"index": {"type": "String"}, "playing": {"type": "String"}}},
+  "@strategyHandicapRated": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      },
+      "playing": {
+        "type": "String"
+      }
+    }
+  },
   "scoreDisplayGross": "Gross",
   "scoreDisplayNet": "Net",
   "scoreDisplayToPar": "To par",
   "scoreDisplayNetUnavailable": "Net needs a playing handicap and the club's stroke index.",
   "roundSetupCourseCount": "{count} courses",
-  "@roundSetupCourseCount": {"placeholders": {"count": {"type": "int"}}},
+  "@roundSetupCourseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceTitle": "My performance",
   "performanceAllTime": "All time",
   "performanceLast": "Last {count}",
-  "@performanceLast": {"placeholders": {"count": {"type": "int"}}},
+  "@performanceLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceFailed": "Could not load your statistics.",
   "performanceEmpty": "No completed rounds yet. Finish one and the numbers appear here.",
   "performanceRounds": "Rounds",
@@ -2925,7 +3141,13 @@
   "performancePenalties": "Penalties / round",
   "performanceNotRecorded": "not recorded",
   "performanceHoles": "{count} holes",
-  "@performanceHoles": {"placeholders": {"count": {"type": "int"}}},
+  "@performanceHoles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceDistribution": "Score distribution",
   "performanceByPar": "By par",
   "performanceEagle": "Eagle or better",
@@ -2935,7 +3157,19 @@
   "performanceDoubleBogey": "Double bogey",
   "performanceTripleOrWorse": "Triple or worse",
   "performanceParDetail": "Avg {average} · best {best} · worst {worst}",
-  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}},
+  "@performanceParDetail": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "int"
+      },
+      "worst": {
+        "type": "int"
+      }
+    }
+  },
   "downloadAlreadyCurrent": "Already up to date",
   "downloadCompleted": "Course data downloaded",
   "mapToPin": "To pin",
@@ -2962,7 +3196,13 @@
   "mapGreenCentre": "Centre",
   "mapGreenBack": "Back",
   "holeHistoryTitle": "Hole {hole} — last time",
-  "@holeHistoryTitle": {"placeholders": {"hole": {"type": "int"}}},
+  "@holeHistoryTitle": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
   "holeHistoryNeverPlayed": "You have not played this hole before.",
   "holeHistoryTimesPlayed": "Played",
   "holeHistoryAverage": "Average",
@@ -2973,5 +3213,331 @@
   "holeNoteSave": "Save note",
   "holeNoteSaving": "Saving…",
   "holeNoteSaveFailed": "Not saved — check your connection and try again.",
-  "holeNoteDelete": "Delete note"
+  "holeNoteDelete": "Delete note",
+  "mapGolferPositionSemantics": "Golfer position, {confidence} confidence",
+  "@mapGolferPositionSemantics": {
+    "placeholders": {
+      "confidence": {
+        "type": "String"
+      }
+    }
+  },
+  "mapLayerPanelSemantics": "Layer panel, {visible} of {total} layers shown",
+  "@mapLayerPanelSemantics": {
+    "placeholders": {
+      "visible": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherUvIndexSemantics": "UV index {value}",
+  "@weatherUvIndexSemantics": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherStale": "Weather may be outdated. {age}.",
+  "@weatherStale": {
+    "placeholders": {
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherExpired": "Weather data expired. {age}.",
+  "@weatherExpired": {
+    "placeholders": {
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherStaleSemantics": "Warning: weather data may be outdated. {age}",
+  "@weatherStaleSemantics": {
+    "placeholders": {
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "weatherExpiredSemantics": "Warning: weather data has expired. {age}",
+  "@weatherExpiredSemantics": {
+    "placeholders": {
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupStartSemantics": "Start round at {course}",
+  "@roundSetupStartSemantics": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "holeSwitchTitle": "Switch to hole {hole}?",
+  "@holeSwitchTitle": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "dispersionToHazard": "To {hazard}",
+  "@dispersionToHazard": {
+    "placeholders": {
+      "hazard": {
+        "type": "String"
+      }
+    }
+  },
+  "confidenceSemantics": "Confidence: {level}",
+  "@confidenceSemantics": {
+    "placeholders": {
+      "level": {
+        "type": "String"
+      }
+    }
+  },
+  "clubTypeSemantics": "Club type: {type}, tap to change",
+  "@clubTypeSemantics": {
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "clubTypeNotSelected": "not selected",
+  "clubInUseDateSemantics": "Date put into use: {date}, tap to change",
+  "@clubInUseDateSemantics": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "clubInUseDateNotSet": "not set",
+  "scoreRowSemantics": "Hole {hole}: {strokes} strokes, {notation}",
+  "@scoreRowSemantics": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      },
+      "strokes": {
+        "type": "String"
+      },
+      "notation": {
+        "type": "String"
+      }
+    }
+  },
+  "shotEditTitle": "Edit shot {number}",
+  "@shotEditTitle": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadStorageUsed": "Using {size} for offline courses",
+  "@downloadStorageUsed": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "strokesGainedDirectionGained": "gained",
+  "strokesGainedDirectionLost": "lost",
+  "deletePackageBody": "This will remove \"{course}\" maps and data from your device.",
+  "@deletePackageBody": {
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadProgressSemantics": "Downloading {file}: {percent}% complete, {downloaded} of {total}",
+  "@downloadProgressSemantics": {
+    "placeholders": {
+      "file": {
+        "type": "String"
+      },
+      "percent": {
+        "type": "String"
+      },
+      "downloaded": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "downloadProgressFallbackFile": "package",
+  "downloadFileOfTotal": "File {index} of {total}",
+  "@downloadFileOfTotal": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "wifiOnlySemantics": "Wi-Fi only download {state}. {hint}",
+  "@wifiOnlySemantics": {
+    "placeholders": {
+      "state": {
+        "type": "String"
+      },
+      "hint": {
+        "type": "String"
+      }
+    }
+  },
+  "wifiOnlyEnabled": "enabled",
+  "wifiOnlyDisabled": "disabled",
+  "holeAnnouncerSemantics": "Current hole: {hole}",
+  "@holeAnnouncerSemantics": {
+    "placeholders": {
+      "hole": {
+        "type": "String"
+      }
+    }
+  },
+  "distanceUpdatedAt": "Updated {age}",
+  "@distanceUpdatedAt": {
+    "placeholders": {
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "notesForPlayer": "Notes for {player}",
+  "@notesForPlayer": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      }
+    }
+  },
+  "shotDistanceDistribution": "Distance distribution — {club}",
+  "@shotDistanceDistribution": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "shotDistanceDistributionSemantics": "Distance distribution chart for {club}",
+  "@shotDistanceDistributionSemantics": {
+    "placeholders": {
+      "club": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetCarrySemantics": "Carry distance: {distance}",
+  "@smartTargetCarrySemantics": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "smartTargetToPinSemantics": "Distance to pin: {distance}",
+  "@smartTargetToPinSemantics": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyRejectionReasonValue": "Reason: {reason}",
+  "@privacyRejectionReasonValue": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "strokesGainedOverallValue": "Overall: {strokes} strokes {direction}",
+  "@strokesGainedOverallValue": {
+    "placeholders": {
+      "strokes": {
+        "type": "String"
+      },
+      "direction": {
+        "type": "String"
+      }
+    }
+  },
+  "mapGolferAccuracySuffix": ", accuracy {meters} m",
+  "@mapGolferAccuracySuffix": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "roundSetupStartDisabledSemantics": "Start round disabled. {reason}",
+  "@roundSetupStartDisabledSemantics": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "wifiStatusConnected": "Wi-Fi connected",
+  "wifiStatusNotConnected": "Wi-Fi not connected",
+  "holeDetectionUnavailable": "Hole detection not available",
+  "primaryDistanceSemantics": "Green: front {front}, centre {centre}, back {back}",
+  "@primaryDistanceSemantics": {
+    "placeholders": {
+      "front": {
+        "type": "String"
+      },
+      "centre": {
+        "type": "String"
+      },
+      "back": {
+        "type": "String"
+      }
+    }
+  },
+  "notesForPlayerWithText": "Notes for {player}: {notes}",
+  "@notesForPlayerWithText": {
+    "placeholders": {
+      "player": {
+        "type": "String"
+      },
+      "notes": {
+        "type": "String"
+      }
+    }
+  },
+  "privacyManagementTitle": "Privacy & Data Management",
+  "privacyManagementBody": "Request data exports, delete your account, or remove specific rounds. All requests are processed by our team.",
+  "holeSwitchHint": "Tap Confirm to switch holes, or Cancel to stay on the current hole.",
+  "bagPerformanceEmptyBody": "Start recording shots with your clubs to see performance statistics.",
+  "performanceLeftRightHint": "Negative = left, Positive = right",
+  "performanceShortLongHint": "Negative = short, Positive = long",
+  "bagDetailEmptyBody": "Add clubs to track distances and enable recommendations.",
+  "recommendationsDisabledSemantics": "Recommendations disabled: add clubs with carry distance to enable recommendations",
+  "recommendationsDisabledBody": "Add clubs with carry distances to enable personalized recommendations.",
+  "watchPackageExplainer": "Watch packages contain optimized course data for your Apple Watch, including hole distances and GPS coordinates. Packages are stored directly on your watch for offline use during rounds.",
+  "strokesGainedEmptyBody": "Record shots in your round to see Strokes Gained analysis.",
+  "deletePackageKeepsRounds": "Your rounds and scores will NOT be deleted and will remain available.",
+  "holePickerAllHoles": "18-Hole Rounds",
+  "holePickerChooseStart": "Choose a starting hole",
+  "apiBaseUrlMissingHint": "Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api",
+  "authCheckingSession": "Checking your secure session…"
 }

@@ -81,7 +81,7 @@ class ConfidenceBadge extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Confidence: $labelText',
+                    AppLocalizations.of(context).confidenceSemantics(labelText),
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,

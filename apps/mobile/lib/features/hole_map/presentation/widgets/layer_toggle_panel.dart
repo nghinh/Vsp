@@ -44,8 +44,10 @@ class _LayerTogglePanelState extends State<LayerTogglePanel> {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label:
-          'Layer toggle panel, $_visibleCount of ${_allLayers(context).length} layers visible',
+      label: AppLocalizations.of(context).mapLayerPanelSemantics(
+        '$_visibleCount',
+        '${_allLayers(context).length}',
+      ),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         decoration: BoxDecoration(

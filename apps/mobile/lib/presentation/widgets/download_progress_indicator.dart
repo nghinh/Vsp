@@ -28,8 +28,13 @@ class DownloadProgressIndicator extends StatelessWidget {
     final total = _formatBytes(progress.totalBytes);
 
     return Semantics(
-      label:
-          'Downloading ${progress.currentFile ?? "package"}: $percent% complete, $downloaded of $total',
+      label: AppLocalizations.of(context).downloadProgressSemantics(
+        progress.currentFile ??
+            AppLocalizations.of(context).downloadProgressFallbackFile,
+        '$percent',
+        downloaded,
+        total,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -70,7 +75,10 @@ class DownloadProgressIndicator extends StatelessWidget {
             children: [
               // File index
               Text(
-                'File ${progress.currentFileIndex + 1} of ${progress.totalFiles}',
+                AppLocalizations.of(context).downloadFileOfTotal(
+                  '${progress.currentFileIndex + 1}',
+                  '${progress.totalFiles}',
+                ),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),

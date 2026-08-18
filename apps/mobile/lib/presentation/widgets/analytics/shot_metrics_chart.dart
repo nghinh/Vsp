@@ -96,15 +96,19 @@ class _DistanceDistributionSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Distance Distribution — ${clubMetrics.clubName ?? clubMetrics.clubId}',
+          AppLocalizations.of(context).shotDistanceDistribution(
+            clubMetrics.clubName ?? clubMetrics.clubId,
+          ),
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 12),
         if (sections.isNotEmpty)
           AccessiblePieChart(
             sections: sections,
-            title:
-                'Distance distribution pie chart for ${clubMetrics.clubName ?? clubMetrics.clubId}',
+            title: AppLocalizations.of(context)
+                .shotDistanceDistributionSemantics(
+                  clubMetrics.clubName ?? clubMetrics.clubId,
+                ),
           ),
         const SizedBox(height: 12),
         // Distance stats

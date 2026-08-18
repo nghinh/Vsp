@@ -142,8 +142,11 @@ class SmartTargetCard extends StatelessWidget {
             icon: Icons.straighten,
             label: AppLocalizations.of(context).smartTargetCarry,
             value: context.formatDistance(option.carryMeters),
-            semanticLabel:
-                'Carry distance: ${context.formatDistance(option.carryMeters)}',
+            semanticLabel: AppLocalizations.of(
+              context,
+            ).smartTargetCarrySemantics(
+              context.formatDistance(option.carryMeters),
+            ),
           ),
         ),
         const SizedBox(width: 12),
@@ -152,8 +155,11 @@ class SmartTargetCard extends StatelessWidget {
             icon: Icons.flag,
             label: AppLocalizations.of(context).smartTargetToPin,
             value: context.formatDistance(option.remainingMeters),
-            semanticLabel:
-                'Distance to pin: ${context.formatDistance(option.remainingMeters)}',
+            semanticLabel: AppLocalizations.of(
+              context,
+            ).smartTargetToPinSemantics(
+              context.formatDistance(option.remainingMeters),
+            ),
           ),
         ),
       ],

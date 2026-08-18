@@ -430,7 +430,7 @@ class _EmptyClubsView extends StatelessWidget {
           Text(AppLocalizations.of(context).bagNoClubs, style: theme.textTheme.titleMedium),
           const SizedBox(height: VspSpacing.xs),
           Text(
-            'Add clubs to track distances and enable recommendations.',
+            AppLocalizations.of(context).bagDetailEmptyBody,
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),

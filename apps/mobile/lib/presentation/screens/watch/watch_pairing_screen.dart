@@ -368,9 +368,7 @@ class _InfoSection extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Watch packages contain optimized course data for your Apple Watch, '
-            'including hole distances and GPS coordinates. Packages are stored '
-            'directly on your watch for offline use during rounds.',
+            AppLocalizations.of(context).watchPackageExplainer,
             style: TextStyle(
               fontSize: 13,
               color: CupertinoColors.secondaryLabel.resolveFrom(context),

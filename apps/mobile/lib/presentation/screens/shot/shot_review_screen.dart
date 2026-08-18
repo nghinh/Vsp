@@ -202,7 +202,7 @@ class _ShotReviewScreenState extends State<ShotReviewScreen> {
           child: Row(
             children: [
               Text(
-                'Hole $holeNumber',
+                AppLocalizations.of(context).holeNumberLabel('$holeNumber'),
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.primary,

@@ -7975,6 +7975,365 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete note'**
   String get holeNoteDelete;
+
+  /// No description provided for @mapGolferPositionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Golfer position, {confidence} confidence'**
+  String mapGolferPositionSemantics(String confidence);
+
+  /// No description provided for @mapLayerPanelSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Layer panel, {visible} of {total} layers shown'**
+  String mapLayerPanelSemantics(String visible, String total);
+
+  /// No description provided for @weatherUvIndexSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'UV index {value}'**
+  String weatherUvIndexSemantics(String value);
+
+  /// No description provided for @weatherStale.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather may be outdated. {age}.'**
+  String weatherStale(String age);
+
+  /// No description provided for @weatherExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Weather data expired. {age}.'**
+  String weatherExpired(String age);
+
+  /// No description provided for @weatherStaleSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: weather data may be outdated. {age}'**
+  String weatherStaleSemantics(String age);
+
+  /// No description provided for @weatherExpiredSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning: weather data has expired. {age}'**
+  String weatherExpiredSemantics(String age);
+
+  /// No description provided for @roundSetupStartSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Start round at {course}'**
+  String roundSetupStartSemantics(String course);
+
+  /// No description provided for @holeSwitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch to hole {hole}?'**
+  String holeSwitchTitle(String hole);
+
+  /// No description provided for @dispersionToHazard.
+  ///
+  /// In en, this message translates to:
+  /// **'To {hazard}'**
+  String dispersionToHazard(String hazard);
+
+  /// No description provided for @confidenceSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Confidence: {level}'**
+  String confidenceSemantics(String level);
+
+  /// No description provided for @clubTypeSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Club type: {type}, tap to change'**
+  String clubTypeSemantics(String type);
+
+  /// No description provided for @clubTypeNotSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'not selected'**
+  String get clubTypeNotSelected;
+
+  /// No description provided for @clubInUseDateSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Date put into use: {date}, tap to change'**
+  String clubInUseDateSemantics(String date);
+
+  /// No description provided for @clubInUseDateNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'not set'**
+  String get clubInUseDateNotSet;
+
+  /// No description provided for @scoreRowSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole {hole}: {strokes} strokes, {notation}'**
+  String scoreRowSemantics(String hole, String strokes, String notation);
+
+  /// No description provided for @shotEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit shot {number}'**
+  String shotEditTitle(String number);
+
+  /// No description provided for @downloadStorageUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Using {size} for offline courses'**
+  String downloadStorageUsed(String size);
+
+  /// No description provided for @strokesGainedDirectionGained.
+  ///
+  /// In en, this message translates to:
+  /// **'gained'**
+  String get strokesGainedDirectionGained;
+
+  /// No description provided for @strokesGainedDirectionLost.
+  ///
+  /// In en, this message translates to:
+  /// **'lost'**
+  String get strokesGainedDirectionLost;
+
+  /// No description provided for @deletePackageBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove \"{course}\" maps and data from your device.'**
+  String deletePackageBody(String course);
+
+  /// No description provided for @downloadProgressSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading {file}: {percent}% complete, {downloaded} of {total}'**
+  String downloadProgressSemantics(
+    String file,
+    String percent,
+    String downloaded,
+    String total,
+  );
+
+  /// No description provided for @downloadProgressFallbackFile.
+  ///
+  /// In en, this message translates to:
+  /// **'package'**
+  String get downloadProgressFallbackFile;
+
+  /// No description provided for @downloadFileOfTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'File {index} of {total}'**
+  String downloadFileOfTotal(String index, String total);
+
+  /// No description provided for @wifiOnlySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi only download {state}. {hint}'**
+  String wifiOnlySemantics(String state, String hint);
+
+  /// No description provided for @wifiOnlyEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'enabled'**
+  String get wifiOnlyEnabled;
+
+  /// No description provided for @wifiOnlyDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'disabled'**
+  String get wifiOnlyDisabled;
+
+  /// No description provided for @holeAnnouncerSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Current hole: {hole}'**
+  String holeAnnouncerSemantics(String hole);
+
+  /// No description provided for @distanceUpdatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Updated {age}'**
+  String distanceUpdatedAt(String age);
+
+  /// No description provided for @notesForPlayer.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes for {player}'**
+  String notesForPlayer(String player);
+
+  /// No description provided for @shotDistanceDistribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance distribution — {club}'**
+  String shotDistanceDistribution(String club);
+
+  /// No description provided for @shotDistanceDistributionSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance distribution chart for {club}'**
+  String shotDistanceDistributionSemantics(String club);
+
+  /// No description provided for @smartTargetCarrySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Carry distance: {distance}'**
+  String smartTargetCarrySemantics(String distance);
+
+  /// No description provided for @smartTargetToPinSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Distance to pin: {distance}'**
+  String smartTargetToPinSemantics(String distance);
+
+  /// No description provided for @privacyRejectionReasonValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String privacyRejectionReasonValue(String reason);
+
+  /// No description provided for @strokesGainedOverallValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall: {strokes} strokes {direction}'**
+  String strokesGainedOverallValue(String strokes, String direction);
+
+  /// No description provided for @mapGolferAccuracySuffix.
+  ///
+  /// In en, this message translates to:
+  /// **', accuracy {meters} m'**
+  String mapGolferAccuracySuffix(String meters);
+
+  /// No description provided for @roundSetupStartDisabledSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Start round disabled. {reason}'**
+  String roundSetupStartDisabledSemantics(String reason);
+
+  /// No description provided for @wifiStatusConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi connected'**
+  String get wifiStatusConnected;
+
+  /// No description provided for @wifiStatusNotConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Wi-Fi not connected'**
+  String get wifiStatusNotConnected;
+
+  /// No description provided for @holeDetectionUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Hole detection not available'**
+  String get holeDetectionUnavailable;
+
+  /// No description provided for @primaryDistanceSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Green: front {front}, centre {centre}, back {back}'**
+  String primaryDistanceSemantics(String front, String centre, String back);
+
+  /// No description provided for @notesForPlayerWithText.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes for {player}: {notes}'**
+  String notesForPlayerWithText(String player, String notes);
+
+  /// No description provided for @privacyManagementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Data Management'**
+  String get privacyManagementTitle;
+
+  /// No description provided for @privacyManagementBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Request data exports, delete your account, or remove specific rounds. All requests are processed by our team.'**
+  String get privacyManagementBody;
+
+  /// No description provided for @holeSwitchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Confirm to switch holes, or Cancel to stay on the current hole.'**
+  String get holeSwitchHint;
+
+  /// No description provided for @bagPerformanceEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Start recording shots with your clubs to see performance statistics.'**
+  String get bagPerformanceEmptyBody;
+
+  /// No description provided for @performanceLeftRightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative = left, Positive = right'**
+  String get performanceLeftRightHint;
+
+  /// No description provided for @performanceShortLongHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Negative = short, Positive = long'**
+  String get performanceShortLongHint;
+
+  /// No description provided for @bagDetailEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add clubs to track distances and enable recommendations.'**
+  String get bagDetailEmptyBody;
+
+  /// No description provided for @recommendationsDisabledSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations disabled: add clubs with carry distance to enable recommendations'**
+  String get recommendationsDisabledSemantics;
+
+  /// No description provided for @recommendationsDisabledBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add clubs with carry distances to enable personalized recommendations.'**
+  String get recommendationsDisabledBody;
+
+  /// No description provided for @watchPackageExplainer.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch packages contain optimized course data for your Apple Watch, including hole distances and GPS coordinates. Packages are stored directly on your watch for offline use during rounds.'**
+  String get watchPackageExplainer;
+
+  /// No description provided for @strokesGainedEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Record shots in your round to see Strokes Gained analysis.'**
+  String get strokesGainedEmptyBody;
+
+  /// No description provided for @deletePackageKeepsRounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rounds and scores will NOT be deleted and will remain available.'**
+  String get deletePackageKeepsRounds;
+
+  /// No description provided for @holePickerAllHoles.
+  ///
+  /// In en, this message translates to:
+  /// **'18-Hole Rounds'**
+  String get holePickerAllHoles;
+
+  /// No description provided for @holePickerChooseStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a starting hole'**
+  String get holePickerChooseStart;
+
+  /// No description provided for @apiBaseUrlMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api'**
+  String get apiBaseUrlMissingHint;
+
+  /// No description provided for @authCheckingSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your secure session…'**
+  String get authCheckingSession;
 }
 
 class _AppLocalizationsDelegate

@@ -181,7 +181,13 @@ class ProgressiveDisclosurePanel extends StatelessWidget {
                   // Notes button
                   Semantics(
                     label:
-                        'Notes for $playerName${score?.notes != null && score!.notes!.isNotEmpty ? ': ${score!.notes}' : ''}',
+                        score?.notes != null && score!.notes!.isNotEmpty
+                        ? AppLocalizations.of(
+                            context,
+                          ).notesForPlayerWithText(playerName, score!.notes!)
+                        : AppLocalizations.of(
+                            context,
+                          ).notesForPlayer(playerName),
                     button: true,
                     child: InkWell(
                       onTap: onNotesTap,

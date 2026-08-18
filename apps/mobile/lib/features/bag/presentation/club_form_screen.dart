@@ -413,8 +413,10 @@ class _ClubTypeSelector extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label:
-          'Club type: ${selectedType?.displayName ?? "not selected"}, tap to change',
+      label: AppLocalizations.of(context).clubTypeSemantics(
+        selectedType?.displayName ??
+            AppLocalizations.of(context).clubTypeNotSelected,
+      ),
       button: true,
       child: InkWell(
         onTap: onTap,
@@ -634,8 +636,11 @@ class _DateSelector extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label:
-          'Date put into use: ${selectedDate != null ? _formatDate(selectedDate!) : "not set"}, tap to change',
+      label: AppLocalizations.of(context).clubInUseDateSemantics(
+        selectedDate != null
+            ? _formatDate(selectedDate!)
+            : AppLocalizations.of(context).clubInUseDateNotSet,
+      ),
       button: true,
       child: InkWell(
         onTap: onTap,

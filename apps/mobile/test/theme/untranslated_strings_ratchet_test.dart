@@ -14,6 +14,18 @@
 // 'FeatureCollection' and the VSP-ERR codes are wire values that must stay
 // exactly as the server spells them, and translating one would break a
 // contract rather than help a golfer.
+//
+// Zero was not zero. On 18/8/2026 this test was green while 33 English strings
+// were being rendered to Vietnamese golfers — "Switch to Hole 4?", "Weather may
+// be outdated.", "Edit Shot 2", "This will remove ... from your device" — plus
+// every semantic label a screen reader speaks. The pattern below matched a
+// string of plain characters and every one of those had a `${...}` in it, so
+// none of them looked like a UI string to this file. A number, a course name or
+// a club name in the middle of a sentence is the most ordinary thing a UI
+// string does; it was the one shape not being looked for.
+//
+// Two of the 33 already had a Vietnamese translation in both .arb files, which
+// is the same finding that started this test and the reason it exists.
 
 import 'dart:io';
 
@@ -33,7 +45,23 @@ final _literal = RegExp(
   r"""(?<![\w.$])'([A-Z][A-Za-z][A-Za-z0-9 ,.'%/()\-:!?]{2,50})'""",
 );
 
-final _wire = RegExp(r'^(VSP-|GET|POST|PUT|DELETE|PATCH|http)');
+/// The same thing with a value dropped into the middle of it.
+///
+/// Deliberately loose about what is inside `${...}`: the point is the English
+/// around it. Anchored on a capitalised first word for the same reason as
+/// above, so `'${count} holes'` is not caught here — that one has no English
+/// to translate and reads the same in both languages.
+final _interpolated = RegExp(
+  r"""(?<![\w.$])'([A-Z][A-Za-z][^'\\]{2,120})'""",
+);
+
+/// Values that travel on the wire rather than to a golfer.
+///
+/// SHOUTING_SNAKE_CASE is in here because widening the search to interpolated
+/// strings brought `code: 'NETWORK_ERROR'` with it — a line that also carries
+/// `message:`, which is what put it in range. It is an error code the app
+/// matches on, not a sentence anybody reads.
+final _wire = RegExp(r'^(VSP-|GET|POST|PUT|DELETE|PATCH|http|[A-Z][A-Z0-9_]+$)');
 
 void main() {
   test('no UI string is written in the widget instead of the .arb', () {
@@ -62,18 +90,22 @@ void main() {
         final context = i > 0 ? '${lines[i - 1]}$line' : line;
         if (!_rendered.hasMatch(context)) continue;
 
-        for (final match in _literal.allMatches(line)) {
-          final text = match.group(1)!;
-          if (_wire.hasMatch(text)) continue;
-          // A map subscript is a key, not a caption. The dispersion legend
-          // reads `outcomeCounts['ROUGH']` on the line after a `label:` that
-          // is already localised, and counting it made three translated rows
-          // look like three untranslated ones.
-          final start = match.start;
-          final before = line.substring(0, start).trimRight();
-          final after = line.substring(match.end).trimLeft();
-          if (before.endsWith('[') && after.startsWith(']')) continue;
-          found.add('$path:${i + 1}  $text');
+        for (final pattern in [_literal, _interpolated]) {
+          for (final match in pattern.allMatches(line)) {
+            final text = match.group(1)!;
+            if (_wire.hasMatch(text)) continue;
+            // A map subscript is a key, not a caption. The dispersion legend
+            // reads `outcomeCounts['ROUGH']` on the line after a `label:` that
+            // is already localised, and counting it made three translated rows
+            // look like three untranslated ones.
+            final start = match.start;
+            final before = line.substring(0, start).trimRight();
+            final after = line.substring(match.end).trimLeft();
+            if (before.endsWith('[') && after.startsWith(']')) continue;
+            final entry = '$path:${i + 1}  $text';
+            if (found.contains(entry)) continue;
+            found.add(entry);
+          }
         }
       }
     }

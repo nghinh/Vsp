@@ -280,7 +280,7 @@ class _UnconfiguredBuildView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api',
+                AppLocalizations.of(context).apiBaseUrlMissingHint,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -328,7 +328,7 @@ class _SessionStartupView extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Checking your secure session…',
+                    AppLocalizations.of(context).authCheckingSession,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyLarge,
                   ),

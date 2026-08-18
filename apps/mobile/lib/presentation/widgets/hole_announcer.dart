@@ -158,8 +158,10 @@ class _HoleAnnouncerState extends State<HoleAnnouncer> with HoleAnnouncerMixin {
   Widget build(BuildContext context) {
     return Semantics(
       label: widget.holeNumber != null
-          ? 'Current hole: ${widget.holeNumber}'
-          : 'Hole detection not available',
+          ? AppLocalizations.of(
+              context,
+            ).holeAnnouncerSemantics('${widget.holeNumber}')
+          : AppLocalizations.of(context).holeDetectionUnavailable,
       child: widget.child,
     );
   }

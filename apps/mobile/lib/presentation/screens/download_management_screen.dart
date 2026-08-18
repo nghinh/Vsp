@@ -191,7 +191,9 @@ class _DownloadManagementBodyState extends State<_DownloadManagementBody> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Using ${_formatBytes(_totalStorageBytes)} for offline courses',
+                        AppLocalizations.of(context).downloadStorageUsed(
+                          _formatBytes(_totalStorageBytes),
+                        ),
                         style: theme.textTheme.bodyMedium?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
 import '../../data/privacy_request_dto.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 // ─── Privacy Request Card ─────────────────────────────────────────────────────
 
@@ -82,7 +83,10 @@ class PrivacyRequestCard extends StatelessWidget {
                     if (request.hasRejectionReason) ...[
                       const SizedBox(height: VspSpacing.xs),
                       Text(
-                        'Reason: ${request.rejectionReason}',
+                        AppLocalizations.of(context)
+                            .privacyRejectionReasonValue(
+                              '${request.rejectionReason}',
+                            ),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: (colorScheme.brightness == Brightness.dark
                               ? Theme.of(context).colorScheme.error

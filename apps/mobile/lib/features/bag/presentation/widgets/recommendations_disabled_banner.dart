@@ -21,8 +21,7 @@ class RecommendationsDisabledBanner extends StatelessWidget {
     final warningColor = _warningColor(brightness);
 
     return Semantics(
-      label:
-          'Recommendations disabled: add clubs with carry distance to enable recommendations',
+      label: AppLocalizations.of(context).recommendationsDisabledSemantics,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 12,
@@ -50,7 +49,7 @@ class RecommendationsDisabledBanner extends StatelessWidget {
                   ),
                   const SizedBox(height: VspSpacing.half),
                   Text(
-                    'Add clubs with carry distances to enable personalized recommendations.',
+                    AppLocalizations.of(context).recommendationsDisabledBody,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: warningColor.withOpacity(0.9),
                     ),

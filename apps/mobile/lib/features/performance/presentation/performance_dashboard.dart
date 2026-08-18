@@ -374,7 +374,10 @@ class _ParRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 64,
-            child: Text('Par ${par.par}', style: theme.textTheme.bodyMedium),
+            child: Text(
+              AppLocalizations.of(context).coursePar('${par.par}'),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             child: Text(

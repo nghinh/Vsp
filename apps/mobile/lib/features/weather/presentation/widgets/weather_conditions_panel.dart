@@ -214,8 +214,12 @@ class WeatherConditionsPanel extends StatelessWidget {
       safetyFields.add(
         _SafetyBadge(
           icon: Icons.wb_sunny_outlined,
-          label: AppLocalizations.of(context).weatherUvIndex('${snapshot.uvIndex}'),
-          semanticsLabel: 'UV index ${snapshot.uvIndex}',
+          label: AppLocalizations.of(
+            context,
+          ).weatherUvIndex('${snapshot.uvIndex}'),
+          semanticsLabel: AppLocalizations.of(
+            context,
+          ).weatherUvIndexSemantics('${snapshot.uvIndex}'),
         ),
       );
     }
@@ -606,9 +610,13 @@ class _StaleWarningBanner extends StatelessWidget {
         ? theme.colorScheme.error
         : theme.colorScheme.tertiary;
 
+    final l10n = AppLocalizations.of(context);
+    final age = snapshot.relativeTimeString;
+
     return Semantics(
-      label:
-          'Warning: weather data is ${isExpired ? 'expired' : 'outdated'}. ${snapshot.relativeTimeString}',
+      label: isExpired
+          ? l10n.weatherExpiredSemantics(age)
+          : l10n.weatherStaleSemantics(age),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
@@ -625,9 +633,7 @@ class _StaleWarningBanner extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                isExpired
-                    ? 'Weather data expired. ${snapshot.relativeTimeString}.'
-                    : 'Weather may be outdated. ${snapshot.relativeTimeString}.',
+                isExpired ? l10n.weatherExpired(age) : l10n.weatherStale(age),
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: textColor,
                   fontWeight: FontWeight.w500,

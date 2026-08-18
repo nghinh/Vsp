@@ -1317,8 +1317,12 @@ class _StartRoundButton extends StatelessWidget {
 
     return Semantics(
       label: isEnabled
-          ? 'Start round at ${state.courseName}'
-          : 'Start round disabled. $disabledReason',
+          ? AppLocalizations.of(
+              context,
+            ).roundSetupStartSemantics(state.courseName ?? '')
+          : AppLocalizations.of(
+              context,
+            ).roundSetupStartDisabledSemantics(disabledReason ?? ''),
       button: true,
       child: SizedBox(
         width: double.infinity,

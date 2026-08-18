@@ -98,7 +98,9 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'Switch to Hole $suggestedHoleNumber?',
+              AppLocalizations.of(
+                context,
+              ).holeSwitchTitle('$suggestedHoleNumber'),
               style: theme.textTheme.titleLarge,
             ),
           ),
@@ -171,7 +173,7 @@ class HoleSwitchConfirmationDialog extends StatelessWidget {
 
           // Instruction text
           Text(
-            'Tap Confirm to switch holes, or Cancel to stay on the current hole.',
+            AppLocalizations.of(context).holeSwitchHint,
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

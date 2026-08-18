@@ -246,8 +246,12 @@ class _OverallSGHeader extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Semantics(
-            label:
-                'Overall: ${absSg.toStringAsFixed(1)} strokes ${isPositive ? "gained" : "lost"}',
+            label: AppLocalizations.of(context).strokesGainedOverallValue(
+              absSg.toStringAsFixed(1),
+              isPositive
+                  ? AppLocalizations.of(context).strokesGainedDirectionGained
+                  : AppLocalizations.of(context).strokesGainedDirectionLost,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -418,7 +422,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Record shots in your round to see Strokes Gained analysis.',
+              AppLocalizations.of(context).strokesGainedEmptyBody,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,

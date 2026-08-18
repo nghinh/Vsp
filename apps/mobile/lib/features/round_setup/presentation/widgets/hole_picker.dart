@@ -322,7 +322,9 @@ class _HolePickerSheetState extends State<_HolePickerSheet> {
 
             // Every hole this round contains.
             Text(
-              widget.holeCount >= 18 ? '18-Hole Rounds' : 'Chọn hố bắt đầu',
+              widget.holeCount >= 18
+                  ? AppLocalizations.of(context).holePickerAllHoles
+                  : AppLocalizations.of(context).holePickerChooseStart,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

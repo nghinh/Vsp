@@ -51,7 +51,9 @@ class DirectionalStatsCard extends StatelessWidget {
             _DirectionalRow(
               icon: Icons.swap_horiz,
               label: AppLocalizations.of(context).performanceLeftRight,
-              description: 'Negative = left, Positive = right',
+              description: AppLocalizations.of(
+                context,
+              ).performanceLeftRightHint,
               avg: stats.formatLeftRight(context.distanceUnit),
               stdDev: stats.leftRightStdDev != null
                   ? MeasureUnits.formatTolerance(
@@ -68,7 +70,9 @@ class DirectionalStatsCard extends StatelessWidget {
             _DirectionalRow(
               icon: Icons.straighten,
               label: AppLocalizations.of(context).performanceShortLong,
-              description: 'Negative = short, Positive = long',
+              description: AppLocalizations.of(
+                context,
+              ).performanceShortLongHint,
               avg: stats.formatShortLong(context.distanceUnit),
               stdDev: stats.shortLongStdDev != null
                   ? MeasureUnits.formatTolerance(

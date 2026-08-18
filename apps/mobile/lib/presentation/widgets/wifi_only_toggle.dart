@@ -60,9 +60,14 @@ class _WifiOnlyToggleState extends State<WifiOnlyToggle> {
     final brightness = theme.colorScheme.brightness;
 
     return Semantics(
-      label:
-          'Wi-Fi only download ${_wifiOnly ? "enabled" : "disabled"}. '
-          'Wi-Fi ${_isWifiConnected ? "connected" : "not connected"}',
+      label: AppLocalizations.of(context).wifiOnlySemantics(
+        _wifiOnly
+            ? AppLocalizations.of(context).wifiOnlyEnabled
+            : AppLocalizations.of(context).wifiOnlyDisabled,
+        _isWifiConnected
+            ? AppLocalizations.of(context).wifiStatusConnected
+            : AppLocalizations.of(context).wifiStatusNotConnected,
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 12,

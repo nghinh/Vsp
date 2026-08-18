@@ -4496,4 +4496,261 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get holeNoteDelete => 'Xoá ghi chú';
+
+  @override
+  String mapGolferPositionSemantics(String confidence) {
+    return 'Vị trí golfer, độ tin cậy $confidence';
+  }
+
+  @override
+  String mapLayerPanelSemantics(String visible, String total) {
+    return 'Bảng lớp bản đồ, hiện $visible trên $total lớp';
+  }
+
+  @override
+  String weatherUvIndexSemantics(String value) {
+    return 'Chỉ số UV $value';
+  }
+
+  @override
+  String weatherStale(String age) {
+    return 'Thời tiết có thể đã cũ. $age.';
+  }
+
+  @override
+  String weatherExpired(String age) {
+    return 'Dữ liệu thời tiết đã hết hạn. $age.';
+  }
+
+  @override
+  String weatherStaleSemantics(String age) {
+    return 'Cảnh báo: dữ liệu thời tiết có thể đã cũ. $age';
+  }
+
+  @override
+  String weatherExpiredSemantics(String age) {
+    return 'Cảnh báo: dữ liệu thời tiết đã hết hạn. $age';
+  }
+
+  @override
+  String roundSetupStartSemantics(String course) {
+    return 'Bắt đầu vòng đấu tại $course';
+  }
+
+  @override
+  String holeSwitchTitle(String hole) {
+    return 'Chuyển sang hố $hole?';
+  }
+
+  @override
+  String dispersionToHazard(String hazard) {
+    return 'Tới $hazard';
+  }
+
+  @override
+  String confidenceSemantics(String level) {
+    return 'Độ tin cậy: $level';
+  }
+
+  @override
+  String clubTypeSemantics(String type) {
+    return 'Loại gậy: $type, chạm để đổi';
+  }
+
+  @override
+  String get clubTypeNotSelected => 'chưa chọn';
+
+  @override
+  String clubInUseDateSemantics(String date) {
+    return 'Ngày bắt đầu dùng: $date, chạm để đổi';
+  }
+
+  @override
+  String get clubInUseDateNotSet => 'chưa đặt';
+
+  @override
+  String scoreRowSemantics(String hole, String strokes, String notation) {
+    return 'Hố $hole: $strokes gậy, $notation';
+  }
+
+  @override
+  String shotEditTitle(String number) {
+    return 'Sửa cú đánh $number';
+  }
+
+  @override
+  String downloadStorageUsed(String size) {
+    return 'Đang dùng $size cho sân ngoại tuyến';
+  }
+
+  @override
+  String get strokesGainedDirectionGained => 'được';
+
+  @override
+  String get strokesGainedDirectionLost => 'mất';
+
+  @override
+  String deletePackageBody(String course) {
+    return 'Sẽ xoá bản đồ và dữ liệu của \"$course\" khỏi máy.';
+  }
+
+  @override
+  String downloadProgressSemantics(
+    String file,
+    String percent,
+    String downloaded,
+    String total,
+  ) {
+    return 'Đang tải $file: $percent%, $downloaded trên $total';
+  }
+
+  @override
+  String get downloadProgressFallbackFile => 'gói dữ liệu';
+
+  @override
+  String downloadFileOfTotal(String index, String total) {
+    return 'Tệp $index trên $total';
+  }
+
+  @override
+  String wifiOnlySemantics(String state, String hint) {
+    return 'Chỉ tải qua Wi-Fi $state. $hint';
+  }
+
+  @override
+  String get wifiOnlyEnabled => 'đang bật';
+
+  @override
+  String get wifiOnlyDisabled => 'đang tắt';
+
+  @override
+  String holeAnnouncerSemantics(String hole) {
+    return 'Hố hiện tại: $hole';
+  }
+
+  @override
+  String distanceUpdatedAt(String age) {
+    return 'Cập nhật $age';
+  }
+
+  @override
+  String notesForPlayer(String player) {
+    return 'Ghi chú cho $player';
+  }
+
+  @override
+  String shotDistanceDistribution(String club) {
+    return 'Phân bố cự ly — $club';
+  }
+
+  @override
+  String shotDistanceDistributionSemantics(String club) {
+    return 'Biểu đồ phân bố cự ly của $club';
+  }
+
+  @override
+  String smartTargetCarrySemantics(String distance) {
+    return 'Cự ly carry: $distance';
+  }
+
+  @override
+  String smartTargetToPinSemantics(String distance) {
+    return 'Cự ly tới cờ: $distance';
+  }
+
+  @override
+  String privacyRejectionReasonValue(String reason) {
+    return 'Lý do: $reason';
+  }
+
+  @override
+  String strokesGainedOverallValue(String strokes, String direction) {
+    return 'Tổng: $direction $strokes gậy';
+  }
+
+  @override
+  String mapGolferAccuracySuffix(String meters) {
+    return ', sai số $meters m';
+  }
+
+  @override
+  String roundSetupStartDisabledSemantics(String reason) {
+    return 'Chưa bắt đầu được vòng đấu. $reason';
+  }
+
+  @override
+  String get wifiStatusConnected => 'Đã kết nối Wi-Fi';
+
+  @override
+  String get wifiStatusNotConnected => 'Chưa kết nối Wi-Fi';
+
+  @override
+  String get holeDetectionUnavailable => 'Chưa nhận biết được hố';
+
+  @override
+  String primaryDistanceSemantics(String front, String centre, String back) {
+    return 'Green: đầu $front, giữa $centre, cuối $back';
+  }
+
+  @override
+  String notesForPlayerWithText(String player, String notes) {
+    return 'Ghi chú cho $player: $notes';
+  }
+
+  @override
+  String get privacyManagementTitle => 'Quyền riêng tư & dữ liệu';
+
+  @override
+  String get privacyManagementBody =>
+      'Yêu cầu xuất dữ liệu, xoá tài khoản, hoặc gỡ từng vòng đấu. Mọi yêu cầu đều do đội ngũ của chúng tôi xử lý.';
+
+  @override
+  String get holeSwitchHint =>
+      'Chạm Xác nhận để chuyển hố, hoặc Huỷ để ở lại hố hiện tại.';
+
+  @override
+  String get bagPerformanceEmptyBody =>
+      'Ghi lại các cú đánh với gậy của bạn để xem thống kê hiệu suất.';
+
+  @override
+  String get performanceLeftRightHint => 'Âm = trái, Dương = phải';
+
+  @override
+  String get performanceShortLongHint => 'Âm = ngắn, Dương = dài';
+
+  @override
+  String get bagDetailEmptyBody => 'Thêm gậy để theo dõi cự ly và bật gợi ý.';
+
+  @override
+  String get recommendationsDisabledSemantics =>
+      'Gợi ý đang tắt: thêm gậy có cự ly carry để bật gợi ý';
+
+  @override
+  String get recommendationsDisabledBody =>
+      'Thêm gậy kèm cự ly carry để bật gợi ý riêng cho bạn.';
+
+  @override
+  String get watchPackageExplainer =>
+      'Gói dữ liệu cho đồng hồ chứa dữ liệu sân đã tối ưu cho Apple Watch, gồm cự ly từng hố và toạ độ GPS. Gói được lưu thẳng trên đồng hồ để dùng khi không có mạng trong vòng đấu.';
+
+  @override
+  String get strokesGainedEmptyBody =>
+      'Ghi lại các cú đánh trong vòng để xem phân tích Strokes Gained.';
+
+  @override
+  String get deletePackageKeepsRounds =>
+      'Vòng đấu và điểm của bạn KHÔNG bị xoá và vẫn còn nguyên.';
+
+  @override
+  String get holePickerAllHoles => 'Vòng 18 hố';
+
+  @override
+  String get holePickerChooseStart => 'Chọn hố bắt đầu';
+
+  @override
+  String get apiBaseUrlMissingHint =>
+      'Dựng lại với --dart-define=VSP_API_BASE_URL=https://your-api';
+
+  @override
+  String get authCheckingSession => 'Đang kiểm tra phiên đăng nhập…';
 }

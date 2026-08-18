@@ -156,7 +156,9 @@ class _ShotEditSheetState extends State<ShotEditSheet> {
 
             // Title
             Text(
-              'Edit Shot ${widget.shot.shotNumber}',
+              AppLocalizations.of(
+                context,
+              ).shotEditTitle('${widget.shot.shotNumber}'),
               style: theme.textTheme.titleLarge,
               textAlign: TextAlign.center,
             ),
@@ -739,7 +741,7 @@ class _MergeShotSelector extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Select the shot to merge this shot into. The current shot will be marked as merged.',
+              AppLocalizations.of(context).shotMergeHint,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

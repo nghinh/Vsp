@@ -59,7 +59,7 @@
   "weatherForecastSemantics": "Dữ liệu dự báo",
   "weatherMeasuredSemantics": "Số đo hiện tại",
   "dispersionTitle": "Độ phân tán",
-  "bagSavedOffline": "Đã lưu túi gậy ngoại tuyến",
+  "bagSavedOffline": "Đã lưu thay đổi ngoại tuyến",
   "bagActiveSavedOffline": "Đã lưu túi gậy đang dùng, ngoại tuyến",
   "clubSavedOffline": "Đã lưu gậy ngoại tuyến",
   "shotMarkers": "Điểm đánh dấu cú đánh",
@@ -74,7 +74,7 @@
   "privacyDataExport": "Xuất dữ liệu",
   "privacyRequestDetails": "Chi tiết yêu cầu",
   "privacyNoRequests": "Chưa có yêu cầu nào",
-  "smartTargetTitle": "Mục tiêu thông minh",
+  "smartTargetTitle": "Smart Target",
   "smartTargetTournamentOff": "Mục tiêu thông minh tắt trong chế độ giải đấu",
   "smartTargetUnavailable": "Chưa có mục tiêu thông minh cho hố này",
   "smartTargetHazards": "Chướng ngại gần vùng bóng rơi",
@@ -489,7 +489,6 @@
   "bagName": "Tên túi gậy",
   "bagCreate": "Tạo",
   "bagSyncing": "Đang đồng bộ…",
-  "bagSavedOffline": "Đã lưu thay đổi ngoại tuyến",
   "bagEmptyTitle": "Chưa có túi gậy nào",
   "bagEmptySubtitle": "Tạo túi gậy đầu tiên để bắt đầu theo dõi gậy của bạn.",
   "bagCreateFirst": "Tạo túi gậy đầu tiên",
@@ -862,7 +861,6 @@
   "restrictedGreenContours": "Độ dốc green",
   "restrictedPuttingHelp": "Hỗ trợ gạt bóng",
   "restrictedAiFeatures": "Tính năng AI",
-  "smartTargetTitle": "Smart Target",
   "smartTargetRegenerate": "Tạo lại",
   "watchAppleWatch": "Apple Watch",
   "watchStatus": "TRẠNG THÁI ĐỒNG HỒ",
@@ -1799,17 +1797,38 @@
   "roundSetupCountsHandicapOff": "Vòng này không ảnh hưởng đến handicap",
   "msgNoPackagePublished": "Sân này chưa có gói bản đồ để tải. Bạn vẫn chơi và ghi điểm bình thường, chỉ là bản đồ cần mạng.",
   "strategyHandicapRated": "Handicap {index} → handicap sân {playing} (theo slope/CR của tee)",
-  "@strategyHandicapRated": {"placeholders": {"index": {"type": "String"}, "playing": {"type": "String"}}},
+  "@strategyHandicapRated": {
+    "placeholders": {
+      "index": {
+        "type": "String"
+      },
+      "playing": {
+        "type": "String"
+      }
+    }
+  },
   "scoreDisplayGross": "Tổng gậy",
   "scoreDisplayNet": "Net",
   "scoreDisplayToPar": "So với par",
   "scoreDisplayNetUnavailable": "Chưa tính được net: cần handicap của người chơi và chỉ số gậy của sân.",
   "roundSetupCourseCount": "{count} đường",
-  "@roundSetupCourseCount": {"placeholders": {"count": {"type": "int"}}},
+  "@roundSetupCourseCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceTitle": "Thành tích của tôi",
   "performanceAllTime": "Tất cả",
   "performanceLast": "{count} vòng gần nhất",
-  "@performanceLast": {"placeholders": {"count": {"type": "int"}}},
+  "@performanceLast": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceFailed": "Không tải được thống kê.",
   "performanceEmpty": "Chưa có vòng nào hoàn tất. Ghi xong một vòng là số liệu hiện ở đây.",
   "performanceRounds": "Số vòng",
@@ -1820,7 +1839,13 @@
   "performancePenalties": "Gậy phạt / vòng",
   "performanceNotRecorded": "chưa ghi nhận",
   "performanceHoles": "{count} hố",
-  "@performanceHoles": {"placeholders": {"count": {"type": "int"}}},
+  "@performanceHoles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "performanceDistribution": "Phân bố điểm",
   "performanceByPar": "Theo par",
   "performanceEagle": "Eagle trở lên",
@@ -1830,7 +1855,19 @@
   "performanceDoubleBogey": "Double bogey",
   "performanceTripleOrWorse": "Triple trở lên",
   "performanceParDetail": "TB {average} · tốt nhất {best} · tệ nhất {worst}",
-  "@performanceParDetail": {"placeholders": {"average": {"type": "String"}, "best": {"type": "int"}, "worst": {"type": "int"}}},
+  "@performanceParDetail": {
+    "placeholders": {
+      "average": {
+        "type": "String"
+      },
+      "best": {
+        "type": "int"
+      },
+      "worst": {
+        "type": "int"
+      }
+    }
+  },
   "downloadAlreadyCurrent": "Đã là bản mới nhất",
   "downloadCompleted": "Đã tải xong dữ liệu sân",
   "mapToPin": "Tới cờ",
@@ -1851,7 +1888,13 @@
   "mapGreenCentre": "Giữa",
   "mapGreenBack": "Cuối",
   "holeHistoryTitle": "Hố {hole} — lần trước",
-  "@holeHistoryTitle": {"placeholders": {"hole": {"type": "int"}}},
+  "@holeHistoryTitle": {
+    "placeholders": {
+      "hole": {
+        "type": "int"
+      }
+    }
+  },
   "holeHistoryNeverPlayed": "Bạn chưa chơi hố này lần nào.",
   "holeHistoryTimesPlayed": "Số lần chơi",
   "holeHistoryAverage": "Trung bình",
@@ -1862,5 +1905,64 @@
   "holeNoteSave": "Lưu ghi chú",
   "holeNoteSaving": "Đang lưu…",
   "holeNoteSaveFailed": "Chưa lưu được — kiểm tra kết nối rồi thử lại.",
-  "holeNoteDelete": "Xoá ghi chú"
+  "holeNoteDelete": "Xoá ghi chú",
+  "mapGolferPositionSemantics": "Vị trí golfer, độ tin cậy {confidence}",
+  "mapLayerPanelSemantics": "Bảng lớp bản đồ, hiện {visible} trên {total} lớp",
+  "weatherUvIndexSemantics": "Chỉ số UV {value}",
+  "weatherStale": "Thời tiết có thể đã cũ. {age}.",
+  "weatherExpired": "Dữ liệu thời tiết đã hết hạn. {age}.",
+  "weatherStaleSemantics": "Cảnh báo: dữ liệu thời tiết có thể đã cũ. {age}",
+  "weatherExpiredSemantics": "Cảnh báo: dữ liệu thời tiết đã hết hạn. {age}",
+  "roundSetupStartSemantics": "Bắt đầu vòng đấu tại {course}",
+  "holeSwitchTitle": "Chuyển sang hố {hole}?",
+  "dispersionToHazard": "Tới {hazard}",
+  "confidenceSemantics": "Độ tin cậy: {level}",
+  "clubTypeSemantics": "Loại gậy: {type}, chạm để đổi",
+  "clubTypeNotSelected": "chưa chọn",
+  "clubInUseDateSemantics": "Ngày bắt đầu dùng: {date}, chạm để đổi",
+  "clubInUseDateNotSet": "chưa đặt",
+  "scoreRowSemantics": "Hố {hole}: {strokes} gậy, {notation}",
+  "shotEditTitle": "Sửa cú đánh {number}",
+  "downloadStorageUsed": "Đang dùng {size} cho sân ngoại tuyến",
+  "strokesGainedDirectionGained": "được",
+  "strokesGainedDirectionLost": "mất",
+  "deletePackageBody": "Sẽ xoá bản đồ và dữ liệu của \"{course}\" khỏi máy.",
+  "downloadProgressSemantics": "Đang tải {file}: {percent}%, {downloaded} trên {total}",
+  "downloadProgressFallbackFile": "gói dữ liệu",
+  "downloadFileOfTotal": "Tệp {index} trên {total}",
+  "wifiOnlySemantics": "Chỉ tải qua Wi-Fi {state}. {hint}",
+  "wifiOnlyEnabled": "đang bật",
+  "wifiOnlyDisabled": "đang tắt",
+  "holeAnnouncerSemantics": "Hố hiện tại: {hole}",
+  "distanceUpdatedAt": "Cập nhật {age}",
+  "notesForPlayer": "Ghi chú cho {player}",
+  "shotDistanceDistribution": "Phân bố cự ly — {club}",
+  "shotDistanceDistributionSemantics": "Biểu đồ phân bố cự ly của {club}",
+  "smartTargetCarrySemantics": "Cự ly carry: {distance}",
+  "smartTargetToPinSemantics": "Cự ly tới cờ: {distance}",
+  "privacyRejectionReasonValue": "Lý do: {reason}",
+  "strokesGainedOverallValue": "Tổng: {direction} {strokes} gậy",
+  "mapGolferAccuracySuffix": ", sai số {meters} m",
+  "roundSetupStartDisabledSemantics": "Chưa bắt đầu được vòng đấu. {reason}",
+  "wifiStatusConnected": "Đã kết nối Wi-Fi",
+  "wifiStatusNotConnected": "Chưa kết nối Wi-Fi",
+  "holeDetectionUnavailable": "Chưa nhận biết được hố",
+  "primaryDistanceSemantics": "Green: đầu {front}, giữa {centre}, cuối {back}",
+  "notesForPlayerWithText": "Ghi chú cho {player}: {notes}",
+  "privacyManagementTitle": "Quyền riêng tư & dữ liệu",
+  "privacyManagementBody": "Yêu cầu xuất dữ liệu, xoá tài khoản, hoặc gỡ từng vòng đấu. Mọi yêu cầu đều do đội ngũ của chúng tôi xử lý.",
+  "holeSwitchHint": "Chạm Xác nhận để chuyển hố, hoặc Huỷ để ở lại hố hiện tại.",
+  "bagPerformanceEmptyBody": "Ghi lại các cú đánh với gậy của bạn để xem thống kê hiệu suất.",
+  "performanceLeftRightHint": "Âm = trái, Dương = phải",
+  "performanceShortLongHint": "Âm = ngắn, Dương = dài",
+  "bagDetailEmptyBody": "Thêm gậy để theo dõi cự ly và bật gợi ý.",
+  "recommendationsDisabledSemantics": "Gợi ý đang tắt: thêm gậy có cự ly carry để bật gợi ý",
+  "recommendationsDisabledBody": "Thêm gậy kèm cự ly carry để bật gợi ý riêng cho bạn.",
+  "watchPackageExplainer": "Gói dữ liệu cho đồng hồ chứa dữ liệu sân đã tối ưu cho Apple Watch, gồm cự ly từng hố và toạ độ GPS. Gói được lưu thẳng trên đồng hồ để dùng khi không có mạng trong vòng đấu.",
+  "strokesGainedEmptyBody": "Ghi lại các cú đánh trong vòng để xem phân tích Strokes Gained.",
+  "deletePackageKeepsRounds": "Vòng đấu và điểm của bạn KHÔNG bị xoá và vẫn còn nguyên.",
+  "holePickerAllHoles": "Vòng 18 hố",
+  "holePickerChooseStart": "Chọn hố bắt đầu",
+  "apiBaseUrlMissingHint": "Dựng lại với --dart-define=VSP_API_BASE_URL=https://your-api",
+  "authCheckingSession": "Đang kiểm tra phiên đăng nhập…"
 }

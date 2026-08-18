@@ -1042,15 +1042,14 @@ class _InfoBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Privacy & Data Management',
+                  AppLocalizations.of(context).privacyManagementTitle,
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Request data exports, delete your account, or remove specific rounds. '
-                  'All requests are processed by our team.',
+                  AppLocalizations.of(context).privacyManagementBody,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

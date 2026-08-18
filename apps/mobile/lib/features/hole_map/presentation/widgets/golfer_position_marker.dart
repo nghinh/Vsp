@@ -9,6 +9,7 @@ import 'package:vsp_mobile/features/measure/domain/measure_units.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
 
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Displays the golfer's current GPS position as a marker badge
 /// with accuracy and confidence indicator.
@@ -21,8 +22,14 @@ class GolferPositionMarker extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       label:
-          'Golfer position: ${position.confidence.name} confidence'
-          '${position.accuracy != null ? ', accuracy ${position.accuracy!.toStringAsFixed(0)} meters' : ''}',
+          AppLocalizations.of(
+            context,
+          ).mapGolferPositionSemantics(position.confidence.name) +
+          (position.accuracy == null
+              ? ''
+              : AppLocalizations.of(context).mapGolferAccuracySuffix(
+                  position.accuracy!.toStringAsFixed(0),
+                )),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(

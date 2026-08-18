@@ -4497,4 +4497,262 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get holeNoteDelete => 'Delete note';
+
+  @override
+  String mapGolferPositionSemantics(String confidence) {
+    return 'Golfer position, $confidence confidence';
+  }
+
+  @override
+  String mapLayerPanelSemantics(String visible, String total) {
+    return 'Layer panel, $visible of $total layers shown';
+  }
+
+  @override
+  String weatherUvIndexSemantics(String value) {
+    return 'UV index $value';
+  }
+
+  @override
+  String weatherStale(String age) {
+    return 'Weather may be outdated. $age.';
+  }
+
+  @override
+  String weatherExpired(String age) {
+    return 'Weather data expired. $age.';
+  }
+
+  @override
+  String weatherStaleSemantics(String age) {
+    return 'Warning: weather data may be outdated. $age';
+  }
+
+  @override
+  String weatherExpiredSemantics(String age) {
+    return 'Warning: weather data has expired. $age';
+  }
+
+  @override
+  String roundSetupStartSemantics(String course) {
+    return 'Start round at $course';
+  }
+
+  @override
+  String holeSwitchTitle(String hole) {
+    return 'Switch to hole $hole?';
+  }
+
+  @override
+  String dispersionToHazard(String hazard) {
+    return 'To $hazard';
+  }
+
+  @override
+  String confidenceSemantics(String level) {
+    return 'Confidence: $level';
+  }
+
+  @override
+  String clubTypeSemantics(String type) {
+    return 'Club type: $type, tap to change';
+  }
+
+  @override
+  String get clubTypeNotSelected => 'not selected';
+
+  @override
+  String clubInUseDateSemantics(String date) {
+    return 'Date put into use: $date, tap to change';
+  }
+
+  @override
+  String get clubInUseDateNotSet => 'not set';
+
+  @override
+  String scoreRowSemantics(String hole, String strokes, String notation) {
+    return 'Hole $hole: $strokes strokes, $notation';
+  }
+
+  @override
+  String shotEditTitle(String number) {
+    return 'Edit shot $number';
+  }
+
+  @override
+  String downloadStorageUsed(String size) {
+    return 'Using $size for offline courses';
+  }
+
+  @override
+  String get strokesGainedDirectionGained => 'gained';
+
+  @override
+  String get strokesGainedDirectionLost => 'lost';
+
+  @override
+  String deletePackageBody(String course) {
+    return 'This will remove \"$course\" maps and data from your device.';
+  }
+
+  @override
+  String downloadProgressSemantics(
+    String file,
+    String percent,
+    String downloaded,
+    String total,
+  ) {
+    return 'Downloading $file: $percent% complete, $downloaded of $total';
+  }
+
+  @override
+  String get downloadProgressFallbackFile => 'package';
+
+  @override
+  String downloadFileOfTotal(String index, String total) {
+    return 'File $index of $total';
+  }
+
+  @override
+  String wifiOnlySemantics(String state, String hint) {
+    return 'Wi-Fi only download $state. $hint';
+  }
+
+  @override
+  String get wifiOnlyEnabled => 'enabled';
+
+  @override
+  String get wifiOnlyDisabled => 'disabled';
+
+  @override
+  String holeAnnouncerSemantics(String hole) {
+    return 'Current hole: $hole';
+  }
+
+  @override
+  String distanceUpdatedAt(String age) {
+    return 'Updated $age';
+  }
+
+  @override
+  String notesForPlayer(String player) {
+    return 'Notes for $player';
+  }
+
+  @override
+  String shotDistanceDistribution(String club) {
+    return 'Distance distribution — $club';
+  }
+
+  @override
+  String shotDistanceDistributionSemantics(String club) {
+    return 'Distance distribution chart for $club';
+  }
+
+  @override
+  String smartTargetCarrySemantics(String distance) {
+    return 'Carry distance: $distance';
+  }
+
+  @override
+  String smartTargetToPinSemantics(String distance) {
+    return 'Distance to pin: $distance';
+  }
+
+  @override
+  String privacyRejectionReasonValue(String reason) {
+    return 'Reason: $reason';
+  }
+
+  @override
+  String strokesGainedOverallValue(String strokes, String direction) {
+    return 'Overall: $strokes strokes $direction';
+  }
+
+  @override
+  String mapGolferAccuracySuffix(String meters) {
+    return ', accuracy $meters m';
+  }
+
+  @override
+  String roundSetupStartDisabledSemantics(String reason) {
+    return 'Start round disabled. $reason';
+  }
+
+  @override
+  String get wifiStatusConnected => 'Wi-Fi connected';
+
+  @override
+  String get wifiStatusNotConnected => 'Wi-Fi not connected';
+
+  @override
+  String get holeDetectionUnavailable => 'Hole detection not available';
+
+  @override
+  String primaryDistanceSemantics(String front, String centre, String back) {
+    return 'Green: front $front, centre $centre, back $back';
+  }
+
+  @override
+  String notesForPlayerWithText(String player, String notes) {
+    return 'Notes for $player: $notes';
+  }
+
+  @override
+  String get privacyManagementTitle => 'Privacy & Data Management';
+
+  @override
+  String get privacyManagementBody =>
+      'Request data exports, delete your account, or remove specific rounds. All requests are processed by our team.';
+
+  @override
+  String get holeSwitchHint =>
+      'Tap Confirm to switch holes, or Cancel to stay on the current hole.';
+
+  @override
+  String get bagPerformanceEmptyBody =>
+      'Start recording shots with your clubs to see performance statistics.';
+
+  @override
+  String get performanceLeftRightHint => 'Negative = left, Positive = right';
+
+  @override
+  String get performanceShortLongHint => 'Negative = short, Positive = long';
+
+  @override
+  String get bagDetailEmptyBody =>
+      'Add clubs to track distances and enable recommendations.';
+
+  @override
+  String get recommendationsDisabledSemantics =>
+      'Recommendations disabled: add clubs with carry distance to enable recommendations';
+
+  @override
+  String get recommendationsDisabledBody =>
+      'Add clubs with carry distances to enable personalized recommendations.';
+
+  @override
+  String get watchPackageExplainer =>
+      'Watch packages contain optimized course data for your Apple Watch, including hole distances and GPS coordinates. Packages are stored directly on your watch for offline use during rounds.';
+
+  @override
+  String get strokesGainedEmptyBody =>
+      'Record shots in your round to see Strokes Gained analysis.';
+
+  @override
+  String get deletePackageKeepsRounds =>
+      'Your rounds and scores will NOT be deleted and will remain available.';
+
+  @override
+  String get holePickerAllHoles => '18-Hole Rounds';
+
+  @override
+  String get holePickerChooseStart => 'Choose a starting hole';
+
+  @override
+  String get apiBaseUrlMissingHint =>
+      'Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api';
+
+  @override
+  String get authCheckingSession => 'Checking your secure session…';
 }

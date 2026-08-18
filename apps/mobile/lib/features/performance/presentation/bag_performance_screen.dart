@@ -371,7 +371,7 @@ class _EmptyState extends StatelessWidget {
             Text(AppLocalizations.of(context).performanceNoData, style: theme.textTheme.titleMedium),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              'Start recording shots with your clubs to see performance statistics.',
+              AppLocalizations.of(context).bagPerformanceEmptyBody,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

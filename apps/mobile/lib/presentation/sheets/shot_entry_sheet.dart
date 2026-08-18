@@ -256,14 +256,18 @@ class _ShotEntrySheetState extends State<ShotEntrySheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Hole ${widget.holeNumber}',
+                  AppLocalizations.of(
+                    context,
+                  ).holeNumberLabel('${widget.holeNumber}'),
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
                     color: colorScheme.primary,
                   ),
                 ),
                 Text(
-                  'Shot ${widget.shotNumber}',
+                  AppLocalizations.of(
+                    context,
+                  ).shotNumberLabel('${widget.shotNumber}'),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

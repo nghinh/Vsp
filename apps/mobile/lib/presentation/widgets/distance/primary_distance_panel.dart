@@ -51,10 +51,11 @@ class PrimaryDistancePanel extends StatelessWidget {
     final useYards = state.selectedUnit == DistanceUnit.yards;
 
     return Semantics(
-      label:
-          'Primary distance panel: front ${_fmt(state.frontGreen, useYards)}, '
-          'center ${_fmt(state.centerGreen, useYards)}, '
-          'back ${_fmt(state.backGreen, useYards)}',
+      label: AppLocalizations.of(context).primaryDistanceSemantics(
+        _fmt(state.frontGreen, useYards),
+        _fmt(state.centerGreen, useYards),
+        _fmt(state.backGreen, useYards),
+      ),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -217,7 +218,7 @@ class PrimaryDistancePanel extends StatelessWidget {
       children: [
         if (timestamp != null)
           Text(
-            'Updated $timeLabel',
+            AppLocalizations.of(context).distanceUpdatedAt(timeLabel),
             style: TextStyle(
               fontSize: 10,
               color: colorScheme.onSurface.withOpacity(0.5),

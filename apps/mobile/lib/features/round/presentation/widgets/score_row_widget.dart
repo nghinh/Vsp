@@ -8,6 +8,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/score_entry.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Widget rendering a single hole score row.
 class ScoreRowWidget extends StatelessWidget {
@@ -29,8 +30,11 @@ class ScoreRowWidget extends StatelessWidget {
         : theme.colorScheme.onSurface;
 
     return Semantics(
-      label:
-          'Hole ${entry.holeNumber}: ${entry.strokes} strokes, ${entry.scoreNotation}',
+      label: AppLocalizations.of(context).scoreRowSemantics(
+        '${entry.holeNumber}',
+        '${entry.strokes}',
+        entry.scoreNotation,
+      ),
       button: onTap != null,
       child: InkWell(
         onTap: onTap,
@@ -53,7 +57,7 @@ class ScoreRowWidget extends StatelessWidget {
               SizedBox(
                 width: 28,
                 child: Text(
-                  'Par ${entry.par}',
+                  AppLocalizations.of(context).coursePar('${entry.par}'),
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
