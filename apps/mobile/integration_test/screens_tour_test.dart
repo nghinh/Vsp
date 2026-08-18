@@ -18,7 +18,6 @@
 //
 // Screenshots land in /tmp/vsp-tour.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -26,9 +25,20 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vsp_mobile/app.dart';
 
-const _outputDir = '/tmp/vsp-tour';
+/// Which palette to tour in — `dark` (the app's default) or `light`.
+///
+/// Light mode shipped as a setting nobody had seen. It was reasoned about from
+/// the token file and measured for contrast by a test, and neither of those is
+/// looking at it. Touring twice and writing to two directories is what makes
+/// the two comparable screen by screen; toggling halfway through one run would
+/// leave every screen photographed in one palette only, and the screens that
+/// matter most here are the ones held in direct sun during a round.
+const _theme = String.fromEnvironment('VSP_TOUR_THEME', defaultValue: 'dark');
+
+final _outputDir = '/tmp/vsp-tour/$_theme';
 
 late final IntegrationTestWidgetsFlutterBinding binding;
 
@@ -101,21 +111,77 @@ void _expectTheTourMoved() {
 /// glyphs is a hit on a widget with no callback. With `warnIfMissed: false`
 /// that failed in complete silence — the tour reported four steps and had not
 /// moved from the first screen for any of them.
+///
+/// Scrolls the row into view first, and that is not a nicety. "Cài đặt" is the
+/// last row on the More screen and sits below the fold. Being in the widget
+/// tree, it was found; being off-screen, its centre lay under the bottom
+/// navigation bar — so the tap landed on whichever tab happened to be at that
+/// x, which is the middle one. The tour then photographed the Rounds screen
+/// and filed it as `10-settings`, byte-identical to `07-rounds`. Nothing in
+/// the run said otherwise, and the one screen light mode is chosen on had
+/// never been photographed at all.
 Future<bool> tapIfPresent(WidgetTester tester, Finder finder) async {
   if (finder.evaluate().isEmpty) return false;
 
+  Finder target = finder.first;
   for (final wrapper in [InkWell, ListTile, GestureDetector]) {
     final row = find.ancestor(of: finder.first, matching: find.byType(wrapper));
     if (row.evaluate().isNotEmpty) {
-      await tester.tap(row.first, warnIfMissed: false);
-      await tester.pumpAndSettle(const Duration(milliseconds: 800));
-      return true;
+      target = row.first;
+      break;
     }
   }
 
-  await tester.tap(finder.first, warnIfMissed: false);
+  // Not every tappable thing lives in a scrollable — a bottom-nav item does
+  // not, and asking to scroll to it throws.
+  try {
+    await tester.ensureVisible(target);
+    await tester.pumpAndSettle(const Duration(milliseconds: 300));
+  } catch (_) {}
+
+  await tester.tap(target, warnIfMissed: false);
   await tester.pumpAndSettle(const Duration(milliseconds: 800));
   return true;
+}
+
+/// Comes back out of a pushed screen.
+///
+/// Settings is a route on top of the tab shell, not a tab, so the bottom
+/// navigation is not on screen while it is open. The first version of the tour
+/// never noticed: its Settings tap missed and left it inside the shell the
+/// whole time. Once the tap landed, every step after it — the whole round —
+/// photographed the Settings screen and the run still called that six distinct
+/// frames.
+///
+/// Pops the innermost navigator that has anything to pop, rather than
+/// `pageBack()`, which looks for a back button with a standard tooltip and
+/// this app draws its own chevron.
+Future<void> popBack(WidgetTester tester) async {
+  for (final element in find.byType(Navigator).evaluate().toList().reversed) {
+    final nav = (element as StatefulElement).state as NavigatorState;
+    if (nav.canPop()) {
+      nav.pop();
+      await tester.pumpAndSettle(const Duration(milliseconds: 800));
+      return;
+    }
+  }
+  debugPrint('TOUR: nothing to pop');
+}
+
+/// Fails the run when a step did not arrive where it claimed to.
+///
+/// The tour's own frame-distinctness check cannot catch this: a tap that lands
+/// on the wrong control still produces a different picture, so the run stays
+/// green while a named screenshot shows a different screen. Only the step
+/// itself knows what it was aiming at.
+void _expectArrived(String step, List<String> landmarks) {
+  expect(
+    landmarks.any((l) => find.textContaining(l).evaluate().isNotEmpty),
+    isTrue,
+    reason:
+        '$step never reached its screen — none of $landmarks on it. The '
+        'screenshot filed under that name is of somewhere else.',
+  );
 }
 
 Future<void> signIn(WidgetTester tester) async {
@@ -235,6 +301,10 @@ Future<void> startARound(WidgetTester tester) async {
   // in the list below either, so the one screen a golfer spends the round
   // looking at had no picture at all while every claim here was made about it.
   await shoot(tester, '14-round-open');
+  // Same reason as the Settings check: a round that never started still
+  // photographs something, and the four screens below are the ones every claim
+  // in this sweep is about.
+  _expectArrived('14-round-open', ['Hố', 'Hole']);
 
   for (final entry in <String, List<String>>{
     '15-map': ['Bản đồ', 'Map'],
@@ -248,6 +318,20 @@ Future<void> startARound(WidgetTester tester) async {
         break;
       }
     }
+    // The Map tab opens on the measuring tool, by a deliberate choice recorded
+    // in BasemapPreference: satellite first, because the photograph is the
+    // course the golfer is standing in. So the vector hole map — the greens,
+    // fairways and bunkers this whole geometry pipeline exists to draw — sits
+    // one tap further in and had never been photographed at all. Every claim
+    // made about it was made from the code.
+    if (entry.key == '15-map') {
+      for (final label in ['Bản đồ sân', 'Course map']) {
+        if (await tapIfPresent(tester, find.text(label))) {
+          await shoot(tester, '15b-course-map');
+          break;
+        }
+      }
+    }
   }
 }
 
@@ -255,6 +339,22 @@ void main() {
   binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('walks the screens a golfer sees', (tester) async {
+    // Set before the first frame, because ThemeModeCubit reads the preference
+    // during startup and a golfer who has chosen light does not watch the app
+    // open dark and then change its mind.
+    //
+    // The language is pinned here too, and not as a tidy-up. It used to come
+    // from the welcome screen's "Tiếng Việt" button, which the tour only
+    // reaches when signed out — so a run that inherited a live session
+    // photographed the app in English and a run that did not photographed it
+    // in Vietnamese. Two sets of screenshots in two languages cannot be
+    // compared, and the difference is invisible until you read the words.
+    SharedPreferences.setMockInitialValues({
+      'app_theme_mode': _theme,
+      'app_locale': 'vi',
+    });
+    debugPrint('TOUR: touring in $_theme, writing to $_outputDir');
+
     await tester.pumpWidget(
       const VspApp(syncOfflineQueue: false, loadBasemapConfig: false),
     );
@@ -302,6 +402,10 @@ void main() {
         break;
       }
     }
+    // The screen the palette is chosen on has to be the screen in the picture.
+    _expectArrived('10-settings', ['Giao diện', 'Appearance']);
+    // Back to the tab shell, or the round below never starts.
+    await popBack(tester);
 
     await startARound(tester);
 
