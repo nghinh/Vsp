@@ -15,12 +15,15 @@ import vnpt.vsp.module.course.repository.OutOfBoundsRepository;
 import vnpt.vsp.module.course.repository.PenaltyAreaRepository;
 import vnpt.vsp.module.course.repository.TeeBoxRepository;
 import vnpt.vsp.module.course.repository.WaterHazardRepository;
+import vnpt.vsp.module.geometry.TracedHoleGeometry;
 import vnpt.vsp.persistence.StoredGeometry;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -64,6 +67,7 @@ public class HoleGeometryAssembler {
     private final CartPathRepository cartPathRepository;
     private final OutOfBoundsRepository outOfBoundsRepository;
     private final LandmarkRepository landmarkRepository;
+    private final TracedHoleGeometry tracedGeometry;
 
     public HoleGeometryAssembler(
             HoleRepository holeRepository,
@@ -75,7 +79,8 @@ public class HoleGeometryAssembler {
             PenaltyAreaRepository penaltyAreaRepository,
             CartPathRepository cartPathRepository,
             OutOfBoundsRepository outOfBoundsRepository,
-            LandmarkRepository landmarkRepository) {
+            LandmarkRepository landmarkRepository,
+            TracedHoleGeometry tracedGeometry) {
         this.holeRepository = holeRepository;
         this.greenRepository = greenRepository;
         this.bunkerRepository = bunkerRepository;
@@ -86,6 +91,7 @@ public class HoleGeometryAssembler {
         this.cartPathRepository = cartPathRepository;
         this.outOfBoundsRepository = outOfBoundsRepository;
         this.landmarkRepository = landmarkRepository;
+        this.tracedGeometry = tracedGeometry;
     }
 
     /**
@@ -99,7 +105,7 @@ public class HoleGeometryAssembler {
         List<HoleGeometryDocument> documents = new ArrayList<>();
 
         for (Hole hole : holeRepository.findByCourseIdOrderByHoleNumber(courseId)) {
-            Map<String, Object> layers = layersFor(hole);
+            Map<String, Object> layers = layersFor(courseId, hole);
             if (!layers.containsKey("tee") || !layers.containsKey("green")) {
                 continue;
             }
@@ -142,39 +148,122 @@ public class HoleGeometryAssembler {
         return content;
     }
 
-    private Map<String, Object> layersFor(Hole hole) {
+    /**
+     * Adds the model-traced shapes for every layer no reviewer has drawn.
+     *
+     * <p>This is what the package was missing. The curated tables are where a
+     * reviewer's work lands, and on a course nobody has reviewed they are
+     * empty — so Long Biên, with 488 traced shapes serving happily to any
+     * phone with signal, packaged as one tee point and one green point per
+     * hole. The golfer who downloads a course before driving to it is exactly
+     * the golfer who will have no signal on the 6th.
+     *
+     * <p><strong>Drawn, not merely present.</strong> {@code drawnLayers} holds
+     * the layers a curated table filled — not the two reference points the
+     * hole row always carries. Testing "does the layers map already have a
+     * green" instead would have thrown away every traced green on the course:
+     * {@code hole.getGreenLocation()} is a derived centroid, present on holes
+     * nobody has ever looked at, and it would have silenced the one shape a
+     * golfer most needs drawn. The traced green joins the reference point in
+     * the same layer; the reader takes both.
+     *
+     * <p>Where a reviewer <em>has</em> drawn a layer, theirs are the shapes
+     * and the model's are not shipped beside them — the same rule
+     * {@link TracedHoleGeometry} applies to the online endpoint, applied once
+     * more here because the curated tables are a different store it cannot
+     * see.
+     *
+     * <p>Provenance is preserved feature by feature. A traced shape carries
+     * {@code verified: false} into the package and the map draws it as
+     * provisional — which is the entire reason it is safe to ship at all.
+     */
+    private void addTracedLayers(
+            Long courseId,
+            Hole hole,
+            Map<String, List<Map<String, Object>>> layers,
+            Set<String> drawnLayers) {
+        for (var shape : tracedGeometry.forHole(courseId, hole.getHoleNumber())) {
+            if (drawnLayers.contains(shape.layer())) {
+                continue;
+            }
+            Map<String, Object> properties = new LinkedHashMap<>();
+            properties.put("layer", shape.layer());
+            properties.put("featureId", shape.layer() + "-traced-" + shape.hashCode());
+            properties.put("verified", shape.verified());
+            properties.put("source", shape.source());
+            properties.put("confidence", shape.confidence());
+
+            Map<String, Object> feature = new LinkedHashMap<>();
+            feature.put("type", "Feature");
+            feature.put("geometry", shape.geometry());
+            feature.put("properties", properties);
+            layers.computeIfAbsent(shape.layer(), k -> new ArrayList<>()).add(feature);
+        }
+    }
+
+    private Map<String, Object> layersFor(Long courseId, Hole hole) {
         Long holeId = hole.getId();
-        Map<String, Object> layers = new LinkedHashMap<>();
+        Map<String, List<Map<String, Object>>> layers = new LinkedHashMap<>();
+
+        // Layers a person actually drew, as opposed to layers that merely
+        // exist because every hole row carries a tee and a green centroid.
+        Set<String> drawn = new LinkedHashSet<>();
 
         // The hole's own tee and green points come first so a course whose
         // polygons were never digitised still yields usable centroids.
         boolean holeVerified = isVerified(hole.getDataQuality());
         List<Map<String, Object>> tee = new ArrayList<>();
         addPoint(tee, hole.getTeeingGroundLocation(), "hole-" + holeId + "-tee", holeVerified);
-        tee.addAll(features(teeBoxRepository.findByHoleId(holeId), t -> t.getId(), t -> t.getLocation(), t -> t.getMetadata(), "tee"));
-        putIfPresent(layers, "tee", tee);
+        addDrawn(layers, drawn, "tee", tee,
+                features(teeBoxRepository.findByHoleId(holeId), t -> t.getId(), t -> t.getLocation(), t -> t.getMetadata(), "tee"));
 
         List<Map<String, Object>> green = new ArrayList<>();
         addPoint(green, hole.getGreenLocation(), "hole-" + holeId + "-green", holeVerified);
-        green.addAll(features(greenRepository.findByHoleId(holeId), g -> g.getId(), g -> g.getLocation(), g -> g.getMetadata(), "green"));
-        putIfPresent(layers, "green", green);
+        addDrawn(layers, drawn, "green", green,
+                features(greenRepository.findByHoleId(holeId), g -> g.getId(), g -> g.getLocation(), g -> g.getMetadata(), "green"));
 
-        putIfPresent(layers, "bunker",
+        addDrawn(layers, drawn, "bunker", new ArrayList<>(),
                 features(bunkerRepository.findByHoleId(holeId), b -> b.getId(), b -> b.getLocation(), b -> b.getMetadata(), "bunker"));
-        putIfPresent(layers, "fairway",
+        addDrawn(layers, drawn, "fairway", new ArrayList<>(),
                 features(fairwaySegmentRepository.findByHoleId(holeId), f -> f.getId(), f -> f.getLocation(), f -> f.getMetadata(), "fairway"));
-        putIfPresent(layers, "water",
+        addDrawn(layers, drawn, "water", new ArrayList<>(),
                 features(waterHazardRepository.findByHoleId(holeId), w -> w.getId(), w -> w.getLocation(), w -> w.getMetadata(), "water"));
-        putIfPresent(layers, "penalty_area",
+        addDrawn(layers, drawn, "penalty_area", new ArrayList<>(),
                 features(penaltyAreaRepository.findByHoleId(holeId), p -> p.getId(), p -> p.getLocation(), p -> p.getMetadata(), "penalty_area"));
-        putIfPresent(layers, "cart_path",
+        addDrawn(layers, drawn, "cart_path", new ArrayList<>(),
                 features(cartPathRepository.findByHoleId(holeId), c -> c.getId(), c -> c.getLocation(), c -> c.getMetadata(), "cart_path"));
-        putIfPresent(layers, "ob",
+        addDrawn(layers, drawn, "ob", new ArrayList<>(),
                 features(outOfBoundsRepository.findByHoleId(holeId), o -> o.getId(), o -> o.getLocation(), o -> o.getMetadata(), "ob"));
-        putIfPresent(layers, "landmark",
+        addDrawn(layers, drawn, "landmark", new ArrayList<>(),
                 features(landmarkRepository.findByHoleId(holeId), l -> l.getId(), l -> l.getLocation(), l -> l.getMetadata(), "landmark"));
 
-        return layers;
+        addTracedLayers(courseId, hole, layers, drawn);
+
+        Map<String, Object> collections = new LinkedHashMap<>();
+        layers.forEach((name, features) -> putIfPresent(collections, name, features));
+        return collections;
+    }
+
+    /**
+     * Records one curated layer, and whether a reviewer drew any of it.
+     *
+     * <p>{@code seed} is the reference point the hole row carries, which is
+     * not evidence of anyone having drawn anything. {@code curated} is.
+     */
+    private static void addDrawn(
+            Map<String, List<Map<String, Object>>> layers,
+            Set<String> drawn,
+            String name,
+            List<Map<String, Object>> seed,
+            List<Map<String, Object>> curated) {
+        if (!curated.isEmpty()) {
+            drawn.add(name);
+        }
+        List<Map<String, Object>> all = new ArrayList<>(seed);
+        all.addAll(curated);
+        if (!all.isEmpty()) {
+            layers.put(name, all);
+        }
     }
 
     private <T> List<Map<String, Object>> features(

@@ -22,6 +22,7 @@ import vnpt.vsp.module.course.repository.OutOfBoundsRepository;
 import vnpt.vsp.module.course.repository.PenaltyAreaRepository;
 import vnpt.vsp.module.course.repository.TeeBoxRepository;
 import vnpt.vsp.module.course.repository.WaterHazardRepository;
+import vnpt.vsp.module.geometry.TracedHoleGeometry;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,6 +30,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
 
 /**
@@ -59,6 +61,7 @@ class HoleGeometryAssemblerTest {
     @Mock private CartPathRepository cartPathRepository;
     @Mock private OutOfBoundsRepository outOfBoundsRepository;
     @Mock private LandmarkRepository landmarkRepository;
+    @Mock private TracedHoleGeometry tracedGeometry;
 
     private HoleGeometryAssembler assembler;
 
@@ -69,7 +72,8 @@ class HoleGeometryAssemblerTest {
         assembler = new HoleGeometryAssembler(
                 holeRepository, greenRepository, bunkerRepository, teeBoxRepository,
                 fairwaySegmentRepository, waterHazardRepository, penaltyAreaRepository,
-                cartPathRepository, outOfBoundsRepository, landmarkRepository);
+                cartPathRepository, outOfBoundsRepository, landmarkRepository,
+                tracedGeometry);
 
         when(greenRepository.findByHoleId(any())).thenReturn(List.of());
         when(bunkerRepository.findByHoleId(any())).thenReturn(List.of());
@@ -80,6 +84,7 @@ class HoleGeometryAssemblerTest {
         when(cartPathRepository.findByHoleId(any())).thenReturn(List.of());
         when(outOfBoundsRepository.findByHoleId(any())).thenReturn(List.of());
         when(landmarkRepository.findByHoleId(any())).thenReturn(List.of());
+        when(tracedGeometry.forHole(any(), anyInt())).thenReturn(List.of());
     }
 
     // ─── Harness ───────────────────────────────────────────────────────────
@@ -227,5 +232,93 @@ class HoleGeometryAssemblerTest {
         // unit preference. Converting here would feed yards into a chain that
         // then labels them metres.
         assertThat(content).containsEntry("yardage", 382);
+    }
+
+    // ─── Traced geometry ───────────────────────────────────────────────────
+
+    private static TracedHoleGeometry.TracedFeature traced(String layer) {
+        return new TracedHoleGeometry.TracedFeature(
+                layer,
+                Map.of("type", "Polygon", "coordinates", List.of()),
+                new BigDecimal("83.62"),
+                "golfseg",
+                "PENDING",
+                "golfseg-1.2",
+                null,
+                false);
+    }
+
+    @Test
+    void tracedShapesAreShippedInThePackage() {
+        // Long Biên: 488 traced shapes on the online endpoint, and a package
+        // of 640 bytes a hole holding one tee point and one green point. The
+        // golfer who downloads a course before driving to it is the one who
+        // will have no signal on the 6th.
+        courseHas(hole(1, true, true));
+        when(tracedGeometry.forHole(any(), anyInt()))
+                .thenReturn(List.of(traced("bunker"), traced("bunker"), traced("water")));
+
+        var layers = layers(assembler.assemble(COURSE_ID).get(0));
+
+        assertThat(layers).containsKeys("bunker", "water");
+        assertThat(features(layers, "bunker")).hasSize(2);
+    }
+
+    @Test
+    void aTracedGreenIsNotSilencedByTheHolesOwnCentroid() {
+        // The rule is "has a reviewer drawn this layer", not "is this key
+        // already in the map". Every hole row carries a green centroid,
+        // including on courses nobody has ever looked at — testing for the key
+        // would have thrown away every traced green on the course, which is
+        // the one shape a golfer most needs drawn.
+        courseHas(hole(1, true, true));
+        when(tracedGeometry.forHole(any(), anyInt())).thenReturn(List.of(traced("green")));
+
+        var layers = layers(assembler.assemble(COURSE_ID).get(0));
+
+        // The reference point and the traced polygon, in that order.
+        assertThat(features(layers, "green")).hasSize(2);
+    }
+
+    @Test
+    void whereAReviewerDrewTheLayerTheModelsAttemptIsNotShippedBeside() {
+        Green drawn = new Green();
+        drawn.setId(41L);
+        drawn.setLocation("POLYGON((106.9 10.8, 106.91 10.8, 106.91 10.81, 106.9 10.8))");
+        courseHas(hole(1, true, true));
+        when(greenRepository.findByHoleId(any())).thenReturn(List.of(drawn));
+        when(tracedGeometry.forHole(any(), anyInt())).thenReturn(List.of(traced("green")));
+
+        var layers = layers(assembler.assemble(COURSE_ID).get(0));
+
+        // The centroid and the reviewer's polygon — the model's is not a
+        // second opinion, it is the same green in the wrong place.
+        assertThat(features(layers, "green")).hasSize(2);
+        assertThat(features(layers, "green"))
+                .noneMatch(f -> "golfseg".equals(properties(f).get("source")));
+    }
+
+    @Test
+    void aTracedShapeSaysNobodyHasCheckedIt() {
+        courseHas(hole(1, true, true));
+        when(tracedGeometry.forHole(any(), anyInt())).thenReturn(List.of(traced("bunker")));
+
+        var layers = layers(assembler.assemble(COURSE_ID).get(0));
+
+        // The app's gate is `verified && class != D`. A package that quietly
+        // promoted its own geometry would defeat the review flow entirely.
+        assertThat(properties(features(layers, "bunker").get(0)))
+                .containsEntry("verified", false)
+                .containsEntry("source", "golfseg");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<Map<String, Object>> features(Map<String, Object> layers, String name) {
+        return (List<Map<String, Object>>) ((Map<String, Object>) layers.get(name)).get("features");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> properties(Map<String, Object> feature) {
+        return (Map<String, Object>) feature.get("properties");
     }
 }

@@ -63,7 +63,15 @@ class HoleFeaturePostgresTest {
         // 65 this endpoint withheld 29% of every bunker GolfSeg had ever
         // traced — see the query's own comment for why that number says
         // nothing about the bunkers.
-        controller = new HoleFeatureController(em, null, null, DEFAULT_FLOOR, 30);
+        //
+        // Which shapes may be shown now lives in TracedHoleGeometry, shared
+        // with the package builder so an offline course holds what the online
+        // map draws. These tests therefore exercise the same rules through
+        // the endpoint that serves them.
+        controller = new HoleFeatureController(
+                em, null, null,
+                new vnpt.vsp.module.geometry.TracedHoleGeometry(em, DEFAULT_FLOOR),
+                30);
 
         long facilityId = ((Number) em.createNativeQuery("""
                 INSERT INTO golf_facilities (name, publisher, effective_date, confidence, version, created_at, updated_at)

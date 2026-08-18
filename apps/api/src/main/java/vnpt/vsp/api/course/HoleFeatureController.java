@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import vnpt.vsp.api.error.VspApiException;
 import vnpt.vsp.api.error.VspErrorCode;
+import vnpt.vsp.module.geometry.TracedHoleGeometry;
 import vnpt.vsp.module.geometry.golfseg.GolfSegImportService;
 import vnpt.vsp.module.geometry.vision.CourseMappingService;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -46,19 +46,19 @@ public class HoleFeatureController {
     private final EntityManager em;
     private final CourseMappingService mappingService;
     private final GolfSegImportService golfSeg;
-    private final BigDecimal minimumConfidence;
+    private final TracedHoleGeometry tracedGeometry;
     private final int dailyLimit;
 
     public HoleFeatureController(
             EntityManager em,
             CourseMappingService mappingService,
             GolfSegImportService golfSeg,
-            @Value("${vsp.vision.minimum-confidence:40}") int minimumConfidence,
+            TracedHoleGeometry tracedGeometry,
             @Value("${vsp.vision.golfer-daily-limit:30}") int dailyLimit) {
         this.em = em;
         this.mappingService = mappingService;
         this.golfSeg = golfSeg;
-        this.minimumConfidence = BigDecimal.valueOf(minimumConfidence);
+        this.tracedGeometry = tracedGeometry;
         this.dailyLimit = dailyLimit;
     }
 
@@ -125,137 +125,26 @@ public class HoleFeatureController {
             @PathVariable Long courseId,
             @PathVariable @Min(1) @Max(18) int holeNumber) {
 
-        // Where a person has drawn this layer on this hole, the model's
-        // attempt at it is not shown beside theirs. It is not a second
-        // opinion a golfer can weigh — it is the same green in the wrong
-        // place, and two greens on one hole is worse than either alone.
-        var rows = em.createNativeQuery("""
-                SELECT d.layer_type,
-                       ST_AsGeoJSON(ST_GeomFromText(d.geometry, 4326)),
-                       d.confidence, d.source, d.verification_status,
-                       d.model_version, d.feature_name
-                FROM draft_geometry_features d
-                JOIN holes h ON h.id = d.hole_id
-                WHERE d.course_id = :course AND h.hole_number = :hole
-                  AND d.is_valid
-                  -- One floor, and it is set to catch garbage rather than to
-                  -- grade shapes. GolfSeg's "confidence" is the mean softmax
-                  -- probability over a class's own winning mask, which is a
-                  -- per-class quantity on a per-class scale: a fairway is one
-                  -- large homogeneous region and scores 82-93, a bunker is
-                  -- thirty pixels across and mostly soft edge and scores
-                  -- 49-88. Comparing them against one number compares nothing.
-                  --
-                  -- At 65 the effect, measured across every traced course, was
-                  -- to discard 29% of bunkers and 18% of water hazards and 0%
-                  -- of greens, fairways and tees. It was not a quality gate,
-                  -- it was a bunker-and-water gate that fired by accident of
-                  -- scale — and Long Biên's Đường B lost all eight bunkers on
-                  -- its 1st at 62.04 and all four ponds at 48.44, on a hole a
-                  -- golfer was standing on.
-                  --
-                  -- Nor does the number rank shapes within a class, which is
-                  -- the only comparison it could honestly make. Checked
-                  -- against the OSM-mapped courses: bunkers below 65 hit a
-                  -- mapped bunker 10% of the time and bunkers above it 9%;
-                  -- water 34% below and 36% above. The shapes it drops are the
-                  -- same size as the ones it keeps (median bunker 674 m2
-                  -- against 614 m2). It is not separating good from bad
-                  -- because it does not know which is which.
-                  --
-                  -- What it does separate is a photograph from a blank sheet.
-                  -- Shown Esri's flat placeholder the model returned 116
-                  -- shapes at 22; real shapes on real imagery bottom out at
-                  -- 48. The floor sits between those two populations and
-                  -- nowhere near anything a golfer would want to see. Blank
-                  -- imagery is now refused at the fetcher too (see
-                  -- looks_blank), so this is the second line, not the first.
-                  --
-                  -- The shapes this lets through are unreviewed and the app
-                  -- draws them as such: faint, dashed, and labelled. That is
-                  -- the trade this endpoint already exists to make.
-                  AND coalesce(d.confidence, 0) >= :floor
-                  AND d.verification_status <> 'REJECTED'
-                  -- A model-drawn fairway is the one shape on this map that
-                  -- is both the largest thing on screen and carries no number
-                  -- a golfer plays to. Long Biên's first came back as a
-                  -- teardrop 57 m wide over a corridor that plays 35, filling
-                  -- the screen and making the correct green beside it look
-                  -- like part of the same mistake. It stays in the review
-                  -- queue for somebody to correct; it does not go out.
-                  AND NOT (d.source = 'ai-satellite'
-                           AND d.layer_type IN ('FAIRWAY', 'ROUGH'))
-                  -- Course-wide, not hole-by-hole, for two reasons that agree.
-                  -- A course whose greens are real on holes 1 and 9 and the
-                  -- model's on the other seven is one where nothing on screen
-                  -- can be trusted more than the worst of it. And ODbL's
-                  -- horizontal-layers guideline draws the same line: mixing
-                  -- OSM and non-OSM geometry within one feature type in one
-                  -- regional cut makes the whole layer a Derivative Database.
-                  -- Keeping each (course, layer) to a single source keeps it a
-                  -- Collective Database, and our own work our own.
-                  --
-                  -- Model-drawn sources live in one list. A third arriving is
-                  -- a value here, not another branch: golfseg is judged by the
-                  -- rule the satellite reader was, because the question is the
-                  -- same one — did a person draw this layer?
-                  -- ...but only where a person drew that layer across most of
-                  -- the course. Đường B has three bunkers in OpenStreetMap and
-                  -- about twenty on the ground; letting those three silence
-                  -- every bunker the model found left holes with visible sand
-                  -- and nothing drawn on it. Three scattered polygons are not
-                  -- coverage. Nine greens on nine holes are.
-                  --
-                  -- On this hole, always. A hole has one green: showing the
-                  -- mapper's and the model's side by side is unambiguous
-                  -- nonsense whatever the rest of the course looks like.
-                  AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
-                        SELECT 1 FROM draft_geometry_features here
-                        WHERE here.course_id = d.course_id
-                          AND here.hole_id = d.hole_id
-                          AND here.layer_type = d.layer_type
-                          AND here.is_valid
-                          AND here.source NOT IN ('ai-satellite', 'golfseg')
-                          AND here.verification_status <> 'REJECTED'))
-                  AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
-                        SELECT 1 FROM (
-                            SELECT count(DISTINCT surveyed.hole_id) AS drawn,
-                                   (SELECT count(*) FROM holes hh
-                                    WHERE hh.course_id = d.course_id) AS holes
-                            FROM draft_geometry_features surveyed
-                            WHERE surveyed.course_id = d.course_id
-                              AND surveyed.layer_type = d.layer_type
-                              AND surveyed.is_valid
-                              AND surveyed.source NOT IN ('ai-satellite', 'golfseg')
-                              AND surveyed.verification_status <> 'REJECTED'
-                        ) coverage
-                        WHERE coverage.holes > 0
-                          AND coverage.drawn * 2 >= coverage.holes))
-                ORDER BY d.layer_type
-                """)
-                .setParameter("course", courseId)
-                .setParameter("hole", holeNumber)
-                .setParameter("floor", minimumConfidence)
-                .getResultList();
+        // Which shapes may be shown is not decided here. It is decided once,
+        // in TracedHoleGeometry, so that the offline package a golfer
+        // downloads holds the same shapes this endpoint serves — it used to
+        // hold a tee point and a green point and nothing else.
+        var traced = tracedGeometry.forHole(courseId, holeNumber);
 
         var features = new ArrayList<Map<String, Object>>();
-        for (Object row : rows) {
-            Object[] r = (Object[]) row;
+        for (var t : traced) {
             var properties = new LinkedHashMap<String, Object>();
-            properties.put("layerType", layerOf((String) r[0]));
-            properties.put("confidence", r[2]);
-            properties.put("source", r[3]);
-            properties.put("verificationStatus", r[4]);
-            properties.put("modelVersion", r[5]);
-            properties.put("name", r[6]);
-            // What the app needs to draw it differently: nobody has checked
-            // this against the ground yet.
-            properties.put("verified", "VERIFIED".equals(r[4]));
+            properties.put("layerType", t.layer());
+            properties.put("confidence", t.confidence());
+            properties.put("source", t.source());
+            properties.put("verificationStatus", t.verificationStatus());
+            properties.put("modelVersion", t.modelVersion());
+            properties.put("name", t.name());
+            properties.put("verified", t.verified());
 
             var feature = new LinkedHashMap<String, Object>();
             feature.put("type", "Feature");
-            feature.put("geometry", new com.fasterxml.jackson.databind.ObjectMapper()
-                    .convertValue(parse((String) r[1]), Map.class));
+            feature.put("geometry", t.geometry());
             feature.put("properties", properties);
             features.add(feature);
         }
@@ -264,7 +153,8 @@ public class HoleFeatureController {
         // shapes and a server showing no request look identical when the
         // request writes nothing down.
         log.info("GET /courses/{}/holes/{}/features - {} shape(s) above {}",
-                courseId, holeNumber, features.size(), minimumConfidence);
+                courseId, holeNumber, features.size(),
+                tracedGeometry.minimumConfidence());
 
         var collection = new LinkedHashMap<String, Object>();
         collection.put("type", "FeatureCollection");
@@ -272,24 +162,4 @@ public class HoleFeatureController {
         return collection;
     }
 
-    private static Object parse(String geoJson) {
-        try {
-            return new com.fasterxml.jackson.databind.ObjectMapper()
-                    .readValue(geoJson, Map.class);
-        } catch (Exception e) {
-            return Map.of();
-        }
-    }
-
-    /// The names the app's map already knows, so these features land in the
-    /// same layers as a surveyed course's and are drawn by the same styles.
-    private static String layerOf(String layerType) {
-        return switch (layerType) {
-            case "WATER_HAZARD" -> "water";
-            case "PENALTY_AREA" -> "penaltyArea";
-            case "OUT_OF_BOUNDS" -> "ob";
-            case "CART_PATH" -> "cartPath";
-            default -> layerType.toLowerCase(java.util.Locale.ROOT);
-        };
-    }
 }
