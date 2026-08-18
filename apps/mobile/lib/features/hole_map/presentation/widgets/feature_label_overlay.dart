@@ -79,11 +79,26 @@ class FeatureLabelOverlay extends StatefulWidget {
     required this.controller,
     required this.chips,
     required this.unit,
+    this.obstacles = const [],
   });
 
   final ml.MapLibreMapController? controller;
   final List<FeatureLabelChip> chips;
   final DistanceUnit unit;
+
+  /// Things already on the map that a label must not land on.
+  ///
+  /// Passed as keys rather than rectangles because the map's own panels move:
+  /// the foot of it grows with what is in it, and a number measured off a
+  /// screenshot is how a control ended up floating in the middle of the map
+  /// earlier the same day. Measured from the widgets themselves, on the frame
+  /// before this one, which is close enough for a chip that is about to be
+  /// projected again anyway.
+  ///
+  /// A chip that would land on one is dropped, not moved — the same rule as
+  /// chip-on-chip, and for the same reason: a label that has been nudged
+  /// points at the wrong shape.
+  final List<GlobalKey> obstacles;
 
   @override
   State<FeatureLabelOverlay> createState() => _FeatureLabelOverlayState();
@@ -227,6 +242,7 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
     ];
 
     final placed = <_PlacedChip>[];
+    final taken = _obstacleRects();
     for (final chip in ordered) {
       final at = _positions[chip.identity];
       if (!_onScreen(at, size)) continue;
@@ -244,12 +260,28 @@ class _FeatureLabelOverlayState extends State<FeatureLabelOverlay> {
       );
       final rect = Rect.fromLTWH(left, top, _chipWidth, _chipHeight);
 
-      final collides = placed.any((other) => other.rect.overlaps(rect));
+      final collides =
+          placed.any((other) => other.rect.overlaps(rect)) ||
+          taken.any((other) => other.overlaps(rect));
       if (collides) continue;
 
       placed.add(_PlacedChip(chip: chip, rect: rect));
     }
     return placed;
+  }
+
+  /// Where the map's own panels are, in this overlay's coordinates.
+  List<Rect> _obstacleRects() {
+    final self = context.findRenderObject();
+    if (self is! RenderBox || !self.hasSize) return const [];
+    final rects = <Rect>[];
+    for (final key in widget.obstacles) {
+      final box = key.currentContext?.findRenderObject();
+      if (box is! RenderBox || !box.hasSize) continue;
+      final topLeft = self.globalToLocal(box.localToGlobal(Offset.zero));
+      rects.add(topLeft & box.size);
+    }
+    return rects;
   }
 
   /// Breathing room at the screen edge, so a clamped chip is not flush.

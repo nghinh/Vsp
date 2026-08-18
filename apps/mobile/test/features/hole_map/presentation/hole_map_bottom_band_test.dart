@@ -30,7 +30,6 @@ import 'package:vsp_mobile/features/basemap/presentation/widgets/map_data_attrib
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/hole_map_state.dart';
-import 'package:vsp_mobile/features/hole_map/presentation/widgets/feature_distance_panel.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/hole_map_view.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/layer_toggle_panel.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
@@ -141,11 +140,15 @@ void main() {
         'right begins', (tester) async {
       await _pump(tester, textScale: scale);
 
-      final ahead = find.byType(FeatureDistancePanel);
+      // The caveat is what occupies the left column now. The list of what is
+      // ahead moved onto the shapes themselves, where a golfer can tell which
+      // blob the number belongs to.
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      final ahead = find.text(l10n.mapTracedShapes);
       expect(
         ahead,
         findsOneWidget,
-        reason: 'without the panel there is nothing to be covered',
+        reason: 'without something in the left column nothing can be covered',
       );
       final aheadRect = tester.getRect(ahead);
 
@@ -213,8 +216,9 @@ void main() {
     final attribution = find.byType(MapDataAttribution);
     expect(attribution, findsOneWidget);
 
+    final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
     final rect = tester.getRect(attribution);
-    final ahead = tester.getRect(find.byType(FeatureDistancePanel));
+    final ahead = tester.getRect(find.text(l10n.mapTracedShapes));
     expect(
       rect.top,
       greaterThanOrEqualTo(ahead.bottom),

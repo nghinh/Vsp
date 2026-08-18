@@ -22,10 +22,8 @@ import 'pin_marker.dart';
 import 'wind_arrow_overlay.dart';
 import 'distance_ring_overlay.dart';
 import 'play_line_panel.dart';
-import 'feature_distance_panel.dart';
 import 'feature_label_overlay.dart';
 import 'green_reference_panel.dart';
-import 'package:vsp_mobile/features/hole_map/domain/feature_distances.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_labels.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_rings.dart';
 import 'package:vsp_mobile/features/hole_map/domain/green_reference.dart';
@@ -113,6 +111,15 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// taken and where the change can be acted on.
   DistanceUnit _unit = DistanceUnit.meters;
 
+  /// The map's own furniture, so a label never lands on it.
+  ///
+  /// The first screenshot taken after the labels started appearing has two tee
+  /// chips printed across the basemap switch and the layer control. The chips
+  /// avoided each other and knew nothing about the panels floating beside
+  /// them.
+  final GlobalKey _readoutKey = GlobalKey();
+  final GlobalKey _footKey = GlobalKey();
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -146,8 +153,27 @@ class _HoleMapViewState extends State<HoleMapView> {
     super.dispose();
   }
 
+  /// The controller arrives after the first build, so the tree has to be told.
+  ///
+  /// Without the rebuild, everything downstream keeps the null it was handed.
+  /// [FeatureLabelOverlay] is the one that shows: it projects lat/lng through
+  /// this controller, and with a null one it returns an empty box — so the
+  /// names and carry distances that are supposed to sit on each shape never
+  /// appeared at all. Its own note says why they exist: "the panel in the
+  /// corner cannot say which of the two sand-coloured blobs on screen is the
+  /// 142-metre one, and that is the question a golfer on the tee is actually
+  /// asking".
+  ///
+  /// It looked like it worked on a phone, because a GPS fix rebuilds the map
+  /// a second or two later and the labels appear then. On a simulator with no
+  /// fix nothing ever rebuilds it, which is how every screenshot of this map
+  /// came back without a single label on it.
   void _onMapCreated(MapLibreMapController controller) {
-    _mapController = controller;
+    if (!mounted) {
+      _mapController = controller;
+      return;
+    }
+    setState(() => _mapController = controller);
   }
 
   /// Drops the controller for a vector map that is no longer on screen.
@@ -245,33 +271,7 @@ class _HoleMapViewState extends State<HoleMapView> {
     );
   }
 
-  /// The hazards and the green in front of the golfer, measured.
-  ///
-  /// From where they stand, along the line to the flag. Before there is a
-  /// fix the tee stands in for them, which is where they are about to be.
-  List<FeatureDistance> _featuresAhead() {
-    final state = widget.state;
-    final aim = state.holeMap.aimPoint;
-    if (aim == null) return const [];
-    final from = _measuringPoint();
-    if (from == null) return const [];
 
-    final l10n = AppLocalizations.of(context);
-    return FeatureDistances.ahead(
-          layers: state.holeMap.layers,
-          from: from,
-          target: aim,
-        )
-        .map(
-          (measured) => FeatureDistance(
-            label: _labelOf(measured.layer, l10n),
-            nearMeters: measured.nearMeters,
-            farMeters: measured.farMeters,
-            colour: _colourOf(measured.layer),
-          ),
-        )
-        .toList();
-  }
 
   /// A chip on each shape worth naming: what it is, and how far.
   ///
@@ -370,6 +370,33 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// green outline where there is one — measured along the approach, §31 — and
   /// is null where the hole has only a green point, which carries its own
   /// centre distance already.
+  /// What the golfer is playing at.
+  ///
+  /// The flag where the club published one; otherwise the middle of the green
+  /// — and specifically the middle of *the* green, the nearest one, which is
+  /// the same point the readout at the top of the map quotes.
+  ///
+  /// `HoleMapEntity.aimPoint` averages the whole green layer instead. On a
+  /// hole with a practice green or the next hole's in frame that is the mean
+  /// of several greens, so the play line and the readout disagreed: 417 along
+  /// the line and 414 at the top, for the same words, on hole 10 of Đường A.
+  /// One of them had to be the middle of the green and it was never going to
+  /// be the average of three.
+  geo.LatLng? _aimPoint() {
+    final flag = widget.state.holeMap.pin;
+    if (flag != null && !flag.isExpired) {
+      return geo.LatLng(latitude: flag.latitude, longitude: flag.longitude);
+    }
+    final green = _greenReference();
+    if (green != null) {
+      return geo.LatLng(
+        latitude: green.centre.latitude,
+        longitude: green.centre.longitude,
+      );
+    }
+    return widget.state.holeMap.aimPoint;
+  }
+
   GreenReference? _greenReference() {
     final from = _measuringPoint();
     if (from == null) return null;
@@ -396,7 +423,7 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// two with, which is what makes "239 to the target, 240 on to the pin"
   /// readable at a glance.
   List<PlayLeg> _playLine(HoleMapReady state) {
-    final aim = state.holeMap.aimPoint;
+    final aim = _aimPoint();
     if (aim == null) return const [];
 
     final start = _measuringPoint();
@@ -676,6 +703,7 @@ class _HoleMapViewState extends State<HoleMapView> {
         // A name and a number on each shape. Sits directly above the map
         // and below every panel, so a chip never covers a control.
         FeatureLabelOverlay(
+          obstacles: [_readoutKey, _footKey],
           controller: _mapController,
           chips: [..._featureLabels(), ..._playLineLabels()],
           unit: _unit,
@@ -748,6 +776,7 @@ class _HoleMapViewState extends State<HoleMapView> {
         // lands, not in a corner competing with the wind arrow.
         if (_greenReference() != null)
           Positioned(
+            key: _readoutKey,
             top: MediaQuery.of(context).padding.top + 8,
             left: 0,
             right: 0,
@@ -787,6 +816,7 @@ class _HoleMapViewState extends State<HoleMapView> {
         // back whole and the switch came back as "B…" and "Th…". Two things
         // that each want half the phone do not share a row; they take turns.
         _MapBottomBand(
+          key: _footKey,
           // The legal notices, on a line of their own across the whole foot.
           //
           // They were the last item in the left column, which the row caps
@@ -796,8 +826,18 @@ class _HoleMapViewState extends State<HoleMapView> {
           // them down here, so they get the width they were written for.
           footer: MapDataAttribution(includesCopernicus: _drawsCopernicusData),
           left: [
-            if (_featuresAhead().isNotEmpty)
-              FeatureDistancePanel(features: _featuresAhead(), unit: _unit),
+            // The list of what is ahead used to be here: four rows, eight
+            // numbers, and no way to tell which of the four sand-coloured
+            // blobs on screen was the 112-yard one. That is the question a
+            // golfer on a tee is asking, and FeatureLabelOverlay answers it by
+            // writing each number on its own shape — which it was built to do
+            // when the labels were written, and did not, because the map
+            // controller never reached it.
+            //
+            // With the numbers on the shapes, a panel repeating them in the
+            // corner is the same information twice, over the picture of the
+            // hole.
+            //
             // Whose shapes these are. Directly above the fix that measured
             // them, because the two qualify each other.
             if (widget.state.tracedShapesUnverified)
@@ -936,6 +976,7 @@ class _MapCorner extends StatelessWidget {
 /// other. What is left there does fit: the layer count is a chip.
 class _MapBottomBand extends StatelessWidget {
   const _MapBottomBand({
+    super.key,
     required this.footer,
     required this.left,
     required this.right,
