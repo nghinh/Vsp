@@ -134,16 +134,38 @@ public class TracedHoleGeometry {
                   -- a value here, not another branch: golfseg is judged by the
                   -- rule the satellite reader was, because the question is the
                   -- same one — did a person draw this layer?
-                  -- ...but only where a person drew that layer across most of
-                  -- the course. Đường B has three bunkers in OpenStreetMap and
-                  -- about twenty on the ground; letting those three silence
-                  -- every bunker the model found left holes with visible sand
-                  -- and nothing drawn on it. Three scattered polygons are not
-                  -- coverage. Nine greens on nine holes are.
                   --
-                  -- On this hole, always. A hole has one green: showing the
-                  -- mapper's and the model's side by side is unambiguous
-                  -- nonsense whatever the rest of the course looks like.
+                  -- The model fills in behind the mapper; it does not argue
+                  -- with them. On a hole where a person drew this layer, only
+                  -- their shapes go out — a hole has one green, and the
+                  -- mapper's green beside the model's is unambiguous nonsense.
+                  -- On a hole where nobody drew it, the model's shapes go out,
+                  -- because the alternative is a hole with water on the ground
+                  -- and nothing on the map.
+                  --
+                  -- That second half is new, and it is the whole point. There
+                  -- used to be a second rule above this one that asked whether
+                  -- a person had drawn the layer across *most of the course*,
+                  -- and silenced the model course-wide when they had. On Long
+                  -- Biên's Đường A a mapper drew one pond on each of five holes
+                  -- out of nine; five doubled clears nine, so all 33 ponds
+                  -- GolfSeg found were hidden — including sixteen on holes 1,
+                  -- 5, 7 and 8, where nobody had drawn any water at all and the
+                  -- map therefore showed none. The satellite photograph of
+                  -- hole 2 has a lake across the middle of it.
+                  --
+                  -- KNOWN CONSEQUENCE, recorded rather than hidden: this mixes
+                  -- OSM and non-OSM geometry inside one (course, layer) — the
+                  -- five mapped ponds and the sixteen traced ones now share
+                  -- Đường A's water layer. ODbL's horizontal-layers guidance
+                  -- treats a mixed layer as a Derivative Database rather than a
+                  -- Collective one, which would put our own traced polygons
+                  -- under share-alike. The previous rule bought that separation
+                  -- at the cost of blank holes. Choosing the golfer over the
+                  -- separation is a licensing decision, and it was taken
+                  -- deliberately; the way out, if it has to be taken back, is
+                  -- to pick one source per (course, layer) by coverage rather
+                  -- than to hide the model.
                   AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
                         SELECT 1 FROM draft_geometry_features here
                         WHERE here.course_id = d.course_id
@@ -152,20 +174,6 @@ public class TracedHoleGeometry {
                           AND here.is_valid
                           AND here.source NOT IN ('ai-satellite', 'golfseg')
                           AND here.verification_status <> 'REJECTED'))
-                  AND (d.source NOT IN ('ai-satellite', 'golfseg') OR NOT EXISTS (
-                        SELECT 1 FROM (
-                            SELECT count(DISTINCT surveyed.hole_id) AS drawn,
-                                   (SELECT count(*) FROM holes hh
-                                    WHERE hh.course_id = d.course_id) AS holes
-                            FROM draft_geometry_features surveyed
-                            WHERE surveyed.course_id = d.course_id
-                              AND surveyed.layer_type = d.layer_type
-                              AND surveyed.is_valid
-                              AND surveyed.source NOT IN ('ai-satellite', 'golfseg')
-                              AND surveyed.verification_status <> 'REJECTED'
-                        ) coverage
-                        WHERE coverage.holes > 0
-                          AND coverage.drawn * 2 >= coverage.holes))
                 """;
 
     /**
