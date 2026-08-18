@@ -213,8 +213,9 @@ class _HoleMapViewState extends State<HoleMapView> {
     for (final entry in visibility.entries) {
       // One domain layer is drawn by several style layers (fill, line and
       // point), so a toggle has to move all of them.
-      for (final styleLayerId
-          in CourseMapStyleBuilder.styleLayerIds(entry.key)) {
+      for (final styleLayerId in CourseMapStyleBuilder.styleLayerIds(
+        entry.key,
+      )) {
         _mapController?.setLayerVisibility(styleLayerId, entry.value);
       }
     }
@@ -257,15 +258,19 @@ class _HoleMapViewState extends State<HoleMapView> {
 
     final l10n = AppLocalizations.of(context);
     return FeatureDistances.ahead(
-      layers: state.holeMap.layers,
-      from: from,
-      target: aim,
-    ).map((measured) => FeatureDistance(
-          label: _labelOf(measured.layer, l10n),
-          nearMeters: measured.nearMeters,
-          farMeters: measured.farMeters,
-          colour: _colourOf(measured.layer),
-        )).toList();
+          layers: state.holeMap.layers,
+          from: from,
+          target: aim,
+        )
+        .map(
+          (measured) => FeatureDistance(
+            label: _labelOf(measured.layer, l10n),
+            nearMeters: measured.nearMeters,
+            farMeters: measured.farMeters,
+            colour: _colourOf(measured.layer),
+          ),
+        )
+        .toList();
   }
 
   /// A chip on each shape worth naming: what it is, and how far.
@@ -280,17 +285,19 @@ class _HoleMapViewState extends State<HoleMapView> {
 
     final l10n = AppLocalizations.of(context);
     return FeatureLabels.forLayers(layers: state.holeMap.layers, from: from)
-        .map((label) => FeatureLabelChip(
-              label: _labelOf(label.layer, l10n),
-              meters: label.nearMeters,
-              // The carry, where the shape is deep enough for it to be a
-              // different club. A green's front and back are two clubs apart
-              // and its centre matches nothing on the ground.
-              farMeters: label.hasDepth ? label.farMeters : null,
-              colour: _colourOf(label.layer),
-              latitude: label.at.latitude,
-              longitude: label.at.longitude,
-            ))
+        .map(
+          (label) => FeatureLabelChip(
+            label: _labelOf(label.layer, l10n),
+            meters: label.nearMeters,
+            // The carry, where the shape is deep enough for it to be a
+            // different club. A green's front and back are two clubs apart
+            // and its centre matches nothing on the ground.
+            farMeters: label.hasDepth ? label.farMeters : null,
+            colour: _colourOf(label.layer),
+            latitude: label.at.latitude,
+            longitude: label.at.longitude,
+          ),
+        )
         .toList();
   }
 
@@ -331,15 +338,15 @@ class _HoleMapViewState extends State<HoleMapView> {
   /// screen, and a four-pixel strip of pale green on a white card is a white
   /// card. What has to survive here is which layer it is, not the exact shade.
   static Color _colourOf(MapLayerType layer) => switch (layer) {
-        MapLayerType.green => const Color(0xFF7FB13F),
-        MapLayerType.bunker => const Color(0xFFD9BE79),
-        MapLayerType.water => const Color(0xFF3E96CC),
-        MapLayerType.penaltyArea => const Color(0xFFC96A6A),
-        MapLayerType.ob => const Color(0xFFB3453F),
-        MapLayerType.fairway => const Color(0xFF8DC15E),
-        MapLayerType.tee => const Color(0xFF8FB35F),
-        _ => const Color(0xFF94A38C),
-      };
+    MapLayerType.green => const Color(0xFF7FB13F),
+    MapLayerType.bunker => const Color(0xFFD9BE79),
+    MapLayerType.water => const Color(0xFF3E96CC),
+    MapLayerType.penaltyArea => const Color(0xFFC96A6A),
+    MapLayerType.ob => const Color(0xFFB3453F),
+    MapLayerType.fairway => const Color(0xFF8DC15E),
+    MapLayerType.tee => const Color(0xFF8FB35F),
+    _ => const Color(0xFF94A38C),
+  };
 
   /// Where every number on this screen is measured from.
   ///
@@ -400,8 +407,10 @@ class _HoleMapViewState extends State<HoleMapView> {
 
     final target = state.target;
     if (target != null) {
-      final aimAt =
-          geo.LatLng(latitude: target.latitude, longitude: target.longitude);
+      final aimAt = geo.LatLng(
+        latitude: target.latitude,
+        longitude: target.longitude,
+      );
       return [
         PlayLeg(from: start, to: aimAt, label: label(start, aimAt)),
         PlayLeg(from: aimAt, to: aim, label: label(aimAt, aim)),
@@ -637,9 +646,10 @@ class _HoleMapViewState extends State<HoleMapView> {
     return vsp.LatLng(latitude: lat, longitude: lng);
   }
 
-  Widget _buildBasemapToggle() {
+  Widget _buildBasemapToggle({bool compact = false}) {
     return BasemapToggle(
       mode: _basemapMode,
+      compact: compact,
       satelliteAvailable: _imagery.isAvailable,
       onChanged: (mode) {
         if (mode == _basemapMode) return;
@@ -659,143 +669,158 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   Widget _buildCourseMapMode(BuildContext context) {
     return Stack(
-        children: [
-          // MapLibre GL map
-          _buildMap(),
+      children: [
+        // MapLibre GL map
+        _buildMap(),
 
-          // A name and a number on each shape. Sits directly above the map
-          // and below every panel, so a chip never covers a control.
-          FeatureLabelOverlay(
-            controller: _mapController,
-            chips: [..._featureLabels(), ..._playLineLabels()],
-            unit: _unit,
-          ),
+        // A name and a number on each shape. Sits directly above the map
+        // and below every panel, so a chip never covers a control.
+        FeatureLabelOverlay(
+          controller: _mapController,
+          chips: [..._featureLabels(), ..._playLineLabels()],
+          unit: _unit,
+        ),
 
-          // ─── Panels ────────────────────────────────────────────────
-          //
-          // Four corners and a middle, each a column that stacks whatever it
-          // is given. Every panel used to place itself, and two pairs landed
-          // on the same coordinates: the flag badge and the play-line numbers
-          // both at (left 12, top 12), the wind arrow and the ring legend both
-          // at (right 12, top 12). They drew on top of each other, and the
-          // golfer position marker sat over the map attribution at the bottom
-          // of the same screen.
-          //
-          // Nothing is nudged to fix that. Absolute placement of ten floating
-          // elements is a collision waiting for the eleventh, so a panel now
-          // says which corner it belongs in and the corner does the stacking.
-          //
-          // The order within each corner is deliberate: what a golfer reads
-          // first sits nearest the top of the column, and controls sit
-          // furthest from it, in the bottom corners where a thumb reaches
-          // without shifting grip on the phone.
-          _MapCorner(
-            alignment: Alignment.topLeft,
-            top: MediaQuery.of(context).padding.top + 8,
-            children: [
-              // The distance a golfer opens this screen for.
-              if (_playLine(widget.state).isNotEmpty)
-                Builder(
-                  builder: (context) {
-                    final legs = _playLine(widget.state);
-                    final flag = widget.state.holeMap.pin;
-                    return PlayLinePanel(
-                      toTarget: legs.length > 1 ? legs.first.label : null,
-                      toPin: legs.last.label,
-                      aimsAtPublishedPin: flag != null && !flag.isExpired,
-                    );
-                  },
-                ),
-              // Whose flag position this is, under the number it explains
-              // rather than on top of it.
-              if (widget.state.holeMap.pin != null)
-                PinMarker(pin: widget.state.holeMap.pin!),
-            ],
-          ),
-
-          _MapCorner(
-            alignment: Alignment.topRight,
-            top: MediaQuery.of(context).padding.top + 8,
-            children: [
-              if (widget.state.wind != null)
-                WindArrowOverlay(
-                  wind: widget.state.wind!,
-                  windRelative: widget.state.windRelative,
-                ),
-              if (widget.state.distanceRings.isNotEmpty)
-                DistanceRingOverlay(rings: widget.state.distanceRings),
-              // Front / centre / back — read before every approach, so it
-              // stays on the side the thumb does not cover.
-              if (_greenReference() != null)
-                Builder(
-                  builder: (context) {
-                    final green = _greenReference()!;
-                    return GreenReferencePanel(
-                      frontMeters: green.frontMeters,
-                      centreMeters: green.centreMeters,
-                      backMeters: green.backMeters,
-                      unit: _unit,
-                    );
-                  },
-                ),
-            ],
-          ),
-
-          // The foot of the map, as one row rather than as three corners.
-          //
-          // _MapCorner says plainly what it does not promise: a wide panel on
-          // the left will print underneath one on the right at the same
-          // height, and two things sharing a horizontal band belong in a Row.
-          // The map/measure switch was moved out of the centre and into the
-          // bottom-right to stop it covering the traced-shapes caveat, and
-          // that was still two corners — a third absolutely placed column at a
-          // hardcoded 72, wide enough to reach back across the panel it was
-          // supposed to have stopped covering.
-          //
-          // The first photograph ever taken of this screen shows it sitting on
-          // the fourth bunker row, "270 / 3", and across the caveat again. It
-          // was never fixed, only moved, and nothing could see that because
-          // nothing had looked.
-          //
-          // The switch gets a line of its own, above both columns. Sharing the
-          // band was tried first and the pictures said no: the distances came
-          // back whole and the switch came back as "B…" and "Th…". Two things
-          // that each want half the phone do not share a row; they take turns.
-          _MapBottomBand(
-            // Satellite is always one tap away, and still legible.
-            wide: _buildBasemapToggle(),
-            left: [
-              if (_featuresAhead().isNotEmpty)
-                FeatureDistancePanel(
-                  features: _featuresAhead(),
-                  unit: _unit,
-                ),
-              // Whose shapes these are. Directly above the fix that measured
-              // them, because the two qualify each other.
-              if (widget.state.tracedShapesUnverified)
-                _TracedShapesNotice(
-                  text: AppLocalizations.of(context).mapTracedShapes,
-                ),
-              if (widget.state.golferPosition != null)
-                GolferPositionMarker(
-                  position: widget.state.golferPosition!,
-                ),
-              // ODbL requires the notice wherever the derived database is
-              // publicly used. Last in the column: it is a legal obligation,
-              // not something a golfer reads on a tee.
-              MapDataAttribution(includesCopernicus: _drawsCopernicusData),
-            ],
-            right: [
-              LayerTogglePanel(
-                visibility: widget.state.layerVisibility,
-                onToggle: (layerId, visible) {
-                  context.read<HoleMapBloc>().add(
-                    ToggleLayerVisibility(layerId: layerId, visible: visible),
+        // ─── Panels ────────────────────────────────────────────────
+        //
+        // Four corners and a middle, each a column that stacks whatever it
+        // is given. Every panel used to place itself, and two pairs landed
+        // on the same coordinates: the flag badge and the play-line numbers
+        // both at (left 12, top 12), the wind arrow and the ring legend both
+        // at (right 12, top 12). They drew on top of each other, and the
+        // golfer position marker sat over the map attribution at the bottom
+        // of the same screen.
+        //
+        // Nothing is nudged to fix that. Absolute placement of ten floating
+        // elements is a collision waiting for the eleventh, so a panel now
+        // says which corner it belongs in and the corner does the stacking.
+        //
+        // The order within each corner is deliberate: what a golfer reads
+        // first sits nearest the top of the column, and controls sit
+        // furthest from it, in the bottom corners where a thumb reaches
+        // without shifting grip on the phone.
+        _MapCorner(
+          alignment: Alignment.topLeft,
+          top: MediaQuery.of(context).padding.top + 8,
+          children: [
+            // Only once the golfer has placed a target.
+            //
+            // Without one this panel's single row was "to the middle of the
+            // green" — the same thing the green readout above says, measured
+            // differently. On hole 10 they read 417 and 414. With a target
+            // it answers a question nothing else does: how far to there, and
+            // how much is left after it.
+            if (widget.state.target != null &&
+                _playLine(widget.state).length > 1)
+              Builder(
+                builder: (context) {
+                  final legs = _playLine(widget.state);
+                  final flag = widget.state.holeMap.pin;
+                  return PlayLinePanel(
+                    toTarget: legs.first.label,
+                    toPin: legs.last.label,
+                    aimsAtPublishedPin: flag != null && !flag.isExpired,
                   );
                 },
               ),
-            ],
+            // Whose flag position this is, under the number it explains
+            // rather than on top of it.
+            if (widget.state.holeMap.pin != null)
+              PinMarker(pin: widget.state.holeMap.pin!),
+          ],
+        ),
+
+        _MapCorner(
+          alignment: Alignment.topRight,
+          top: MediaQuery.of(context).padding.top + 8,
+          children: [
+            if (widget.state.wind != null)
+              WindArrowOverlay(
+                wind: widget.state.wind!,
+                windRelative: widget.state.windRelative,
+              ),
+            if (widget.state.distanceRings.isNotEmpty)
+              DistanceRingOverlay(rings: widget.state.distanceRings),
+          ],
+        ),
+
+        // The number the screen exists for, in the middle where the eye
+        // lands, not in a corner competing with the wind arrow.
+        if (_greenReference() != null)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Builder(
+                builder: (context) {
+                  final green = _greenReference()!;
+                  return GreenReferencePanel(
+                    frontMeters: green.frontMeters,
+                    centreMeters: green.centreMeters,
+                    backMeters: green.backMeters,
+                    unit: _unit,
+                  );
+                },
+              ),
+            ),
           ),
+
+        // The foot of the map, as one row rather than as three corners.
+        //
+        // _MapCorner says plainly what it does not promise: a wide panel on
+        // the left will print underneath one on the right at the same
+        // height, and two things sharing a horizontal band belong in a Row.
+        // The map/measure switch was moved out of the centre and into the
+        // bottom-right to stop it covering the traced-shapes caveat, and
+        // that was still two corners — a third absolutely placed column at a
+        // hardcoded 72, wide enough to reach back across the panel it was
+        // supposed to have stopped covering.
+        //
+        // The first photograph ever taken of this screen shows it sitting on
+        // the fourth bunker row, "270 / 3", and across the caveat again. It
+        // was never fixed, only moved, and nothing could see that because
+        // nothing had looked.
+        //
+        // The switch gets a line of its own, above both columns. Sharing the
+        // band was tried first and the pictures said no: the distances came
+        // back whole and the switch came back as "B…" and "Th…". Two things
+        // that each want half the phone do not share a row; they take turns.
+        _MapBottomBand(
+          // The legal notices, on a line of their own across the whole foot.
+          //
+          // They were the last item in the left column, which the row caps
+          // at three fifths — so a notice written to be "one compact line"
+          // wrapped to three and made the column tall enough to push the
+          // basemap switch into the middle of the map. Nothing competes with
+          // them down here, so they get the width they were written for.
+          footer: MapDataAttribution(includesCopernicus: _drawsCopernicusData),
+          left: [
+            if (_featuresAhead().isNotEmpty)
+              FeatureDistancePanel(features: _featuresAhead(), unit: _unit),
+            // Whose shapes these are. Directly above the fix that measured
+            // them, because the two qualify each other.
+            if (widget.state.tracedShapesUnverified)
+              _TracedShapesNotice(
+                text: AppLocalizations.of(context).mapTracedShapes,
+              ),
+            if (widget.state.golferPosition != null)
+              GolferPositionMarker(position: widget.state.golferPosition!),
+          ],
+          right: [
+            // Icons only. Labelled it is half the width of the phone, and
+            // the foot of the map has distances on the other half.
+            _buildBasemapToggle(compact: true),
+            LayerTogglePanel(
+              visibility: widget.state.layerVisibility,
+              onToggle: (layerId, visible) {
+                context.read<HoleMapBloc>().add(
+                  ToggleLayerVisibility(layerId: layerId, visible: visible),
+                );
+              },
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -812,7 +837,9 @@ class _HoleMapViewState extends State<HoleMapView> {
 
   Widget _buildMap() {
     return Semantics(
-      label: AppLocalizations.of(context).mapHoleLabel('${widget.state.holeMap.holeNumber}'),
+      label: AppLocalizations.of(
+        context,
+      ).mapHoleLabel('${widget.state.holeMap.holeNumber}'),
       child: MapLibreMap(
         styleString: _courseStyle,
         onMapCreated: _onMapCreated,
@@ -909,13 +936,13 @@ class _MapCorner extends StatelessWidget {
 /// other. What is left there does fit: the layer count is a chip.
 class _MapBottomBand extends StatelessWidget {
   const _MapBottomBand({
-    required this.wide,
+    required this.footer,
     required this.left,
     required this.right,
   });
 
-  /// Right-aligned on its own line above the columns.
-  final Widget wide;
+  /// Full width, beneath both columns.
+  final Widget footer;
   final List<Widget> left;
   final List<Widget> right;
 
@@ -927,10 +954,8 @@ class _MapBottomBand extends StatelessWidget {
       bottom: 12,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          wide,
-          const SizedBox(height: _MapColumn.gap),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
@@ -945,6 +970,8 @@ class _MapBottomBand extends StatelessWidget {
               ),
             ],
           ),
+          const SizedBox(height: _MapColumn.gap),
+          footer,
         ],
       ),
     );
@@ -969,8 +996,9 @@ class _MapColumn extends StatelessWidget {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment:
-          alignLeft ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+      crossAxisAlignment: alignLeft
+          ? CrossAxisAlignment.start
+          : CrossAxisAlignment.end,
       children: [
         for (var i = 0; i < visible.length; i++) ...[
           if (i > 0) const SizedBox(height: gap),

@@ -473,7 +473,14 @@ void main() {
         findsNothing,
       );
 
-      await tester.tap(find.text(l10n.basemapMeasure, skipOffstage: false));
+      // By its semantics label, not its text: on the vector map the switch is
+      // icons only — labelled it is half the width of the phone, and the foot
+      // of that map has the distances on the other half. The wording is still
+      // there for a screen reader, and tapping through it is the same path a
+      // golfer using one takes.
+      await tester.tap(
+        find.bySemanticsLabel(l10n.basemapSwitchToMeasure).first,
+      );
       await tester.pump();
       _expectSatelliteMeasuring();
     });

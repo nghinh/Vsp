@@ -4753,4 +4753,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get authCheckingSession => 'Đang kiểm tra phiên đăng nhập…';
+
+  @override
+  String get measureExpandHint => 'Chạm để đo';
 }

@@ -26,6 +26,7 @@ import 'package:vsp_mobile/domain/models/data_quality.dart' show AccuracyClass;
 import 'package:vsp_mobile/domain/models/hole_data_provenance.dart';
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
 import 'package:vsp_mobile/features/basemap/presentation/widgets/basemap_toggle.dart';
+import 'package:vsp_mobile/features/basemap/presentation/widgets/map_data_attribution.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/map_layer.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/hole_map_state.dart';
@@ -158,43 +159,71 @@ void main() {
             'them as soon as the two are at the same height',
       );
 
-      // The switch is not in either column — it has a line above them, because
-      // it and the distances each want about half the phone and neither reads
-      // as anything at half of that.
+      // The switch lives in the right column, icons only, so it fits beside
+      // the distances instead of taking a line of its own. It had one for a
+      // while, and a line above the columns floats upward as they grow — with
+      // the ahead panel, the caveat and the attribution stacked it ended up in
+      // the middle of the map.
       final toggle = find.byType(BasemapToggle);
       expect(toggle, findsOneWidget);
       expect(
-        tester.getRect(toggle).bottom,
-        lessThanOrEqualTo(aheadRect.top),
-        reason: 'the switch sits above the distances, not beside them',
+        aheadRect.right,
+        lessThanOrEqualTo(tester.getRect(toggle).left),
+        reason: 'the switch is beside the distances, never over them',
       );
     });
   }
 
-  testWidgets('and the switch keeps its words', (tester) async {
+  testWidgets('the switch still says what it is, to a screen reader', (
+    tester,
+  ) async {
+    // Icons only is a decision about width, not about meaning. Made to share
+    // a row with the distances it once came back reading "B…" and "Th…", which
+    // is not a control; dropping the glyphs and keeping the sentence is the
+    // trade that works. A screen reader must still hear it.
     await _pump(tester);
 
-    // Asked of the thing that paints the words, not of the widget holding
-    // them. `Text.data` is the whole string whether or not any of it fitted —
-    // the "…" is drawn, never stored — so a test reading `data` passes on a
-    // switch that says "B…" and "Th…". `didExceedMaxLines` is what the
-    // paragraph actually did.
+    final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+    expect(
+      find.bySemanticsLabel(l10n.basemapSwitchToCourseMap),
+      findsWidgets,
+    );
+    expect(find.bySemanticsLabel(l10n.basemapSwitchToMeasure), findsWidgets);
+
+    // And nothing it does draw is clipped.
     final labels = find.descendant(
       of: find.byType(BasemapToggle),
       matching: find.byType(Text),
     );
-    expect(labels, findsWidgets);
-
     for (var i = 0; i < labels.evaluate().length; i++) {
       final paragraph = tester.renderObject<RenderParagraph>(labels.at(i));
-      expect(
-        paragraph.didExceedMaxLines,
-        isFalse,
-        reason:
-            '"${(paragraph.text as TextSpan).text}" did not fit, so the golfer '
-            'reads an abbreviation of it — which is what the switch came back '
-            'as when it was made to share the row with the distances',
-      );
+      expect(paragraph.didExceedMaxLines, isFalse);
     }
+  });
+
+  testWidgets('the legal notice gets the width it was written for', (
+    tester,
+  ) async {
+    // "Kept to one compact line so it can sit on a map without covering a
+    // hazard" — its own words. Capped at three fifths inside the left column
+    // it wrapped to three lines, and the column grew tall enough to push the
+    // basemap switch into the middle of the map.
+    await _pump(tester);
+
+    final attribution = find.byType(MapDataAttribution);
+    expect(attribution, findsOneWidget);
+
+    final rect = tester.getRect(attribution);
+    final ahead = tester.getRect(find.byType(FeatureDistancePanel));
+    expect(
+      rect.top,
+      greaterThanOrEqualTo(ahead.bottom),
+      reason: 'the notice is below both columns, not inside one',
+    );
+    expect(
+      rect.width,
+      greaterThan(tester.view.physicalSize.width / tester.view.devicePixelRatio * 0.6),
+      reason: 'it has the full foot of the map, not a fifth of it',
+    );
   });
 }

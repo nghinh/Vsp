@@ -4755,4 +4755,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authCheckingSession => 'Checking your secure session…';
+
+  @override
+  String get measureExpandHint => 'Tap to measure';
 }

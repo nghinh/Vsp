@@ -386,12 +386,36 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
   /// Scrolls past the ceiling rather than clipping: every leg stays reachable,
   /// and the numbers a golfer looks at most — the current leg and the total —
   /// are at the two ends of a short list, not buried.
+  /// Collapsed until there is something to say.
+  ///
+  /// The panel took up to 42% of the screen from the moment the tab opened,
+  /// holding a title, a unit toggle and a sentence explaining how to measure —
+  /// while the golfer was looking at the photograph of the hole underneath it,
+  /// which is what they came for. It earns that space once a point is placed
+  /// and not before.
+  ///
+  /// Sticky once opened by hand: a golfer who tapped it open meant it, and
+  /// having it shut itself on the next clear would be worse than the space.
+  bool _panelExpanded = false;
+
   Widget _panel(
     BuildContext context,
     MeasureState state,
     bool hasImagery,
     BoxConstraints constraints,
   ) {
+    // Only where there is a photograph underneath to look at instead.
+    //
+    // With no imagery provider the map is a plain canvas and this panel is the
+    // screen — it carries the explanation of what a golfer can still do here
+    // and the caveat that the green position is derived rather than surveyed.
+    // Folding that away would leave them looking at nothing at all.
+    if (hasImagery && state.isEmpty && !_panelExpanded) {
+      return KeyedSubtree(
+        key: SatelliteMeasureView.readoutKey,
+        child: _collapsedStrip(context, state),
+      );
+    }
     final panel = MeasurePanel(
       state: state,
       imageryAvailable: hasImagery,
@@ -420,6 +444,79 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
             constraints.maxHeight * SatelliteMeasureView._panelMaxFraction,
       ),
       child: SingleChildScrollView(child: panel),
+    );
+  }
+
+  /// One row: what this is, and how to start — plus the one thing that must
+  /// not wait for a tap.
+  ///
+  /// Where the green being measured to was derived rather than surveyed, the
+  /// screen says so whether or not the panel is open. Folding a provenance
+  /// caveat away because nothing has been measured yet would be the app
+  /// quietly choosing when to be honest.
+  Widget _collapsedStrip(BuildContext context, MeasureState state) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final estimated = state.result.greenIsEstimated;
+    return Material(
+      color: theme.colorScheme.surface,
+      child: InkWell(
+        onTap: () => setState(() => _panelExpanded = true),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.straighten,
+                    size: 20,
+                    color: theme.colorScheme.onSurface,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      l10n.measureTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Flexible(
+                    child: Text(
+                      l10n.measureExpandHint,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.keyboard_arrow_up,
+                    size: 20,
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ],
+              ),
+              if (estimated) ...[
+                const SizedBox(height: 4),
+                Text(
+                  l10n.measureGreenEstimated,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.secondary,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 

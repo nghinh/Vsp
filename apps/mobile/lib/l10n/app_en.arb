@@ -3539,5 +3539,6 @@
   "holePickerAllHoles": "18-Hole Rounds",
   "holePickerChooseStart": "Choose a starting hole",
   "apiBaseUrlMissingHint": "Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api",
-  "authCheckingSession": "Checking your secure session…"
+  "authCheckingSession": "Checking your secure session…",
+  "measureExpandHint": "Tap to measure"
 }

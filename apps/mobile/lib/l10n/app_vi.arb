@@ -1964,5 +1964,6 @@
   "holePickerAllHoles": "Vòng 18 hố",
   "holePickerChooseStart": "Chọn hố bắt đầu",
   "apiBaseUrlMissingHint": "Dựng lại với --dart-define=VSP_API_BASE_URL=https://your-api",
-  "authCheckingSession": "Đang kiểm tra phiên đăng nhập…"
+  "authCheckingSession": "Đang kiểm tra phiên đăng nhập…",
+  "measureExpandHint": "Chạm để đo"
 }

@@ -8334,6 +8334,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Checking your secure session…'**
   String get authCheckingSession;
+
+  /// No description provided for @measureExpandHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to measure'**
+  String get measureExpandHint;
 }
 
 class _AppLocalizationsDelegate

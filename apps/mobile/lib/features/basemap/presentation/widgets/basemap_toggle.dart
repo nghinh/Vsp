@@ -67,11 +67,26 @@ class BasemapToggle extends StatelessWidget {
   /// distance tool they had.
   final bool satelliteAvailable;
 
+  /// Icons only, for a corner of the map.
+  ///
+  /// Labelled, this control is about 205dp wide on a 402dp phone — half the
+  /// screen for a switch the file's own note says is "pressed once a round, if
+  /// that". Sharing the foot of the map with the distances meant one of them
+  /// had to give up a third of itself, and a run where it did came back
+  /// reading "B…" and "Th…". Given a line of its own instead, it floated into
+  /// the middle of the map as soon as the panels beneath it grew.
+  ///
+  /// Two icons fit in a corner and cost nothing: the full wording stays in the
+  /// Semantics label, so a screen reader still hears "switch to the course
+  /// map".
+  final bool compact;
+
   const BasemapToggle({
     super.key,
     required this.mode,
     required this.onChanged,
     this.satelliteAvailable = true,
+    this.compact = false,
   });
 
   static const Color _surface = Color(0xE6131C2F);
@@ -113,6 +128,7 @@ class BasemapToggle extends StatelessWidget {
               semanticLabel: l10n.basemapSwitchToCourseMap,
               selected: mode == BasemapMode.courseMap,
               enabled: true,
+              compact: compact,
               onTap: () => onChanged(BasemapMode.courseMap),
             ),
           ),
@@ -129,6 +145,7 @@ class BasemapToggle extends StatelessWidget {
                   : l10n.basemapSwitchToMeasure,
               selected: mode == BasemapMode.satellite,
               enabled: true,
+              compact: compact,
               onTap: () => onChanged(BasemapMode.satellite),
             ),
           ),
@@ -144,6 +161,7 @@ class _Option extends StatelessWidget {
   final String semanticLabel;
   final bool selected;
   final bool enabled;
+  final bool compact;
   final VoidCallback onTap;
 
   const _Option({
@@ -153,6 +171,7 @@ class _Option extends StatelessWidget {
     required this.selected,
     required this.enabled,
     required this.onTap,
+    this.compact = false,
   });
 
   @override
@@ -183,20 +202,22 @@ class _Option extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 16, color: color),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 12,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+              Icon(icon, size: compact ? 20 : 16, color: color),
+              if (!compact) ...[
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 12,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
