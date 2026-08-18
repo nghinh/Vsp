@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static net.logstash.logback.marker.Markers.append;
+import vnpt.vsp.module.geometry.TracedHoleGeometry;
 import vnpt.vsp.module.pkg.repository.PackageManifestRepository;
 
 /**
@@ -44,6 +45,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     private final DataVersionRepository dataVersionRepository;
     private final PackageManifestRepository manifestRepository;
     private final HoleRepository holeRepository;
+    private final TracedHoleGeometry tracedGeometry;
 
     public CourseSearchServiceImpl(
             CourseRepository courseRepository,
@@ -53,7 +55,8 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             RecentCourseRepository recentRepository,
             DataVersionRepository dataVersionRepository,
             PackageManifestRepository manifestRepository,
-            HoleRepository holeRepository) {
+            HoleRepository holeRepository,
+            TracedHoleGeometry tracedGeometry) {
         this.courseRepository = courseRepository;
         this.facilityRepository = facilityRepository;
         this.searchRepository = searchRepository;
@@ -62,6 +65,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         this.dataVersionRepository = dataVersionRepository;
         this.manifestRepository = manifestRepository;
         this.holeRepository = holeRepository;
+        this.tracedGeometry = tracedGeometry;
     }
 
     // ─── Search ───────────────────────────────────────────────────────────
@@ -307,7 +311,27 @@ public class CourseSearchServiceImpl implements CourseSearchService {
             return;
         }
         long surveyed = holeRepository.countSurveyedHoles(courseId);
-        if (surveyed == holes) {
+
+        // A hole row saying VERIFIED is not the same as its shapes having
+        // been checked, and the badge has to answer the question the map
+        // does. Long Biên's twenty-seven hole rows all say VERIFIED /
+        // C_VERIFIED_SATELLITE, so this badged the course verified — while
+        // 465 of the 488 shapes its map draws came out of GolfSeg and no
+        // person had looked at one of them. The app's own map says so on
+        // every hole: "traced from satellite imagery by AI, not yet checked
+        // by a human". The listing was contradicting it.
+        //
+        // Any unreviewed shape is enough to withhold the badge, for the
+        // reason a partly-reviewed course is already withheld: a golfer
+        // cannot tell from a course badge which bunker they can trust, so it
+        // has to describe the weakest thing on the course.
+        if (surveyed == holes && tracedGeometry.unreviewedShapes(courseId) > 0) {
+            freshness.setVerificationStatus(VerificationStatus.PENDING_REVIEW.name());
+            var weakest = holeRepository.weakestAccuracyClass(courseId);
+            if (weakest != null) {
+                freshness.setAccuracyClass(weakest.name());
+            }
+        } else if (surveyed == holes) {
             freshness.setVerificationStatus(VerificationStatus.VERIFIED.name());
             // The class has to move with the status. The client badges on both
             // — "verified" plus class D reads as unverified there, exactly as

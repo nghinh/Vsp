@@ -56,6 +56,9 @@ class CourseSearchServiceTest {
     @Mock
     private vnpt.vsp.module.course.repository.HoleRepository holeRepository;
 
+    @Mock
+    private vnpt.vsp.module.geometry.TracedHoleGeometry tracedGeometry;
+
     private CourseSearchServiceImpl service;
 
     private GolfFacility testFacility;
@@ -67,7 +70,7 @@ class CourseSearchServiceTest {
         service = new CourseSearchServiceImpl(
                 courseRepository, facilityRepository, searchRepository,
                 favoriteRepository, recentRepository, dataVersionRepository,
-                manifestRepository, holeRepository);
+                manifestRepository, holeRepository, tracedGeometry);
 
         testFacility = new GolfFacility();
         testFacility.setId(1L);
@@ -417,6 +420,10 @@ class CourseSearchServiceTest {
     // ─── The badge a golfer reads ──────────────────────────────────────────
 
     private CourseSearchResultDto badgeFor(long holes, long surveyed) {
+        return badgeFor(holes, surveyed, 0);
+    }
+
+    private CourseSearchResultDto badgeFor(long holes, long surveyed, long unreviewedShapes) {
         CourseSearchRequest request = new CourseSearchRequest();
         request.setQ("Thuyle");
         request.setPage(0);
@@ -430,6 +437,7 @@ class CourseSearchServiceTest {
         when(holeRepository.countSurveyedHoles(10L)).thenReturn(surveyed);
         when(holeRepository.weakestAccuracyClass(10L))
                 .thenReturn(vnpt.vsp.module.course.entity.AccuracyClass.C_VERIFIED_SATELLITE);
+        when(tracedGeometry.unreviewedShapes(10L)).thenReturn(unreviewedShapes);
 
         return service.searchCourses(request).getContent().get(0);
     }
@@ -473,5 +481,34 @@ class CourseSearchServiceTest {
         // the device while the API said VERIFIED.
         assertEquals("C_VERIFIED_SATELLITE",
                 badgeFor(18, 18).getDataFreshness().getAccuracyClass());
+    }
+
+    @Test
+    void aCourseDrawnFromUncheckedShapesIsNotBadgedVerified() {
+        // Long Biên. Twenty-seven hole rows all saying VERIFIED /
+        // C_VERIFIED_SATELLITE, and 465 of the 488 shapes its map draws
+        // traced by GolfSeg with nobody having looked at one of them. The map
+        // told the golfer so on every hole — "traced from satellite imagery by
+        // AI, not yet checked by a human" — while the listing badged the same
+        // course "đã kiểm định".
+        assertEquals("PENDING_REVIEW",
+                badgeFor(18, 18, 465).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void aCourseWhoseShapesWereAllCheckedKeepsItsBadge() {
+        // The badge is not being retired, only made to mean something. A
+        // course somebody actually reviewed still says so.
+        assertEquals("VERIFIED",
+                badgeFor(18, 18, 0).getDataFreshness().getVerificationStatus());
+    }
+
+    @Test
+    void anUncheckedCourseStillReportsTheClassItsHolesCarry() {
+        // The client badges on status and class together. Withholding the
+        // status while leaving the class stale is how the two came to
+        // disagree in the first place.
+        assertEquals("C_VERIFIED_SATELLITE",
+                badgeFor(18, 18, 465).getDataFreshness().getAccuracyClass());
     }
 }
