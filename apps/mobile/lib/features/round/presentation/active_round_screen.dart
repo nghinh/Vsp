@@ -65,6 +65,8 @@ import '../../weather/presentation/widgets/weather_conditions_panel.dart';
 import '../../weather/presentation/widgets/weather_empty_view.dart';
 import '../../weather/presentation/widgets/weather_error_view.dart';
 import '../../weather/presentation/widgets/weather_loading_placeholder.dart';
+import 'package:vsp_mobile/core/network/api_client.dart';
+import 'package:vsp_mobile/data/api/course_search_api.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/hole_advice_sheet.dart';
 import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
@@ -522,6 +524,10 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
             telemetry: _telemetry,
             pinApi: CoursePinApi(),
             featureApi: HoleFeatureApi(),
+            // Where the club is, for the holes nobody has traced — which is
+            // most holes in this country. Without it the photograph of an
+            // unsurveyed hole opens on the golfer's own street.
+            courseApi: CourseSearchApi(apiClient: ApiClient()),
           )..add(
             LoadHoleMap(
               packageId: widget.packageId,

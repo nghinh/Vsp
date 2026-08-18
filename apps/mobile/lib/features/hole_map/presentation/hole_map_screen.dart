@@ -14,6 +14,8 @@ import '../../hole_map/presentation/hole_map_event.dart';
 import '../../hole_map/presentation/hole_map_state.dart';
 import 'widgets/hole_map_view.dart';
 import 'package:vsp_mobile/core/network/api_client.dart';
+import 'package:vsp_mobile/data/api/course_search_api.dart';
+import 'package:vsp_mobile/core/network/api_client.dart';
 import 'package:vsp_mobile/features/bag/data/bag_repository.dart';
 import 'package:vsp_mobile/features/bag/data/bag_service.dart';
 import 'package:vsp_mobile/core/storage/bag_sync_store.dart';
@@ -155,6 +157,10 @@ class HoleMapScreen extends StatelessWidget {
             // Today's flag, where the club's greenkeeper publishes one.
             pinApi: CoursePinApi(),
             featureApi: HoleFeatureApi(),
+            // Where the club is, for the holes nobody has traced — which is
+            // most holes in this country. Without it the photograph of an
+            // unsurveyed hole opens on the golfer's own street.
+            courseApi: CourseSearchApi(apiClient: ApiClient()),
           )..add(
             LoadHoleMap(
               packageId: packageId,
@@ -405,6 +411,7 @@ class _HoleMapBody extends StatelessWidget {
         config: imageryConfig ?? SatelliteImagery.current,
         locationService: locationService,
         distanceUnit: distanceUnit,
+        courseLocation: state.courseLocation,
       );
     }
 

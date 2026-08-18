@@ -23,6 +23,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as vsp;
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/basemap/domain/satellite_imagery_config.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
@@ -43,11 +44,16 @@ class UnsurveyedHoleView extends StatelessWidget {
   /// Display unit to start from when no ProfileBloc is in scope.
   final DistanceUnit? distanceUnit;
 
+  /// Where the club is. Null where the server could not be asked, which is
+  /// the only case that still opens on the golfer.
+  final vsp.LatLng? courseLocation;
+
   const UnsurveyedHoleView({
     super.key,
     required this.config,
     this.locationService,
     this.distanceUnit,
+    this.courseLocation,
   });
 
   @override
@@ -72,6 +78,18 @@ class UnsurveyedHoleView extends StatelessWidget {
         // of the only thing worth looking at.
         child: SatelliteMeasureView(
           config: config,
+          // The club, so the picture is of golf.
+          //
+          // Without it this view had no position at all and the measuring map
+          // fell through to the golfer's own fix — which on a hole opened from
+          // anywhere but the tee is a photograph of wherever the golfer is
+          // standing. Reported with a screenshot of rooftops under a header
+          // reading "Long Biên Golf Course".
+          fallbackCenter: courseLocation,
+          // Wide enough to hold a club rather than a hole. There is no hole to
+          // frame here — that is what "chưa khảo sát" means — so this is the
+          // one place a constant is the honest answer.
+          initialZoom: courseLocation != null ? 15.5 : 17,
           // The overlay spans the map, so this says where in it to sit.
           mapOverlay: Align(
             alignment: Alignment.topLeft,

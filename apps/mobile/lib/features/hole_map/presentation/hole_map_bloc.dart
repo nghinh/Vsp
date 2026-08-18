@@ -10,7 +10,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:uuid/uuid.dart';
 
 import '../data/hole_map_repository.dart';
+import 'package:vsp_mobile/data/api/course_search_api.dart';
 import 'package:vsp_mobile/data/services/round_telemetry_recorder.dart';
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart' as geo;
 import 'package:vsp_mobile/domain/models/qualified_location.dart';
 import 'package:vsp_mobile/domain/services/location_service.dart';
 import 'package:vsp_mobile/features/hole_map/data/course_pin_api.dart';
@@ -80,17 +82,34 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
   /// only geometry there is.
   final HoleFeatureApi? _featureApi;
 
+  /// Reads where the club is, for the holes there is no geometry for.
+  ///
+  /// Null in tests and wherever the network has no business being reached —
+  /// the map then falls back to the golfer, which is what it always did.
+  final CourseSearchApi? _courseApi;
+
+  /// Clubs already looked up, by course id.
+  ///
+  /// A round walks eighteen holes through one bloc and most of them reach the
+  /// unsurveyed path on a course like this, so without the cache the same
+  /// club would be fetched eighteen times to answer the same question. The
+  /// null is cached too: a course the server has no position for is not worth
+  /// asking about again on the 4th tee.
+  final Map<String, geo.LatLng?> _courseLocations = {};
+
   HoleMapBloc({
     required HoleMapRepository repository,
     LocationService? locationService,
     RoundTelemetryRecorder? telemetry,
     CoursePinApi? pinApi,
     HoleFeatureApi? featureApi,
+    CourseSearchApi? courseApi,
   }) : _repository = repository,
        _locationService = locationService,
        _telemetry = telemetry,
        _pinApi = pinApi,
        _featureApi = featureApi,
+       _courseApi = courseApi,
        super(const HoleMapInitial()) {
     on<LoadHoleMap>(_onLoadHoleMap);
     on<UpdateGolferPosition>(_onUpdateGolferPosition);
@@ -141,6 +160,36 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         accuracy: location.accuracyMeters,
       ),
     );
+  }
+
+  /// Where the club is, for a hole with nothing drawn on it.
+  ///
+  /// Best effort by design. Offline this answers null and the photograph
+  /// centres on the golfer — which is right when they are standing on the
+  /// course, and is all anybody can do when they are not and the club's
+  /// position cannot be reached.
+  Future<geo.LatLng?> _courseLocation(String courseId) async {
+    if (_courseLocations.containsKey(courseId)) {
+      return _courseLocations[courseId];
+    }
+    final api = _courseApi;
+    if (api == null) return null;
+    geo.LatLng? location;
+    try {
+      final id = int.tryParse(courseId);
+      if (id != null) {
+        final course = await api.getCourseSearchResult(id);
+        final lat = course.latitude;
+        final lng = course.longitude;
+        if (lat != null && lng != null) {
+          location = geo.LatLng(latitude: lat, longitude: lng);
+        }
+      }
+    } catch (_) {
+      // Offline, or the course is not on the server.
+    }
+    _courseLocations[courseId] = location;
+    return location;
   }
 
   Future<void> _onLoadHoleMap(
@@ -196,6 +245,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
         HoleMapUnsurveyed(
           courseName: event.courseName,
           holeNumber: event.holeNumber,
+          courseLocation: await _courseLocation(event.courseId),
         ),
       );
       return;
@@ -223,6 +273,7 @@ class HoleMapBloc extends Bloc<HoleMapEvent, HoleMapState> {
           HoleMapUnsurveyed(
             courseName: event.courseName,
             holeNumber: event.holeNumber,
+            courseLocation: await _courseLocation(event.courseId),
           ),
         );
         return;

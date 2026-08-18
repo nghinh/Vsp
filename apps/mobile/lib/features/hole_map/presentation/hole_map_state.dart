@@ -4,6 +4,7 @@
 
 import 'package:equatable/equatable.dart';
 
+import 'package:vsp_mobile/domain/value_objects/lat_lng.dart';
 import 'package:vsp_mobile/features/hole_map/domain/hole_map_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/golfer_position_entity.dart';
 import 'package:vsp_mobile/features/hole_map/domain/target_entity.dart';
@@ -111,13 +112,29 @@ class HoleMapUnsurveyed extends HoleMapState {
   final String courseName;
   final int holeNumber;
 
+  /// Where the club is, so the photograph opens over golf.
+  ///
+  /// Reported from the course with a screenshot of the 12th: the header read
+  /// "Long Biên Golf Course" and the picture underneath was a street of
+  /// rooftops — "Sao vẫn không hiện vị trí sân". Nothing was wrong with the
+  /// imagery. This state carried a name and a number and no position at all,
+  /// so the measuring view had nowhere to aim and did the only thing left,
+  /// which is to centre on the golfer. The golfer was at home.
+  ///
+  /// A hole nobody has traced still belongs to a club with a published
+  /// latitude and longitude, and that is what a golfer opening the map is
+  /// asking to see. Null only where the club's own position is unknown or
+  /// unreachable, which is the case that still falls back to the golfer.
+  final LatLng? courseLocation;
+
   const HoleMapUnsurveyed({
     required this.courseName,
     required this.holeNumber,
+    this.courseLocation,
   });
 
   @override
-  List<Object?> get props => [courseName, holeNumber];
+  List<Object?> get props => [courseName, holeNumber, courseLocation];
 }
 
 /// An error occurred while loading or rendering the map.
