@@ -149,8 +149,8 @@ function handleKeydown(event: KeyboardEvent) {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem 0.5rem;
-  background: #171f33;
-  border-right: 1px solid #2d3449;
+  background: var(--surface-container);
+  border-right: 1px solid var(--surface-container-highest);
   width: 5.5rem;
   align-items: center;
   flex-shrink: 0;
@@ -168,7 +168,7 @@ function handleKeydown(event: KeyboardEvent) {
   font-size: 0.625rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #97a2c0;
+  color: var(--muted);
   font-weight: 600;
   align-self: flex-start;
   padding-left: 0.25rem;
@@ -177,7 +177,7 @@ function handleKeydown(event: KeyboardEvent) {
 .palette-divider {
   width: 80%;
   height: 1px;
-  background: #2d3449;
+  background: var(--surface-container-highest);
   margin: 0.25rem 0;
 }
 
@@ -190,8 +190,8 @@ function handleKeydown(event: KeyboardEvent) {
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 8px;
-  border: 1.5px solid #2d3449;
-  background: var(--surface-container-lowest, #131b2e);
+  border: 1.5px solid var(--surface-container-highest);
+  background: var(--surface-container-lowest, var(--surface-container-low));
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, box-shadow 0.12s;
   color: #c5cde8;
@@ -207,18 +207,18 @@ function handleKeydown(event: KeyboardEvent) {
 }
 
 .tool-btn:hover:not(:disabled) {
-  background: #222a3d;
-  border-color: #97a2c0;
+  background: var(--surface-container-high);
+  border-color: var(--muted);
 }
 
 .tool-btn:active:not(:disabled) {
-  background: #2d3449;
+  background: var(--surface-container-highest);
 }
 
 .tool-btn.active {
-  background: #222a3d;
+  background: var(--surface-container-high);
   border-color: #3b82f6;
-  color: #ec6a06;
+  color: var(--secondary-container);
 }
 
 .tool-btn:disabled {
@@ -241,9 +241,9 @@ function handleKeydown(event: KeyboardEvent) {
 .active-layer-badge {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #ec6a06;
-  background: #2d3449;
-  border: 1px solid #2d3449;
+  color: var(--secondary-container);
+  background: var(--surface-container-highest);
+  border: 1px solid var(--surface-container-highest);
   border-radius: 4px;
   padding: 0.2rem 0.4rem;
   text-align: center;

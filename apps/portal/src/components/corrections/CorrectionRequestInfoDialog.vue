@@ -103,7 +103,7 @@ function confirm() {
 }
 
 .dialog-panel {
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 12px;
   max-width: 520px;
   width: 100%;
@@ -116,16 +116,16 @@ function confirm() {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #2d3449;
-  background: #171f33;
+  border-bottom: 1px solid var(--surface-container-highest);
+  background: var(--surface-container);
 }
-.dialog-title { font-size: 1.0625rem; font-weight: 700; color: #dae2fd; margin: 0; }
+.dialog-title { font-size: 1.0625rem; font-weight: 700; color: var(--on-surface); margin: 0; }
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #97a2c0;
+  color: var(--muted);
   min-height: 44px;
   min-width: 44px;
   display: flex;
@@ -133,7 +133,7 @@ function confirm() {
   justify-content: center;
   border-radius: 6px;
 }
-.close-btn:hover { background: #222a3d; }
+.close-btn:hover { background: var(--surface-container-high); }
 
 .dialog-body {
   padding: 1.25rem;
@@ -160,15 +160,15 @@ function confirm() {
   color: #c5cde8;
 }
 .required { color: #dc2626; }
-.optional { font-weight: 400; color: #97a2c0; }
+.optional { font-weight: 400; color: var(--muted); }
 .field-input {
   /* The dialog is dark; without these three the control falls back to the
      browser default — a white box with black text, in a dark panel. */
   background: #0f1626;
-  color: #dae2fd;
+  color: var(--on-surface);
   color-scheme: dark;
   padding: 0.5rem 0.75rem;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   border-radius: 6px;
   font-size: 0.875rem;
   font-family: inherit;
@@ -183,7 +183,7 @@ function confirm() {
 }
 .field-input[aria-invalid="true"] { border-color: #dc2626; }
 .field-error { font-size: 0.75rem; color: #dc2626; }
-.field-hint { font-size: 0.75rem; color: #97a2c0; text-align: right; }
+.field-hint { font-size: 0.75rem; color: var(--muted); text-align: right; }
 
 .dialog-footer {
   display: flex;
@@ -191,8 +191,8 @@ function confirm() {
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 0.875rem 1.25rem;
-  border-top: 1px solid #2d3449;
-  background: #171f33;
+  border-top: 1px solid var(--surface-container-highest);
+  background: var(--surface-container);
 }
 
 .action-btn {
@@ -207,11 +207,11 @@ function confirm() {
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .cancel-btn {
-  background: #171f33;
-  border: 1px solid #2d3449;
+  background: var(--surface-container);
+  border: 1px solid var(--surface-container-highest);
   color: #c5cde8;
 }
-.cancel-btn:hover:not(:disabled) { background: #222a3d; }
+.cancel-btn:hover:not(:disabled) { background: var(--surface-container-high); }
 
 .confirm-btn {
   background: #7c3aed;

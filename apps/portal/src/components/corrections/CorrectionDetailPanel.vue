@@ -98,9 +98,9 @@ function formatDate(iso: string | null): string {
   display: flex;
   gap: 1.5rem;
   padding: 0.875rem 1rem;
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 8px;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   flex-wrap: wrap;
 }
 
@@ -113,7 +113,7 @@ function formatDate(iso: string | null): string {
 .summary-label {
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #97a2c0;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -121,7 +121,7 @@ function formatDate(iso: string | null): string {
 .summary-value {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #dae2fd;
+  color: var(--on-surface);
 }
 
 .confidence-val {
@@ -134,10 +134,10 @@ function formatDate(iso: string | null): string {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #2d3449;
+  border-bottom: 1px solid var(--surface-container-highest);
 }
 
 /* Review history */
@@ -148,9 +148,9 @@ function formatDate(iso: string | null): string {
 }
 
 .review-body {
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 6px;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -166,13 +166,13 @@ function formatDate(iso: string | null): string {
 }
 
 .review-label {
-  color: #97a2c0;
+  color: var(--muted);
   font-weight: 500;
   flex-shrink: 0;
 }
 
 .review-value {
-  color: #dae2fd;
+  color: var(--on-surface);
   font-weight: 600;
   text-align: right;
 }

@@ -302,18 +302,18 @@ onMounted(() => loadJobs(0));
 
 .page-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #2d3449;
+  border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
 }
 .course-id-label {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin: 0.25rem 0 0;
 }
 
@@ -322,7 +322,7 @@ onMounted(() => loadJobs(0));
 .skeleton-row {
   height: 3.5rem;
   border-radius: 6px;
-  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
+  background: linear-gradient(90deg, var(--surface-container-highest) 25%, var(--surface-container-high) 50%, var(--surface-container-highest) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -339,13 +339,13 @@ onMounted(() => loadJobs(0));
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #97a2c0;
+  color: var(--muted);
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: var(--muted); margin: 0; }
 .retry-btn {
   margin-top: 0.5rem;
   padding: 0.5rem 1.25rem;
@@ -368,15 +368,15 @@ onMounted(() => loadJobs(0));
   gap: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 8px;
-  border: 1px solid #2d3449;
-  background: #171f33;
+  border: 1px solid var(--surface-container-highest);
+  background: var(--surface-container);
   cursor: pointer;
   transition: background 0.15s;
 }
-.job-row:hover { background: #171f33; }
+.job-row:hover { background: var(--surface-container); }
 .job-row[aria-selected="true"] {
   border-color: #3b82f6;
-  background: #222a3d;
+  background: var(--surface-container-high);
 }
 
 /* Status badge — icon + text, not color alone */
@@ -393,20 +393,20 @@ onMounted(() => loadJobs(0));
 }
 .badge-success  { color: #15803d; background: #dcfce7; }
 .badge-error    { color: #b91c1c; background: #fee2e2; }
-.badge-queued   { color: #ec6a06; background: #2d3449; }
+.badge-queued   { color: var(--secondary-container); background: var(--surface-container-highest); }
 .badge-in-progress { color: #92400e; background: #fef3c7; }
 
 .job-version .version-badge {
   font-family: monospace;
   font-size: 0.75rem;
-  background: #222a3d;
+  background: var(--surface-container-high);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
 }
-.job-version .version-pending { color: #97a2c0; }
+.job-version .version-pending { color: var(--muted); }
 
 .job-triggered-by { font-size: 0.875rem; color: #c5cde8; }
-.job-created { font-size: 0.75rem; color: #97a2c0; white-space: nowrap; }
+.job-created { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
 .job-duration { font-size: 0.75rem; color: #c5cde8; min-width: 4rem; text-align: right; }
 .in-progress-label { color: #92400e; }
 
@@ -427,15 +427,15 @@ onMounted(() => loadJobs(0));
 .page-btn {
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px solid #2d3449;
-  background: #171f33;
+  border: 1px solid var(--surface-container-highest);
+  background: var(--surface-container);
   cursor: pointer;
   font-size: 0.875rem;
   min-height: 44px;
 }
-.page-btn:hover:not(:disabled) { background: #222a3d; }
+.page-btn:hover:not(:disabled) { background: var(--surface-container-high); }
 .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.page-info { font-size: 0.875rem; color: #97a2c0; }
+.page-info { font-size: 0.875rem; color: var(--muted); }
 
 /* Job detail panel */
 .job-detail-panel {
@@ -443,23 +443,23 @@ onMounted(() => loadJobs(0));
   border: 2px solid #3b82f6;
   border-radius: 10px;
   overflow: hidden;
-  background: #171f33;
+  background: var(--surface-container);
 }
 .detail-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #222a3d;
-  border-bottom: 1px solid #2d3449;
+  background: var(--surface-container-high);
+  border-bottom: 1px solid var(--surface-container-highest);
 }
-.detail-title { font-size: 1rem; font-weight: 600; margin: 0; color: #ec6a06; }
+.detail-title { font-size: 1rem; font-weight: 600; margin: 0; color: var(--secondary-container); }
 .close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #97a2c0;
+  color: var(--muted);
   min-height: 44px;
   min-width: 44px;
   display: flex;
@@ -479,9 +479,9 @@ onMounted(() => loadJobs(0));
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #97a2c0;
+  color: var(--muted);
 }
-.detail-value { color: #dae2fd; }
+.detail-value { color: var(--on-surface); }
 .detail-value.mono { font-family: monospace; font-size: 0.8125rem; }
 .detail-badge {
   display: inline-flex;
@@ -505,19 +505,19 @@ onMounted(() => loadJobs(0));
 
 .detail-actions {
   padding: 0.75rem 1rem;
-  border-top: 1px solid #2d3449;
+  border-top: 1px solid var(--surface-container-highest);
 }
 .action-btn {
   padding: 0.5rem 1rem;
   border-radius: 6px;
   border: 1px solid #3b82f6;
-  background: #222a3d;
-  color: #ec6a06;
+  background: var(--surface-container-high);
+  color: var(--secondary-container);
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
   min-height: 44px;
 }
-.action-btn:hover:not(:disabled) { background: #2d3449; }
+.action-btn:hover:not(:disabled) { background: var(--surface-container-highest); }
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 </style>

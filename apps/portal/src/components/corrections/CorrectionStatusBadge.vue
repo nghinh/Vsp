@@ -67,10 +67,10 @@ function statusLabel(status: CorrectionStatusValue): string {
 }
 
 .badge-pending        { color: #92400e; background: #fef3c7; }
-.badge-in-review      { color: #ec6a06; background: #2d3449; }
+.badge-in-review      { color: var(--secondary-container); background: var(--surface-container-highest); }
 .badge-approved       { color: #15803d; background: #dcfce7; }
 .badge-rejected       { color: #b91c1c; background: #fee2e2; }
 .badge-info-requested { color: #7c3aed; background: #ede9fe; }
 .badge-converted      { color: #0f766e; background: #ccfbf1; }
-.badge-unknown        { color: #97a2c0; background: #222a3d; }
+.badge-unknown        { color: var(--muted); background: var(--surface-container-high); }
 </style>

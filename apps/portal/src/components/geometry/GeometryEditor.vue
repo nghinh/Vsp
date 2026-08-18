@@ -319,7 +319,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  background: #171f33;
+  background: var(--surface-container);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
@@ -331,8 +331,8 @@ function handleFeatureClick(feature: GeometryFeature) {
   justify-content: space-between;
   gap: 1rem;
   padding: 0.625rem 1rem;
-  background: var(--surface-container-lowest, #131b2e);
-  border-bottom: 1px solid #2d3449;
+  background: var(--surface-container-lowest, var(--surface-container-low));
+  border-bottom: 1px solid var(--surface-container-highest);
   flex-shrink: 0;
   min-height: 3.25rem;
 }
@@ -354,7 +354,7 @@ function handleFeatureClick(feature: GeometryFeature) {
 .course-id-label {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
 }
 
 .state-badge {
@@ -415,13 +415,13 @@ function handleFeatureClick(feature: GeometryFeature) {
 }
 
 .save-btn {
-  background: #ec6a06;
+  background: var(--secondary-container);
   color: #ffffff;
-  border-color: #ec6a06;
+  border-color: var(--secondary-container);
 }
 
 .save-btn:hover:not(:disabled) {
-  background: #ec6a06;
+  background: var(--secondary-container);
 }
 
 .save-btn:disabled {
@@ -430,14 +430,14 @@ function handleFeatureClick(feature: GeometryFeature) {
 }
 
 .validate-btn {
-  background: var(--surface-container-lowest, #131b2e);
+  background: var(--surface-container-lowest, var(--surface-container-low));
   color: #c5cde8;
-  border-color: var(--on-surface, #dae2fd);
+  border-color: var(--on-surface, var(--on-surface));
 }
 
 .validate-btn:hover:not(:disabled) {
-  background: #171f33;
-  border-color: #97a2c0;
+  background: var(--surface-container);
+  border-color: var(--muted);
 }
 
 .validate-btn:disabled {
@@ -453,7 +453,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   align-items: center;
   gap: 0.5rem;
   padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--outline-variant, #2d3449);
+  border-bottom: 1px solid var(--outline-variant, var(--surface-container-highest));
   font-size: 0.8125rem;
 }
 .editor-validation.is-ok {
@@ -467,7 +467,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   color: #f0c869;
 }
 .stale {
-  color: var(--muted, #97a2c0);
+  color: var(--muted, var(--muted));
 }
 .validation-errors {
   flex-basis: 100%;
@@ -498,12 +498,12 @@ function handleFeatureClick(feature: GeometryFeature) {
   cursor: pointer;
 }
 .draw-btn-quiet {
-  border-color: var(--outline-variant, #2d3449);
+  border-color: var(--outline-variant, var(--surface-container-highest));
   background: transparent;
-  color: var(--muted, #97a2c0);
+  color: var(--muted, var(--muted));
 }
 .draw-hint {
-  color: var(--muted, #97a2c0);
+  color: var(--muted, var(--muted));
   font-size: 0.75rem;
 }
 
@@ -564,13 +564,13 @@ function handleFeatureClick(feature: GeometryFeature) {
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
 }
 
 .loading-spinner {
   width: 2rem;
   height: 2rem;
-  border: 3px solid #2d3449;
+  border: 3px solid var(--surface-container-highest);
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -593,7 +593,7 @@ function handleFeatureClick(feature: GeometryFeature) {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  color: #97a2c0;
+  color: var(--muted);
   text-align: center;
   padding: 2rem;
 }
@@ -609,7 +609,7 @@ function handleFeatureClick(feature: GeometryFeature) {
 
 .empty-subtitle {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin: 0;
 }
 

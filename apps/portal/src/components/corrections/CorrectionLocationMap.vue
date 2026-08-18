@@ -240,18 +240,18 @@ onUnmounted(() => {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #2d3449;
+  border-bottom: 1px solid var(--surface-container-highest);
 }
 
 .map-wrapper {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  border: 1px solid #2d3449;
-  background: #222a3d;
+  border: 1px solid var(--surface-container-highest);
+  background: var(--surface-container-high);
 }
 
 .map-canvas {
@@ -271,7 +271,7 @@ onUnmounted(() => {
 .map-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid #2d3449;
+  border: 3px solid var(--surface-container-highest);
   border-top-color: #3b82f6;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -286,11 +286,11 @@ onUnmounted(() => {
   bottom: 0.5rem;
   left: 0.5rem;
   background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   border-radius: 6px;
   padding: 0.4rem 0.75rem;
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
   display: flex;
   align-items: center;
   gap: 0.4rem;
@@ -299,9 +299,9 @@ onUnmounted(() => {
 
 /* GPS info */
 .gps-info {
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 6px;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   padding: 0.75rem;
   display: flex;
   flex-direction: column;
@@ -315,12 +315,12 @@ onUnmounted(() => {
 }
 
 .gps-label {
-  color: #97a2c0;
+  color: var(--muted);
   font-weight: 500;
 }
 
 .gps-value {
-  color: #dae2fd;
+  color: var(--on-surface);
   font-weight: 600;
   font-family: monospace;
   font-size: 0.75rem;
@@ -328,7 +328,7 @@ onUnmounted(() => {
 
 .no-location {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   font-style: italic;
   margin: 0;
 }

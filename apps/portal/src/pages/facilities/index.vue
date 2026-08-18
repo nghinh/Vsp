@@ -225,18 +225,18 @@ onMounted(() => loadFacilities());
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #2d3449;
+  border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
 }
 .page-subtitle {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin: 0.25rem 0 0;
 }
 
@@ -251,22 +251,22 @@ onMounted(() => loadFacilities());
   transition: background 0.15s;
 }
 .btn-primary {
-  background: #f66018;
+  background: var(--primary-container);
   color: white;
-  border-color: #f66018;
+  border-color: var(--primary-container);
 }
-.btn-primary:hover:not(:disabled) { background: #ec6a06; }
+.btn-primary:hover:not(:disabled) { background: var(--secondary-container); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary {
-  background: #171f33;
+  background: var(--surface-container);
   color: #c5cde8;
-  border-color: #2d3449;
+  border-color: var(--surface-container-highest);
 }
-.btn-secondary:hover { background: #171f33; }
+.btn-secondary:hover { background: var(--surface-container); }
 
 .create-form-panel {
-  background: #171f33;
-  border: 1px solid #2d3449;
+  background: var(--surface-container);
+  border: 1px solid var(--surface-container-highest);
   border-radius: 10px;
   padding: 1.25rem;
   margin-bottom: 1.5rem;
@@ -274,7 +274,7 @@ onMounted(() => loadFacilities());
 .form-title {
   font-size: 1rem;
   font-weight: 600;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0 0 1rem;
 }
 .form-grid {
@@ -297,16 +297,16 @@ onMounted(() => loadFacilities());
 .required { color: #dc2626; }
 .form-input {
   padding: 0.5rem 0.75rem;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   border-radius: 6px;
   font-size: 0.875rem;
   min-height: 44px;
-  background: #171f33;
-  color: #dae2fd;
+  background: var(--surface-container);
+  color: var(--on-surface);
 }
 .form-input:focus {
   outline: none;
-  border-color: #f66018;
+  border-color: var(--primary-container);
   box-shadow: 0 0 0 3px rgba(246, 96, 24, 0.1);
 }
 .field-error {
@@ -330,7 +330,7 @@ onMounted(() => loadFacilities());
 .skeleton-card {
   height: 5rem;
   border-radius: 8px;
-  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
+  background: linear-gradient(90deg, var(--surface-container-highest) 25%, var(--surface-container-high) 50%, var(--surface-container-highest) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -346,26 +346,26 @@ onMounted(() => loadFacilities());
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #97a2c0;
+  color: var(--muted);
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: var(--muted); margin: 0; }
 
 .facility-list { display: flex; flex-direction: column; gap: 0.75rem; }
 .facility-card {
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
   border-radius: 10px;
   padding: 1rem;
-  background: #171f33;
+  background: var(--surface-container);
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
 }
 .facility-card:hover {
-  background: #171f33;
-  border-color: #f66018;
+  background: var(--surface-container);
+  border-color: var(--primary-container);
 }
 .facility-header {
   display: flex;
@@ -377,7 +377,7 @@ onMounted(() => loadFacilities());
 .facility-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #dae2fd;
+  color: var(--on-surface);
 }
 .quality-badge {
   font-size: 0.6875rem;
@@ -388,17 +388,17 @@ onMounted(() => loadFacilities());
 }
 .badge-verified { color: #15803d; background: #dcfce7; }
 .badge-pending  { color: #92400e; background: #fef3c7; }
-.badge-unverified { color: #97a2c0; background: #222a3d; }
+.badge-unverified { color: var(--muted); background: var(--surface-container-high); }
 .facility-address,
 .facility-phone {
   font-size: 0.8125rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin: 0 0 0.25rem;
 }
 .facility-meta {
   display: flex;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
 }
 </style>

@@ -94,18 +94,18 @@ function formatDate(iso: string): string {
 .section-title {
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #2d3449;
+  border-bottom: 1px solid var(--surface-container-highest);
 }
 
 /* Photo */
 .evidence-photo {
   border-radius: 8px;
   overflow: hidden;
-  background: #171f33;
-  border: 1px solid #2d3449;
+  background: var(--surface-container);
+  border: 1px solid var(--surface-container-highest);
 }
 
 .no-photo {
@@ -113,7 +113,7 @@ function formatDate(iso: string): string {
   align-items: center;
   gap: 0.5rem;
   padding: 1.5rem;
-  color: #97a2c0;
+  color: var(--muted);
   font-size: 0.875rem;
   justify-content: center;
 }
@@ -131,10 +131,10 @@ function formatDate(iso: string): string {
 
 .photo-caption {
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
   padding: 0.5rem 0.75rem;
-  background: #171f33;
-  border-top: 1px solid #2d3449;
+  background: var(--surface-container);
+  border-top: 1px solid var(--surface-container-highest);
   margin: 0;
 }
 
@@ -144,7 +144,7 @@ function formatDate(iso: string): string {
   color: #c5cde8;
   margin: 0;
   padding: 0.75rem;
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 6px;
   line-height: 1.5;
   white-space: pre-wrap;
@@ -152,7 +152,7 @@ function formatDate(iso: string): string {
 
 .no-note {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   font-style: italic;
   margin: 0;
 }
@@ -163,9 +163,9 @@ function formatDate(iso: string): string {
   flex-direction: column;
   gap: 0.5rem;
   padding: 0.75rem;
-  background: #171f33;
+  background: var(--surface-container);
   border-radius: 6px;
-  border: 1px solid #2d3449;
+  border: 1px solid var(--surface-container-highest);
 }
 
 .meta-row {
@@ -176,12 +176,12 @@ function formatDate(iso: string): string {
 }
 
 .meta-label {
-  color: #97a2c0;
+  color: var(--muted);
   font-weight: 500;
 }
 
 .meta-value {
-  color: #dae2fd;
+  color: var(--on-surface);
   font-weight: 600;
 }
 

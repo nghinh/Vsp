@@ -151,7 +151,7 @@ function handleDiscard() {
 }
 
 .dialog-panel {
-  background: var(--surface-container-lowest, #131b2e);
+  background: var(--surface-container-lowest, var(--surface-container-low));
   border-radius: 12px;
   padding: 1.5rem;
   max-width: 28rem;
@@ -188,7 +188,7 @@ function handleDiscard() {
 .dialog-title {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0 0 0.5rem;
 }
 
@@ -225,18 +225,18 @@ function handleDiscard() {
 }
 
 .dialog-btn-cancel {
-  background: var(--surface-container-lowest, #131b2e);
+  background: var(--surface-container-lowest, var(--surface-container-low));
   color: #c5cde8;
-  border-color: var(--on-surface, #dae2fd);
+  border-color: var(--on-surface, var(--on-surface));
 }
 
 .dialog-btn-cancel:hover {
-  background: #171f33;
-  border-color: #97a2c0;
+  background: var(--surface-container);
+  border-color: var(--muted);
 }
 
 .dialog-btn-discard {
-  background: var(--surface-container-lowest, #131b2e);
+  background: var(--surface-container-lowest, var(--surface-container-low));
   color: #dc2626;
   border-color: #dc2626;
 }
@@ -246,13 +246,13 @@ function handleDiscard() {
 }
 
 .dialog-btn-primary {
-  background: #ec6a06;
+  background: var(--secondary-container);
   color: #ffffff;
-  border-color: #ec6a06;
+  border-color: var(--secondary-container);
 }
 
 .dialog-btn-primary:hover {
-  background: #ec6a06;
+  background: var(--secondary-container);
 }
 
 .dialog-btn-danger {

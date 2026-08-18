@@ -133,8 +133,8 @@ function geometryTypeLabel(type: LayerType): string {
   flex-direction: column;
   width: 11rem;
   flex-shrink: 0;
-  background: var(--surface-container-lowest, #131b2e);
-  border-right: 1px solid #2d3449;
+  background: var(--surface-container-lowest, var(--surface-container-low));
+  border-right: 1px solid var(--surface-container-highest);
   overflow-y: auto;
 }
 
@@ -143,19 +143,19 @@ function geometryTypeLabel(type: LayerType): string {
   align-items: baseline;
   justify-content: space-between;
   padding: 0.75rem 0.75rem 0.5rem;
-  border-bottom: 1px solid #222a3d;
+  border-bottom: 1px solid var(--surface-container-high);
 }
 
 .panel-title {
   font-size: 0.875rem;
   font-weight: 700;
-  color: #dae2fd;
+  color: var(--on-surface);
   margin: 0;
 }
 
 .feature-count {
   font-size: 0.6875rem;
-  color: #97a2c0;
+  color: var(--muted);
 }
 
 .layer-list {
@@ -177,11 +177,11 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .layer-item:hover {
-  background: #171f33;
+  background: var(--surface-container);
 }
 
 .layer-item.active {
-  background: #222a3d;
+  background: var(--surface-container-high);
 }
 
 .layer-item.hidden {
@@ -209,7 +209,7 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .visibility-btn:hover {
-  background: #222a3d;
+  background: var(--surface-container-high);
 }
 
 .visibility-icon {
@@ -244,14 +244,14 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .layer-item.active .layer-label {
-  color: #ec6a06;
+  color: var(--secondary-container);
   font-weight: 600;
 }
 
 .layer-count {
   font-size: 0.6875rem;
-  color: #97a2c0;
-  background: #222a3d;
+  color: var(--muted);
+  background: var(--surface-container-high);
   border-radius: 9999px;
   padding: 0.1rem 0.4rem;
   min-width: 1.25rem;
@@ -260,13 +260,13 @@ function geometryTypeLabel(type: LayerType): string {
 }
 
 .layer-item.active .layer-count {
-  background: #2d3449;
-  color: #ec6a06;
+  background: var(--surface-container-highest);
+  color: var(--secondary-container);
 }
 
 .geometry-type-badge {
   font-size: 0.875rem;
-  color: #97a2c0;
+  color: var(--muted);
   flex-shrink: 0;
   width: 1rem;
   text-align: center;

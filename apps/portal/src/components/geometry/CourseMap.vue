@@ -1053,7 +1053,7 @@ defineExpose({
   gap: 0.375rem;
   padding: 0.4rem 0.75rem;
   background: rgba(13, 17, 23, 0.85);
-  color: var(--on-surface, #dae2fd);
+  color: var(--on-surface, var(--on-surface));
   border: 1.5px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   cursor: pointer;
@@ -1095,10 +1095,10 @@ defineExpose({
   align-items: center;
   gap: 0.4rem;
   padding: 0.45rem 0.7rem;
-  border: 1px solid var(--outline-variant, #2d3449);
+  border: 1px solid var(--outline-variant, var(--surface-container-highest));
   border-radius: 8px;
   background: rgba(19, 27, 46, 0.92);
-  color: var(--on-surface, #dae2fd);
+  color: var(--on-surface, var(--on-surface));
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;

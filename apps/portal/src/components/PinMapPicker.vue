@@ -231,15 +231,15 @@ onBeforeUnmount(() => {
   padding: 0 3px;
   border-radius: 9px;
   background: rgba(3, 37, 26, 0.85);
-  border: 1px solid #68dba9;
-  color: #68dba9;
+  border: 1px solid var(--tertiary);
+  color: var(--tertiary);
   font: 600 10px/1 system-ui, sans-serif;
 }
 .pin-marker {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #f66018;
+  background: var(--primary-container);
   border: 2px solid #fff;
   box-shadow: 0 0 0 2px rgba(246, 96, 24, 0.4);
   cursor: grab;

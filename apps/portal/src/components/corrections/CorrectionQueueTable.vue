@@ -132,7 +132,7 @@ function formatDate(iso: string): string {
 .skeleton-row {
   height: 3.5rem;
   border-radius: 6px;
-  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
+  background: linear-gradient(90deg, var(--surface-container-highest) 25%, var(--surface-container-high) 50%, var(--surface-container-highest) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -149,13 +149,13 @@ function formatDate(iso: string): string {
   align-items: center;
   gap: 0.5rem;
   padding: 3rem 1rem;
-  color: #97a2c0;
+  color: var(--muted);
   text-align: center;
 }
 .error-state { color: #dc2626; }
 .empty-icon, .error-icon { font-size: 2rem; }
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
-.empty-subtitle { font-size: 0.875rem; color: #97a2c0; margin: 0; }
+.empty-subtitle { font-size: 0.875rem; color: var(--muted); margin: 0; }
 .retry-btn {
   margin-top: 0.5rem;
   padding: 0.5rem 1.25rem;
@@ -176,8 +176,8 @@ function formatDate(iso: string): string {
 }
 
 .data-table thead {
-  background: #171f33;
-  border-bottom: 1px solid #2d3449;
+  background: var(--surface-container);
+  border-bottom: 1px solid var(--surface-container-highest);
 }
 
 .data-table th {
@@ -185,7 +185,7 @@ function formatDate(iso: string): string {
   text-align: left;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #97a2c0;
+  color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   white-space: nowrap;
@@ -193,8 +193,8 @@ function formatDate(iso: string): string {
 
 .data-table td {
   padding: 0.75rem 0.75rem;
-  border-bottom: 1px solid #222a3d;
-  color: #dae2fd;
+  border-bottom: 1px solid var(--surface-container-high);
+  color: var(--on-surface);
   vertical-align: middle;
 }
 
@@ -202,8 +202,8 @@ function formatDate(iso: string): string {
   cursor: pointer;
   transition: background 0.15s;
 }
-.data-row:hover { background: #171f33; }
-.row-selected { background: #222a3d !important; }
+.data-row:hover { background: var(--surface-container); }
+.row-selected { background: var(--surface-container-high) !important; }
 
 .cell-course .course-name {
   font-weight: 500;
@@ -218,14 +218,14 @@ function formatDate(iso: string): string {
   font-family: monospace;
   font-weight: 600;
   font-size: 0.75rem;
-  background: #222a3d;
+  background: var(--surface-container-high);
   padding: 0.1rem 0.4rem;
   border-radius: 3px;
 }
 
 .no-hole,
 .no-confidence {
-  color: #97a2c0;
+  color: var(--muted);
 }
 
 .cell-confidence .confidence-value {
@@ -233,14 +233,14 @@ function formatDate(iso: string): string {
 }
 
 .cell-date {
-  color: #97a2c0;
+  color: var(--muted);
   font-size: 0.75rem;
   white-space: nowrap;
 }
 
 .cell-reporter {
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
@@ -251,16 +251,16 @@ function formatDate(iso: string): string {
 .view-btn {
   padding: 0.3rem 0.75rem;
   border-radius: 6px;
-  border: 1px solid #2d3449;
-  background: #171f33;
-  color: #ec6a06;
+  border: 1px solid var(--surface-container-highest);
+  background: var(--surface-container);
+  color: var(--secondary-container);
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   min-height: 32px;
   transition: background 0.15s;
 }
-.view-btn:hover { background: #222a3d; border-color: #2d3449; }
+.view-btn:hover { background: var(--surface-container-high); border-color: var(--surface-container-highest); }
 
 .sr-only {
   position: absolute;

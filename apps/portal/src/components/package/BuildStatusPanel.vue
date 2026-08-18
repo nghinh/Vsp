@@ -323,8 +323,8 @@ watch(() => props.currentJobId, async (newId) => {
   font-family: system-ui, -apple-system, sans-serif;
   padding: 1rem;
   border-radius: 8px;
-  background: #171f33;
-  border: 1px solid #2d3449;
+  background: var(--surface-container);
+  border: 1px solid var(--surface-container-highest);
   min-width: 280px;
 }
 
@@ -338,7 +338,7 @@ watch(() => props.currentJobId, async (newId) => {
 .skeleton-meta {
   height: 1.25rem;
   border-radius: 4px;
-  background: linear-gradient(90deg, #2d3449 25%, #222a3d 50%, #2d3449 75%);
+  background: linear-gradient(90deg, var(--surface-container-highest) 25%, var(--surface-container-high) 50%, var(--surface-container-highest) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -354,11 +354,11 @@ watch(() => props.currentJobId, async (newId) => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #97a2c0;
+  color: var(--muted);
   font-size: 0.875rem;
 }
 .status-error { color: #dc2626; }
-.hint { color: #97a2c0; font-size: 0.75rem; }
+.hint { color: var(--muted); font-size: 0.75rem; }
 .error-icon { font-size: 1rem; }
 .retry-btn {
   margin-left: auto;
@@ -396,9 +396,9 @@ watch(() => props.currentJobId, async (newId) => {
 }
 .badge-success  { color: #15803d; background: #dcfce7; }
 .badge-error    { color: #b91c1c; background: #fee2e2; }
-.badge-queued   { color: #ec6a06; background: #2d3449; }
+.badge-queued   { color: var(--secondary-container); background: var(--surface-container-highest); }
 .badge-in-progress { color: #92400e; background: #fef3c7; }
-.badge-unknown  { color: #97a2c0; background: #222a3d; }
+.badge-unknown  { color: var(--muted); background: var(--surface-container-high); }
 
 .badge-icon { font-size: 0.875rem; }
 
@@ -407,11 +407,11 @@ watch(() => props.currentJobId, async (newId) => {
   align-items: center;
   gap: 0.5rem;
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
 }
 .manifest-version {
   font-family: monospace;
-  background: #222a3d;
+  background: var(--surface-container-high);
   padding: 0.1rem 0.35rem;
   border-radius: 3px;
 }
@@ -420,7 +420,7 @@ watch(() => props.currentJobId, async (newId) => {
 .progress-container {
   height: 6px;
   border-radius: 3px;
-  background: #2d3449;
+  background: var(--surface-container-highest);
   overflow: hidden;
   margin-bottom: 0.5rem;
 }
@@ -442,7 +442,7 @@ watch(() => props.currentJobId, async (newId) => {
   flex-wrap: wrap;
   gap: 1rem;
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin-bottom: 0.5rem;
 }
 .timing-item {
@@ -453,7 +453,7 @@ watch(() => props.currentJobId, async (newId) => {
   font-size: 0.6875rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #97a2c0;
+  color: var(--muted);
 }
 .timing-value { color: #c5cde8; }
 
@@ -500,7 +500,7 @@ watch(() => props.currentJobId, async (newId) => {
   align-items: center;
   gap: 0.25rem;
   font-size: 0.875rem;
-  color: #ec6a06;
+  color: var(--secondary-container);
   text-decoration: underline;
   min-height: 44px; /* Touch target */
 }
@@ -524,15 +524,15 @@ watch(() => props.currentJobId, async (newId) => {
   min-width: 44px;
 }
 .retry-action {
-  color: #ec6a06;
-  background: #222a3d;
+  color: var(--secondary-container);
+  background: var(--surface-container-high);
 }
-.retry-action:hover:not(:disabled) { background: #2d3449; }
+.retry-action:hover:not(:disabled) { background: var(--surface-container-highest); }
 .retry-action:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .polling-indicator {
   font-size: 0.75rem;
-  color: #97a2c0;
+  color: var(--muted);
   margin-left: auto;
 }
 </style>
