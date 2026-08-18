@@ -52,13 +52,16 @@ public class PackageController {
     private final PackageService packageService;
     private final CourseRepository courseRepository;
     private final GolfFacilityRepository facilityRepository;
+    private final PublicPackageUrls publicUrls;
 
     public PackageController(PackageService packageService,
                              CourseRepository courseRepository,
-                             GolfFacilityRepository facilityRepository) {
+                             GolfFacilityRepository facilityRepository,
+                             PublicPackageUrls publicUrls) {
         this.packageService = packageService;
         this.courseRepository = courseRepository;
         this.facilityRepository = facilityRepository;
+        this.publicUrls = publicUrls;
     }
 
     /**
@@ -233,16 +236,16 @@ public class PackageController {
                 manifest.getChecksum(),
                 manifest.getPackageSizeBytes(),
                 manifest.getTilesFormat().name(),
-                manifest.getTilesUrl(),
-                manifest.getGeoJsonUrl(),
+                publicUrls.rehost(manifest.getTilesUrl()),
+                publicUrls.rehost(manifest.getGeoJsonUrl()),
                 manifest.getDataVersionId() != null ? manifest.getDataVersionId().toString() : null,
                 manifest.getFiles().stream().map(this::toFileDto).collect(Collectors.toList()),
                 manifest.getMinimumClientVersion(),
                 manifest.getLicenses().stream().map(this::toLicenseDto).collect(Collectors.toList()),
-                manifest.getScorecardUrl(),
-                manifest.getRulesUrl(),
-                manifest.getConditionsUrl(),
-                manifest.getMetadataUrl(),
+                publicUrls.rehost(manifest.getScorecardUrl()),
+                publicUrls.rehost(manifest.getRulesUrl()),
+                publicUrls.rehost(manifest.getConditionsUrl()),
+                publicUrls.rehost(manifest.getMetadataUrl()),
                 manifest.getGeneratedAt(),
                 manifest.getGeneratedBy(),
                 manifest.getAccuracyClass() != null ? manifest.getAccuracyClass().name() : null,

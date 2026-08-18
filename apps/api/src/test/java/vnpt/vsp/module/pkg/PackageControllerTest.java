@@ -41,7 +41,12 @@ class PackageControllerTest {
 
     @BeforeEach
     void setUp() {
-        controller = new PackageController(packageService, courseRepository, facilityRepository);
+        // No configured CDN and no servlet request in a unit test, so the
+        // rehost is a no-op here and these assertions still read the stored
+        // URLs. See PublicPackageUrlsTest for the rehosting itself.
+        controller = new PackageController(
+                packageService, courseRepository, facilityRepository,
+                new PublicPackageUrls(""));
     }
 
     private CoursePackageManifest manifest(Long courseId) {

@@ -140,6 +140,20 @@ resilience4j:
 
 # Admin MFA
 vsp:
+  packages:
+    # Where a golfer's phone should fetch package files from.
+    #
+    # The URLs written into a manifest at build time default to
+    # http://localhost:8080/packages, and nothing overrode it — so the live
+    # API published manifests telling every phone that its tiles and geometry
+    # live on the phone itself. Long Biên's manifest says that today.
+    #
+    # Left empty, PublicPackageUrls answers with the origin the client
+    # actually reached, which is correct behind the tunnel and correct on a
+    # laptop. Set it only when a CDN sits in front and the request's own host
+    # is not where the files are.
+    public-base-url: "${VSP_PACKAGE_PUBLIC_BASE_URL:}"
+
   # Registration OTPs are logged, not delivered — sendOtp() writes
   # "SIMULATED SMS/EMAIL" to the log and returns. On any environment without a
   # real SMS or email provider that makes the verification screen a dead end:
