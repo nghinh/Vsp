@@ -246,6 +246,7 @@ public class CourseSearchServiceImpl implements CourseSearchService {
         enrichDataFreshness(dto, course.getId());
 
         dto.setHasPackage(hasDownloadablePackage(course.getId()));
+        dto.setLatestPackageVersion(downloadablePackageVersion(course.getId()));
 
         return dto;
     }
@@ -261,6 +262,21 @@ public class CourseSearchServiceImpl implements CourseSearchService {
     /// A manifest with no bytes behind it is not a package. Requiring a real
     /// size is what keeps "offline ready" from being a promise the app cannot
     /// keep on the first tee with no signal.
+    /// The version of that same package, for a phone deciding whether the copy
+    /// it downloaded is still current.
+    ///
+    /// Same manifest, same "real bytes behind it" condition as
+    /// [hasDownloadablePackage] — a version string pointing at an empty
+    /// package would invite the phone to re-download nothing.
+    private String downloadablePackageVersion(Long courseId) {
+        return manifestRepository
+                .findActiveManifest(courseId, Instant.now())
+                .filter(manifest -> manifest.getPackageSizeBytes() != null
+                        && manifest.getPackageSizeBytes() > 0)
+                .map(manifest -> manifest.getVersion())
+                .orElse(null);
+    }
+
     private boolean hasDownloadablePackage(Long courseId) {
         return manifestRepository
                 .findActiveManifest(courseId, Instant.now())

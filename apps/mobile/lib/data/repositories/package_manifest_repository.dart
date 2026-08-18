@@ -151,6 +151,36 @@ class PackageManifestRepository {
   }
 
   /// True if an active (validated) manifest exists for this course.
+  /// Every course this phone holds an active package for, and its version.
+  ///
+  /// One query rather than one per card. The course list needs this for the
+  /// whole page at once — it is what separates "there is a package to
+  /// download" from "you already have it", and the two were being shown as
+  /// the same thing.
+  Future<Map<int, String>> downloadedVersions() async {
+    final db = await _database;
+    final rows = await db.query(
+      _tableName,
+      columns: ['course_id', 'active_manifest'],
+      where: 'active_manifest IS NOT NULL',
+    );
+    final versions = <int, String>{};
+    for (final row in rows) {
+      final courseId = row['course_id'] as int?;
+      final json = row['active_manifest'] as String?;
+      if (courseId == null || json == null) continue;
+      try {
+        final manifest = CoursePackageManifest.fromJson(
+          jsonDecode(json) as Map<String, dynamic>,
+        );
+        versions[courseId] = manifest.version;
+      } catch (_) {
+        // A row we cannot parse is a package we cannot vouch for.
+      }
+    }
+    return versions;
+  }
+
   Future<bool> hasActiveManifest(int courseId) async {
     final db = await _database;
     final result = await db.rawQuery(

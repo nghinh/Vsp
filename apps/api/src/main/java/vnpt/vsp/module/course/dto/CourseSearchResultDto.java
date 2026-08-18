@@ -42,6 +42,19 @@ public class CourseSearchResultDto {
     /** Whether an update is available (compared against downloadedVersion in request). */
     private boolean updateAvailable;
 
+    /**
+     * The version of the package the server would hand out today, or null
+     * where there is nothing to hand out.
+     *
+     * <p>Here so the phone can answer "is mine current?" itself. The server
+     * cannot: a search returns a page of courses and
+     * {@code downloadedVersion} is one value, so whatever the phone reported
+     * was compared against every course on the page. Which version this phone
+     * holds for which course is a fact only the phone has, and now it has the
+     * other half of the comparison.</p>
+     */
+    private String latestPackageVersion;
+
     /** Data freshness metadata (verification, publishedAt, version, publisher). */
     private DataFreshnessDto dataFreshness;
 
@@ -147,6 +160,14 @@ public class CourseSearchResultDto {
 
     public boolean isHasPackage() {
         return hasPackage;
+    }
+
+    public String getLatestPackageVersion() {
+        return latestPackageVersion;
+    }
+
+    public void setLatestPackageVersion(String latestPackageVersion) {
+        this.latestPackageVersion = latestPackageVersion;
     }
 
     public void setHasPackage(boolean hasPackage) {

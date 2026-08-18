@@ -25,6 +25,18 @@ class CourseCard extends StatelessWidget {
   final bool isFavorite;
   final bool compact;
 
+  /// The package version this phone actually holds for this course, or null
+  /// where it holds none.
+  ///
+  /// Supplied by the screen from the device's own manifests, because it is the
+  /// only thing that knows. Without it the badge read `hasPackage`, which is
+  /// the server saying "there is a package to download" — and rendered it as
+  /// "Đã tải". Every course with a package on the server told the golfer it
+  /// was already on their phone. That is the one question this badge exists to
+  /// answer, asked the night before a round, and it was answering it wrong in
+  /// the direction that leaves somebody on a tee with no map.
+  final String? downloadedVersion;
+
   const CourseCard({
     super.key,
     required this.course,
@@ -33,6 +45,7 @@ class CourseCard extends StatelessWidget {
     this.onDownloadTap,
     this.isFavorite = false,
     this.compact = false,
+      this.downloadedVersion,
   });
 
   @override
@@ -265,14 +278,27 @@ class CourseCard extends StatelessWidget {
     return parts.join(', ');
   }
 
+  /// What this phone can actually do with this course, tonight.
+  ///
+  /// Three separate facts, and they used to be two: the server has a package
+  /// (`hasPackage`), this phone holds one (`downloadedVersion`), and the two
+  /// are the same version. Only the first was consulted, and it was rendered
+  /// as "Đã tải".
   DownloadState _resolveDownloadState() {
-    if (course.updateAvailable) {
+    final mine = downloadedVersion;
+    if (mine == null) {
+      // Nothing on this phone. "Tải xuống" whether or not the server has one —
+      // the button behind it is the same, and a course with no package says so
+      // when it is opened.
+      return DownloadState.notDownloaded;
+    }
+    final theirs = course.latestPackageVersion;
+    if (theirs != null && theirs != mine) {
       return DownloadState.updateAvailable;
     }
-    if (course.hasPackage) {
-      return DownloadState.downloaded;
-    }
-    return DownloadState.notDownloaded;
+    // Held, and current as far as anyone here knows. A server that did not say
+    // which version it has is not a reason to nag.
+    return DownloadState.downloaded;
   }
 }
 

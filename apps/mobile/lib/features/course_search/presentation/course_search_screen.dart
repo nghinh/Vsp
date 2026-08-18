@@ -11,6 +11,7 @@
 //
 // Design: ux-spec §5.2 + DESIGN.md
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
@@ -77,12 +78,37 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  /// Which courses this phone actually holds a package for, and which version.
+  ///
+  /// Read from the device rather than from the search response, because the
+  /// search response cannot know it. `hasPackage` is the server saying a
+  /// package exists to download; the card was rendering that as "Đã tải", so
+  /// every course with a package on the server told the golfer it was already
+  /// on their phone.
+  ///
+  /// Loaded once and kept: it is a handful of rows from a local database, and
+  /// re-reading it per card would be a query per frame.
+  Map<int, String> _downloadedVersions = const {};
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     _tabController.addListener(_onTabChanged);
     _scrollController.addListener(_onScroll);
+    unawaited(_loadDownloadedVersions());
+  }
+
+  /// Never throws: a phone whose package database will not open has downloaded
+  /// nothing as far as this screen is concerned, which is the safe answer —
+  /// it offers a download rather than promising one is already there.
+  Future<void> _loadDownloadedVersions() async {
+    try {
+      final versions = await PackageManifestRepository().downloadedVersions();
+      if (mounted) setState(() => _downloadedVersions = versions);
+    } catch (_) {
+      // Leave it empty.
+    }
   }
 
   @override
@@ -177,12 +203,14 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
         children: [
           // Tab 0: All (text search)
           _SearchResultsTab(
+            downloadedVersions: _downloadedVersions,
             scrollController: _scrollController,
             selectionMode: widget.selectionMode,
           ),
 
           // Tab 1: Nearby
           _NearbyTab(
+            downloadedVersions: _downloadedVersions,
             scrollController: _scrollController,
             selectionMode: widget.selectionMode,
           ),
@@ -294,10 +322,16 @@ class _SearchBar extends StatelessWidget {
 // ─── All Tab ─────────────────────────────────────────────────────────────────
 
 class _SearchResultsTab extends StatelessWidget {
+  /// Which courses this phone holds a package for, and which version. Passed
+  /// down rather than read here: it is one query for the whole list, and the
+  /// card cannot answer it from the search response.
+  final Map<int, String> downloadedVersions;
+
   final ScrollController scrollController;
   final bool selectionMode;
 
   const _SearchResultsTab({
+    this.downloadedVersions = const {},
     required this.scrollController,
     this.selectionMode = false,
   });
@@ -345,6 +379,7 @@ class _SearchResultsTab extends StatelessWidget {
 
         if (state is CourseSearchLoaded) {
           return _ResultsList(
+            downloadedVersions: downloadedVersions,
             results: state.results,
             favoriteCourseIds: state.favoriteCourseIds,
             scrollController: scrollController,
@@ -368,10 +403,16 @@ class _SearchResultsTab extends StatelessWidget {
 // ─── Nearby Tab ───────────────────────────────────────────────────────────────
 
 class _NearbyTab extends StatelessWidget {
+  /// Which courses this phone holds a package for, and which version. Passed
+  /// down rather than read here: it is one query for the whole list, and the
+  /// card cannot answer it from the search response.
+  final Map<int, String> downloadedVersions;
+
   final ScrollController scrollController;
   final bool selectionMode;
 
   const _NearbyTab({
+    this.downloadedVersions = const {},
     required this.scrollController,
     this.selectionMode = false,
   });
@@ -436,6 +477,7 @@ class _NearbyTab extends StatelessWidget {
         if (state is CourseSearchLoaded &&
             state.activeTab == SearchTab.nearby) {
           return _ResultsList(
+            downloadedVersions: downloadedVersions,
             results: state.results,
             favoriteCourseIds: state.favoriteCourseIds,
             scrollController: scrollController,
@@ -632,6 +674,12 @@ class _RecentTab extends StatelessWidget {
 class _ResultsList extends StatelessWidget {
   final List<CourseSearchResult> results;
 
+  /// Which courses this phone holds a package for, and which version. Passed
+  /// down rather than read here: it is one query for the whole list, and the
+  /// card cannot answer it from the search response.
+  final Map<int, String> downloadedVersions;
+
+
   /// Which of these the golfer has favourited, so the heart on each card can
   /// be filled in. Empty until they are known, which reads the same as none.
   final Set<int> favoriteCourseIds;
@@ -643,6 +691,7 @@ class _ResultsList extends StatelessWidget {
   final bool selectionMode;
 
   const _ResultsList({
+    this.downloadedVersions = const {},
     this.favoriteCourseIds = const {},
     required this.results,
     required this.scrollController,
@@ -676,6 +725,7 @@ class _ResultsList extends StatelessWidget {
           final course = results[index];
           return CourseCard(
             course: course,
+            downloadedVersion: downloadedVersions[course.courseId],
             // Filled in from the bloc, so the heart reflects what the server
             // holds rather than staying hollow whatever is tapped.
             isFavorite: favoriteCourseIds.contains(course.courseId),

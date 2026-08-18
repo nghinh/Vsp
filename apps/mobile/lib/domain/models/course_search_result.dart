@@ -45,7 +45,21 @@ class CourseSearchResult extends Equatable {
   final int courseCount;
 
   /// True if an update is available compared to the mobile's downloaded version.
+  ///
+  /// Server-computed, and only meaningful on the single-course endpoint: a
+  /// search returns a page and the server has one `downloadedVersion` to
+  /// compare against all of it. The list decides for itself — see
+  /// [latestPackageVersion].
   final bool updateAvailable;
+
+  /// The version of the package the server would hand out for this course,
+  /// or null where there is none to hand out.
+  ///
+  /// The half of the comparison the phone cannot know. The other half — which
+  /// version this phone actually holds — is the half the server cannot know,
+  /// and putting them together is what tells a golfer at nine in the evening
+  /// whether tomorrow's course is really on their phone.
+  final String? latestPackageVersion;
   final DataFreshness? dataFreshness;
 
   const CourseSearchResult({
@@ -64,6 +78,7 @@ class CourseSearchResult extends Equatable {
     required this.hasPackage,
     this.courseCount = 1,
     required this.updateAvailable,
+    this.latestPackageVersion,
     this.dataFreshness,
   });
 
@@ -87,6 +102,7 @@ class CourseSearchResult extends Equatable {
       hasPackage: json['hasPackage'] as bool? ?? false,
       courseCount: (json['courseCount'] as num?)?.toInt() ?? 1,
       updateAvailable: json['updateAvailable'] as bool? ?? false,
+      latestPackageVersion: json['latestPackageVersion'] as String?,
       dataFreshness: json['dataFreshness'] != null
           ? DataFreshness.fromJson(
               json['dataFreshness'] as Map<String, dynamic>,
@@ -112,6 +128,7 @@ class CourseSearchResult extends Equatable {
     'hasPackage': hasPackage,
     'courseCount': courseCount,
     'updateAvailable': updateAvailable,
+    'latestPackageVersion': latestPackageVersion,
     if (dataFreshness != null) 'dataFreshness': dataFreshness!.toJson(),
   };
 
@@ -177,6 +194,7 @@ class CourseSearchResult extends Equatable {
     double? distanceMeters,
     bool? hasPackage,
     bool? updateAvailable,
+    String? latestPackageVersion,
     DataFreshness? dataFreshness,
   }) {
     return CourseSearchResult(
@@ -194,6 +212,7 @@ class CourseSearchResult extends Equatable {
       distanceMeters: distanceMeters ?? this.distanceMeters,
       hasPackage: hasPackage ?? this.hasPackage,
       updateAvailable: updateAvailable ?? this.updateAvailable,
+      latestPackageVersion: latestPackageVersion ?? this.latestPackageVersion,
       dataFreshness: dataFreshness ?? this.dataFreshness,
     );
   }
@@ -214,6 +233,7 @@ class CourseSearchResult extends Equatable {
     distanceMeters,
     hasPackage,
     updateAvailable,
+    latestPackageVersion,
     dataFreshness,
   ];
 }

@@ -337,6 +337,15 @@ CourseSearchResultDto:
       type: boolean
       description: Whether an update is available compared to downloadedVersion in request
       example: false
+    latestPackageVersion:
+      type: string
+      nullable: true
+      description: >-
+        Version of the package this course would hand out today, or null where
+        there is none. Sent so the client can compare it with the version it
+        holds: a search returns a page of courses and downloadedVersion is a
+        single value, so the server cannot answer per course.
+      example: 1.106.4
     dataFreshness:
       $ref: '#/DataFreshnessDto'
 
