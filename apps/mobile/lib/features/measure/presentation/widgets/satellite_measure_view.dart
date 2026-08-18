@@ -38,6 +38,7 @@ import 'package:vsp_mobile/l10n/app_localizations.dart';
 import 'package:vsp_mobile/data/repositories/course_correction_repository.dart';
 import 'package:vsp_mobile/features/correction/domain/green_position_reporter.dart';
 
+import 'package:vsp_mobile/features/hole_map/presentation/hole_frame.dart';
 import 'package:vsp_mobile/features/hole_map/presentation/widgets/feature_label_overlay.dart';
 import 'measure_panel.dart';
 
@@ -65,6 +66,15 @@ class SatelliteMeasureView extends StatefulWidget {
   ///
   /// Null on first open, when the hole frames itself.
   final ml.CameraPosition? initialCamera;
+
+  /// The box this hole is played inside, to frame on first open.
+  ///
+  /// The same box the drawn map frames, so the two tabs are one picture rather
+  /// than two guesses at it. [initialZoom] was that guess here — a constant 17
+  /// against the drawing's constant 16, which is a factor of two in scale
+  /// before the golfer has touched anything. It survives only for a hole with
+  /// no geometry to frame.
+  final ml.LatLngBounds? holeBounds;
 
   /// Reports this map's camera whenever it settles, so the other one can be
   /// opened looking at the same thing.
@@ -119,6 +129,7 @@ class SatelliteMeasureView extends StatefulWidget {
     this.fallbackCenter,
     this.initialZoom = 17,
     this.initialCamera,
+    this.holeBounds,
     this.onCameraIdle,
     this.courseId,
     this.holeId,
@@ -201,6 +212,9 @@ class SatelliteMeasureView extends StatefulWidget {
 class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
   ml.MapLibreMapController? _controller;
   bool _styleReady = false;
+
+  /// True once the hole's own box has been fitted, so nothing else re-aims.
+  bool _framedHole = false;
 
   @override
   void didUpdateWidget(SatelliteMeasureView oldWidget) {
@@ -684,6 +698,7 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
           _styleReady = true;
           final state = context.read<MeasureCubit>().state;
           _pushOverlay(state);
+          _frameHole();
           unawaited(_refreshHandles(state.points));
         },
         onMapClick: (_, point) => _onMapClick(context, point),
@@ -765,9 +780,41 @@ class _SatelliteMeasureViewState extends State<SatelliteMeasureView> {
     return null;
   }
 
+  /// Frames the hole the drawn map frames, on first open.
+  ///
+  /// Skipped where a camera came across from the other basemap: that camera is
+  /// where the golfer left the hole, and re-fitting would throw away the zoom
+  /// and the rotation they chose the instant they switched tabs.
+  void _frameHole() {
+    if (widget.initialCamera != null) return;
+    final bounds = widget.holeBounds;
+    if (bounds == null) return;
+    _framedHole = true;
+    _controller?.animateCamera(
+      ml.CameraUpdate.newLatLngBounds(
+        bounds,
+        left: holeFramePadding,
+        right: holeFramePadding,
+        top: holeFramePadding,
+        bottom: holeFramePadding,
+      ),
+    );
+  }
+
   /// Recentres once, the first time a real fix arrives, then leaves the camera
   /// alone — a map that keeps snapping back is unusable while measuring.
+  ///
+  /// Not when the hole has been framed, and not when a camera came across from
+  /// the drawn map. Either of those is a deliberate answer to "what should be
+  /// on screen", and a fix arriving seconds later used to overwrite it with
+  /// the golfer standing in the middle at a constant zoom — which is how the
+  /// two tabs ended up at different scales even after they were taught to
+  /// share a camera. A golfer on the tee is already inside the frame.
   void _centerOnFirstFix(MeasureState state) {
+    if (_framedHole || widget.initialCamera != null) {
+      _hasCenteredOnGolfer = true;
+      return;
+    }
     if (_hasCenteredOnGolfer || state.hasNoFix) return;
     final origin = state.origin!;
     final golfer = ml.LatLng(origin.latitude, origin.longitude);

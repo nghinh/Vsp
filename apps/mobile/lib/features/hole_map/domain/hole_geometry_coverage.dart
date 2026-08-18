@@ -201,6 +201,76 @@ abstract final class HoleGeometryCoverage {
     );
   }
 
+  /// The layers that are this hole and not its neighbours.
+  ///
+  /// A package's hole file carries everything within reach of the hole, which
+  /// is right — a golfer wants to see the pond on the next fairway they can
+  /// reach from here. It is wrong for framing. On Long Biên's 10th the seven
+  /// bunkers in the file span 500m by 570m, so a camera aimed at the mean of
+  /// them points between holes, and a camera zoomed to contain them shows a
+  /// quarter of the club.
+  ///
+  /// Tee, fairway and green are the corridor the hole is played down.
+  static const Set<MapLayerType> corridorLayers = {
+    MapLayerType.tee,
+    MapLayerType.fairway,
+    MapLayerType.green,
+  };
+
+  /// The box the hole is played inside, for a camera to frame.
+  ///
+  /// ─── Why this exists ──────────────────────────────────────────────────────
+  ///
+  /// The drawn map opened at a hardcoded zoom 16 and the photograph at a
+  /// hardcoded 17, so the two tabs of the same hole were two different scales
+  /// — one covering twice the ground of the other — and neither was the size
+  /// of the hole. Reported with two screenshots a minute apart: "Ảnh vệ tinh
+  /// và bản đồ không khớp vị trí, tỷ lệ với nhau".
+  ///
+  /// A constant cannot be right: this hole is a 470m par 5 and the one beside
+  /// it is a 130m par 3. The hole's own geometry says how far to stand back,
+  /// and both views now ask it the same question and get the same answer.
+  ///
+  /// Falls back to the strategic layers where a hole has no corridor — some
+  /// packages carry a green and nothing else — and returns null only where
+  /// there is no geometry at all, which is the case the photograph handles on
+  /// its own.
+  static ({LatLng southwest, LatLng northeast})? holeBounds(
+    HoleMapEntity holeMap,
+  ) {
+    var points = _pointsIn(holeMap, corridorLayers);
+    if (points.isEmpty) points = _pointsIn(holeMap, strategicLayers);
+    if (points.isEmpty) return null;
+
+    var minLat = points.first.latitude;
+    var maxLat = minLat;
+    var minLng = points.first.longitude;
+    var maxLng = minLng;
+    for (final point in points) {
+      if (point.latitude < minLat) minLat = point.latitude;
+      if (point.latitude > maxLat) maxLat = point.latitude;
+      if (point.longitude < minLng) minLng = point.longitude;
+      if (point.longitude > maxLng) maxLng = point.longitude;
+    }
+    return (
+      southwest: LatLng(latitude: minLat, longitude: minLng),
+      northeast: LatLng(latitude: maxLat, longitude: maxLng),
+    );
+  }
+
+  static List<LatLng> _pointsIn(
+    HoleMapEntity holeMap,
+    Set<MapLayerType> types,
+  ) {
+    final points = <LatLng>[];
+    for (final type in types) {
+      final layer = holeMap.layers[type];
+      if (layer == null) continue;
+      points.addAll(_coordinates(layer.geoJson));
+    }
+    return points;
+  }
+
   static bool _hasCoordinates(Object? feature) {
     if (feature is! Map) return false;
     if (feature['coordinates'] != null) return true;

@@ -24,6 +24,7 @@ import 'distance_ring_overlay.dart';
 import 'play_line_panel.dart';
 import 'feature_label_overlay.dart';
 import 'green_reference_panel.dart';
+import 'package:vsp_mobile/features/hole_map/presentation/hole_frame.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_labels.dart';
 import 'package:vsp_mobile/features/hole_map/domain/feature_rings.dart';
 import 'package:vsp_mobile/features/hole_map/domain/green_reference.dart';
@@ -247,12 +248,35 @@ class _HoleMapViewState extends State<HoleMapView> {
     // style load would undo the camera carried over from the other basemap the
     // instant it arrived.
     if (_sharedCamera != null) return;
+    final controller = _mapController;
+    if (controller == null) return;
+
+    // The hole's own size decides the zoom. It used to be the constant 16 —
+    // and the photograph beside it used the constant 17, so the two tabs of
+    // one hole were two scales, neither of them the hole's. See
+    // `HoleGeometryCoverage.holeBounds`.
+    final bounds = holeFrameFor(widget.state.holeMap);
+    if (bounds != null) {
+      controller.animateCamera(
+        CameraUpdate.newLatLngBounds(
+          bounds,
+          left: holeFramePadding,
+          right: holeFramePadding,
+          top: holeFramePadding,
+          bottom: holeFramePadding,
+        ),
+      );
+      return;
+    }
+
+    // No geometry to frame — a green and nothing else, or a hole nobody has
+    // traced. The centre is still worth aiming at; the photograph is what the
+    // golfer actually gets here.
     final holeMap = widget.state.holeMap;
     final centerLat = holeMap.mapCenterLat;
     final centerLng = holeMap.mapCenterLng;
-
     if (centerLat != null && centerLng != null) {
-      _mapController?.animateCamera(
+      controller.animateCamera(
         CameraUpdate.newLatLngZoom(
           LatLng(centerLat, centerLng),
           holeMap.defaultZoom,
@@ -621,6 +645,10 @@ class _HoleMapViewState extends State<HoleMapView> {
         child: SatelliteMeasureView(
           config: _imagery,
           initialCamera: _sharedCamera,
+          // The same box the drawn map fits, so the two tabs are one frame
+          // rather than two constants that happened to disagree by a factor
+          // of two.
+          holeBounds: holeFrameFor(widget.state.holeMap),
           onCameraIdle: _rememberCamera,
           fallbackCenter: _fallbackCenter(),
           courseId: widget.state.holeMap.courseId,
@@ -970,7 +998,20 @@ class _HoleMapViewState extends State<HoleMapView> {
     );
   }
 
+  /// Where the map opens before the frame is fitted.
+  ///
+  /// The middle of the hole's own box, not the mean of every coordinate in the
+  /// file: that mean includes the bunkers and ponds a hole file carries for
+  /// the holes around it — seven of them spanning 500m on Long Biên's 10th —
+  /// so it aims between holes rather than down one.
   LatLng get _holeCenter {
+    final frame = holeFrameFor(widget.state.holeMap);
+    if (frame != null) {
+      return LatLng(
+        (frame.southwest.latitude + frame.northeast.latitude) / 2,
+        (frame.southwest.longitude + frame.northeast.longitude) / 2,
+      );
+    }
     final lat = widget.state.holeMap.mapCenterLat;
     final lng = widget.state.holeMap.mapCenterLng;
     if (lat != null && lng != null) {
