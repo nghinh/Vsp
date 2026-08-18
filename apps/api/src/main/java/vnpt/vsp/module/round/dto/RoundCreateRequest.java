@@ -67,7 +67,27 @@ public class RoundCreateRequest {
      */
     private UUID tournamentId;
 
+    /**
+     * The id the client has already given this round, if it has one.
+     *
+     * <p>Optional, and older clients send nothing — they get a
+     * server-generated id exactly as before. A phone that persists a round
+     * locally before it can reach the network sends the id it is already
+     * using, so that the round it finishes is the round it started. Without
+     * it, everything the phone said afterwards was addressed to an id this
+     * server had never issued.</p>
+     *
+     * <p>Sending the same id twice is not an error: the round that already
+     * exists is returned. That is what a retry after a lost response looks
+     * like, and it is the same promise the Idempotency-Key header makes for
+     * callers that have one.</p>
+     */
+    private UUID clientRoundId;
+
     // ─── Getters and Setters ───────────────────────────────────────────────
+
+    public UUID getClientRoundId() { return clientRoundId; }
+    public void setClientRoundId(UUID clientRoundId) { this.clientRoundId = clientRoundId; }
 
     public Long getCourseId() {
         return courseId;

@@ -99,6 +99,36 @@ public class RoundServiceImpl implements RoundService {
     public RoundResponse createRound(Long accountId, RoundCreateRequest request) {
         log.info("Creating round for account {} with courseId {}", accountId, request.getCourseId());
 
+        // A client that already named this round.
+        //
+        // Answering with the existing round rather than creating a second one
+        // is the whole point: the phone calls this again precisely when it is
+        // not sure the first call landed — a lost response, or a round it
+        // started out of signal and is only now able to report. Creating a
+        // duplicate there would put two rounds of one afternoon in the
+        // golfer's history.
+        UUID clientRoundId = request.getClientRoundId();
+        if (clientRoundId != null) {
+            var existing = roundRepository.findById(clientRoundId);
+            if (existing.isPresent()) {
+                Round round = existing.get();
+                // Someone else's round, or a guessed id. The id is a name the
+                // client chose, so it cannot also be an authorisation.
+                if (!accountId.equals(round.getGolferAccountId())) {
+                    throw new VspApiException(VspErrorCode.AUTH_005, "clientRoundId");
+                }
+                log.info("Round {} already exists for account {} — returning it", clientRoundId, accountId);
+                String existingCourseName = null;
+                try {
+                    existingCourseName = courseService.getCourse(round.getCourseId()).getName();
+                } catch (Exception e) {
+                    // The round is what was asked for; a missing course name
+                    // is not a reason to refuse to hand it back.
+                }
+                return toResponse(round, existingCourseName);
+            }
+        }
+
         // Validate course exists
         Course course;
         try {
@@ -149,6 +179,11 @@ public class RoundServiceImpl implements RoundService {
 
         // Create the round entity
         Round round = new Round();
+        // The name the phone is already using for this round, where it sent
+        // one. Otherwise the random id the entity gave itself.
+        if (clientRoundId != null) {
+            round.setId(clientRoundId);
+        }
         round.setCourseId(request.getCourseId());
         round.setGolferAccountId(accountId);
         round.setStatus(Round.RoundStatus.IN_PROGRESS);
