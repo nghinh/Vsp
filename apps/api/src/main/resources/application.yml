@@ -1,6 +1,26 @@
 server:
   port: 8080
 
+  # Believe the proxy about how the caller reached us.
+  #
+  # TLS is terminated at Cloudflare and the origin serves plain HTTP on
+  # loopback, so without this Spring builds absolute URLs from what it can see:
+  # `http://vps-api.vnteki.com`. That is a scheme the service does not answer
+  # on, and iOS App Transport Security refuses plain HTTP outright — so a
+  # package manifest handed to a watch or to the portal pointed at a URL that
+  # cannot be fetched.
+  #
+  # It is what PublicPackageUrls depends on. That class was written to stop
+  # manifests saying `localhost:8080`; it reads the request's own origin, and
+  # the request's own origin is only the public one if the forwarded headers
+  # are honoured. Deployed on 18/8/2026 and found saying `http://` an hour
+  # later, by fetching a manifest and looking at it.
+  #
+  # Safe here because the tunnel is the only way in: the container publishes
+  # nothing but the loopback port, so nothing can set these headers except the
+  # proxy in front.
+  forward-headers-strategy: framework
+
 spring:
   application:
     name: vsp-api
