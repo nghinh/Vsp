@@ -31,6 +31,7 @@ import '../../data/services/connectivity_service.dart';
 import '../../infrastructure/persistence/sync_queue_repository.dart';
 import '../../infrastructure/sync/idempotency_client.dart';
 import '../../infrastructure/sync/sync_worker.dart';
+import 'round_queue_sync.dart';
 
 /// Owns the workers that drain the offline queue, and their lifetime.
 class OfflineSyncRunner {
@@ -40,8 +41,18 @@ class OfflineSyncRunner {
   /// Injectable for tests, which have neither SharedPreferences nor SQLite.
   final SyncWorker? _injectedSyncWorker;
 
-  OfflineSyncRunner({SyncWorker? syncWorker})
-    : _injectedSyncWorker = syncWorker;
+  /// The round queue, which is a second queue in a second database.
+  ///
+  /// `SyncWorker` drains `sync_queue` — scores, shots, corrections. Starting a
+  /// round and finishing one go into `round_sync_queue` instead, written by
+  /// `RoundSyncStore`, and that one had no drainer at all. Two queues is not a
+  /// design anyone chose; it is what the app has, and until both are carried a
+  /// round finished in a dead spot never reaches the server.
+  final RoundQueueSync _rounds;
+
+  OfflineSyncRunner({SyncWorker? syncWorker, RoundQueueSync? roundQueue})
+    : _injectedSyncWorker = syncWorker,
+      _rounds = roundQueue ?? RoundQueueSync();
 
   /// True once the worker is running.
   bool get isRunning => _syncWorker?.isRunning ?? false;
@@ -75,6 +86,19 @@ class OfflineSyncRunner {
       // the device and the next start will find it.
       _syncWorker = null;
     }
+
+    // Separately, and not inside the try above: the round queue is worth
+    // draining even on a device whose preferences or score queue would not
+    // open, and a failure in one must not silently skip the other.
+    await _drainRounds();
+  }
+
+  Future<void> _drainRounds() async {
+    try {
+      await _rounds.drain();
+    } catch (_) {
+      // Same reasoning as everywhere else here: the queue stays on the device.
+    }
   }
 
   /// Drains whatever is queued right now, without waiting for connectivity to
@@ -85,6 +109,8 @@ class OfflineSyncRunner {
     } catch (_) {
       // Same reasoning as start(): a failed flush loses nothing.
     }
+    // A round that just ended is exactly the entry this is here to carry.
+    await _drainRounds();
   }
 
   /// Stops the worker. Safe to call more than once.

@@ -35,7 +35,10 @@ import '../../../domain/models/round_format.dart';
 import '../../../domain/models/round_mode.dart';
 import '../../../domain/models/player.dart';
 import '../../../domain/models/course_package_manifest.dart';
+import '../../../application/sync/round_queue_sync.dart';
 import '../../../core/storage/round_setup_store.dart';
+import '../../../core/storage/round_sync_store.dart';
+import '../../../domain/models/round_sync_operation.dart';
 import 'round_setup_event.dart';
 import 'round_setup_state.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
@@ -88,6 +91,15 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
   final ProfileRepository _profileRepository;
   final BagRepository _bagRepository;
   final SecureStorage _secureStorage;
+
+  /// Where a round start goes when the server could not be told about it.
+  ///
+  /// Previously the failure was recorded and nothing else: `markSyncFailed`
+  /// is written here and read nowhere in the app. A round begun out of signal
+  /// therefore existed only on the phone, for ever — and since history is read
+  /// from the server, it was not a round waiting to sync, it was a round that
+  /// had never happened.
+  final RoundSyncStore _roundSyncStore;
   final Uuid _uuid;
 
   RoundSetupBloc({
@@ -104,6 +116,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
     ProfileRepository? profileRepository,
     BagRepository? bagRepository,
     SecureStorage? secureStorage,
+    RoundSyncStore? roundSyncStore,
     Uuid uuid = const Uuid(),
   }) : _manifestRepo = manifestRepo,
        _roundRepo = roundRepo,
@@ -120,6 +133,7 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
        _profileRepository = profileRepository ?? _defaultProfileRepository(),
        _bagRepository = bagRepository ?? _defaultBagRepository(),
        _secureStorage = secureStorage ?? SecureStorage(),
+       _roundSyncStore = roundSyncStore ?? RoundSyncStore(),
        _uuid = uuid,
        super(const RoundSetupInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
@@ -772,6 +786,43 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
 
   // ─── Round Start ─────────────────────────────────────────────────────────────
 
+  /// Remembers a round the server has not been told about, so it can be told.
+  ///
+  /// The round is already saved and the golfer is already playing — that is
+  /// deliberate, and it is why a phone in a dead spot is not blocked at the
+  /// first tee. What was missing is the other half: something that says the
+  /// round exists as soon as there is a network again.
+  ///
+  /// Queued under the round's own id, which is also what is sent as
+  /// `clientRoundId`. That is what makes the completion already sitting in
+  /// this same queue land on the right round instead of a 404.
+  Future<void> _queueRoundStart(
+    String localId,
+    RoundConfig config,
+    RoundSetupReady state,
+    String idempotencyKey,
+  ) async {
+    await _roundSetupStore.markSyncFailed(localId);
+    try {
+      await _roundSyncStore.enqueueRoundOp(
+        idempotencyKey: idempotencyKey,
+        operation: RoundSyncOperation.startRound,
+        roundId: localId,
+        payload: encodeStartRoundPayload(
+          courseId: config.courseId,
+          segmentCourseIds: state.segmentCourseIds,
+          startTime: config.startTime,
+          packageId: int.tryParse(config.packageId ?? ''),
+          format: state.format.value,
+          countsTowardHandicap: state.countsTowardHandicap,
+        ),
+      );
+    } catch (_) {
+      // No queue database. The round is still playable and still on the
+      // device; this is the one thing here that is allowed to be lost.
+    }
+  }
+
   Future<void> _onStartRoundTapped(
     StartRoundTapped event,
     Emitter<RoundSetupState> emit,
@@ -845,6 +896,11 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
           courseId: config.courseId,
           segmentCourseIds: currentState.segmentCourseIds,
           idempotencyKey: idempotencyKey,
+          // The id the round is already saved under here. A server that
+          // accepts it hands back the same one, so the round the golfer
+          // finishes is the round they started; an older server ignores it
+          // and issues its own, which is what used to happen always.
+          clientRoundId: localId,
           startTime: config.startTime,
           packageId: int.tryParse(config.packageId ?? ''),
           tournamentPolicyId: config.tournamentPolicyId,
@@ -856,9 +912,9 @@ class RoundSetupBloc extends Bloc<RoundSetupEvent, RoundSetupState> {
         syncedToServer = true;
         await _roundSetupStore.markSynced(localId, roundId);
       } on VspApiException {
-        await _roundSetupStore.markSyncFailed(localId);
+        await _queueRoundStart(localId, config, currentState, idempotencyKey);
       } catch (_) {
-        await _roundSetupStore.markSyncFailed(localId);
+        await _queueRoundStart(localId, config, currentState, idempotencyKey);
       }
 
       // Persist the round locally so the scorecard, the active-round guard and

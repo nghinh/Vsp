@@ -77,6 +77,15 @@ class RoundApi {
     required int courseId,
     List<int> segmentCourseIds = const [],
     required String idempotencyKey,
+    /// The id this phone is already using for the round.
+    ///
+    /// The round is saved on the device and played before this call has to
+    /// succeed — that is what lets a golfer tee off out of signal. Until the
+    /// server accepted a name from us, it issued its own, and the phone was
+    /// left holding an id nothing else in the world recognised: every later
+    /// message about that round answered VSP-ERR-ROUND-001, including the one
+    /// that finishes it.
+    String? clientRoundId,
     DateTime? startTime,
     int? packageId,
     bool cartRequested = false,
@@ -87,6 +96,7 @@ class RoundApi {
   }) async {
     final body = <String, dynamic>{
       'courseId': courseId,
+      if (clientRoundId != null) 'clientRoundId': clientRoundId,
       // The đường played, in order. Sent only when it says something the
       // courseId cannot — a pairing of nines. The server defaults a missing
       // list to one segment, so an older build stays correct.

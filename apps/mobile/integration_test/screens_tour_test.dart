@@ -333,6 +333,42 @@ Future<void> startARound(WidgetTester tester) async {
       }
     }
   }
+
+  await finishTheRound(tester);
+}
+
+/// Ends the round, which is the half of the round nobody had ever run here.
+///
+/// Every tour before this one walked in, photographed four screens and walked
+/// out, so every run left a round open on the server: nine IN_PROGRESS rows on
+/// course 1351 in one morning, all of them ours. That is untidy, and it also
+/// meant the one transition worth testing — in progress becoming completed —
+/// had never been exercised end to end by anything.
+Future<void> finishTheRound(WidgetTester tester) async {
+  for (final label in ['Điểm', 'Score']) {
+    if (await tapIfPresent(tester, find.text(label))) break;
+  }
+
+  // The action is an icon with a tooltip, not a labelled button.
+  for (final tip in ['Kết thúc vòng đấu', 'Finish Round']) {
+    if (await tapIfPresent(tester, find.byTooltip(tip))) break;
+  }
+  await tester.pumpAndSettle(const Duration(seconds: 1));
+  describe('finish', ['Kết thúc vòng đấu?', 'Finish round?']);
+  await shoot(tester, '19-finish-confirm');
+
+  // The button in the dialog, not the dialog's own heading.
+  for (final label in ['Kết thúc', 'Finish']) {
+    if (await tapIfPresent(
+      tester,
+      find.widgetWithText(FilledButton, label),
+    )) {
+      break;
+    }
+  }
+  await tester.pumpAndSettle(const Duration(seconds: 6));
+  await shoot(tester, '20-finished');
+  describe('after finish', ['Hoàn thành', 'Completed', 'Vòng đấu của bạn']);
 }
 
 void main() {
