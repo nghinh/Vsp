@@ -53,6 +53,16 @@ const _password = String.fromEnvironment(
   defaultValue: 'Golfer2026',
 );
 
+/// Run against a server that is not there.
+///
+/// The app is offline-first by design — packages on the device, scores written
+/// locally and synced later — so "no server" is a state it claims to handle,
+/// not an accident. This mode is how that claim gets checked: every screen is
+/// opened with the API unreachable, and what matters changes. A screen saying
+/// "Không tải được" is then correct and expected; a screen that hangs on a
+/// spinner, throws, or shows a raw exception is not.
+const _offline = bool.fromEnvironment('VSP_UAT_OFFLINE');
+
 /// The app admitting it could not do its job.
 ///
 /// Deliberately not every string with "chưa" in it: this app says "Chưa có túi
@@ -146,7 +156,10 @@ Future<void> check(
     _findings.add(_Finding(screen, 'KHÔNG TỚI', 'không thấy $landmarks'));
   }
 
-  for (final marker in _failureMarkers) {
+  // Offline, the app's failure vocabulary is the right answer rather than a
+  // finding. What still counts is a hang, an exception, or a screen that never
+  // arrives — and those are checked above and below regardless.
+  for (final marker in _offline ? const <String>[] : _failureMarkers) {
     final hit = find.textContaining(marker);
     if (hit.evaluate().isNotEmpty) {
       final widget = hit.evaluate().first.widget;
@@ -822,6 +835,23 @@ Future<void> _round(WidgetTester tester) async {
   }
   await check(tester, '44-di-het-18-ho', landmarks: ['Hố 18 trên 18', 'Hố']);
 
+  // ── Reading a paper card with the camera ──────────────────────────────
+  //
+  // Only as far as the source chooser. What comes after it is the system photo
+  // picker, which is not a Flutter widget and cannot be driven from here — so
+  // the tour stops where the app stops being the thing on screen, and says so.
+  for (final tip in ['Chụp ảnh card']) {
+    if (await tapIfPresent(tester, find.byTooltip(tip))) break;
+  }
+  await settle(tester, const Duration(seconds: 2));
+  await check(tester, '45-chup-the-diem', landmarks: ['Chụp', 'Thư viện', 'Huỷ', 'Máy ảnh']);
+  await tapAny(tester, ['Huỷ', 'Hủy', 'Đóng']);
+  await settle(tester, const Duration(seconds: 2));
+  if (find.textContaining('Chụp ảnh').evaluate().isNotEmpty) {
+    await popBack(tester);
+    await settle(tester, const Duration(seconds: 2));
+  }
+
   // Finish, so the sweep does not leave a round open on the server.
   await tap(tester, ['Điểm']);
   for (final tip in ['Kết thúc vòng đấu', 'Finish Round']) {
@@ -871,7 +901,11 @@ void main() {
 
     await SatelliteImagery.load(BasemapConfigService());
     await settle(tester, const Duration(seconds: 2));
-    if (!SatelliteImagery.current.isAvailable) {
+    // Online only. The imagery provider is fetched from `/config/basemap`, so
+    // offline there is nothing to fetch and "no imagery" is the right answer
+    // rather than a defect — the maps fall back to the drawn hole, which is
+    // the whole point of carrying a package.
+    if (!_offline && !SatelliteImagery.current.isAvailable) {
       _findings.add(
         _Finding('cấu hình', 'THIẾU', 'bản dựng này không có ảnh vệ tinh'),
       );
@@ -881,12 +915,21 @@ void main() {
 
     await _tabs(tester);
     await _fromMore(tester);
-    await _functions(tester);
-    await _moreFunctions(tester);
-    await _deepFunctions(tester);
-    await _bagEditing(tester);
-    await _round(tester);
-    await _abandonARound(tester);
+
+    if (_offline) {
+      // Everything below needs a server to have answered at least once —
+      // starting a round, downloading a package, abandoning one. Offline, the
+      // question is only whether the screens above hold together, and they
+      // have just been asked.
+      debugPrint('UAT: chế độ mất mạng — chỉ rà màn hình');
+    } else {
+      await _functions(tester);
+      await _moreFunctions(tester);
+      await _deepFunctions(tester);
+      await _bagEditing(tester);
+      await _round(tester);
+      await _abandonARound(tester);
+    }
 
     // ── The report ────────────────────────────────────────────────────────
     debugPrint('');

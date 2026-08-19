@@ -55,11 +55,24 @@ fi
 xcrun simctl privacy "$DEVICE" grant location-always "$BUNDLE" >/dev/null 2>&1 || true
 xcrun simctl privacy "$DEVICE" grant photos "$BUNDLE" >/dev/null 2>&1 || true
 
+# Offline mode points the app at a port nothing listens on, which is a truer
+# "no server" than turning Wi-Fi off: the requests fail fast and locally
+# instead of hanging on DNS, and the simulator's own connectivity stays up so
+# the app's Wi-Fi reporting is unchanged.
+if [[ "${VSP_UAT_OFFLINE:-}" == "1" ]]; then
+  API_BASE_URL="http://127.0.0.1:9"
+  OFFLINE_DEFINE=1
+  echo "==> chế độ mất mạng: trỏ app vào $API_BASE_URL"
+else
+  OFFLINE_DEFINE=""
+fi
+
 echo "==> sweeping against $API_BASE_URL"
 set +e
 flutter test integration_test/uat_sweep_test.dart \
   -d "$DEVICE" \
-  --dart-define=VSP_API_BASE_URL="$API_BASE_URL"
+  --dart-define=VSP_API_BASE_URL="$API_BASE_URL" \
+  ${OFFLINE_DEFINE:+--dart-define=VSP_UAT_OFFLINE=true}
 status=$?
 set -e
 

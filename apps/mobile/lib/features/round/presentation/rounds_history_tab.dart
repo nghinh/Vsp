@@ -708,7 +708,13 @@ class _RoundsErrorState extends StatelessWidget {
             ),
             const SizedBox(height: VspSpacing.sm),
             Text(
-              message,
+              // Resolved, not printed. `VspApiException.message` carries an
+              // AppMessages *key* — the layer that throws has no context to
+              // translate with — and this printed it verbatim, so a golfer who
+              // lost signal was shown "msg.networkError" under "Không tải được
+              // vòng đấu". Found by the offline sweep, which is the only thing
+              // that had ever seen this screen fail.
+              context.tr(message),
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
