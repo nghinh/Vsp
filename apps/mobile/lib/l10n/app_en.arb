@@ -2602,6 +2602,13 @@
       }
     }
   },
+  "scoreScanDoubtTitle": "These numbers do not match the card",
+  "scoreScanDoubtBody": "{count} row(s) either disagree with the OUT/IN totals you wrote, or have holes the reader could not make out. Saving now saves what the reader saw — not what is on the card.",
+  "@scoreScanDoubtBody": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scoreScanDoubtFix": "Check them",
+  "scoreScanDoubtSaveAnyway": "Save anyway",
   "scoreScanSave": "Save to scorecard",
   "scoreScanSaved": "Saved {count} holes to the scorecard.",
   "@scoreScanSaved": {

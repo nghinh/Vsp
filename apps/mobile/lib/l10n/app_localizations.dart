@@ -6728,6 +6728,30 @@ abstract class AppLocalizations {
   /// **'The back nine adds up to something other than the {in_} you wrote in IN — check those nine.'**
   String scoreScanInDisagrees(int in_);
 
+  /// No description provided for @scoreScanDoubtTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'These numbers do not match the card'**
+  String get scoreScanDoubtTitle;
+
+  /// No description provided for @scoreScanDoubtBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} row(s) either disagree with the OUT/IN totals you wrote, or have holes the reader could not make out. Saving now saves what the reader saw — not what is on the card.'**
+  String scoreScanDoubtBody(int count);
+
+  /// No description provided for @scoreScanDoubtFix.
+  ///
+  /// In en, this message translates to:
+  /// **'Check them'**
+  String get scoreScanDoubtFix;
+
+  /// No description provided for @scoreScanDoubtSaveAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Save anyway'**
+  String get scoreScanDoubtSaveAnyway;
+
   /// No description provided for @scoreScanSave.
   ///
   /// In en, this message translates to:

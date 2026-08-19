@@ -3750,6 +3750,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get scoreScanDoubtTitle => 'These numbers do not match the card';
+
+  @override
+  String scoreScanDoubtBody(int count) {
+    return '$count row(s) either disagree with the OUT/IN totals you wrote, or have holes the reader could not make out. Saving now saves what the reader saw — not what is on the card.';
+  }
+
+  @override
+  String get scoreScanDoubtFix => 'Check them';
+
+  @override
+  String get scoreScanDoubtSaveAnyway => 'Save anyway';
+
+  @override
   String get scoreScanSave => 'Save to scorecard';
 
   @override

@@ -397,4 +397,120 @@ void main() {
       isEmpty,
     );
   });
+
+  group('a reading the app is unsure about', () {
+    // Measured against a real card — Hilltop Valley, four players, folded and
+    // photographed sideways in a car. Asked seven times, the reader answered
+    // differently every time: one player, then two, then three, never the four
+    // that are on it. Its own checks caught it each time — outAgrees false,
+    // totalAgrees false — and the sheet was using half that signal: the
+    // warnings render for the row the golfer has open, and Save wrote every
+    // assigned row, including rows they never opened.
+    //
+    // A wrong score nobody knows is wrong is worse than no score.
+
+    Future<void> tapSave(WidgetTester tester, AppLocalizations l10n) async {
+      await tester.tap(
+        find.widgetWithText(FilledButton, l10n.scoreScanSave),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('stops and asks when the card disagrees with itself', (
+      tester,
+    ) async {
+      final scanned = ScannedScores(
+        players: [
+          row(
+            holes: {1: 5, 2: 4},
+            rowChecks: checks(writtenOut: 40, outAgrees: false),
+          ),
+        ],
+      );
+
+      await open(tester, scanned: scanned);
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      await tapSave(tester, l10n);
+
+      expect(
+        find.text(l10n.scoreScanDoubtTitle),
+        findsOneWidget,
+        reason: 'this is the defect: Save wrote numbers the app knew '
+            'disagreed with the OUT total on the card',
+      );
+      // And the sheet is still there, on the numbers being questioned.
+      expect(find.byType(ScoreScanSheet), findsOneWidget);
+    });
+
+    testWidgets('a hole the reader could not make out also counts', (
+      tester,
+    ) async {
+      final scanned = ScannedScores(
+        players: [
+          row(holes: {1: 5, 2: null}),
+        ],
+      );
+
+      await open(tester, scanned: scanned);
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      await tapSave(tester, l10n);
+
+      expect(find.text(l10n.scoreScanDoubtTitle), findsOneWidget);
+    });
+
+    testWidgets('but a hole the golfer cleared does not — that was a choice', (
+      tester,
+    ) async {
+      // Warning somebody about their own edit is nagging, and a dialog that
+      // fires when it should not is a dialog people learn to tap through.
+      final scanned = ScannedScores(
+        players: [
+          row(holes: {1: 5, 2: 4}, rowChecks: checks(writtenOut: 9)),
+        ],
+      );
+
+      await open(tester, scanned: scanned);
+      await tester.enterText(find.byKey(const Key('score-scan-hole-2')), '');
+      await tester.pumpAndSettle();
+
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      await tapSave(tester, l10n);
+
+      expect(find.text(l10n.scoreScanDoubtTitle), findsNothing);
+    });
+
+    testWidgets('a clean reading saves without a question', (tester) async {
+      final scanned = ScannedScores(
+        players: [
+          row(holes: {1: 5, 2: 4}, rowChecks: checks(writtenOut: 9)),
+        ],
+      );
+
+      await open(tester, scanned: scanned);
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      await tapSave(tester, l10n);
+
+      expect(find.text(l10n.scoreScanDoubtTitle), findsNothing);
+      expect(find.byType(ScoreScanSheet), findsNothing);
+    });
+
+    testWidgets('and saying "vẫn lưu" saves it', (tester) async {
+      final scanned = ScannedScores(
+        players: [
+          row(
+            holes: {1: 5, 2: 4},
+            rowChecks: checks(writtenOut: 40, outAgrees: false),
+          ),
+        ],
+      );
+
+      await open(tester, scanned: scanned);
+      final l10n = await AppLocalizations.delegate.load(const Locale('vi'));
+      await tapSave(tester, l10n);
+      await tester.tap(find.text(l10n.scoreScanDoubtSaveAnyway));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ScoreScanSheet), findsNothing);
+    });
+  });
 }

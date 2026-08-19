@@ -1324,6 +1324,13 @@
   "scoreScanBlanks": "{count} hố không đọc được — bạn tự điền giúp.",
   "scoreScanOutDisagrees": "Tổng chín hố đầu không khớp với số {out} bạn ghi ở ô OUT — kiểm tra lại chín hố đó.",
   "scoreScanInDisagrees": "Tổng chín hố sau không khớp với số {in_} bạn ghi ở ô IN — kiểm tra lại chín hố đó.",
+  "scoreScanDoubtTitle": "Số chưa khớp với thẻ giấy",
+  "scoreScanDoubtBody": "{count} dòng có tổng không khớp ô OUT/IN, hoặc còn hố máy không đọc được. Lưu bây giờ là lưu số máy đọc — không phải số trên thẻ.",
+  "@scoreScanDoubtBody": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "scoreScanDoubtFix": "Xem lại",
+  "scoreScanDoubtSaveAnyway": "Vẫn lưu",
   "scoreScanSave": "Lưu vào bảng điểm",
   "scoreScanSaved": "Đã lưu {count} hố vào bảng điểm.",
   "scorecardScanTees": "Gửi kèm {count} hàng tee từ ảnh — yardage và rating, để người duyệt đối chiếu.",

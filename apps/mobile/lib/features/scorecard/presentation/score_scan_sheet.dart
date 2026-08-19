@@ -174,6 +174,72 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
 
   bool get _canSave => _savable.isNotEmpty;
 
+  /// Rows the app itself is unsure about.
+  ///
+  /// ─── Why saving asks first ────────────────────────────────────────────────
+  ///
+  /// The warnings above are rendered for the row the golfer has open. `_save`
+  /// wrote every assigned row — including rows they never opened, and so never
+  /// saw a warning for. A reading that disagrees with the OUT and IN totals
+  /// written on the card could therefore land in the scorecard without anybody
+  /// being told, which is the one outcome a scanner must not have: a wrong
+  /// score nobody knows is wrong is worse than no score at all.
+  ///
+  /// Measured against a real card — Hilltop Valley, four players, photographed
+  /// folded and sideways in a car — the reader returned a different answer
+  /// every time it was asked: one player, then two, then three, never the four
+  /// that are on it, and never the same numbers twice. Its own checks caught
+  /// it each time: `outAgrees` and `totalAgrees` were false. That signal was
+  /// already arriving and only half of it was being used.
+  ///
+  /// Doubt is the card's own arithmetic disagreeing, or a hole the reader could
+  /// not make out. Not a judgement about whether the golfer played well.
+  Iterable<int> get _rowsInDoubt => _savable.where((row) {
+    final checks = widget.scanned.players[row].checks;
+
+    // The reader's blanks, not the golfer's. A hole they cleared themselves is
+    // a decision — they know they picked up — and warning somebody about their
+    // own edit is nagging. A hole the reader could not make out is doubt.
+    final unread = widget.scanned.players[row].holes
+        .where((stroke) => stroke.written == null)
+        .length;
+
+    return unread > 0 ||
+        (checks.writtenOut != null && !checks.outAgrees) ||
+        (checks.writtenIn != null && !checks.inAgrees);
+  });
+
+  Future<void> _confirmThenSave() async {
+    final doubted = _rowsInDoubt.length;
+    if (doubted == 0) {
+      _save();
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context);
+    final saveAnyway = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.scoreScanDoubtTitle),
+        content: Text(l10n.scoreScanDoubtBody(doubted)),
+        actions: [
+          // Checking is the default, and it is the one that keeps the sheet
+          // open on the numbers being questioned.
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.scoreScanDoubtFix),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.scoreScanDoubtSaveAnyway),
+          ),
+        ],
+      ),
+    );
+
+    if (saveAnyway == true && mounted) _save();
+  }
+
   void _save() {
     final confirmed = <String, Map<int, int>>{};
     for (final row in _savable) {
@@ -233,7 +299,7 @@ class ScoreScanSheetState extends State<ScoreScanSheet> {
               child: SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: _canSave ? _save : null,
+                  onPressed: _canSave ? _confirmThenSave : null,
                   child: Text(l10n.scoreScanSave),
                 ),
               ),

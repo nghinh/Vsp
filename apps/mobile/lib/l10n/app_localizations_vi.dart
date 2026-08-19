@@ -3750,6 +3750,20 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
+  String get scoreScanDoubtTitle => 'Số chưa khớp với thẻ giấy';
+
+  @override
+  String scoreScanDoubtBody(int count) {
+    return '$count dòng có tổng không khớp ô OUT/IN, hoặc còn hố máy không đọc được. Lưu bây giờ là lưu số máy đọc — không phải số trên thẻ.';
+  }
+
+  @override
+  String get scoreScanDoubtFix => 'Xem lại';
+
+  @override
+  String get scoreScanDoubtSaveAnyway => 'Vẫn lưu';
+
+  @override
   String get scoreScanSave => 'Lưu vào bảng điểm';
 
   @override
