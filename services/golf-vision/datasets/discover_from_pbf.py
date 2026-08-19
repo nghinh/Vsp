@@ -193,6 +193,26 @@ def main() -> int:
             seen.add(key)
 
             south, west, north, east = geometry_bounds(course["geometry"])
+            # A golf course is a few kilometres across at the outside. A
+            # boundary bigger than ~6 km on a side is a resort drawn around
+            # its whole town, a relation error, or a coastline — and at zoom
+            # 19 it would be a frame the builder refuses anyway. Skipped here,
+            # where it costs a line, not a fetch.
+            if (north - south) > 0.055 or (east - west) > 0.06:
+                continue
+            # A feature belongs to this course if it overlaps the course's box
+            # AND fits inside it, give or take a margin. The overlap test
+            # alone is what the Overpass version ran — and there it was safe,
+            # because that version only kept small closed ways. Assembled
+            # multipolygons include the Intracoastal Waterway, tagged
+            # natural=water and 180 km long: it overlaps every coastal course
+            # in Florida, and one such feature in the list blows the course's
+            # frame up to 235,520 by 664,320 pixels, which the NAIP builder
+            # then rightly refuses. A pond that is a course's own is at most
+            # course-sized; a feature bigger than the course it decorates is
+            # scenery, not a hazard.
+            margin_lat = (north - south) * 0.25
+            margin_lng = (east - west) * 0.25
             inside = [
                 {
                     "type": "Feature",
@@ -206,6 +226,8 @@ def main() -> int:
                 }
                 for (fs, fw, fn, fe), f in feature_boxes
                 if fs <= north and fn >= south and fw <= east and fe >= west
+                and fs >= south - margin_lat and fn <= north + margin_lat
+                and fw >= west - margin_lng and fe <= east + margin_lng
             ]
             counts = completeness(inside)
             if not is_complete_enough(counts):
