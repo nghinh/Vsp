@@ -129,6 +129,17 @@ public class LlmGateway {
         var body = objectMapper.createObjectNode();
         body.put("model", model);
         body.put(tokenKey, maxTokens);
+        // Transcription, not composition.
+        //
+        // Nothing set this, so the provider's default applied — around 1.0 on
+        // an OpenAI-shaped router — and the same photograph came back
+        // different every time it was asked. Measured on one real card
+        // (Hilltop Valley, four players, folded and photographed sideways in a
+        // car): seven reads gave one player, then two, then three, never the
+        // four that are on it, and never the same numbers twice.
+        //
+        // A card has one right answer. Sampling is for prose.
+        body.put("temperature", 0);
         // Left in deliberately: this gateway reads an absent `stream` as
         // "stream it", and the answer came back as server-sent events.
         body.put("stream", false);

@@ -35,6 +35,10 @@ public class ScorecardOcrService {
             Read the table and return one line per hole, in hole order, for \
             every hole visible in the photograph.
 
+            The photograph may be rotated, upside down, or taken at an \
+            angle, and the card may be folded along its middle. Read it in \
+            whatever orientation the printing runs.
+
             HOW THESE CARDS ARE LAID OUT
 
             - The card is usually two tables side by side: holes 1-9 on the \
@@ -144,10 +148,17 @@ public class ScorecardOcrService {
 
             WHAT TO RETURN
 
-            Return one row per player whose handwriting you can read, in the \
-            order the rows appear down the card, with a `player` label taken \
-            from whatever is written at the left of the row (or null if \
-            nothing is written there).
+            Return one row for EVERY row that has anything handwritten in \
+            it, in the order the rows appear down the card, with a `player` \
+            label taken from whatever is written at the left of the row (or \
+            null if nothing is written there).
+
+            Every row means every row. A row whose numbers you can barely make \
+            out is still returned, with the cells you cannot read set to null; \
+            a row you cannot read at all is still returned, with every cell \
+            null. Dropping a row hides a player from the golfer checking this \
+            card, and they cannot correct what they are not shown. Four names \
+            down the left edge means four rows in the answer.
 
             A handwritten number may be the strokes taken (4, 5, 6) or the \
             score relative to par (0, +1, -1, sometimes written as a bare 1 or \
@@ -188,6 +199,18 @@ public class ScorecardOcrService {
     /// truncation that reads as a short card rather than an error.
     private static final int MAX_TOKENS = 12000;
 
+    /// Below this many legible cells, the picture is worth turning.
+    ///
+    /// A four-player eighteen holds seventy-two cells. Ten is a card that was
+    /// found but barely read, well below anything a golfer could use.
+    ///
+    /// Zero counts as thin and does buy the turns. A card nobody has written on
+    /// yet reads the same as a card the model could not make out, and there is
+    /// no way to tell them apart from the answer — the sideways card measured
+    /// here returned two of its four rows completely empty. Charging the rare
+    /// photograph of a blank card two extra calls is the cheaper mistake.
+    private static final int THIN_READ = 10;
+
     private final ObjectMapper objectMapper;
     private final LlmGateway gateway;
 
@@ -218,7 +241,110 @@ public class ScorecardOcrService {
      * the handwriting is the signal.
      */
     public String extractScores(byte[] image, String mediaType) {
-        return readScores(gateway.ask(image, mediaType, SCORES_PROMPT, MAX_TOKENS));
+        String best = readScores(gateway.ask(image, mediaType, SCORES_PROMPT, MAX_TOKENS));
+        int read = cellsRead(best);
+        if (read >= THIN_READ) {
+            return best;
+        }
+
+        // A thin read is usually a sideways card, not an unreadable one.
+        //
+        // Measured on a real card — Hilltop Valley, four players, folded and
+        // photographed in a car with the card lying across the frame. Read as
+        // photographed: four rows found and two legible cells out of eighteen
+        // on the best of them. The same photograph turned a quarter turn:
+        // four rows, sixteen and seventeen cells each, and identical between
+        // runs.
+        //
+        // EXIF does not help here. The phone was held the right way up; it is
+        // the card on the seat that is sideways, and no orientation tag records
+        // that. Nor does the card lie one way: a card across the frame can have
+        // its first hole at either end, so both quarter turns are tried, and
+        // whichever read the most of the card is the one returned.
+        for (int quarters : new int[] {1, 3}) {
+            byte[] turned = turn(image, quarters);
+            if (turned == null) {
+                break;
+            }
+            String sideways;
+            try {
+                // JPEG, whatever arrived: the turned copy is what ImageIO
+                // wrote, and a PNG announced as a JPEG is refused by the model.
+                sideways = readScores(gateway.ask(turned, "image/jpeg", SCORES_PROMPT, MAX_TOKENS));
+            } catch (RuntimeException e) {
+                // A turned read that fails where the first one did not is not
+                // worth losing the answer we already have over.
+                log.info("A turned read failed, keeping the best so far: {}", e.toString());
+                continue;
+            }
+            int turnedRead = cellsRead(sideways);
+            if (turnedRead > read) {
+                best = sideways;
+                read = turnedRead;
+            }
+            if (read >= THIN_READ) {
+                break;
+            }
+        }
+        return best;
+    }
+
+    /// How much of the card an answer actually contains.
+    ///
+    /// Counting cells rather than rows, because the failure this guards
+    /// against returns every row with nothing in it.
+    private int cellsRead(String json) {
+        try {
+            var players = objectMapper.readTree(json).get("players");
+            if (players == null || !players.isArray()) {
+                return 0;
+            }
+            int cells = 0;
+            for (var player : players) {
+                var holes = player.get("holes");
+                if (holes == null || !holes.isArray()) {
+                    continue;
+                }
+                for (var hole : holes) {
+                    var written = hole.get("written");
+                    if (written != null && !written.isNull()) {
+                        cells++;
+                    }
+                }
+            }
+            return cells;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    /// Turns the picture [quarters] quarter-turns clockwise, or null if it
+    /// cannot be decoded.
+    private byte[] turn(byte[] image, int quarters) {
+        try {
+            var source = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(image));
+            if (source == null) {
+                return null;
+            }
+            int w = source.getWidth();
+            int h = source.getHeight();
+            boolean sideways = quarters % 2 != 0;
+            var turned = new java.awt.image.BufferedImage(
+                    sideways ? h : w, sideways ? w : h,
+                    java.awt.image.BufferedImage.TYPE_INT_RGB);
+            var g = turned.createGraphics();
+            g.translate(turned.getWidth() / 2.0, turned.getHeight() / 2.0);
+            g.rotate(Math.PI / 2 * quarters);
+            g.drawImage(source, -w / 2, -h / 2, null);
+            g.dispose();
+
+            var out = new java.io.ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(turned, "jpg", out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            log.info("Could not turn the picture: {}", e.toString());
+            return null;
+        }
     }
 
     /**
