@@ -211,6 +211,16 @@ public class ScorecardOcrService {
     /// photograph of a blank card two extra calls is the cheaper mistake.
     private static final int THIN_READ = 10;
 
+    /// A card whose longest side is under this is enlarged before it is read.
+    ///
+    /// Measured: 598 by 1280 is unreadable, 2560 works. The threshold sits
+    /// well above the size that failed and below anything a phone camera
+    /// produces, so a photograph taken in the app is never touched.
+    private static final int ENOUGH_PIXELS = 1600;
+
+    /// What a small card is enlarged to.
+    private static final int ENLARGE_TO = 2560;
+
     private final ObjectMapper objectMapper;
     private final LlmGateway gateway;
 
@@ -241,10 +251,36 @@ public class ScorecardOcrService {
      * the handwriting is the signal.
      */
     public String extractScores(byte[] image, String mediaType) {
-        String best = readScores(gateway.ask(image, mediaType, SCORES_PROMPT, MAX_TOKENS));
-        int read = cellsRead(best);
-        if (read >= THIN_READ) {
-            return best;
+        // A card shared through a chat app arrives shrunk, and the same
+        // photograph reads completely differently depending on how big it is.
+        //
+        // Measured on one: a Korean card, four players, 598 by 1280. Read at
+        // that size the model returned three players and numbers that matched
+        // no row on the card. The identical pixels enlarged to 2560 returned
+        // four players, all four names, and a front nine that agrees with the
+        // card hole for hole on one row and misses one cell on two others.
+        //
+        // Enlarging adds no information. It buys the picture more of the
+        // model's attention, and that turns out to be what was missing.
+        byte[] photograph = enlargeIfSmall(image);
+        String type = photograph == image ? mediaType : "image/jpeg";
+
+        String best = null;
+        int rank = -1;
+        RuntimeException refusal = null;
+        try {
+            best = readScores(gateway.ask(photograph, type, SCORES_PROMPT, MAX_TOKENS));
+            rank = rank(best);
+            if (cellsRead(best) >= THIN_READ) {
+                return best;
+            }
+        } catch (RuntimeException e) {
+            // Not the end of it. Measured on the same card: upright the model
+            // answered with nothing this could parse, while a quarter turn of
+            // it answered fine. A photograph the model refuses at one angle is
+            // still worth showing it at another.
+            log.info("The first read failed, turning the picture: {}", e.toString());
+            refusal = e;
         }
 
         // A thin read is usually a sideways card, not an unreadable one.
@@ -259,10 +295,9 @@ public class ScorecardOcrService {
         // EXIF does not help here. The phone was held the right way up; it is
         // the card on the seat that is sideways, and no orientation tag records
         // that. Nor does the card lie one way: a card across the frame can have
-        // its first hole at either end, so both quarter turns are tried, and
-        // whichever read the most of the card is the one returned.
+        // its first hole at either end, so both quarter turns are tried.
         for (int quarters : new int[] {1, 3}) {
-            byte[] turned = turn(image, quarters);
+            byte[] turned = turn(photograph, quarters);
             if (turned == null) {
                 break;
             }
@@ -277,16 +312,98 @@ public class ScorecardOcrService {
                 log.info("A turned read failed, keeping the best so far: {}", e.toString());
                 continue;
             }
-            int turnedRead = cellsRead(sideways);
-            if (turnedRead > read) {
+            int turnedRank = rank(sideways);
+            if (turnedRank > rank) {
                 best = sideways;
-                read = turnedRead;
+                rank = turnedRank;
             }
-            if (read >= THIN_READ) {
+            if (cellsRead(best) >= THIN_READ) {
                 break;
             }
         }
+
+        if (best == null) {
+            // Every angle refused. The golfer is owed the original complaint
+            // rather than a new one invented here.
+            throw refusal;
+        }
         return best;
+    }
+
+    /**
+     * How much to believe a read, for choosing between two of them.
+     *
+     * <p>Cells alone rank a fabrication above the truth: the sideways read of
+     * the Korean card filled all fifty-four of its cells with numbers that are
+     * on no row of the card, while an honest read of a smudged card leaves
+     * cells null. So a row that adds up to the total the golfer wrote at the
+     * end of it counts for more than any number of cells — it is the one piece
+     * of arithmetic the card checks itself with.
+     */
+    private int rank(String json) {
+        return agreeingRows(json) * 100 + cellsRead(json);
+    }
+
+    /// Rows whose holes add up to the total written at the end of them.
+    private int agreeingRows(String json) {
+        try {
+            var players = objectMapper.readTree(json).get("players");
+            if (players == null || !players.isArray()) {
+                return 0;
+            }
+            int agreeing = 0;
+            for (var player : players) {
+                var checks = player.get("checks");
+                if (checks == null) {
+                    continue;
+                }
+                if (isTrue(checks.get("outAgrees")) || isTrue(checks.get("inAgrees"))) {
+                    agreeing++;
+                }
+            }
+            return agreeing;
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private boolean isTrue(com.fasterxml.jackson.databind.JsonNode node) {
+        return node != null && node.asBoolean(false);
+    }
+
+    /// The picture enlarged to something the model can work with, or the
+    /// original when it is already big enough or cannot be decoded.
+    private byte[] enlargeIfSmall(byte[] image) {
+        try {
+            var source = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(image));
+            if (source == null) {
+                return image;
+            }
+            int longest = Math.max(source.getWidth(), source.getHeight());
+            if (longest >= ENOUGH_PIXELS) {
+                return image;
+            }
+
+            double scale = (double) ENLARGE_TO / longest;
+            int width = (int) Math.round(source.getWidth() * scale);
+            int height = (int) Math.round(source.getHeight() * scale);
+            var bigger = new java.awt.image.BufferedImage(
+                    width, height, java.awt.image.BufferedImage.TYPE_INT_RGB);
+            var g = bigger.createGraphics();
+            g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
+                    java.awt.RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+            g.drawImage(source, 0, 0, width, height, null);
+            g.dispose();
+
+            var out = new java.io.ByteArrayOutputStream();
+            javax.imageio.ImageIO.write(bigger, "jpg", out);
+            log.info("Enlarged a {}x{} card to {}x{} before reading it",
+                    source.getWidth(), source.getHeight(), width, height);
+            return out.toByteArray();
+        } catch (Exception e) {
+            log.info("Could not enlarge the picture: {}", e.toString());
+            return image;
+        }
     }
 
     /// How much of the card an answer actually contains.

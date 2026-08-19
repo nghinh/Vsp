@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * A card lying sideways in the photograph is turned and read again.
@@ -184,6 +185,63 @@ class TurnsASidewaysCardTest {
         assertThat(asks.get())
                 .as("the third call buys nothing once the card has been read")
                 .isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("a picture the model refuses is still shown to it turned")
+    void turnsAPictureTheModelWouldNotRead() throws Exception {
+        // Measured on the Korean card: stood upright the model answered with
+        // nothing this could parse, and a quarter turn of the same picture
+        // answered fine. A refusal at one angle used to end the whole read.
+        answers.add("I'm sorry, I can't help with that.");
+        answers.add(rowWith(17));
+
+        String result = service().extractScores(jpeg(), "image/jpeg");
+
+        assertThat(cellsIn(result)).isEqualTo(17);
+    }
+
+    @Test
+    @DisplayName("and a card refused at every angle keeps its own complaint")
+    void doesNotInventANewFailure() throws Exception {
+        answers.add("I'm sorry, I can't help with that.");
+
+        assertThatThrownBy(() -> service().extractScores(jpeg(), "image/jpeg"))
+                .isInstanceOf(vnpt.vsp.api.error.VspApiException.class);
+        assertThat(asks.get()).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("a row that adds up beats a fuller row that does not")
+    void trustsTheCardsOwnArithmetic() throws Exception {
+        // Cells alone rank a fabrication above the truth. The sideways read of
+        // the Korean card filled every one of its cells with numbers that are
+        // on no row of the card, while an honest read of a smudged card leaves
+        // cells null. The total the golfer wrote at the end of their own row is
+        // the one piece of arithmetic the card checks itself with.
+        answers.add(rowWith(2));            // as photographed: thin
+        answers.add(frontNine(4, 41));      // turned: nine cells that add up to nothing
+        answers.add(frontNine(4, 36));      // turned back: the same nine, and they add up
+
+        String result = service().extractScores(jpeg(), "image/jpeg");
+
+        JsonNode checks = objectMapper.readTree(result).get("players").get(0).get("checks");
+        assertThat(checks.get("outAgrees").asBoolean())
+                .as("both reads have nine cells — only one of them adds up")
+                .isTrue();
+        assertThat(checks.get("writtenOut").asInt()).isEqualTo(36);
+    }
+
+    /** A front nine of [stroke], with [writtenOut] claimed at the end of it. */
+    private String frontNine(int stroke, Integer writtenOut) {
+        var holes = new StringBuilder();
+        for (int hole = 1; hole <= 18; hole++) {
+            if (hole > 1) holes.append(",");
+            holes.append("{\"hole\":").append(hole).append(",\"written\":")
+                 .append(hole <= 9 ? String.valueOf(stroke) : "null").append("}");
+        }
+        return "{\"players\":[{\"player\":\"A\",\"notation\":\"strokes\",\"writtenOut\":"
+                + writtenOut + ",\"holes\":[" + holes + "]}]}";
     }
 
     /** How many holes an answer actually has a number for. */
