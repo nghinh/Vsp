@@ -355,3 +355,36 @@ the endpoints. No other service was touched.
 - **This checkpoint does not ship.** Its mit-b0 encoder is NVIDIA
   research-licensed; production retrains on the MIT backbone already wired
   behind the same interface.
+
+---
+
+## 10. Asking better — measured before it shipped
+
+The quality review of 2026-08-19, first tier: change nothing about the model,
+change how it is asked. One inference path now serves the evaluation harness
+and the service (`golfvision/inference.py`), so every number below is scored
+behind exactly the asking it is served behind.
+
+| asking | test mean IoU |
+|---|---|
+| plain, argmax, uniform window blending (baseline) | 0.559 |
+| + dihedral TTA, probability-averaged | **0.573** |
+| + ensemble with unet-r34-v2 | 0.553 |
+| + ensemble and TTA together | 0.558 |
+
+**TTA is worth +0.014 mean IoU for 8× compute** — 15 s a hole on the A100,
+which the offline sweep does not feel, and `GOLF_SEG_TTA=0` for anyone
+interactive. Per class it is the small classes that collect: the whole point.
+
+**The ensemble measured worse and did not ship.** Averaging the current best
+with the older unet-r34-v2 (0.515 alone) pulls the pair below the better
+member: a vote only helps between peers. The machinery stays — colon-separated
+`GOLF_SEG_CHECKPOINT` — for when two comparable checkpoints exist.
+
+Window blending is Gaussian now: a pixel at a window's edge has seen half its
+context, and its vote is weighted accordingly. And the val split is now a
+recorded oddity rather than a trap: val mean IoU is 0.267 against test 0.559,
+*matching training-time val exactly* — three courses is a poor jury, not a
+broken harness. Model selection continues to lean on green IoU, and
+conclusions on the 163-patch test set.
+
