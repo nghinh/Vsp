@@ -34,6 +34,8 @@ import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vsp_mobile/app.dart';
 import 'package:vsp_mobile/features/basemap/data/basemap_config_service.dart';
+import 'package:vsp_mobile/features/hole_map/presentation/widgets/layer_toggle_panel.dart';
+import 'package:vsp_mobile/presentation/widgets/score/quick_score_strip.dart';
 
 import 'tour_support.dart';
 
@@ -295,12 +297,24 @@ Future<void> _playEighteen(WidgetTester tester) async {
     // which is why they are placed this way; it also means the tour has to
     // open the row before it can press anything.
     final label = RegExp('^${RegExp.escape(caption)} ');
-    if (find.bySemanticsLabel(label).evaluate().isEmpty) {
+    // Opened only when it is shut. The row is a toggle and it stays open after
+    // a score, so tapping it unconditionally closed it on every second hole —
+    // which is why the run reported "no Bogey button" for holes 2, 4, 6, 8 and
+    // so on, in exactly that pattern. The strip's own presence is the signal;
+    // the semantics label is not, because the hole header says "Par 4" too.
+    if (find.byType(QuickScoreStrip).evaluate().isEmpty) {
       await tapIfPresent(tester, find.text(_golfer));
       await tester.pumpAndSettle(const Duration(milliseconds: 600));
     }
 
-    final button = find.bySemanticsLabel(label);
+    // Scoped to the strip. The hole header prints "Par 4" as well, so an
+    // unscoped semantics match finds the heading first — and tapping a heading
+    // records nothing while reporting nothing. That is where the eight missing
+    // holes went: eighteen taps, ten of them on a title.
+    final button = find.descendant(
+      of: find.byType(QuickScoreStrip),
+      matching: find.bySemanticsLabel(label),
+    );
     if (button.evaluate().isEmpty) {
       _missed.add('hole $hole — no "$caption" button');
     } else {
@@ -331,6 +345,78 @@ Future<void> _playEighteen(WidgetTester tester) async {
   }
 
   describe('the 18th', ['Hố 18', 'Hole 18']);
+}
+
+
+/// The three things this app does that a scorecard app does not.
+///
+/// Each lives behind a control the tours had never pressed, so none of them
+/// had ever been photographed: the club plan behind a button on the
+/// photograph, the strategy book and the games sheet behind two icons in the
+/// scorecard's app bar, and the layer control behind the count in the corner
+/// of the drawn map.
+Future<void> _theThreeFeatures(WidgetTester tester) async {
+  // 1 — What to hit. Reads the golfer's own carry distances out of their bag.
+  //
+  // The button lives on the photograph, and the Map tab opens on whichever
+  // basemap the golfer last used — so the tab has to be put into satellite
+  // before the button exists to be pressed.
+  await tapAny(tester, ['Bản đồ']);
+  await tester.pumpAndSettle(const Duration(seconds: 3));
+  if (await tapIfPresent(
+    tester,
+    find.bySemanticsLabel('Chuyển sang công cụ đo khoảng cách'),
+  )) {
+    await tester.pumpAndSettle(const Duration(seconds: 4));
+  }
+  if (await tapIfPresent(tester, find.text('Gợi ý chia gậy'))) {
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await shoot(tester, '27-chia-gay');
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+    // Back onto the map tab explicitly: the sheet pops onto whatever was
+    // under it, and "whatever was under it" is not a thing to navigate from.
+    await tapAny(tester, ['Bản đồ']);
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+  } else {
+    _missed.add('27-chia-gay (không thấy nút gợi ý chia gậy)');
+  }
+
+  // 2 — What is on the ground. The layer control names every shape the
+  // package carries for this hole.
+  await tester.pumpAndSettle(const Duration(seconds: 2));
+  await _toCourseMap(tester, '28-ban-do-lop');
+  if (await tapIfPresent(tester, find.byType(LayerTogglePanel))) {
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await shoot(tester, '29-lop-du-lieu');
+  } else {
+    _missed.add('24-lop-du-lieu (không mở được bảng lớp)');
+  }
+
+  // 3 — The strategy book, and the games sheet where handicap, skins and team
+  // formats are settled.
+  await tapAny(tester, ['Điểm']);
+  await tester.pumpAndSettle(const Duration(seconds: 2));
+  if (await tapIfPresent(tester, find.byKey(const Key('scorecard_strategy')))) {
+    await tester.pumpAndSettle(const Duration(seconds: 4));
+    await shoot(tester, '30-so-chien-thuat');
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } else {
+    _missed.add('25-so-chien-thuat (không thấy sổ chiến thuật)');
+  }
+
+  if (await tapIfPresent(tester, find.byKey(const Key('scorecard_games')))) {
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await shoot(tester, '31-chia-do');
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } else {
+    _missed.add('26-chia-do (không mở được chia độ)');
+  }
+
+  await tapAny(tester, ['Điểm']);
+  await tester.pumpAndSettle(const Duration(seconds: 2));
 }
 
 Future<void> _finish(WidgetTester tester) async {
@@ -426,6 +512,7 @@ void main() {
 
     await _setUpTheRound(tester);
     await _theScreensOfAHole(tester);
+    await _theThreeFeatures(tester);
     await _playEighteen(tester);
     await _finish(tester);
 

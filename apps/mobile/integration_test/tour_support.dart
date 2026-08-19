@@ -45,7 +45,7 @@ final List<String> _frames = [];
 final List<String> repeatedFrames = [];
 
 Future<void> shoot(WidgetTester tester, String name) async {
-  await tester.pumpAndSettle(const Duration(milliseconds: 500));
+  await settle(tester, const Duration(seconds: 3));
   // Converted before every shot, not once at the start. Converting once was
   // tried and produced twelve blank PNGs.
   //
@@ -54,7 +54,7 @@ Future<void> shoot(WidgetTester tester, String name) async {
   // it. That was misdiagnosed once as "MapLibre platform views cannot be
   // captured", which may also be true and was not what was happening.
   await binding.convertFlutterSurfaceToImage();
-  await tester.pumpAndSettle();
+  await settle(tester, const Duration(seconds: 3));
   final bytes = await binding.takeScreenshot(name);
   final file = File('$tourOutputDir/$name.png');
   await file.create(recursive: true);
@@ -93,6 +93,33 @@ void expectTheTourMoved() {
   );
 }
 
+
+/// Waits for the screen to stop moving, and says whether it ever did.
+///
+/// ─── Why not `pumpAndSettle` ──────────────────────────────────────────────
+///
+/// `pumpAndSettle` throws when the frames never stop coming, which is exactly
+/// what a screen stuck on a spinner does — so a single hung screen ended the
+/// whole sweep at its second step, and the twenty-odd screens after it went
+/// unexamined. A hung screen is a finding, not a reason to stop looking.
+///
+/// Returns false when the timeout was reached. The caller decides whether that
+/// is worth writing down; either way the run goes on.
+Future<bool> settle(
+  WidgetTester tester, [
+  Duration timeout = const Duration(seconds: 6),
+]) async {
+  try {
+    await tester.pumpAndSettle(const Duration(milliseconds: 100), EnginePhase.sendSemanticsUpdate, timeout);
+    return true;
+  } catch (_) {
+    // Still animating. Give it one more frame so the tree is consistent, and
+    // carry on with whatever is on screen now.
+    await tester.pump(const Duration(milliseconds: 400));
+    return false;
+  }
+}
+
 /// Taps the first match if there is one, and reports when there is not — a
 /// tour that silently stops halfway is worse than one that says where it got.
 ///
@@ -126,11 +153,11 @@ Future<bool> tapIfPresent(WidgetTester tester, Finder finder) async {
   // not, and asking to scroll to it throws.
   try {
     await tester.ensureVisible(target);
-    await tester.pumpAndSettle(const Duration(milliseconds: 300));
+    await settle(tester, const Duration(seconds: 2));
   } catch (_) {}
 
   await tester.tap(target, warnIfMissed: false);
-  await tester.pumpAndSettle(const Duration(milliseconds: 800));
+  await settle(tester, const Duration(seconds: 6));
   return true;
 }
 
@@ -162,7 +189,7 @@ Future<void> popBack(WidgetTester tester) async {
     final nav = (element as StatefulElement).state as NavigatorState;
     if (nav.canPop()) {
       nav.pop();
-      await tester.pumpAndSettle(const Duration(milliseconds: 800));
+      await settle(tester, const Duration(seconds: 4));
       return;
     }
   }
@@ -246,9 +273,9 @@ Future<void> signIn(
   }
 
   await tester.enterText(fields.at(0), email);
-  await tester.pumpAndSettle();
+  await settle(tester, const Duration(seconds: 2));
   await tester.enterText(fields.at(1), password);
-  await tester.pumpAndSettle();
+  await settle(tester, const Duration(seconds: 2));
   if (shotPrefix != null) await shoot(tester, '$shotPrefix-credentials');
 
   // The button, not the sheet's heading — "Đăng nhập" is both, and
@@ -258,5 +285,5 @@ Future<void> signIn(
       break;
     }
   }
-  await tester.pumpAndSettle(const Duration(seconds: 6));
+  await settle(tester, const Duration(seconds: 12));
 }

@@ -23,7 +23,24 @@ class CorrectionListScreen extends StatefulWidget {
   /// Optional course ID to filter corrections by course.
   final String? courseId;
 
-  const CorrectionListScreen({super.key, this.courseId});
+  /// Where the reports are read from.
+  ///
+  /// Optional, and it has to be: this screen is opened from two places that do
+  /// not resemble each other. Inside a round it sits under a
+  /// `RepositoryProvider<CourseCorrectionRepository>` that the round builds;
+  /// from the More menu it is pushed on its own, with nothing above it — and
+  /// `context.read` on a provider that is not there does not degrade, it
+  /// throws:
+  ///
+  ///     Could not find the correct Provider<CourseCorrectionRepository>
+  ///     above this CorrectionListScreen Widget
+  ///
+  /// So "Báo lỗi dữ liệu của tôi" opened onto a crash for every golfer who was
+  /// not in the middle of a round. Found by the screen-by-screen sweep; no
+  /// test had ever opened this screen from the menu it lives in.
+  final CourseCorrectionRepository? repository;
+
+  const CorrectionListScreen({super.key, this.courseId, this.repository});
 
   @override
   State<CorrectionListScreen> createState() => _CorrectionListScreenState();
@@ -35,10 +52,22 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
   @override
   void initState() {
     super.initState();
-    _bloc = CorrectionListBloc(
-      repository: context.read<CourseCorrectionRepository>(),
-    );
+    _bloc = CorrectionListBloc(repository: _resolveRepository());
     _bloc.add(LoadCorrections(courseId: widget.courseId));
+  }
+
+  /// The injected repository, the one a round provides, or a fresh one.
+  ///
+  /// In that order, and the last step is the point: a screen reachable from a
+  /// menu cannot depend on a provider that only a round installs.
+  CourseCorrectionRepository _resolveRepository() {
+    final given = widget.repository;
+    if (given != null) return given;
+    try {
+      return context.read<CourseCorrectionRepository>();
+    } catch (_) {
+      return CourseCorrectionRepositoryImpl();
+    }
   }
 
   @override
@@ -93,7 +122,11 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
         ),
         body: BlocBuilder<CorrectionListBloc, CorrectionListState>(
           builder: (context, state) {
-            if (state is CorrectionListLoading) {
+            // Initial is the first frame, before the bloc has processed the
+            // load this screen queued in initState. It is not "no data" — it
+            // is "not yet" — so it draws the same spinner as loading.
+            if (state is CorrectionListInitial ||
+                state is CorrectionListLoading) {
               return Center(
                 child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
               );
@@ -155,7 +188,21 @@ class _CorrectionListScreenState extends State<CorrectionListScreen> {
               );
             }
 
-            final corrections = (state as CorrectionListLoaded).corrections;
+            // Not a cast. Every state above is handled by name, and this used
+            // to assume whatever was left had to be Loaded — which threw on
+            // the first frame, when the state is Initial:
+            //
+            //     type 'CorrectionListInitial' is not a subtype of type
+            //     'CorrectionListLoaded' in type cast
+            //
+            // A state added later would land here the same way, so the guard
+            // stays even though Initial is handled above.
+            if (state is! CorrectionListLoaded) {
+              return Center(
+                child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+              );
+            }
+            final corrections = state.corrections;
 
             return RefreshIndicator(
               onRefresh: () async {

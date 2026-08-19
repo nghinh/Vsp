@@ -58,6 +58,17 @@ xcrun simctl bootstatus "$DEVICE" -b >/dev/null 2>&1 || true
 echo "==> standing the golfer on the first tee at $LAT,$LNG"
 xcrun simctl location "$DEVICE" set "$LAT,$LNG"
 
+# Granted once, here, before the test launches the app.
+#
+# Not in a loop: `simctl privacy` terminates the running app every time it is
+# called, so re-granting every few seconds killed the app on a three-second
+# cycle and the run never got past its first screen. The grant survives a
+# reinstall, so once — before anything starts — is both enough and the only
+# safe moment.
+BUNDLE="vnpt.vsp.vspMobile"
+xcrun simctl privacy "$DEVICE" grant location-always "$BUNDLE" >/dev/null 2>&1 || true
+xcrun simctl privacy "$DEVICE" grant photos "$BUNDLE" >/dev/null 2>&1 || true
+
 # The eighteen holes of Đường A then Đường B, each the middle of its own
 # corridor — tee, fairway and green averaged from the published packages.
 #
@@ -99,8 +110,8 @@ walk_with_the_tour() {
 
 walk_with_the_tour &
 WALKER=$!
-# The walker outlives a failed test otherwise, and a stray process moving a
-# simulator around is a confusing thing to leave behind.
+# Both helpers outlive a failed test otherwise, and stray processes moving a
+# simulator around are a confusing thing to leave behind.
 trap 'kill "$WALKER" 2>/dev/null || true' EXIT
 
 echo "==> playing eighteen in $THEME against $API_BASE_URL"
