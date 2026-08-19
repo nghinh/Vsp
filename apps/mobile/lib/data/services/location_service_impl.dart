@@ -97,6 +97,32 @@ class LocationServiceImpl implements LocationService {
     _samplingTimer = null;
   }
 
+  /// Nothing on this path waits for ever.
+  ///
+  /// ─── Why there is a clock on asking for permission ────────────────────────
+  ///
+  /// `requestPermission()` resolves when the golfer answers the system dialog,
+  /// and there is no rule that says they ever will: they can leave it on
+  /// screen, or the platform channel can stall, and the await simply never
+  /// completes. Everything upstream then waits with it.
+  ///
+  /// What that looks like: the "Gần đây" tab of the course list spinning on
+  /// "Đang tìm sân gần bạn…" with no timeout, no error, and no way out but
+  /// leaving the screen. The bloc above it says in a comment "Never leave the
+  /// tab spinning: a denied/disabled/timed-out fix emits an error state" — and
+  /// it kept that promise for the fix itself, which carries a ten second
+  /// limit, and not for the permission request in front of it.
+  ///
+  /// Found by the screen-by-screen sweep, which sat on that tab for
+  /// twenty-five seconds and photographed it still turning.
+  static const permissionTimeout = Duration(seconds: 20);
+
+  /// The outer bound on getting a fix.
+  ///
+  /// `LocationSettings.timeLimit` is the platform's own, and it is the one
+  /// that usually fires. This is the one that fires when it does not.
+  static const fixTimeout = Duration(seconds: 15);
+
   @override
   Future<bool> isLocationAvailable() async {
     try {
@@ -105,7 +131,11 @@ class LocationServiceImpl implements LocationService {
 
       var permission = await _geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
-        permission = await _geolocator.requestPermission();
+        // Unanswered is not granted. A golfer who ignores the dialog gets the
+        // same answer as one who says no, and the screen behind it moves on.
+        permission = await _geolocator
+            .requestPermission()
+            .timeout(permissionTimeout, onTimeout: () => LocationPermission.denied);
       }
       return permission == LocationPermission.always ||
           permission == LocationPermission.whileInUse;
@@ -122,12 +152,16 @@ class LocationServiceImpl implements LocationService {
     }
 
     try {
-      final position = await _geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.best,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
+      final position = await _geolocator
+          .getCurrentPosition(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.best,
+              timeLimit: Duration(seconds: 10),
+            ),
+          )
+          // Belt as well as braces: the setting above is the platform's own
+          // limit and it does not fire on every platform.
+          .timeout(fixTimeout);
       return _qualify(position);
     } catch (_) {
       return QualifiedLocation.unavailable();

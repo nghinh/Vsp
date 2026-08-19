@@ -58,14 +58,27 @@ xcrun simctl bootstatus "$DEVICE" -b >/dev/null 2>&1 || true
 echo "==> standing the golfer on the first tee at $LAT,$LNG"
 xcrun simctl location "$DEVICE" set "$LAT,$LNG"
 
-# Granted once, here, before the test launches the app.
-#
-# Not in a loop: `simctl privacy` terminates the running app every time it is
-# called, so re-granting every few seconds killed the app on a three-second
-# cycle and the run never got past its first screen. The grant survives a
-# reinstall, so once — before anything starts — is both enough and the only
-# safe moment.
 BUNDLE="vnpt.vsp.vspMobile"
+# Install first, *then* grant — in that order, and it has to be that order.
+#
+# `flutter test` uninstalls the app when it finishes, so a grant issued before
+# the run is aimed at a bundle that is not on the device. simctl accepts it,
+# exits zero, and records nothing; the next run installs a fresh app with no
+# TCC entry, and iOS raises its permission alert and waits for a human. That is
+# what "vẫn phải bấm" was.
+#
+# Building the simulator app here is cheap — the test needs the same build, so
+# it comes out of the cache — and it gives simctl something real to grant
+# against. The TCC entry then survives the reinstall the test does.
+echo "==> installing the app so the permission grant has somewhere to land"
+if [ -f tool/dev.env ]; then set -a; . tool/dev.env; set +a; fi
+flutter build ios --simulator --debug \
+  --dart-define=VSP_API_BASE_URL="$API_BASE_URL" \
+  ${GOOGLE_SERVER_CLIENT_ID:+--dart-define=GOOGLE_SERVER_CLIENT_ID="$GOOGLE_SERVER_CLIENT_ID"} \
+  >/dev/null 2>&1 || echo "   (build failed; the test will build its own)" >&2
+if [ -d build/ios/iphonesimulator/Runner.app ]; then
+  xcrun simctl install "$DEVICE" build/ios/iphonesimulator/Runner.app >/dev/null 2>&1 || true
+fi
 xcrun simctl privacy "$DEVICE" grant location-always "$BUNDLE" >/dev/null 2>&1 || true
 xcrun simctl privacy "$DEVICE" grant photos "$BUNDLE" >/dev/null 2>&1 || true
 

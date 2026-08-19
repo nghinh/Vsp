@@ -117,10 +117,14 @@ Future<void> check(
   // its own. The nearby-courses tab asks the device for a fix with a ten
   // second limit and shows a spinner until it answers; a sweep with a shorter
   // budget than that files the app's patience as a hang. It did once.
-  final settled = await settle(tester, const Duration(seconds: 15));
+  // Twenty-five seconds. The longest thing the app waits for on its own is a
+  // GPS fix, capped at ten, and every failure path there emits an error state
+  // rather than leaving a spinner up. Anything still animating at 25s is
+  // therefore the app breaking its own promise, not the app being patient.
+  final settled = await settle(tester, const Duration(seconds: 25));
   if (!settled) {
     _findings.add(
-      _Finding(screen, 'QUAY MÃI', 'không dừng hoạt ảnh sau 15 giây'),
+      _Finding(screen, 'QUAY MÃI', 'không dừng hoạt ảnh sau 25 giây'),
     );
   }
 
@@ -171,6 +175,158 @@ Future<void> check(
 /// is what notices.
 Future<void> tap(WidgetTester tester, List<String> labels) async {
   await tapAny(tester, labels);
+}
+
+
+/// Exercises what the screens *do*, not just that they open.
+///
+/// Opening a screen proves it does not crash. It says nothing about whether
+/// the switch on it switches anything — and a settings screen that paints
+/// perfectly while changing nothing is a bug a screen-by-screen pass cannot
+/// see. Each check below performs an action and then looks for the effect.
+Future<void> _functions(WidgetTester tester) async {
+  // ── The palette actually changes ────────────────────────────────────────
+  await tap(tester, ['Thêm']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Cài đặt']);
+  await settle(tester, const Duration(seconds: 2));
+
+  // Read from *inside* the app, not at the MaterialApp itself. `Theme.of` at
+  // the MaterialApp's own element returns the theme inherited from above it —
+  // Flutter's default, which is light — so the check reported "chọn Tối, app
+  // vẫn light" while the screenshot showed a correctly dark screen. A
+  // measurement that is wrong in one direction only is the worst kind.
+  Brightness palette() =>
+      Theme.of(tester.element(find.byType(Scaffold).first)).brightness;
+
+  final started = palette();
+  await tap(tester, ['Sáng']);
+  await settle(tester, const Duration(seconds: 2));
+  if (palette() != Brightness.light) {
+    _findings.add(
+      _Finding('50-giao-dien-sang', 'KHÔNG ĐỔI', 'chọn Sáng, app vẫn ${palette().name}'),
+    );
+  }
+  // The app-bar title, not the section heading: choosing a palette rebuilds
+  // the list and "Giao diện" scrolls out of view, which is not a defect.
+  await check(tester, '50-giao-dien-sang', landmarks: ['Cài đặt', 'Settings']);
+
+  await tap(tester, ['Tối']);
+  await settle(tester, const Duration(seconds: 2));
+  if (palette() != Brightness.dark) {
+    _findings.add(
+      _Finding('51-giao-dien-toi', 'KHÔNG ĐỔI', 'chọn Tối, app vẫn ${palette().name}'),
+    );
+  }
+  debugPrint('UAT: giao diện $started → ${palette().name}');
+
+  // ── The language actually changes ───────────────────────────────────────
+  await tap(tester, ['English']);
+  await settle(tester, const Duration(seconds: 3));
+  if (find.textContaining('Settings').evaluate().isEmpty &&
+      find.textContaining('Appearance').evaluate().isEmpty) {
+    _findings.add(
+      _Finding('52-ngon-ngu', 'KHÔNG ĐỔI', 'chọn English, màn hình vẫn tiếng Việt'),
+    );
+  }
+  await check(tester, '52-ngon-ngu', landmarks: ['Settings', 'Appearance', 'Cài đặt']);
+
+  await tapAny(tester, ['Tiếng Việt']);
+  await settle(tester, const Duration(seconds: 3));
+  if (find.textContaining('Cài đặt').evaluate().isEmpty &&
+      find.textContaining('Giao diện').evaluate().isEmpty) {
+    _findings.add(
+      _Finding('53-ngon-ngu-ve', 'KHÔNG ĐỔI', 'chọn Tiếng Việt, không trở lại được'),
+    );
+  }
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+
+  // ── Searching without diacritics, which is how people type ──────────────
+  await tap(tester, ['Sân golf']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Tất cả']);
+  await settle(tester, const Duration(seconds: 2));
+  final box = find.byType(TextField);
+  if (box.evaluate().isEmpty) {
+    _findings.add(_Finding('54-tim-khong-dau', 'THIẾU', 'không có ô tìm kiếm'));
+  } else {
+    await tester.enterText(box.first, 'long bien');
+    await settle(tester, const Duration(seconds: 4));
+    if (find.textContaining('Long Biên').evaluate().isEmpty) {
+      _findings.add(
+        _Finding('54-tim-khong-dau', 'KHÔNG TÌM THẤY',
+            'gõ "long bien" không ra Long Biên'),
+      );
+    }
+    await check(tester, '54-tim-khong-dau', landmarks: ['Long Biên', 'Tìm sân']);
+    await tester.enterText(box.first, '');
+    await settle(tester, const Duration(seconds: 3));
+  }
+}
+
+
+/// A second round of functions, on things the first pass only opened.
+///
+/// Each of these performs the action a golfer performs and then looks for the
+/// consequence — a club listed, a course in Favourites, a note that saved, a
+/// distance that appeared. A screen can open perfectly and do none of them.
+Future<void> _moreFunctions(WidgetTester tester) async {
+  // ── Marking a course as a favourite puts it in Favourites ───────────────
+  await tap(tester, ['Sân golf']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Tất cả']);
+  await settle(tester, const Duration(seconds: 3));
+
+  final hearts = find.byIcon(Icons.favorite_border);
+  final firstCourse = find.byType(Card).evaluate().isEmpty
+      ? null
+      : find.byType(Card).first;
+  if (hearts.evaluate().isEmpty) {
+    _findings.add(_Finding('60-yeu-thich', 'THIẾU', 'không thấy nút yêu thích'));
+  } else {
+    await tester.tap(hearts.first, warnIfMissed: false);
+    await settle(tester, const Duration(seconds: 3));
+    await tap(tester, ['Yêu thích']);
+    await settle(tester, const Duration(seconds: 3));
+    if (find.byType(Card).evaluate().isEmpty &&
+        find.textContaining('Golf').evaluate().isEmpty) {
+      _findings.add(
+        _Finding('60-yeu-thich', 'KHÔNG LƯU',
+            'đánh dấu yêu thích xong, tab Yêu thích vẫn trống'),
+      );
+    }
+    await check(tester, '60-yeu-thich', landmarks: ['Yêu thích']);
+    // Put it back, so the sweep does not leave the account changed.
+    await tap(tester, ['Tất cả']);
+    await settle(tester, const Duration(seconds: 3));
+    final filled = find.byIcon(Icons.favorite);
+    if (filled.evaluate().isNotEmpty) {
+      await tester.tap(filled.first, warnIfMissed: false);
+      await settle(tester, const Duration(seconds: 2));
+    }
+  }
+  if (firstCourse != null) debugPrint('UAT: yêu thích đã thử');
+
+  // ── A bag actually lists its clubs ──────────────────────────────────────
+  await tap(tester, ['Thêm']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Túi gậy của tôi']);
+  await settle(tester, const Duration(seconds: 3));
+  await tapIfPresent(tester, find.textContaining('My Bag'));
+  await settle(tester, const Duration(seconds: 3));
+  if (find.textContaining('Driver').evaluate().isEmpty &&
+      find.textContaining('Gậy').evaluate().isEmpty) {
+    _findings.add(
+      _Finding('61-tui-gay-chi-tiet', 'TRỐNG',
+          'mở túi gậy 14 gậy nhưng không thấy gậy nào'),
+    );
+  }
+  await check(tester, '61-tui-gay-chi-tiet', landmarks: ['Driver', 'Gậy', 'Túi gậy']);
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
 }
 
 Future<void> _tabs(WidgetTester tester) async {
@@ -320,6 +476,23 @@ Future<void> _round(WidgetTester tester) async {
   await tapIfPresent(tester, find.byKey(const Key('scorecard_hole_history')));
   await settle(tester, const Duration(seconds: 2));
   await check(tester, '41-ghi-chu-ho', landmarks: ['Ghi chú', 'Lịch sử']);
+
+  // Typing a note and saving it, which is the only thing this sheet is for.
+  final noteField = find.byKey(const Key('hole_note_field'));
+  if (noteField.evaluate().isEmpty) {
+    _findings.add(_Finding('41-ghi-chu-ho', 'THIẾU', 'không có ô ghi chú'));
+  } else {
+    await tester.enterText(noteField.first, 'Gió ngược, lấy thêm một gậy.');
+    await settle(tester, const Duration(seconds: 2));
+    final save = find.byKey(const Key('hole_note_save'));
+    if (save.evaluate().isEmpty) {
+      _findings.add(_Finding('41-ghi-chu-ho', 'THIẾU', 'không có nút lưu'));
+    } else {
+      await tester.tap(save.first, warnIfMissed: false);
+      await settle(tester, const Duration(seconds: 5));
+      await check(tester, '41b-ghi-chu-da-luu', landmarks: ['Ghi chú', 'Lịch sử', 'Hố']);
+    }
+  }
   await popBack(tester);
 
   // Finish, so the sweep does not leave a round open on the server.
@@ -381,6 +554,8 @@ void main() {
 
     await _tabs(tester);
     await _fromMore(tester);
+    await _functions(tester);
+    await _moreFunctions(tester);
     await _round(tester);
 
     // ── The report ────────────────────────────────────────────────────────
