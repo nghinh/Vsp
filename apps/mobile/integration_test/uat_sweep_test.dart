@@ -623,6 +623,86 @@ Future<void> _abandonARound(WidgetTester tester) async {
   }
 }
 
+
+/// The last two corners nothing had touched: the golfer's own profile, and the
+/// privacy screen.
+///
+/// Nothing here submits a privacy request and nothing goes near deleting an
+/// account or a round. The dialog is opened to prove it builds and then
+/// dismissed — a sweep that exercised the destructive half would be a sweep
+/// nobody could run twice.
+Future<void> _profileAndPrivacy(WidgetTester tester) async {
+  // ── Metres and yards, and the labels that follow them ───────────────────
+  await tap(tester, ['Hồ sơ']);
+  await settle(tester, const Duration(seconds: 3));
+
+  // Scrolled to first. The profile page opens on the stats card and the unit
+  // picker is further down a lazy list, so it is not merely off-screen — it
+  // has not been built, and `find.text` cannot find what does not exist yet.
+  // The step reported "không thấy nút chọn Mét/Yard" against a control that
+  // was simply below the fold.
+  final scrollable = find.byType(Scrollable);
+  if (scrollable.evaluate().isNotEmpty) {
+    for (var i = 0; i < 6; i++) {
+      if (find.text('Yard').evaluate().isNotEmpty) break;
+      await tester.drag(scrollable.first, const Offset(0, -400));
+      await settle(tester, const Duration(seconds: 1));
+    }
+  }
+
+  final yards = find.text('Yard');
+  final metres = find.text('Mét');
+  if (yards.evaluate().isEmpty || metres.evaluate().isEmpty) {
+    _findings.add(
+      _Finding('95-doi-don-vi', 'THIẾU', 'không thấy nút chọn Mét/Yard'),
+    );
+  } else {
+    await tester.tap(yards.first, warnIfMissed: false);
+    await settle(tester, const Duration(seconds: 3));
+    // The driver-distance field is labelled with the unit in force, so the
+    // label is the consequence: picking yards and being shown metres would be
+    // a picker that paints and does nothing.
+    if (find.textContaining('Yard').evaluate().isEmpty) {
+      _findings.add(
+        _Finding('95-doi-don-vi', 'KHÔNG ĐỔI',
+            'chọn Yard nhưng nhãn cự ly không đổi theo'),
+      );
+    }
+    await check(tester, '95-doi-don-vi', landmarks: ['Hồ sơ', 'Đơn vị']);
+
+    await tester.tap(metres.first, warnIfMissed: false);
+    await settle(tester, const Duration(seconds: 3));
+    if (find.textContaining('Mét').evaluate().isEmpty) {
+      _findings.add(
+        _Finding('96-don-vi-ve-met', 'KHÔNG ĐỔI', 'không quay lại Mét được'),
+      );
+    }
+  }
+
+  // ── The privacy request dialog, opened and closed ───────────────────────
+  await tap(tester, ['Thêm']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Bảo mật']);
+  await settle(tester, const Duration(seconds: 3));
+
+  if (!await tapAny(tester, ['Yêu cầu mới'])) {
+    _findings.add(
+      _Finding('97-yeu-cau-rieng-tu', 'THIẾU', 'không thấy nút Yêu cầu mới'),
+    );
+  } else {
+    await settle(tester, const Duration(seconds: 2));
+    await check(tester, '97-yeu-cau-rieng-tu',
+        landmarks: ['Yêu cầu', 'Xuất dữ liệu', 'Xoá']);
+    // Out, without submitting anything.
+    if (!await tapAny(tester, ['Huỷ', 'Hủy', 'Đóng'])) {
+      await popBack(tester);
+    }
+    await settle(tester, const Duration(seconds: 2));
+  }
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+}
+
 Future<void> _tabs(WidgetTester tester) async {
   await tap(tester, ['Sân golf']);
   await check(tester, '10-san-golf', landmarks: ['Tìm sân golf']);
@@ -927,6 +1007,7 @@ void main() {
       await _moreFunctions(tester);
       await _deepFunctions(tester);
       await _bagEditing(tester);
+      await _profileAndPrivacy(tester);
       await _round(tester);
       await _abandonARound(tester);
     }
