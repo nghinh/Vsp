@@ -67,23 +67,76 @@ class DiceLoss(nn.Module):
         return 1.0 - dice[present].mean()
 
 
+class LovaszSoftmaxLoss(nn.Module):
+    """The Lovász extension of the IoU loss (Berman et al., CVPR 2018).
+
+    Dice approximates overlap; this optimises the IoU surrogate directly, by
+    sorting each class's prediction errors and weighting them with the
+    gradient of the Jaccard set function. In practice it moves exactly the
+    metric this project reports, and it is strongest late in training when
+    cross-entropy has plateaued — which is why it arrives as an extra term
+    with its own weight rather than a replacement.
+
+    Ignore-aware the same way everything here is: an unmapped bunker costs
+    nothing.
+    """
+
+    def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        probabilities = F.softmax(logits, dim=1)
+        batch, classes, _, _ = probabilities.shape
+        flat = probabilities.permute(0, 2, 3, 1).reshape(-1, classes)
+        labels = target.reshape(-1)
+        valid = labels != IGNORE_INDEX
+        if not valid.any():
+            return logits.sum() * 0.0
+        flat, labels = flat[valid], labels[valid]
+
+        losses = []
+        for index in range(classes):
+            foreground = (labels == index).float()
+            if foreground.sum() == 0:
+                continue   # absent classes are the metric's business, not ours
+            errors = (foreground - flat[:, index]).abs()
+            errors_sorted, order = torch.sort(errors, descending=True)
+            sorted_foreground = foreground[order]
+
+            intersection = sorted_foreground.sum() - sorted_foreground.cumsum(0)
+            union = sorted_foreground.sum() + (1 - sorted_foreground).cumsum(0)
+            jaccard = 1.0 - intersection / union
+            if jaccard.numel() > 1:
+                jaccard[1:] = jaccard[1:] - jaccard[:-1]
+            losses.append((errors_sorted * jaccard).sum())
+        if not losses:
+            return logits.sum() * 0.0
+        return torch.stack(losses).mean()
+
+
 class GolfSegLoss(nn.Module):
-    """Weighted cross-entropy plus a Dice term, the two summed.
+    """Weighted cross-entropy plus a Dice term, with Lovász available.
 
     The mix (``dice_weight``) is a knob, not a truth. Cross-entropy alone
     gives sharp boundaries and ignores the rare classes; Dice alone chases
     overlap and produces blobby edges. For a rangefinder the boundary is what
-    a golfer feels, so cross-entropy leads and Dice supports.
+    a golfer feels, so cross-entropy leads and Dice supports. Lovász, off by
+    default, optimises the reported IoU directly and earns its keep late in
+    training; it is compared against the default across seeds rather than
+    assumed better.
     """
 
     def __init__(self, num_classes: int, class_weights: torch.Tensor | None = None,
-                 dice_weight: float = 0.5):
+                 dice_weight: float = 0.5, lovasz_weight: float = 0.0):
         super().__init__()
         self.cross_entropy = nn.CrossEntropyLoss(
             weight=class_weights, ignore_index=IGNORE_INDEX)
         self.dice = DiceLoss(num_classes)
+        self.lovasz = LovaszSoftmaxLoss()
         self.dice_weight = dice_weight
+        self.lovasz_weight = lovasz_weight
 
     def forward(self, logits: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return (self.cross_entropy(logits, target)
-                + self.dice_weight * self.dice(logits, target))
+        loss = self.cross_entropy(logits, target)
+        if self.dice_weight:
+            loss = loss + self.dice_weight * self.dice(logits, target)
+        if self.lovasz_weight:
+            loss = loss + self.lovasz_weight * self.lovasz(logits, target)
+        return loss

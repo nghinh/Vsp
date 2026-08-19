@@ -46,6 +46,24 @@ NIR_ABSENT = 0.0
 #: paths to work.
 NIR_DROPOUT = 0.5
 
+#: The classes worth copying, because they are the classes the loss starves
+#: on. Tees are 0.67% of labelled pixels, greens 1.45%, bunkers 2.2% — a
+#: batch can go by without a single tee in it, and tee_box is the worst class
+#: in every checkpoint this project has trained (IoU 0.19–0.22). Fairway and
+#: water need no help: they are a third of the pixels between them.
+COPY_PASTE_CLASSES = (1, 3, 4)  # tee_box, green, bunker
+
+#: How often a training patch has instances pasted into it, and how many.
+#:
+#: Copy-paste (Ghiasi et al.) is the cheapest known remedy for rare-class
+#: starvation: cut a real instance out of one patch, put it down in another,
+#: and the mask moves with it, so the label is exact by construction. The
+#: paste is deliberately unblended — the paper measured feathering and found
+#: it buys nothing — and the ordinary blur augmentation that follows softens
+#: a quarter of the collages anyway.
+COPY_PASTE_PROBABILITY = 0.5
+COPY_PASTE_MAX_INSTANCES = 3
+
 
 class GolfSegDataset(Dataset):
 
@@ -53,11 +71,18 @@ class GolfSegDataset(Dataset):
                  crop: int = 512, norm_mean=(0.485, 0.456, 0.406),
                  norm_std=(0.229, 0.224, 0.225),
                  nir_mean: float = 0.45, nir_std: float = 0.22,
-                 nir_dropout: float = NIR_DROPOUT):
+                 nir_dropout: float = NIR_DROPOUT,
+                 copy_paste: float = COPY_PASTE_PROBABILITY):
         self.root = Path(root)
         self.split = split
         self.augment = augment
         self.crop = crop
+        self.copy_paste = copy_paste if augment else 0.0
+        #: (patch index, class index, bounding box) per rare instance —
+        #: references rather than pixels, so a big corpus costs a list and not
+        #: RAM. Built before the DataLoader forks its workers, so every worker
+        #: shares one bank instead of each reading every mask again.
+        self._instance_bank: list[tuple[int, int, tuple[int, int, int, int]]] = []
         self.mean = np.array(norm_mean, dtype=np.float32)
         self.std = np.array(norm_std, dtype=np.float32)
         self.nir_mean = nir_mean
@@ -76,6 +101,53 @@ class GolfSegDataset(Dataset):
 
         manifest = self.root / "manifest.json"
         self.manifest = json.loads(manifest.read_text()) if manifest.exists() else {}
+
+        if self.copy_paste > 0:
+            self._instance_bank = self._build_instance_bank()
+
+    def _build_instance_bank(self):
+        """Every rare-class instance in the split, as references.
+
+        One pass over the masks, cached beside the corpus: a thousand-patch
+        split is seconds, but the American corpus is seventy thousand, and
+        re-reading every mask at the start of every run is an hour nobody
+        gets back. The cache keys on the patch list so a rebuilt corpus
+        invalidates it.
+        """
+        import cv2
+
+        cache = self.root / f"instance-bank.{self.split}.json"
+        key = f"{len(self.items)}:{self.items[0].name}:{self.items[-1].name}"
+        if cache.exists():
+            stored = json.loads(cache.read_text())
+            if stored.get("key") == key:
+                return [tuple(entry[:2]) + (tuple(entry[2]),)
+                        for entry in stored["instances"]]
+
+        bank = []
+        for patch_index, image_path in enumerate(self.items):
+            mask = np.asarray(Image.open(self.mask_path(image_path)))
+            for class_index in COPY_PASTE_CLASSES:
+                of_class = (mask == class_index).astype(np.uint8)
+                if not of_class.any():
+                    continue
+                count, labels = cv2.connectedComponents(of_class, 8)
+                for component in range(1, count):
+                    ys, xs = np.nonzero(labels == component)
+                    # A sliver is not an instance worth teaching; a monster
+                    # would not fit anywhere it is pasted.
+                    if len(ys) < 40 or len(ys) > (self.crop * self.crop) // 4:
+                        continue
+                    bank.append((patch_index, class_index,
+                                 (int(ys.min()), int(xs.min()),
+                                  int(ys.max()) + 1, int(xs.max()) + 1)))
+        try:
+            cache.write_text(json.dumps(
+                {"key": key, "instances": [list(e[:2]) + [list(e[2])]
+                                           for e in bank]}))
+        except OSError:
+            pass  # a read-only corpus still trains, just slower to start
+        return bank
 
     def __len__(self) -> int:
         return len(self.items)
@@ -122,7 +194,67 @@ class GolfSegDataset(Dataset):
         return (image[window], mask[window],
                 None if nir is None else nir[window])
 
+    def _paste_instances(self, image, mask, nir=None):
+        """Rare instances from elsewhere in the split, put down here.
+
+        The image pixels, the mask pixels and the near-infrared move
+        together, so the label is exact by construction — the one property
+        that separates copy-paste from every synthetic-data scheme. Each
+        instance arrives with a random dihedral pose, lands anywhere it fits,
+        and covers whatever was under it, mask included; occlusion is part of
+        the method, and the mask stays truthful about it.
+        """
+        if not self._instance_bank:
+            return image, mask, nir
+        image = image.copy()
+        mask = mask.copy()
+        nir = None if nir is None else nir.copy()
+
+        for _ in range(random.randint(1, COPY_PASTE_MAX_INSTANCES)):
+            patch_index, class_index, (top, left, bottom, right) = \
+                random.choice(self._instance_bank)
+            source_path = self.items[patch_index]
+            source = np.asarray(Image.open(source_path).convert("RGB"))
+            source_mask = np.asarray(Image.open(self.mask_path(source_path)))
+            box = (slice(top, bottom), slice(left, right))
+            cut = source[box]
+            cut_mask = source_mask[box] == class_index
+            cut_nir = None
+            if nir is not None:
+                nir_file = self.nir_path(source_path)
+                if nir_file.exists():
+                    cut_nir = np.asarray(
+                        Image.open(nir_file).convert("L"))[box]
+
+            # A random pose, so a bank of west-facing tees does not teach a
+            # compass; same dihedral group as the patch augmentation.
+            turns = random.randint(0, 3)
+            if turns:
+                cut = np.rot90(cut, turns)
+                cut_mask = np.rot90(cut_mask, turns)
+                cut_nir = None if cut_nir is None else np.rot90(cut_nir, turns)
+            if random.random() < 0.5:
+                cut = cut[:, ::-1]
+                cut_mask = cut_mask[:, ::-1]
+                cut_nir = None if cut_nir is None else cut_nir[:, ::-1]
+
+            height, width = cut_mask.shape
+            if height >= mask.shape[0] or width >= mask.shape[1]:
+                continue
+            y = random.randint(0, mask.shape[0] - height)
+            x = random.randint(0, mask.shape[1] - width)
+            window = (slice(y, y + height), slice(x, x + width))
+            image[window][cut_mask] = cut[cut_mask]
+            mask[window][cut_mask] = class_index
+            if nir is not None and cut_nir is not None:
+                nir[window][cut_mask] = cut_nir[cut_mask]
+
+        return image, mask, nir
+
     def _augment(self, image, mask, nir=None):
+        if random.random() < self.copy_paste:
+            image, mask, nir = self._paste_instances(image, mask, nir)
+
         # Dihedral group: the eight flips and 90° rotations, which are the
         # only geometric transforms that keep a mask exact (no interpolation
         # inventing a class between two).

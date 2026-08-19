@@ -81,10 +81,17 @@ class TraceRequest(BaseModel):
 
 
 def _load():
-    """The trained GolfSeg, or a clear refusal.
+    """The trained GolfSeg — one weight or an ensemble — or a clear refusal.
 
     §4 and §52: an unavailable model is a 503 with a reason, never a crash and
     never a silently empty answer that reads as "this hole has no bunkers".
+
+    GOLF_SEG_CHECKPOINT takes one path, or several separated by colons; every
+    member answers every window and their probabilities are averaged
+    (golfvision.inference). Members may differ in input width. The metadata
+    reported on /health is the first member's — the primary — with the others
+    listed beside it, and the lineage union of all of them, because "may we
+    sell what this produces" is a question about every weight that voted.
     """
     global _model, _model_meta
     if _model is not None:
@@ -93,41 +100,55 @@ def _load():
     import torch
     from training.models import build_model
 
-    path = os.environ.get("GOLF_SEG_CHECKPOINT")
-    if not path or not Path(path).exists():
-        raise HTTPException(503, "GOLF_SEG_CHECKPOINT is not set or missing")
+    setting = os.environ.get("GOLF_SEG_CHECKPOINT", "")
+    paths = [p for p in setting.split(":") if p]
+    missing = [p for p in paths if not Path(p).exists()]
+    if not paths or missing:
+        raise HTTPException(503, "GOLF_SEG_CHECKPOINT is not set or missing"
+                            + (f": {', '.join(missing)}" if missing else ""))
 
-    state = torch.load(path, map_location="cpu", weights_only=False)
-    # How many channels this weight expects, read rather than assumed. The
-    # NAIP corpus made four the default — three colour bands and a
-    # near-infrared one that Esri tiles cannot supply — and a checkpoint from
-    # before that is still three. Guessing wrong fails at load with a shape
-    # error that reads like a corrupt file.
-    channels = state.get("inChannels", 3)
-    model = build_model(len(GOLF_SEG_LABELS),
-                        provider=state["args"].get("provider", "smp"),
-                        name=state["args"].get("model_name"),
-                        in_channels=channels)
-    model.load_state_dict(state["model"])
     device = torch.device(os.environ.get("GOLF_VISION_DEVICE")
                           or ("cuda" if torch.cuda.is_available() else "cpu"))
-    model.eval().to(device)
+    models, states = [], []
+    for path in paths:
+        state = torch.load(path, map_location="cpu", weights_only=False)
+        # How many channels this weight expects, read rather than assumed.
+        # The NAIP corpus made four the default — three colour bands and a
+        # near-infrared one that Esri tiles cannot supply — and a checkpoint
+        # from before that is still three. Guessing wrong fails at load with
+        # a shape error that reads like a corrupt file.
+        model = build_model(len(GOLF_SEG_LABELS),
+                            provider=state["args"].get("provider", "smp"),
+                            name=state["args"].get("model_name"),
+                            in_channels=state.get("inChannels", 3))
+        model.load_state_dict(state["model"])
+        model.eval().to(device)
+        models.append(model)
+        states.append(state)
 
-    _model = model
+    state = states[0]
+    lineage = [step for s in states for step in s.get("lineage", [])]
+    shippable = [s.get("shippable") for s in states]
+
+    _model = models
     _model_meta = {
-        "checkpoint": Path(path).name,
+        "checkpoint": Path(paths[0]).name,
+        "ensemble": [Path(p).name for p in paths] if len(paths) > 1 else None,
         "device": str(device),
         "provider": state["args"].get("provider"),
         "modelName": state["args"].get("model_name"),
-        "inChannels": channels,
+        "inChannels": max(m.in_channels for m in models),
         "trainedEpoch": state.get("epoch"),
-        "commercialOk": state.get("commercialOk", False),
-        # Which corpora this weight has seen and whether their imagery
+        "commercialOk": all(m.commercial_ok for m in models),
+        # Which corpora these weights have seen and whether their imagery
         # licences permit selling the result. On /health because "which model
         # is live" and "may we sell what it produces" have to be answerable
         # from outside the process, months later, without reading a filename.
-        "lineage": state.get("lineage", []),
-        "shippable": state.get("shippable"),
+        "lineage": lineage,
+        # An ensemble ships only if every member may: one research-only
+        # weight in the average poisons the answer exactly as it would alone.
+        "shippable": (None if any(s is None for s in shippable)
+                      else all(shippable)),
         "scores": state.get("scores", {}),
     }
     return _model
@@ -193,10 +214,14 @@ def trace_hole(request: TraceRequest):
                             NIR_ABSENT, dtype=pixels.dtype)
         pixels = torch.cat([pixels, absent], dim=1)
 
-    device = next(model.parameters()).device
-    with torch.no_grad():
-        logits = _infer_tiled(model, pixels, device)
-        probabilities = torch.softmax(logits, dim=0).cpu().numpy()
+    # TTA and Gaussian blending, exactly as the evaluation harness scores
+    # them (golfvision.inference — one asking path for every caller). The
+    # sweep runs offline on an A100, so eight views per window is time nobody
+    # is waiting on; GOLF_SEG_TTA=0 turns it off for interactive use.
+    from golfvision.inference import infer_tiled
+    device = next(model[0].parameters()).device
+    tta = os.environ.get("GOLF_SEG_TTA", "1") != "0"
+    probabilities = infer_tiled(model, pixels, device, tta=tta).numpy()
     predicted = probabilities.argmax(axis=0)
 
     cleaner = MaskPostProcessor(tile.bounds.metres_per_pixel)
@@ -227,34 +252,6 @@ def trace_hole(request: TraceRequest):
         "source": "golfseg",
         **_model_meta,
     })
-
-
-def _infer_tiled(model, tensor, device, tile: int = 512, overlap: float = 0.25):
-    """Overlapping windows, averaged — §8, so no seam runs down a fairway."""
-    import torch
-    _, _, height, width = tensor.shape
-    classes = len(GOLF_SEG_LABELS)
-    step = max(1, int(tile * (1 - overlap)))
-    accumulated = torch.zeros((classes, height, width), dtype=torch.float32)
-    weights = torch.zeros((1, height, width), dtype=torch.float32)
-
-    ys = list(range(0, max(1, height - tile + 1), step))
-    xs = list(range(0, max(1, width - tile + 1), step))
-    if ys[-1] + tile < height:
-        ys.append(height - tile)
-    if xs[-1] + tile < width:
-        xs.append(width - tile)
-
-    for y in ys:
-        for x in xs:
-            window = tensor[:, :, y:y + tile, x:x + tile]
-            if window.shape[-1] < 32 or window.shape[-2] < 32:
-                continue
-            out = model(window.to(device))[0].float().cpu()
-            accumulated[:, y:y + out.shape[1], x:x + out.shape[2]] += out
-            weights[:, y:y + out.shape[1], x:x + out.shape[2]] += 1
-
-    return accumulated / weights.clamp(min=1)
 
 
 __all__ = ["app"]

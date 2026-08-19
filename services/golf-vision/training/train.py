@@ -24,6 +24,7 @@ import sys
 import time
 from pathlib import Path
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
@@ -77,6 +78,17 @@ def main() -> int:
     parser.add_argument("--crop", type=int, default=512)
     parser.add_argument("--lr", type=float, default=6e-5)
     parser.add_argument("--dice-weight", type=float, default=0.5)
+    parser.add_argument("--lovasz-weight", type=float, default=0.0,
+                        help="adds a Lovász-Softmax term — a direct IoU "
+                             "surrogate; compare against 0 across seeds "
+                             "rather than assuming it helps")
+    parser.add_argument("--copy-paste", type=float, default=None,
+                        help="probability a training patch has rare-class "
+                             "instances pasted in; defaults to the dataset's "
+                             "0.5, and 0 turns it off")
+    parser.add_argument("--seed", type=int, default=0,
+                        help="the run-to-run noise floor here is ~0.02 IoU, "
+                             "so conclusions come from 3 seeds, not 1")
     parser.add_argument("--workers", type=int, default=6)
     parser.add_argument("--device", default=None)
     parser.add_argument("--vram-fraction", type=float, default=None,
@@ -96,6 +108,13 @@ def main() -> int:
                              "half on a corpus that has one")
     args = parser.parse_args()
 
+    # Seeded before the dataset exists: the augmentation stream, the loader
+    # shuffle and the head initialisation all draw from these.
+    import random as random_module
+    random_module.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+
     device = torch.device(
         args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
     if device.type == "cuda" and args.vram_fraction:
@@ -109,6 +128,8 @@ def main() -> int:
     out.mkdir(parents=True, exist_ok=True)
 
     kwargs = {} if args.nir_dropout is None else {"nir_dropout": args.nir_dropout}
+    if args.copy_paste is not None:
+        kwargs["copy_paste"] = args.copy_paste
     train_set = GolfSegDataset(args.data, "train", augment=True, crop=args.crop,
                                **kwargs)
     val_set = GolfSegDataset(args.data, "val", augment=False, crop=args.crop)
@@ -151,7 +172,8 @@ def main() -> int:
               f"{prior.get('scores', {}).get('perClass', {})
                  .get(args.select_on, {}).get('iou')})")
     criterion = GolfSegLoss(NUM_CLASSES, class_weights=weights,
-                            dice_weight=args.dice_weight)
+                            dice_weight=args.dice_weight,
+                            lovasz_weight=args.lovasz_weight)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
                                   weight_decay=1e-4)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(

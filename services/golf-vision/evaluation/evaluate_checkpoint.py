@@ -23,6 +23,7 @@ import torch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from golfvision.classes import GOLF_SEG_LABELS                  # noqa: E402
+from golfvision.inference import predict_probabilities          # noqa: E402
 from training.dataset import GolfSegDataset                     # noqa: E402
 from training.metrics import ConfusionMatrix                    # noqa: E402
 from training.models import build_model                         # noqa: E402
@@ -64,9 +65,17 @@ def boundary_errors_m(prediction: np.ndarray, truth: np.ndarray,
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--data", required=True)
-    parser.add_argument("--checkpoint", required=True)
+    parser.add_argument("--checkpoint", required=True, nargs="+",
+                        help="one weight, or several to ensemble — probability "
+                             "averaged, exactly as the service would serve them")
     parser.add_argument("--split", default="test")
     parser.add_argument("--device", default=None)
+    parser.add_argument("--tta", action="store_true",
+                        help="average the eight dihedral views, as the service "
+                             "does — score what will actually be served")
+    parser.add_argument("--out", default=None,
+                        help="where to write the json; defaults to the first "
+                             "checkpoint's name, which is wrong for ensembles")
     # Patches were cut at zoom 19 over Vietnam — 0.29 m/px. Passed rather than
     # assumed so a dataset built at another zoom scores correctly.
     parser.add_argument("--metres-per-pixel", type=float, default=0.293)
@@ -74,22 +83,34 @@ def main() -> int:
 
     device = torch.device(
         args.device or ("cuda" if torch.cuda.is_available() else "cpu"))
-    state = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
 
-    # The checkpoint says how wide its stem is. Read rather than assumed: the
-    # near-infrared corpus made four channels the default, and scoring a
-    # three-channel checkpoint from before that against a four-channel model
-    # fails at load with a shape error that reads like a corrupt file.
-    model = build_model(NUM_CLASSES,
-                        provider=state["args"].get("provider", "segformer"),
-                        name=state["args"].get("model_name"),
-                        in_channels=state.get("inChannels", 3))
-    model.load_state_dict(state["model"])
-    model.eval().to(device)
+    models = []
+    states = []
+    for path in args.checkpoint:
+        state = torch.load(path, map_location="cpu", weights_only=False)
+        # The checkpoint says how wide its stem is. Read rather than assumed:
+        # the near-infrared corpus made four channels the default, and scoring
+        # a three-channel checkpoint from before that against a four-channel
+        # model fails at load with a shape error that reads like a corrupt
+        # file.
+        model = build_model(NUM_CLASSES,
+                            provider=state["args"].get("provider", "segformer"),
+                            name=state["args"].get("model_name"),
+                            in_channels=state.get("inChannels", 3))
+        model.load_state_dict(state["model"])
+        model.eval().to(device)
+        models.append(model)
+        states.append(state)
+    state = states[0]
 
+    # The dataset always emits four channels; a three-channel member is shown
+    # the leading slice (golfvision.inference._shown), so members of both
+    # widths ensemble without ceremony.
     dataset = GolfSegDataset(args.data, args.split, augment=False,
                              crop=state["args"].get("crop", 512))
-    print(f"scoring {len(dataset)} {args.split} patches with {args.checkpoint}")
+    mode = f"{'TTA' if args.tta else 'plain'}, {len(models)} model(s)"
+    print(f"scoring {len(dataset)} {args.split} patches ({mode}) with "
+          f"{', '.join(args.checkpoint)}")
 
     # What this weight is allowed to be. A score is only half the question —
     # the other half is whether the imagery underneath it may be sold, and the
@@ -115,10 +136,12 @@ def main() -> int:
     with torch.no_grad():
         for i in range(len(dataset)):
             pixels, target = dataset[i]
-            prediction = model(pixels.unsqueeze(0).to(device)).argmax(1)[0]
-            pred_np = prediction.cpu().numpy()
+            probabilities = predict_probabilities(
+                models, pixels.unsqueeze(0), device, tta=args.tta)
+            prediction = probabilities.argmax(0)
+            pred_np = prediction.numpy()
             true_np = target.numpy()
-            confusion.update(prediction, target.to(device))
+            confusion.update(prediction, target)
             for index in GOLF_SEG_LABELS:
                 # Only where the truth is known: an ignore pixel the model
                 # called green is not evidence either way.
@@ -154,7 +177,8 @@ def main() -> int:
             "areaRatio": round(float(ratio), 3)}
 
     print(f"\nmean IoU {result['meanIoU']:.3f}")
-    out = Path(args.checkpoint).with_suffix(".test.json")
+    out = (Path(args.out) if args.out else
+           Path(args.checkpoint[0]).with_suffix(".test.json"))
     out.write_text(json.dumps(result, indent=2))
     print(f"-> {out}")
     return 0

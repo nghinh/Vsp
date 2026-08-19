@@ -28,11 +28,16 @@ import torch.nn as nn
 class GolfSegModel(nn.Module):
     """Wraps whichever backbone so the loop only sees logits."""
 
-    def __init__(self, backbone: nn.Module, kind: str, commercial_ok: bool):
+    def __init__(self, backbone: nn.Module, kind: str, commercial_ok: bool,
+                 in_channels: int = 3):
         super().__init__()
         self.backbone = backbone
         self.kind = kind
         self.commercial_ok = commercial_ok
+        # How wide an input this weight accepts, carried on the model so an
+        # ensemble of three- and four-channel members can show each the slice
+        # it expects (golfvision.inference._shown).
+        self.in_channels = in_channels
 
     def forward(self, pixels: torch.Tensor) -> torch.Tensor:
         if self.kind == "segformer":
@@ -82,13 +87,15 @@ def build_model(num_classes: int, *, provider: str | None = None,
         model = SegformerForSemanticSegmentation.from_pretrained(
             checkpoint, num_labels=num_classes,
             ignore_mismatched_sizes=True)
-        return GolfSegModel(model, "segformer", commercial_ok=False)
+        return GolfSegModel(model, "segformer", commercial_ok=False,
+                            in_channels=3)
 
     if provider == "smp":
         import segmentation_models_pytorch as smp
         encoder = name or "resnet34"
         model = smp.Unet(encoder_name=encoder, encoder_weights="imagenet",
                          in_channels=in_channels, classes=num_classes)
-        return GolfSegModel(model, "smp", commercial_ok=True)
+        return GolfSegModel(model, "smp", commercial_ok=True,
+                            in_channels=in_channels)
 
     raise ValueError(f"unknown model provider: {provider!r}")
