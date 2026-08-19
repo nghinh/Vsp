@@ -419,6 +419,197 @@ Future<void> _deepFunctions(WidgetTester tester) async {
   }
 }
 
+
+/// Photographs the two maps under the finger, and says plainly what it cannot
+/// prove.
+///
+/// ─── Why there is no assertion here ───────────────────────────────────────
+///
+/// Both maps are MapLibre platform views. A tap sent by `WidgetTester` is a
+/// synthetic pointer event inside the Flutter engine, and it does not reach
+/// the native view's own hit testing — so `onMapClick` never fires and no
+/// target is placed. The first version of this step asserted that one was, and
+/// filed two defects against an app that was working.
+///
+/// What made it convincing was the screenshot: a dot on the fairway, a line
+/// labelled "316 yd", distance rings around it. None of it was a target. The
+/// line is the play line to the green, the dot is the green marker, and the
+/// rings are a layer somebody had switched on two steps earlier. A picture
+/// that looks like the feature working is not the feature working.
+///
+/// The behaviour itself is covered where it can be: the widget tests in
+/// `active_round_target_view_test.dart` drop a target the way a tap does and
+/// assert the Target tab reads it, follows the golfer, and follows the target.
+/// What remains unproven here is the bridge from finger to native view, and a
+/// simulator cannot prove it. That needs a thumb.
+Future<void> _mapTouch(WidgetTester tester) async {
+  await tap(tester, ['Bản đồ']);
+  await settle(tester, const Duration(seconds: 3));
+  await check(tester, '80-ban-do-trong-vong', landmarks: ['Hố']);
+
+  await tapIfPresent(tester, find.bySemanticsLabel('Chuyển sang bản đồ sân'));
+  await settle(tester, const Duration(seconds: 4));
+  await check(tester, '81-ban-do-ve-trong-vong', landmarks: ['Hố']);
+
+  await tap(tester, ['Mục tiêu']);
+  await check(tester, '82-tab-muc-tieu', landmarks: ['Mục tiêu', 'Tới green']);
+
+  await tap(tester, ['Điểm']);
+  await settle(tester, const Duration(seconds: 2));
+}
+
+/// Opening a club and saving it back.
+///
+/// The bag is where the strategy book gets its carry distances, so a club that
+/// cannot be edited is a strategy book that cannot be corrected.
+Future<void> _bagEditing(WidgetTester tester) async {
+  await tap(tester, ['Thêm']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Túi gậy của tôi']);
+  await settle(tester, const Duration(seconds: 3));
+  await tapIfPresent(tester, find.textContaining('My Bag'));
+  await settle(tester, const Duration(seconds: 3));
+
+  // The first club in the bag, whatever it is called.
+  //
+  // This step used to look for "Driver" and reported the bag broken when it
+  // could not find one. The bag was right: `My Bag` on this account holds
+  // fourteen clubs starting at a 15° wood, and the driver lives in the other
+  // bag, which is switched off. A sweep that assumes what the data contains
+  // reports the data as a defect.
+  Finder firstClub = find.textContaining('Gỗ');
+  for (final name in ['Gỗ', 'Sắt', 'Hybrid', 'Driver', 'Wedge']) {
+    if (find.textContaining(name).evaluate().isNotEmpty) {
+      firstClub = find.textContaining(name);
+      break;
+    }
+  }
+  if (!await tapIfPresent(tester, firstClub)) {
+    _findings.add(_Finding('83-sua-gay', 'THIẾU', 'không mở được gậy nào'));
+  } else {
+    await settle(tester, const Duration(seconds: 3));
+    await check(tester, '83-sua-gay', landmarks: ['Cự ly', 'Lưu', 'Loft', 'Gậy']);
+
+    // Save it back unchanged. The question is whether the form can commit at
+    // all — a save button that never enables is a bag nobody can correct.
+    final fields = find.byType(TextFormField);
+    if (fields.evaluate().isNotEmpty) {
+      await tester.enterText(fields.first, '210');
+      await settle(tester, const Duration(seconds: 2));
+    }
+    if (!await tapAny(tester, ['Lưu', 'Save'])) {
+      _findings.add(_Finding('83-sua-gay', 'KHÔNG LƯU', 'không bấm được Lưu'));
+    }
+    await settle(tester, const Duration(seconds: 4));
+    await check(tester, '84-da-luu-gay', landmarks: ['Túi gậy', 'Gậy', 'My Bag']);
+  }
+
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 2));
+}
+
+
+/// Starting a round and abandoning it, which is the other way a round ends.
+///
+/// The sweep's main round is finished properly. This one is left, the way a
+/// golfer leaves a round when the weather turns — and it is the only path that
+/// exercises `roundsAbandon`, whose failure message the sweep has been
+/// scanning for all along without ever being able to trigger it.
+Future<void> _abandonARound(WidgetTester tester) async {
+  await tap(tester, ['Chơi golf']);
+  await settle(tester, const Duration(seconds: 2));
+  await tapAny(tester, ['Bắt đầu vòng đấu']);
+  await settle(tester, const Duration(seconds: 3));
+  await tapAny(tester, ['Chọn sân']);
+  await settle(tester, const Duration(seconds: 2));
+  final box = find.byType(TextField);
+  if (box.evaluate().isNotEmpty) {
+    await tester.enterText(box.first, 'Long Biên');
+    await settle(tester, const Duration(seconds: 3));
+  }
+  await tapIfPresent(tester, find.text('Long Biên Golf Course'));
+  await settle(tester, const Duration(seconds: 4));
+  final pairings = find.textContaining('→');
+  if (pairings.evaluate().isNotEmpty) {
+    await tapIfPresent(tester, pairings.first);
+    await settle(tester, const Duration(seconds: 3));
+  }
+  var started = false;
+  for (final label in ['Bắt đầu vòng đấu', 'Start Round']) {
+    if (await tapIfPresent(tester, find.widgetWithText(FilledButton, label))) {
+      started = true;
+      break;
+    }
+  }
+  if (!started) {
+    _findings.add(_Finding('90-bo-do', 'THIẾU', 'không mở được vòng thứ hai'));
+    return;
+  }
+  await settle(tester, const Duration(seconds: 8));
+
+  // Walk out of it the way a golfer does: back, without finishing.
+  await popBack(tester);
+  await settle(tester, const Duration(seconds: 3));
+
+  await tap(tester, ['Vòng đấu']);
+  await settle(tester, const Duration(seconds: 4));
+  await check(tester, '90-vong-dang-choi', landmarks: ['Vòng đấu']);
+
+  // The abandon action lives in the round's own sheet, behind the card — the
+  // list itself only shows a status pill and a chevron.
+  await tapIfPresent(tester, find.textContaining('Đang chơi'));
+  await settle(tester, const Duration(seconds: 3));
+  await check(tester, '90b-chi-tiet-vong', landmarks: ['Long Biên', 'Đang chơi']);
+
+  if (!await tapAny(tester, ['Bỏ dở vòng đấu'])) {
+    _findings.add(
+      _Finding('91-bo-do', 'THIẾU',
+          'có vòng đang chơi nhưng không thấy nút Bỏ dở'),
+    );
+    return;
+  }
+  await settle(tester, const Duration(seconds: 2));
+  await check(tester, '91-xac-nhan-bo-do', landmarks: ['Bỏ dở']);
+
+  // The confirmation is not always a FilledButton, and guessing its type left
+  // the dialog open — which left the sheet open under it, which swallowed
+  // every tap the sweep made afterwards. That is how one stuck dialog became
+  // twenty findings about screens that were fine.
+  await settle(tester, const Duration(seconds: 2));
+  for (final label in ['Bỏ dở vòng đấu', 'Bỏ dở', 'Xác nhận']) {
+    final button = find.descendant(
+      of: find.byType(Dialog),
+      matching: find.text(label),
+    );
+    if (button.evaluate().isNotEmpty) {
+      await tester.tap(button.first, warnIfMissed: false);
+      break;
+    }
+    if (await tapIfPresent(tester, find.widgetWithText(TextButton, label))) {
+      break;
+    }
+    if (await tapIfPresent(tester, find.widgetWithText(FilledButton, label))) {
+      break;
+    }
+  }
+  await settle(tester, const Duration(seconds: 8));
+  await check(tester, '92-da-bo-do', landmarks: ['Vòng đấu']);
+
+  // Whatever happened above, leave nothing open behind us.
+  await tapAny(tester, ['Đóng']);
+  await settle(tester, const Duration(seconds: 2));
+  if (find.textContaining('Đang chơi').evaluate().isNotEmpty) {
+    _findings.add(
+      _Finding('92-da-bo-do', 'CÒN SÓT',
+          'sau khi bỏ dở, danh sách vẫn còn vòng "Đang chơi"'),
+    );
+  }
+}
+
 Future<void> _tabs(WidgetTester tester) async {
   await tap(tester, ['Sân golf']);
   await check(tester, '10-san-golf', landmarks: ['Tìm sân golf']);
@@ -475,6 +666,22 @@ Future<void> _round(WidgetTester tester) async {
 
   await tap(tester, ['Bắt đầu vòng đấu']);
   await check(tester, '31-tao-vong-dau', landmarks: ['Người chơi', 'Thể thức']);
+
+  // One finding, not fifteen.
+  //
+  // Everything below needs a round. When the form does not open — most often
+  // because an unfinished round from an earlier run is still blocking new ones
+  // — the old code carried on tapping and filed a "KHÔNG TỚI" against every
+  // screen of the round in turn. Twenty findings, one cause, and a report
+  // nobody can read.
+  if (find.textContaining('Thể thức').evaluate().isEmpty &&
+      find.textContaining('Người chơi').evaluate().isEmpty) {
+    _findings.add(
+      _Finding('31-tao-vong-dau', 'CHẶN',
+          'không mở được form tạo vòng — bỏ qua toàn bộ phần vòng đấu'),
+    );
+    return;
+  }
 
   await tap(tester, ['Chọn sân']);
   await settle(tester, const Duration(seconds: 2));
@@ -585,6 +792,8 @@ Future<void> _round(WidgetTester tester) async {
   }
   await popBack(tester);
 
+  await _mapTouch(tester);
+
   // ── Walking the whole round ───────────────────────────────────────────
   //
   // Eighteen presses of "Hố sau", checked by position rather than by the
@@ -675,7 +884,9 @@ void main() {
     await _functions(tester);
     await _moreFunctions(tester);
     await _deepFunctions(tester);
+    await _bagEditing(tester);
     await _round(tester);
+    await _abandonARound(tester);
 
     // ── The report ────────────────────────────────────────────────────────
     debugPrint('');

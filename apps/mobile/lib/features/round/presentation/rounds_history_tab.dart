@@ -31,6 +31,7 @@ import 'package:vsp_mobile/l10n/app_messages.dart';
 class RoundsHistoryTab extends StatefulWidget {
   const RoundsHistoryTab({
     super.key,
+    this.reopened,
     RoundHistoryRepository? repository,
     RoundResumeService? resumeService,
     RoundAbandonService? abandonService,
@@ -39,6 +40,18 @@ class RoundsHistoryTab extends StatefulWidget {
        _resumeService = resumeService,
        _abandonService = abandonService,
        _locationService = locationService;
+
+  /// Fires when the golfer opens this tab again.
+  ///
+  /// The list is loaded in `initState`, and inside the home shell's
+  /// IndexedStack that runs exactly once for the life of the app. So a round
+  /// played after the tab was first opened never appeared here — and a round
+  /// left unfinished became unreachable, because this list is the only place
+  /// offering to resume or abandon one.
+  ///
+  /// Null anywhere the tab is not inside that shell, where `initState` is
+  /// enough.
+  final Listenable? reopened;
 
   final RoundHistoryRepository? _repository;
 
@@ -69,6 +82,22 @@ class _RoundsHistoryTabState extends State<RoundsHistoryTab> {
     super.initState();
     _repository = widget._repository ?? RoundHistoryRepository();
     _load();
+    widget.reopened?.addListener(_load);
+  }
+
+  @override
+  void didUpdateWidget(RoundsHistoryTab old) {
+    super.didUpdateWidget(old);
+    if (old.reopened != widget.reopened) {
+      old.reopened?.removeListener(_load);
+      widget.reopened?.addListener(_load);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.reopened?.removeListener(_load);
+    super.dispose();
   }
 
   Future<void> _load() async {

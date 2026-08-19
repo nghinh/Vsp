@@ -55,6 +55,29 @@ class _HomeScreenState extends State<HomeScreen> {
   /// already does exactly this; the home shell did not.
   late final Set<int> _visited = {_selectedIndex};
 
+  /// Poked whenever the Rounds tab is opened again.
+  ///
+  /// IndexedStack keeps every visited tab alive, which is what preserves scroll
+  /// position — and means `initState` runs once, for ever. RoundsHistoryTab
+  /// loads its list there and nowhere else, so a round started after the tab
+  /// was first opened never appeared in it: finish a round, tap Vòng đấu, and
+  /// the round you just played is missing. Worse for a round left unfinished —
+  /// the list is the only way to resume or abandon one, so backing out of a
+  /// round made it unreachable while it went on blocking the start of the next.
+  ///
+  /// Found by the sweep: the server had an IN_PROGRESS round and the tab
+  /// showed eight completed ones.
+  ///
+  /// The same shape as `finishRequests` on the scorecard — a Listenable poked
+  /// from outside — because the alternative is a tab that polls.
+  final ValueNotifier<int> _roundsReopened = ValueNotifier<int>(0);
+
+  @override
+  void dispose() {
+    _roundsReopened.dispose();
+    super.dispose();
+  }
+
   /// Renders [child] only once its tab has been opened.
   Widget _lazyTab(int index, Widget child) =>
       _visited.contains(index) ? child : const SizedBox.shrink();
@@ -79,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           _lazyTab(0, const _PlayTab()),
           _lazyTab(1, const CourseSearchScreen()),
-          _lazyTab(2, const RoundsHistoryTab()),
+          _lazyTab(2, RoundsHistoryTab(reopened: _roundsReopened)),
           _lazyTab(3, const ProfileScreen()),
           _lazyTab(4, const _MoreTab()),
         ],
@@ -87,10 +110,15 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (index) {
+          // Re-opening a tab that is already built is the moment its data is
+          // most likely to be out of date, and the only moment the shell can
+          // tell it so.
+          final reopening = index == 2 && _visited.contains(2);
           setState(() {
             _selectedIndex = index;
             _visited.add(index);
           });
+          if (reopening) _roundsReopened.value++;
         },
         destinations: _navItems(l10n)
             .map(
