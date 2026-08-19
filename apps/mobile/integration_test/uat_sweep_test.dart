@@ -329,6 +329,96 @@ Future<void> _moreFunctions(WidgetTester tester) async {
   await settle(tester, const Duration(seconds: 2));
 }
 
+
+/// The screens with computation behind them, and the actions with consequences
+/// on the server.
+///
+/// Everything here was reachable and had never been opened by anything: four
+/// analytics screens each doing real arithmetic over the golfer's rounds, and
+/// a package download that writes to the device. A screen that computes is a
+/// screen that can divide by zero on an account with three rounds in it.
+Future<void> _deepFunctions(WidgetTester tester) async {
+  // ── The four analytics screens ──────────────────────────────────────────
+  const analytics = <String, (String, List<String>)>{
+    '70-strokes-gained': ('Strokes Gained', ['Strokes Gained', 'Chưa có dữ liệu']),
+    '71-hieu-suat-gay': ('Hiệu suất gậy', ['Hiệu suất', 'Độ phân tán', 'Chưa có']),
+    '72-vung-phat-bong': ('Vùng phát bóng', ['Vùng phát bóng', 'Chưa có']),
+    '73-smart-target': ('Smart Target', ['Smart Target', 'Chưa có']),
+  };
+
+  for (final entry in analytics.entries) {
+    await tap(tester, ['Thêm']);
+    await settle(tester, const Duration(seconds: 2));
+    await tap(tester, ['Phân tích']);
+    await settle(tester, const Duration(seconds: 3));
+    await tap(tester, [entry.value.$1]);
+    await check(tester, entry.key, landmarks: entry.value.$2);
+    await popBack(tester);
+    await settle(tester, const Duration(seconds: 2));
+    await popBack(tester);
+    await settle(tester, const Duration(seconds: 2));
+  }
+
+  // ── Downloading a course for offline play ───────────────────────────────
+  //
+  // The one action in the app that writes a package to the device, and the one
+  // a golfer takes in the car park with one bar of signal.
+  await tap(tester, ['Sân golf']);
+  await settle(tester, const Duration(seconds: 2));
+  await tap(tester, ['Tất cả']);
+  await settle(tester, const Duration(seconds: 3));
+  final box = find.byType(TextField);
+  if (box.evaluate().isNotEmpty) {
+    await tester.enterText(box.first, 'Long Biên');
+    await settle(tester, const Duration(seconds: 4));
+  }
+
+  // Two taps, not one, and a way back.
+  //
+  // The button on the card opens a screen of its own — size, version, the
+  // Wi-Fi switch — with the real download button on it. The first version of
+  // this step tapped the card, waited thirty seconds on the screen it had just
+  // opened without pressing anything, and then carried on tapping as though it
+  // were still on the course list. Every step after it landed on the download
+  // screen: eighteen findings, all of them the same missing `popBack`.
+  final download = find.text('Tải xuống');
+  if (download.evaluate().isEmpty) {
+    // Already downloaded is a valid state, not a failure — say which.
+    debugPrint('UAT: không có nút Tải xuống (có thể đã tải rồi)');
+    await check(tester, '74-tai-goi-san', landmarks: ['Long Biên', 'Tìm sân']);
+  } else {
+    await tester.tap(download.first, warnIfMissed: false);
+    await settle(tester, const Duration(seconds: 4));
+    await check(tester, '74-man-tai-goi', landmarks: ['Tải xuống', 'KB', 'Phiên bản']);
+
+    // The button on the download screen itself.
+    final start = find.widgetWithText(FilledButton, 'Tải xuống');
+    final anyStart = start.evaluate().isNotEmpty ? start : find.text('Tải xuống');
+    if (anyStart.evaluate().isEmpty) {
+      _findings.add(_Finding('74-man-tai-goi', 'THIẾU', 'không có nút tải trên màn tải'));
+    } else {
+      await tester.tap(anyStart.first, warnIfMissed: false);
+      // Packages here are a few hundred KB.
+      await settle(tester, const Duration(seconds: 40));
+      if (find.textContaining('Đã tải').evaluate().isEmpty &&
+          find.textContaining('Cập nhật').evaluate().isEmpty &&
+          find.textContaining('Xoá').evaluate().isEmpty) {
+        _findings.add(
+          _Finding('75-da-tai', 'KHÔNG XONG',
+              'bấm tải, 40 giây sau vẫn chưa thấy trạng thái đã tải'),
+        );
+      }
+      await check(tester, '75-da-tai', landmarks: ['KB', 'Phiên bản', 'Đã tải']);
+    }
+    await popBack(tester);
+    await settle(tester, const Duration(seconds: 3));
+  }
+  if (box.evaluate().isNotEmpty) {
+    await tester.enterText(box.first, '');
+    await settle(tester, const Duration(seconds: 2));
+  }
+}
+
 Future<void> _tabs(WidgetTester tester) async {
   await tap(tester, ['Sân golf']);
   await check(tester, '10-san-golf', landmarks: ['Tìm sân golf']);
@@ -495,6 +585,34 @@ Future<void> _round(WidgetTester tester) async {
   }
   await popBack(tester);
 
+  // ── Walking the whole round ───────────────────────────────────────────
+  //
+  // Eighteen presses of "Hố sau", checked by position rather than by the
+  // hole's number: a paired round numbers its holes 1-9 and then 1-9 again, so
+  // "Hố 1" is two different holes and only "Hố 1 trên 18" is unambiguous. This
+  // is the walk that used to loop back to the first tee at the turn.
+  await tap(tester, ['Điểm']);
+  await settle(tester, const Duration(seconds: 2));
+  var reached = 0;
+  for (var i = 0; i < 24; i++) {
+    for (var hole = 1; hole <= 18; hole++) {
+      if (find.textContaining('Hố $hole trên 18').evaluate().isNotEmpty) {
+        reached = hole;
+        break;
+      }
+    }
+    if (reached >= 18) break;
+    if (!await tapIfPresent(tester, find.bySemanticsLabel('Hố sau'))) break;
+    await settle(tester, const Duration(seconds: 2));
+  }
+  if (reached < 18) {
+    _findings.add(
+      _Finding('44-di-het-18-ho', 'KHÔNG TỚI',
+          'bấm Hố sau 24 lần chỉ tới được hố $reached / 18'),
+    );
+  }
+  await check(tester, '44-di-het-18-ho', landmarks: ['Hố 18 trên 18', 'Hố']);
+
   // Finish, so the sweep does not leave a round open on the server.
   await tap(tester, ['Điểm']);
   for (final tip in ['Kết thúc vòng đấu', 'Finish Round']) {
@@ -556,6 +674,7 @@ void main() {
     await _fromMore(tester);
     await _functions(tester);
     await _moreFunctions(tester);
+    await _deepFunctions(tester);
     await _round(tester);
 
     // ── The report ────────────────────────────────────────────────────────

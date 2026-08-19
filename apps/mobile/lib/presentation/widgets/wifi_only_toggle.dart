@@ -101,16 +101,37 @@ class _WifiOnlyToggleState extends State<WifiOnlyToggle> {
                     AppLocalizations.of(context).wifiOnlyTitle,
                     style: theme.textTheme.bodyMedium,
                   ),
+                  // What this means for the download, which depends on the
+                  // switch as much as on the network.
+                  //
+                  // This line used to be chosen from `_isWifiConnected` alone,
+                  // so a golfer who had turned the restriction *off* was still
+                  // told, in destructive red, "Không có Wi-Fi — tạm dừng tải".
+                  // Nothing was paused: they had just said they did not mind
+                  // mobile data. The screen was telling them to go and find
+                  // Wi-Fi on the one screen where they were trying to
+                  // download, and the app's own words for the neutral case —
+                  // "Chưa kết nối Wi-Fi" — were sitting unused in the
+                  // translations.
+                  //
+                  // Found by the screen-by-screen sweep on a simulator, which
+                  // reports no Wi-Fi and made the contradiction plain.
                   Text(
-                    _isWifiConnected
-                        ? AppLocalizations.of(context).wifiConnected
-                        : AppLocalizations.of(context).wifiNotConnected,
+                    _wifiOnly
+                        ? (_isWifiConnected
+                            ? AppLocalizations.of(context).wifiConnected
+                            : AppLocalizations.of(context).wifiNotConnected)
+                        : (_isWifiConnected
+                            ? AppLocalizations.of(context).wifiStatusConnected
+                            : AppLocalizations.of(context)
+                                .wifiStatusNotConnected),
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: _isWifiConnected
-                          ? colorScheme.onSurfaceVariant
-                          : brightness == Brightness.dark
-                          ? VspColorDark.destructive
-                          : VspColorLight.destructive,
+                      // Red only when it actually stops something.
+                      color: (_wifiOnly && !_isWifiConnected)
+                          ? (brightness == Brightness.dark
+                              ? VspColorDark.destructive
+                              : VspColorLight.destructive)
+                          : colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
