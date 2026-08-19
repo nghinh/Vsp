@@ -118,10 +118,14 @@ class _TeeSetCard extends StatelessWidget {
           // Par + yardages summary
           Row(
             children: [
-              _MetricChip(
-                label: AppLocalizations.of(context).fieldPar,
-                value: '${teeSet.totalPar}',
-              ),
+              // Only when the club has published one. It used to print
+              // unconditionally, and a tee set with no par on file came out as
+              // "Par 0" — a fact the app does not have, stated as one.
+              if (teeSet.totalPar != null)
+                _MetricChip(
+                  label: AppLocalizations.of(context).fieldPar,
+                  value: '${teeSet.totalPar}',
+                ),
               if (teeSet.rating != null) ...[
                 const SizedBox(width: VspSpacing.sm),
                 _MetricChip(

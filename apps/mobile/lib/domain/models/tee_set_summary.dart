@@ -10,7 +10,15 @@ class TeeSetSummary extends Equatable {
   final int id;
   final String name;
   final String? gender;
-  final int totalPar;
+  /// Par off this tee, where the club has published one.
+  ///
+  /// Nullable, and it has to be. This was `int` with a `?? 0` behind it, so a
+  /// tee set the server sent with `totalPar: null` — which is every tee at
+  /// Long Biên — was drawn on the course page as a confident "Par 0". Zero is
+  /// not "unknown": it is a number, on a screen a golfer reads before they
+  /// book, and it is wrong. The rating and slope chips beside it already omit
+  /// themselves when they have nothing to say.
+  final int? totalPar;
   final Map<String, int> yardages;
   final double? rating;
   final int? slope;
@@ -20,7 +28,7 @@ class TeeSetSummary extends Equatable {
     required this.id,
     required this.name,
     this.gender,
-    required this.totalPar,
+    this.totalPar,
     required this.yardages,
     this.rating,
     this.slope,
@@ -32,7 +40,7 @@ class TeeSetSummary extends Equatable {
       id: (json['id'] as num).toInt(),
       name: json['name'] as String,
       gender: json['gender'] as String?,
-      totalPar: (json['totalPar'] as num?)?.toInt() ?? 0,
+      totalPar: (json['totalPar'] as num?)?.toInt(),
       yardages:
           // Accept both typed and untyped (e.g. empty literal) maps.
           (json['yardages'] as Map?)?.map(
