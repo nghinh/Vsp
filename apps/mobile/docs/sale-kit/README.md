@@ -1,6 +1,6 @@
 # Bộ ảnh giới thiệu VSP Golf
 
-29 màn hình chụp từ một vòng 18 hố có thật, chơi từ đầu đến cuối trên iPhone 17
+38 màn hình chụp từ một vòng 18 hố có thật, chơi từ đầu đến cuối trên iPhone 17
 Pro tại **Long Biên Golf Course — Đường A → Đường B**.
 
 Không phải ảnh dựng. Ứng dụng thật, máy chủ thật (`vps-api.vnteki.com`), dữ liệu
@@ -59,6 +59,15 @@ vào kho khi cả lượt chạy đi tới cuối.
 | `24-more` | Menu Thêm |
 | `25-bag` | Túi gậy |
 | `26-settings` | Cài đặt |
+| `27-chia-gay` | **AI chia gậy** — đọc carry từ túi gậy của chính golfer, rải chuỗi cú đánh lên ảnh vệ tinh |
+| `28-ban-do-lop` | Bản đồ vẽ với các lớp AI bóc tách từ ảnh vệ tinh |
+| `29-lop-du-lieu` | Bảng bật/tắt từng lớp dữ liệu của hố |
+| `30-so-chien-thuat` | Sổ chiến thuật 18 hố |
+| `31-chia-do` | **Chia độ** — handicap, skins, đấu đội |
+| `32-lich-su-ho` | **Lịch sử hố** — lần trước đánh hố này thế nào |
+| `33-quet-the-diem` | **Quét thẻ điểm giấy** — chụp ảnh, AI đọc điểm |
+| `34-phan-tich` | Menu Phân tích & Hiệu suất — bốn máy phân tích |
+| `35-smart-target` | **Smart Target (Caddie AI)** — an toàn / cân bằng / mạo hiểm, kèm rủi ro và độ tin cậy |
 
 ## Lưu ý khi dùng
 

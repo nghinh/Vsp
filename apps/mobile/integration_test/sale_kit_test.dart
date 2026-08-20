@@ -148,7 +148,19 @@ Future<void> _setUpTheRound(WidgetTester tester) async {
   await _startOnTheFirst(tester);
   await shoot(tester, '10-ready-to-start');
 
-  await tapAny(tester, ['Bắt đầu vòng đấu', 'Start Round']);
+  // The button, not the screen's own title — both say "Bắt đầu vòng đấu",
+  // and a bare text finder picks whichever the traversal meets first. It
+  // met the button while the button lived in the body; the day the button
+  // moved to bottomNavigationBar, the finder started tapping the AppBar
+  // title and the kit photographed a round that never began.
+  for (final label in ['Bắt đầu vòng đấu', 'Start Round']) {
+    if (await tapIfPresent(
+      tester,
+      find.widgetWithText(FilledButton, label),
+    )) {
+      break;
+    }
+  }
   await tester.pumpAndSettle(const Duration(seconds: 6));
   expectArrived('the round', ['Hố', 'Hole']);
 }
@@ -363,29 +375,36 @@ Future<void> _theThreeFeatures(WidgetTester tester) async {
   // before the button exists to be pressed.
   await tapAny(tester, ['Bản đồ']);
   await tester.pumpAndSettle(const Duration(seconds: 3));
+
+  // 2 — What is on the ground, and what to hit across it. Both live on the
+  // drawn hole map; every earlier kit hunted the plan button on the
+  // measuring tool and shipped without it.
+  await tester.pumpAndSettle(const Duration(seconds: 2));
+  await _toCourseMap(tester, '28-ban-do-lop');
+
+  // 1 — the club plan. It sits over the PHOTOGRAPH, not the drawn map —
+  // and the old switch label ('công cụ đo khoảng cách') only exists when
+  // there is no imagery, so every earlier kit tapped a control that was
+  // not there, stayed on the drawn map, and shipped without this scene.
   if (await tapIfPresent(
     tester,
-    find.bySemanticsLabel('Chuyển sang công cụ đo khoảng cách'),
+    find.bySemanticsLabel('Chuyển sang ảnh vệ tinh'),
   )) {
     await tester.pumpAndSettle(const Duration(seconds: 4));
   }
   if (await tapIfPresent(tester, find.text('Gợi ý chia gậy'))) {
     await tester.pumpAndSettle(const Duration(seconds: 3));
     await shoot(tester, '27-chia-gay');
-    await popBack(tester);
-    await tester.pumpAndSettle(const Duration(seconds: 2));
-    // Back onto the map tab explicitly: the sheet pops onto whatever was
-    // under it, and "whatever was under it" is not a thing to navigate from.
-    await tapAny(tester, ['Bản đồ']);
-    await tester.pumpAndSettle(const Duration(seconds: 3));
   } else {
     _missed.add('27-chia-gay (không thấy nút gợi ý chia gậy)');
   }
+  // Back to the drawn map for the layer panel below.
+  await tapIfPresent(
+    tester,
+    find.bySemanticsLabel('Chuyển sang bản đồ sân'),
+  );
+  await tester.pumpAndSettle(const Duration(seconds: 3));
 
-  // 2 — What is on the ground. The layer control names every shape the
-  // package carries for this hole.
-  await tester.pumpAndSettle(const Duration(seconds: 2));
-  await _toCourseMap(tester, '28-ban-do-lop');
   if (await tapIfPresent(tester, find.byType(LayerTogglePanel))) {
     await tester.pumpAndSettle(const Duration(seconds: 2));
     await shoot(tester, '29-lop-du-lieu');
@@ -415,6 +434,31 @@ Future<void> _theThreeFeatures(WidgetTester tester) async {
     _missed.add('26-chia-do (không mở được chia độ)');
   }
 
+  // 4 — What this hole did to you last time. The history sheet reads the
+  // golfer's previous rounds on the very hole they are standing on.
+  if (await tapIfPresent(
+    tester,
+    find.byKey(const Key('scorecard_hole_history')),
+  )) {
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await shoot(tester, '32-lich-su-ho');
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } else {
+    _missed.add('32-lich-su-ho (không thấy nút lịch sử hố)');
+  }
+
+  // 5 — The paper card, photographed instead of typed. The sheet under the
+  // camera button is the doorway to OCR score entry.
+  if (await tapIfPresent(tester, find.byTooltip('Chụp ảnh card'))) {
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+    await shoot(tester, '33-quet-the-diem');
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } else {
+    _missed.add('33-quet-the-diem (không thấy nút chụp ảnh card)');
+  }
+
   await tapAny(tester, ['Điểm']);
   await tester.pumpAndSettle(const Duration(seconds: 2));
 }
@@ -439,6 +483,35 @@ Future<void> _finish(WidgetTester tester) async {
   await tester.pumpAndSettle(const Duration(seconds: 8));
   await shoot(tester, '21-round-summary');
   describe('after finish', ['Hoàn thành', 'Completed', 'Vòng đấu của bạn']);
+}
+
+/// The analytics that sell the app to a golfer who already keeps score:
+/// the menu naming all four engines, and Smart Target's worked example —
+/// the one screen that shows the AI weighing risk against a real bag.
+Future<void> _theAnalyticsHighlights(WidgetTester tester) async {
+  // Settings is a pushed route, so the tab bar may not be on screen when
+  // this starts. Pop until Thêm is reachable rather than assuming.
+  for (var i = 0; i < 3 && !await tapAny(tester, ['Thêm']); i++) {
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  }
+  await tester.pumpAndSettle(const Duration(seconds: 2));
+  if (await tapIfPresent(tester, find.textContaining('Phân tích'))) {
+    await tester.pumpAndSettle(const Duration(seconds: 3));
+    await shoot(tester, '34-phan-tich');
+    if (await tapIfPresent(tester, find.textContaining('Smart Target'))) {
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await shoot(tester, '35-smart-target');
+      await popBack(tester);
+      await tester.pumpAndSettle(const Duration(seconds: 2));
+    } else {
+      _missed.add('35-smart-target (không thấy mục Smart Target)');
+    }
+    await popBack(tester);
+    await tester.pumpAndSettle(const Duration(seconds: 2));
+  } else {
+    _missed.add('34-phan-tich (không thấy menu phân tích)');
+  }
 }
 
 void main() {
@@ -528,6 +601,8 @@ void main() {
     await _shootIfArrived(tester, '25-bag', ['Túi gậy', 'My Bag']);
     await popBack(tester);
     await _shootIfArrived(tester, '26-settings', ['Cài đặt', 'Settings']);
+
+    await _theAnalyticsHighlights(tester);
 
     debugPrint('KIT: finished');
     if (_missed.isNotEmpty) {
