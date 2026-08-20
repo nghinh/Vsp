@@ -1,0 +1,13 @@
+[Unit]
+Description=GolfSeg corpus-train-score-deploy autopilot (2026-08-19 quality push)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/root/golfseg/autopilot.sh
+StandardOutput=append:/data/golfseg/autopilot.log
+StandardError=append:/data/golfseg/autopilot.log
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target
