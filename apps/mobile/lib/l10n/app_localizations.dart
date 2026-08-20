@@ -8388,6 +8388,174 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap to measure'**
   String get measureExpandHint;
+
+  /// Sky condition names shown on the conditions panel. The API speaks English enum values; these are what a golfer reads.
+  ///
+  /// In en, this message translates to:
+  /// **'Sunny'**
+  String get weatherCondSunny;
+
+  /// No description provided for @weatherCondPartlyCloudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Partly Cloudy'**
+  String get weatherCondPartlyCloudy;
+
+  /// No description provided for @weatherCondCloudy.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloudy'**
+  String get weatherCondCloudy;
+
+  /// No description provided for @weatherCondOvercast.
+  ///
+  /// In en, this message translates to:
+  /// **'Overcast'**
+  String get weatherCondOvercast;
+
+  /// No description provided for @weatherCondLightRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Rain'**
+  String get weatherCondLightRain;
+
+  /// No description provided for @weatherCondRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Rain'**
+  String get weatherCondRain;
+
+  /// No description provided for @weatherCondHeavyRain.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy Rain'**
+  String get weatherCondHeavyRain;
+
+  /// No description provided for @weatherCondThunderstorm.
+  ///
+  /// In en, this message translates to:
+  /// **'Thunderstorm'**
+  String get weatherCondThunderstorm;
+
+  /// No description provided for @weatherCondFog.
+  ///
+  /// In en, this message translates to:
+  /// **'Fog'**
+  String get weatherCondFog;
+
+  /// No description provided for @weatherCondWindy.
+  ///
+  /// In en, this message translates to:
+  /// **'Windy'**
+  String get weatherCondWindy;
+
+  /// Full compass direction names for wind. The three-letter labels (N, NNE...) stay international; these are the spoken/displayed full names.
+  ///
+  /// In en, this message translates to:
+  /// **'North'**
+  String get windDirN;
+
+  /// No description provided for @windDirNNE.
+  ///
+  /// In en, this message translates to:
+  /// **'North-Northeast'**
+  String get windDirNNE;
+
+  /// No description provided for @windDirNE.
+  ///
+  /// In en, this message translates to:
+  /// **'Northeast'**
+  String get windDirNE;
+
+  /// No description provided for @windDirENE.
+  ///
+  /// In en, this message translates to:
+  /// **'East-Northeast'**
+  String get windDirENE;
+
+  /// No description provided for @windDirE.
+  ///
+  /// In en, this message translates to:
+  /// **'East'**
+  String get windDirE;
+
+  /// No description provided for @windDirESE.
+  ///
+  /// In en, this message translates to:
+  /// **'East-Southeast'**
+  String get windDirESE;
+
+  /// No description provided for @windDirSE.
+  ///
+  /// In en, this message translates to:
+  /// **'Southeast'**
+  String get windDirSE;
+
+  /// No description provided for @windDirSSE.
+  ///
+  /// In en, this message translates to:
+  /// **'South-Southeast'**
+  String get windDirSSE;
+
+  /// No description provided for @windDirS.
+  ///
+  /// In en, this message translates to:
+  /// **'South'**
+  String get windDirS;
+
+  /// No description provided for @windDirSSW.
+  ///
+  /// In en, this message translates to:
+  /// **'South-Southwest'**
+  String get windDirSSW;
+
+  /// No description provided for @windDirSW.
+  ///
+  /// In en, this message translates to:
+  /// **'Southwest'**
+  String get windDirSW;
+
+  /// No description provided for @windDirWSW.
+  ///
+  /// In en, this message translates to:
+  /// **'West-Southwest'**
+  String get windDirWSW;
+
+  /// No description provided for @windDirW.
+  ///
+  /// In en, this message translates to:
+  /// **'West'**
+  String get windDirW;
+
+  /// No description provided for @windDirWNW.
+  ///
+  /// In en, this message translates to:
+  /// **'West-Northwest'**
+  String get windDirWNW;
+
+  /// No description provided for @windDirNW.
+  ///
+  /// In en, this message translates to:
+  /// **'Northwest'**
+  String get windDirNW;
+
+  /// No description provided for @windDirNNW.
+  ///
+  /// In en, this message translates to:
+  /// **'North-Northwest'**
+  String get windDirNNW;
+
+  /// No description provided for @weatherHumiditySemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Humidity {value} percent'**
+  String weatherHumiditySemantics(Object value);
+
+  /// No description provided for @weatherWindSpeedSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Wind speed {speed} kilometers per hour'**
+  String weatherWindSpeedSemantics(Object speed);
 }
 
 class _AppLocalizationsDelegate

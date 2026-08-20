@@ -4788,4 +4788,92 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get measureExpandHint => 'Tap to measure';
+
+  @override
+  String get weatherCondSunny => 'Sunny';
+
+  @override
+  String get weatherCondPartlyCloudy => 'Partly Cloudy';
+
+  @override
+  String get weatherCondCloudy => 'Cloudy';
+
+  @override
+  String get weatherCondOvercast => 'Overcast';
+
+  @override
+  String get weatherCondLightRain => 'Light Rain';
+
+  @override
+  String get weatherCondRain => 'Rain';
+
+  @override
+  String get weatherCondHeavyRain => 'Heavy Rain';
+
+  @override
+  String get weatherCondThunderstorm => 'Thunderstorm';
+
+  @override
+  String get weatherCondFog => 'Fog';
+
+  @override
+  String get weatherCondWindy => 'Windy';
+
+  @override
+  String get windDirN => 'North';
+
+  @override
+  String get windDirNNE => 'North-Northeast';
+
+  @override
+  String get windDirNE => 'Northeast';
+
+  @override
+  String get windDirENE => 'East-Northeast';
+
+  @override
+  String get windDirE => 'East';
+
+  @override
+  String get windDirESE => 'East-Southeast';
+
+  @override
+  String get windDirSE => 'Southeast';
+
+  @override
+  String get windDirSSE => 'South-Southeast';
+
+  @override
+  String get windDirS => 'South';
+
+  @override
+  String get windDirSSW => 'South-Southwest';
+
+  @override
+  String get windDirSW => 'Southwest';
+
+  @override
+  String get windDirWSW => 'West-Southwest';
+
+  @override
+  String get windDirW => 'West';
+
+  @override
+  String get windDirWNW => 'West-Northwest';
+
+  @override
+  String get windDirNW => 'Northwest';
+
+  @override
+  String get windDirNNW => 'North-Northwest';
+
+  @override
+  String weatherHumiditySemantics(Object value) {
+    return 'Humidity $value percent';
+  }
+
+  @override
+  String weatherWindSpeedSemantics(Object speed) {
+    return 'Wind speed $speed kilometers per hour';
+  }
 }

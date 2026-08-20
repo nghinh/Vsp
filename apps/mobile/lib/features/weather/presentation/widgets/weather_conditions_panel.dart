@@ -101,7 +101,7 @@ class WeatherConditionsPanel extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final parts = <String>[
       l10n.weatherConditionsLabel,
-      snapshot.condition.displayLabel,
+      localizedWeatherCondition(l10n, snapshot.condition),
       l10n.weatherTemperatureLabel(
         '${snapshot.temperature?.value ?? '—'}',
         '${snapshot.temperature?.unit ?? ''}',
@@ -110,7 +110,7 @@ class WeatherConditionsPanel extends StatelessWidget {
         snapshot.wind.direction.label,
         snapshot.wind.speedKmh.toStringAsFixed(1),
       ),
-      'Humidity ${snapshot.humidity ?? 'unknown'} percent',
+      l10n.weatherHumiditySemantics('${snapshot.humidity ?? '—'}'),
     ];
     if (snapshot.precipitationProbability != null) {
       parts.add(
@@ -285,7 +285,9 @@ class _WindRow extends StatelessWidget {
                 Icons.navigation,
                 size: 32,
                 color: theme.colorScheme.primary,
-                semanticLabel: AppLocalizations.of(context).weatherWindDirection(wind.direction.displayName),
+                semanticLabel: AppLocalizations.of(context)
+                    .weatherWindDirection(localizedWindDirection(
+                        AppLocalizations.of(context), wind.direction)),
               ),
             ),
             const SizedBox(width: 12),
@@ -298,15 +300,19 @@ class _WindRow extends StatelessWidget {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
-                    semanticsLabel:
-                        'Wind speed ${wind.speedKmh.toStringAsFixed(1)} kilometers per hour',
+                    semanticsLabel: AppLocalizations.of(context)
+                        .weatherWindSpeedSemantics(
+                            wind.speedKmh.toStringAsFixed(1)),
                   ),
                   Text(
-                    wind.direction.displayName,
+                    localizedWindDirection(
+                        AppLocalizations.of(context), wind.direction),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
-                    semanticsLabel: 'Wind from ${wind.direction.displayName}',
+                    semanticsLabel: AppLocalizations.of(context)
+                        .weatherWindDirection(localizedWindDirection(
+                            AppLocalizations.of(context), wind.direction)),
                   ),
                 ],
               ),
@@ -411,7 +417,8 @@ class _ConditionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: AppLocalizations.of(context).weatherConditionLabel(condition.displayLabel),
+      label: AppLocalizations.of(context).weatherConditionLabel(
+          localizedWeatherCondition(AppLocalizations.of(context), condition)),
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
@@ -437,7 +444,8 @@ class _ConditionTile extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    condition.displayLabel,
+                    localizedWeatherCondition(
+                        AppLocalizations.of(context), condition),
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -661,5 +669,78 @@ class _StaleWarningBanner extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+
+// ─── Localized names for API enums ───────────────────────────────────────────
+//
+// The API speaks English enum values and the domain enums carry English
+// display strings for logs and tests. What a golfer reads comes from here:
+// the sweep of 2026-08-20 photographed "Cloudy" and "North" sitting in the
+// middle of a Vietnamese screen.
+
+/// The sky condition, in the golfer's language.
+String localizedWeatherCondition(AppLocalizations l10n, WeatherCondition c) {
+  switch (c) {
+    case WeatherCondition.sunny:
+      return l10n.weatherCondSunny;
+    case WeatherCondition.partly_cloudy:
+      return l10n.weatherCondPartlyCloudy;
+    case WeatherCondition.cloudy:
+      return l10n.weatherCondCloudy;
+    case WeatherCondition.overcast:
+      return l10n.weatherCondOvercast;
+    case WeatherCondition.light_rain:
+      return l10n.weatherCondLightRain;
+    case WeatherCondition.rain:
+      return l10n.weatherCondRain;
+    case WeatherCondition.heavy_rain:
+      return l10n.weatherCondHeavyRain;
+    case WeatherCondition.thunderstorm:
+      return l10n.weatherCondThunderstorm;
+    case WeatherCondition.fog:
+      return l10n.weatherCondFog;
+    case WeatherCondition.windy:
+      return l10n.weatherCondWindy;
+  }
+}
+
+/// The full compass name, in the golfer's language. The three-letter labels
+/// (N, NNE, …) stay international.
+String localizedWindDirection(AppLocalizations l10n, WindDirection d) {
+  switch (d) {
+    case WindDirection.n:
+      return l10n.windDirN;
+    case WindDirection.nne:
+      return l10n.windDirNNE;
+    case WindDirection.ne:
+      return l10n.windDirNE;
+    case WindDirection.ene:
+      return l10n.windDirENE;
+    case WindDirection.e:
+      return l10n.windDirE;
+    case WindDirection.ese:
+      return l10n.windDirESE;
+    case WindDirection.se:
+      return l10n.windDirSE;
+    case WindDirection.sse:
+      return l10n.windDirSSE;
+    case WindDirection.s:
+      return l10n.windDirS;
+    case WindDirection.ssw:
+      return l10n.windDirSSW;
+    case WindDirection.sw:
+      return l10n.windDirSW;
+    case WindDirection.wsw:
+      return l10n.windDirWSW;
+    case WindDirection.w:
+      return l10n.windDirW;
+    case WindDirection.wnw:
+      return l10n.windDirWNW;
+    case WindDirection.nw:
+      return l10n.windDirNW;
+    case WindDirection.nnw:
+      return l10n.windDirNNW;
   }
 }

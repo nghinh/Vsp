@@ -227,7 +227,13 @@ class _SummaryScaffold extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context).summaryComplete),
+        // The sync badge in `actions` narrows the title's slot until
+        // "Vòng đấu hoàn tất" reads "Vòng đấu hoàn..." — scale a few
+        // percent instead of amputating the last word.
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(AppLocalizations.of(context).summaryComplete),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 16),

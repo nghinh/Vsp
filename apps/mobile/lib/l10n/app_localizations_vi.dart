@@ -4786,4 +4786,92 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get measureExpandHint => 'Chạm để đo';
+
+  @override
+  String get weatherCondSunny => 'Nắng';
+
+  @override
+  String get weatherCondPartlyCloudy => 'Ít mây';
+
+  @override
+  String get weatherCondCloudy => 'Nhiều mây';
+
+  @override
+  String get weatherCondOvercast => 'U ám';
+
+  @override
+  String get weatherCondLightRain => 'Mưa nhỏ';
+
+  @override
+  String get weatherCondRain => 'Mưa';
+
+  @override
+  String get weatherCondHeavyRain => 'Mưa to';
+
+  @override
+  String get weatherCondThunderstorm => 'Dông';
+
+  @override
+  String get weatherCondFog => 'Sương mù';
+
+  @override
+  String get weatherCondWindy => 'Gió mạnh';
+
+  @override
+  String get windDirN => 'Bắc';
+
+  @override
+  String get windDirNNE => 'Bắc Đông Bắc';
+
+  @override
+  String get windDirNE => 'Đông Bắc';
+
+  @override
+  String get windDirENE => 'Đông Đông Bắc';
+
+  @override
+  String get windDirE => 'Đông';
+
+  @override
+  String get windDirESE => 'Đông Đông Nam';
+
+  @override
+  String get windDirSE => 'Đông Nam';
+
+  @override
+  String get windDirSSE => 'Nam Đông Nam';
+
+  @override
+  String get windDirS => 'Nam';
+
+  @override
+  String get windDirSSW => 'Nam Tây Nam';
+
+  @override
+  String get windDirSW => 'Tây Nam';
+
+  @override
+  String get windDirWSW => 'Tây Tây Nam';
+
+  @override
+  String get windDirW => 'Tây';
+
+  @override
+  String get windDirWNW => 'Tây Tây Bắc';
+
+  @override
+  String get windDirNW => 'Tây Bắc';
+
+  @override
+  String get windDirNNW => 'Bắc Tây Bắc';
+
+  @override
+  String weatherHumiditySemantics(Object value) {
+    return 'Độ ẩm $value phần trăm';
+  }
+
+  @override
+  String weatherWindSpeedSemantics(Object speed) {
+    return 'Tốc độ gió $speed kilômét mỗi giờ';
+  }
 }

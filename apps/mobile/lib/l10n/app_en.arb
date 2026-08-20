@@ -676,10 +676,14 @@
   "packagePlayAnyway": "Play Anyway",
   "packageCorrupted": "Course data is corrupted",
   "packageCorruptedSubtitle": "Please re-download the course package",
-  "packageUpdateAvailable": "New course data available",
+  "packageUpdateAvailable": "Update available",
   "packageUpdateAvailableNamed": "New course data for {course}",
   "@packageUpdateAvailableNamed": {
-    "placeholders": { "course": { "type": "String" } }
+    "placeholders": {
+      "course": {
+        "type": "String"
+      }
+    }
   },
   "packageUpdateAvailableSubtitle": "The copy on this phone is missing water, bunkers and fairways",
   "packageUpdate": "Update",
@@ -2025,7 +2029,6 @@
   "@packageNotAvailable": {
     "description": "Shown when a course has no downloadable package."
   },
-  "packageUpdateAvailable": "Update available",
   "@packageUpdateAvailable": {
     "description": "A newer course package version exists on the server."
   },
@@ -2605,7 +2608,11 @@
   "scoreScanDoubtTitle": "These numbers do not match the card",
   "scoreScanDoubtBody": "{count} row(s) either disagree with the OUT/IN totals you wrote, or have holes the reader could not make out. Saving now saves what the reader saw — not what is on the card.",
   "@scoreScanDoubtBody": {
-    "placeholders": { "count": { "type": "int" } }
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "scoreScanDoubtFix": "Check them",
   "scoreScanDoubtSaveAnyway": "Save anyway",
@@ -3555,5 +3562,49 @@
   "holePickerChooseStart": "Choose a starting hole",
   "apiBaseUrlMissingHint": "Rebuild with --dart-define=VSP_API_BASE_URL=https://your-api",
   "authCheckingSession": "Checking your secure session…",
-  "measureExpandHint": "Tap to measure"
+  "measureExpandHint": "Tap to measure",
+  "weatherCondSunny": "Sunny",
+  "weatherCondPartlyCloudy": "Partly Cloudy",
+  "weatherCondCloudy": "Cloudy",
+  "weatherCondOvercast": "Overcast",
+  "weatherCondLightRain": "Light Rain",
+  "weatherCondRain": "Rain",
+  "weatherCondHeavyRain": "Heavy Rain",
+  "weatherCondThunderstorm": "Thunderstorm",
+  "weatherCondFog": "Fog",
+  "weatherCondWindy": "Windy",
+  "windDirN": "North",
+  "windDirNNE": "North-Northeast",
+  "windDirNE": "Northeast",
+  "windDirENE": "East-Northeast",
+  "windDirE": "East",
+  "windDirESE": "East-Southeast",
+  "windDirSE": "Southeast",
+  "windDirSSE": "South-Southeast",
+  "windDirS": "South",
+  "windDirSSW": "South-Southwest",
+  "windDirSW": "Southwest",
+  "windDirWSW": "West-Southwest",
+  "windDirW": "West",
+  "windDirWNW": "West-Northwest",
+  "windDirNW": "Northwest",
+  "windDirNNW": "North-Northwest",
+  "@weatherCondSunny": {
+    "description": "Sky condition names shown on the conditions panel. The API speaks English enum values; these are what a golfer reads."
+  },
+  "@windDirN": {
+    "description": "Full compass direction names for wind. The three-letter labels (N, NNE...) stay international; these are the spoken/displayed full names."
+  },
+  "weatherHumiditySemantics": "Humidity {value} percent",
+  "@weatherHumiditySemantics": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "weatherWindSpeedSemantics": "Wind speed {speed} kilometers per hour",
+  "@weatherWindSpeedSemantics": {
+    "placeholders": {
+      "speed": {}
+    }
+  }
 }
