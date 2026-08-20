@@ -458,5 +458,16 @@ inflation): sparse, small, and OSM maps it worst.
 
 Corpus (68 GB) and PBF extracts deleted by the autopilot; `/data` back to
 73%. Kept: `osm-us-large/` (655 MB, the corpus can be rebuilt from it), all
-checkpoints and scores (1.1 GB). The 862-hole Vietnam draft re-sweep against
-the new weight started 11:47.
+checkpoints and scores (1.1 GB).
+
+### The sweep, completed the same day
+
+Every hole with real coordinates — **1,023 of the database's 1,486** —
+traced against the new weight by 12:25: the 862 from the old worklist,
+then the 161 previously excluded for already having geometry (proposals
+file below anything a person drew, so re-tracing them risks nothing).
+**19,968 shapes filed, 1,023/1,023 filed, zero failures, zero empty
+holes** — the old sweep left holes without a green; this one put at least
+one on every hole it touched, at ~3 s a hole. Outside scope, deliberately:
+108 holes whose coordinates are seed-arithmetic fiction (they need a
+survey, not a trace) and 355 with no coordinates at all.
