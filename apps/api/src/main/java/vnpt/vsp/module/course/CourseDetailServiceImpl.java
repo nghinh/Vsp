@@ -153,7 +153,18 @@ public class CourseDetailServiceImpl implements CourseDetailService {
         // đường their card was printed for. Filtering would leave exactly the
         // nines that need a card unable to receive one — empty because no card,
         // and no card because empty.
-        List<Course> facilityCourses = courseRepository.findByFacilityId(facility.getId());
+        // Retired courses are a different matter from empty ones: search
+        // already hides them, and a đường that was retired must not resurface
+        // through this list either — that is how "Sky Lake — Championship,
+        // 1 hố", retired on the 14th, was still on a phone's round picker on
+        // the 20th. Same rule the search repository applies.
+        LocalDate notExpiredAfter = LocalDate.now();
+        List<Course> facilityCourses = courseRepository.findByFacilityId(facility.getId())
+                .stream()
+                .filter(c -> c.getMetadata() == null
+                        || c.getMetadata().getExpiryDate() == null
+                        || c.getMetadata().getExpiryDate().isAfter(notExpiredAfter))
+                .toList();
         Set<Long> withHoles = new HashSet<>(holeRepository.findCourseIdsWithHoles(
                 facilityCourses.stream().map(Course::getId).toList()));
         dto.setFacilityCourses(facilityCourses.stream()

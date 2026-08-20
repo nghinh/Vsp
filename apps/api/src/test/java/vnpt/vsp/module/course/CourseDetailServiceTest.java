@@ -473,6 +473,40 @@ class CourseDetailServiceTest {
     }
 
     @Test
+    void getCourseDetail_aRetiredDuong_isNotOfferedAsALayout() {
+        // Search already hides retired courses; this list must agree with it.
+        // "Sky Lake — Championship, 1 hố" was retired on the 14th and still
+        // sat on a phone's round picker on the 20th, because it rode in here.
+        Course duongA = new Course();
+        duongA.setId(21L);
+        duongA.setFacility(testFacility);
+        duongA.setName("Đường A");
+        duongA.setHolesCount(9);
+        duongA.setParTotal(36);
+
+        Course retiredShell = new Course();
+        retiredShell.setId(2L);
+        retiredShell.setFacility(testFacility);
+        retiredShell.setName("Sky Lake Resort & Golf Club — Championship");
+        retiredShell.setHolesCount(1);
+        retiredShell.setParTotal(4);
+        DataQualityMetadata retired = new DataQualityMetadata();
+        retired.setExpiryDate(LocalDate.now().minusDays(6));
+        retiredShell.setMetadata(retired);
+
+        when(courseRepository.findById(21L)).thenReturn(Optional.of(duongA));
+        when(courseRepository.findByFacilityId(1L))
+                .thenReturn(List.of(retiredShell, duongA));
+        when(holeRepository.findCourseIdsWithHoles(anyCollection()))
+                .thenReturn(List.of(21L));
+
+        CourseDetailDto dto = service.getCourseDetail(21L);
+
+        assertEquals(1, dto.getFacilityCourses().size());
+        assertEquals("Đường A", dto.getFacilityCourses().get(0).getName());
+    }
+
+    @Test
     void getCourseDetail_theTeePicker_carriesWhatEachTeeMeasures() {
         // A golfer choosing between GOLD and WHITE is choosing between seven
         // thousand yards and six. The picker read `tee_sets`, which names tees
