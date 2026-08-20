@@ -575,7 +575,15 @@ class _BottomActions extends StatelessWidget {
                     ? null
                     : () => _editScores(context),
                 icon: const Icon(Icons.edit),
-                label: Text(AppLocalizations.of(context).summaryEditScores),
+                // FittedBox because three buttons split this row in thirds,
+                // and a third of a phone minus padding and an icon is less
+                // than "Sửa điểm" needs — the label broke into two lines
+                // and the button grew a storey taller than its neighbours.
+                // Scaling down a few percent beats wrapping in every locale.
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(AppLocalizations.of(context).summaryEditScores),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -585,7 +593,10 @@ class _BottomActions extends StatelessWidget {
                     ? null
                     : () => _share(context),
                 icon: const Icon(Icons.share),
-                label: Text(AppLocalizations.of(context).summaryShare),
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(AppLocalizations.of(context).summaryShare),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -595,7 +606,10 @@ class _BottomActions extends StatelessWidget {
                   Navigator.of(context).pop();
                 },
                 icon: const Icon(Icons.check),
-                label: Text(AppLocalizations.of(context).commonDone),
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(AppLocalizations.of(context).commonDone),
+                ),
               ),
             ),
           ],
