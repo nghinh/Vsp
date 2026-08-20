@@ -37,12 +37,18 @@ scp thing.sh ubuntu-docker:/tmp/
 ssh ubuntu-docker "scp -i ~/.ssh/id_ed25519_golfseg /tmp/thing.sh root@<a100>:/root/golfseg/"
 ```
 
-## What is deliberately missing
+## The vLLM scripts, and where their secrets went
 
 `gemma-run.original.sh` and `gemma-run.reduced.sh` — the `runlike` backup of the
 production vLLM container, and the reduced-memory variant used to free ~8 GB for
-training (FINDINGS §9). They are the record of how the GPU gets shared without
-taking the 26B model down, and they are **not in this repo** because both carry
-a live HuggingFace token and the vLLM API key inline. `SECRETS_POLICY.md` is
-zero-tolerance, and a redacted `docker run` backup is worse than none: it looks
-restorable and is not. They stay on the box.
+training (FINDINGS §9) — used to carry a live HuggingFace token and the vLLM
+API key inline, which kept them out of this repo. On 2026-08-20 both secrets
+moved to `/root/golfseg/.gemma.env` (root-only, 600) and the scripts now source
+it; what is committed here is byte-identical to what runs, and restorable on a
+box that has the env file.
+
+The keys themselves are still the keys. The vLLM API key is consumed by the
+vnpt-iplace fleet on the same GPU box (eight containers plus
+`/opt/litellm/config.yaml`), so rotating it is a coordination with that team,
+not a solo act. The HuggingFace token can only be reissued by its account
+owner.
