@@ -67,11 +67,26 @@ class ProfileLoaded extends ProfileState {
 class ProfileError extends ProfileState {
   final String message;
 
+  /// The specific cause, when one is known — a message key or server text
+  /// the error view shows under the generic headline. Null means the view
+  /// shows the headline alone rather than repeating it.
+  final String? detail;
+
   /// The profile before the error occurred (may be null).
   final GolferProfileDto? lastProfile;
 
-  const ProfileError({required this.message, this.lastProfile});
+  const ProfileError({required this.message, this.detail, this.lastProfile});
 
   @override
-  List<Object?> get props => [message, lastProfile];
+  List<Object?> get props => [message, detail, lastProfile];
+}
+
+/// The server refused the session and a refresh could not save it.
+///
+/// [ApiClient] has already tried the refresh token by the time a 401 reaches
+/// this bloc, so this state means the session is truly over. The screen's
+/// listener answers it by signing the golfer out — a "Try again" button
+/// cannot help, and before this state existed it was all a golfer got.
+class ProfileSessionExpired extends ProfileState {
+  const ProfileSessionExpired();
 }

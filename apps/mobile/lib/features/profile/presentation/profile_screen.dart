@@ -20,6 +20,7 @@ import 'package:mobile_theme/mobile_theme.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/profile_sync_store.dart';
 import '../../auth/data/auth_dto.dart';
+import '../../auth/presentation/auth_bloc.dart';
 import '../data/profile_dto.dart';
 import '../data/profile_repository.dart';
 import '../data/profile_service.dart';
@@ -155,7 +156,22 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
                 ),
               );
             }
-          } else if (state is ProfileError) {
+          } else if (state is ProfileSessionExpired) {
+            // The session is over and a refresh already failed. Sign out so
+            // the root router lands on the login screen — the one action
+            // that actually helps, instead of a retry into the same 401.
+            ScaffoldMessenger.of(context).hideCurrentSnackBar();
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(context.tr(AppMessages.authSessionExpired)),
+                backgroundColor: colorScheme.error,
+              ),
+            );
+            context.read<AuthBloc>().add(const LogoutRequested());
+          } else if (state is ProfileError && state.lastProfile != null) {
+            // Only when the form is still on screen does an error need the
+            // snackbar. With no profile the full error view says it —
+            // repeating the same sentence in a banner said it three times.
             ScaffoldMessenger.of(context).hideCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -166,13 +182,17 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
           }
         },
         builder: (context, state) {
-          if (state is ProfileLoading || state is ProfileInitial) {
+          if (state is ProfileLoading ||
+              state is ProfileInitial ||
+              // Momentary: the listener is signing the golfer out and the
+              // root router is about to replace this screen entirely.
+              state is ProfileSessionExpired) {
             return const Center(child: CircularProgressIndicator());
           }
 
           if (state is ProfileError && state.lastProfile == null) {
             return _ErrorView(
-              message: context.tr(state.message),
+              detail: state.detail == null ? null : context.tr(state.detail),
               onRetry: () {
                 context.read<ProfileBloc>().add(const LoadProfile());
               },
@@ -900,10 +920,13 @@ class _SectionHeader extends StatelessWidget {
 // ─── Error View ───────────────────────────────────────────────────────────────
 
 class _ErrorView extends StatelessWidget {
-  final String message;
+  /// The specific cause, shown under the generic headline. Null hides the
+  /// subtitle — before, the headline was passed back in here and the screen
+  /// said "Không tải được hồ sơ" twice, three times counting the snackbar.
+  final String? detail;
   final VoidCallback onRetry;
 
-  const _ErrorView({required this.message, required this.onRetry});
+  const _ErrorView({this.detail, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -923,14 +946,16 @@ class _ErrorView extends StatelessWidget {
               style: theme.textTheme.titleMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: VspSpacing.sm),
-            Text(
-              message,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+            if (detail != null) ...[
+              const SizedBox(height: VspSpacing.sm),
+              Text(
+                detail!,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                textAlign: TextAlign.center,
               ),
-              textAlign: TextAlign.center,
-            ),
+            ],
             const SizedBox(height: VspSpacing.lg),
             VspButton(
               label: AppLocalizations.of(context).commonTryAgain,

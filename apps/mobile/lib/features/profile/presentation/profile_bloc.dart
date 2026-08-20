@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/profile_dto.dart';
 import '../data/profile_repository.dart';
+import 'package:vsp_mobile/core/network/api_client.dart';
 import 'package:vsp_mobile/l10n/app_messages.dart';
 part 'profile_event.dart';
 part 'profile_state.dart';
@@ -52,12 +53,33 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       _draft = profile;
       final hasPending = await _profileRepository.hasPending();
       emit(ProfileLoaded(profile: profile, hasPendingSync: hasPending));
+    } on VspApiException catch (ex) {
+      debugPrint('ProfileBloc.load failed: $ex');
+      if (ex.statusCode == 401) {
+        // ApiClient has already spent the refresh token on this 401. What is
+        // left is a dead session, and "Try again" retries it into the same
+        // wall — the golfer stared at that button until they guessed at
+        // signing out themselves (2026-08-20, on a phone, at 07:45).
+        emit(const ProfileSessionExpired());
+      } else {
+        emit(
+          ProfileError(
+            message: AppMessages.profileLoadFailed,
+            detail: ex.message,
+          ),
+        );
+      }
     } catch (ex) {
       // The cause used to vanish here. Every failure — the request, the JSON,
       // the local sync queue — produced the same sentence and the same "Try
       // again", and nothing anywhere recorded which one had happened.
       debugPrint('ProfileBloc.load failed: $ex');
-      emit(ProfileError(message: AppMessages.profileLoadFailed));
+      emit(
+        ProfileError(
+          message: AppMessages.profileLoadFailed,
+          detail: ex.toString(),
+        ),
+      );
     }
   }
 
@@ -136,6 +158,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           profile: _draft,
           hasPendingSync: result.queuedOffline,
           clearSavingField: true,
+        ),
+      );
+    } on VspApiException catch (ex) {
+      if (ex.statusCode == 401) {
+        emit(const ProfileSessionExpired());
+        return;
+      }
+      emit(
+        ProfileError(
+          message: AppMessages.profileSaveFailed,
+          detail: ex.message,
+          lastProfile: draft,
         ),
       );
     } catch (_) {
