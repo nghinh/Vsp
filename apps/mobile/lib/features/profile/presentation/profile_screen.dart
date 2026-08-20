@@ -17,14 +17,10 @@ import 'package:vsp_mobile/presentation/widgets/scroll_edge_fade.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_theme/mobile_theme.dart';
 
-import '../../../core/network/api_client.dart';
-import '../../../core/storage/profile_sync_store.dart';
-import '../../auth/data/auth_dto.dart';
 import '../../auth/presentation/auth_bloc.dart';
 import '../data/profile_dto.dart';
-import '../data/profile_repository.dart';
-import '../data/profile_service.dart';
 import 'profile_bloc.dart';
+import 'profile_scope.dart';
 import 'widgets/profile_field_tile.dart';
 import 'widgets/unit_picker.dart';
 import 'widgets/skill_level_picker.dart';
@@ -41,22 +37,14 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) {
-        // Build dependencies from the app's service container.
-        // In a real app these would come from a DI container (GetIt, Provider).
-        final apiClient = ApiClient(); // Use shared singleton in real app
-        final profileService = ProfileService(apiClient: apiClient);
-        final syncStore = ProfileSyncStore();
-        final repository = ProfileRepository(
-          profileService: profileService,
-          syncStore: syncStore,
-        );
-        return ProfileBloc(profileRepository: repository)
-          ..add(const LoadProfile());
-      },
-      child: const _ProfileScreenBody(),
-    );
+    // Reuses the app-wide bloc from the ProfileScope above the Navigator
+    // (app.dart), so this tab edits the same profile every other screen
+    // reads. It used to assemble its own ApiClient and repository here,
+    // which meant its own cache, its own fetch, and a unit preference that
+    // could disagree with the one the round screen was showing. When
+    // nothing above provides a bloc — widget tests building this screen
+    // alone — the scope creates one from the shared repository.
+    return const ProfileScope(child: _ProfileScreenBody());
   }
 }
 
@@ -87,6 +75,18 @@ class _ProfileScreenBodyState extends State<_ProfileScreenBody> {
     _swingSpeedController = TextEditingController();
     _birthYearController = TextEditingController();
     _countryController = TextEditingController();
+
+    // The shared bloc may have finished loading long before this tab opened,
+    // and a BlocConsumer listener only hears changes — so seed the fields
+    // from the state that already exists. And if the last attempt failed or
+    // never ran, ask again now that someone is actually looking.
+    final bloc = context.read<ProfileBloc>();
+    final state = bloc.state;
+    if (state is ProfileLoaded) {
+      _syncControllers(state.profile);
+    } else if (state is ProfileInitial || state is ProfileError) {
+      bloc.add(const LoadProfile());
+    }
   }
 
   @override
