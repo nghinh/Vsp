@@ -268,16 +268,35 @@ class RoundCompletionBloc
 
     return buildPlayerSummaries(
       scores: scores,
-      parByHole: await _parByHoleNumber(round.courseId),
+      parByHole: await _parByHoleNumber(round),
       playerNames: await _playerNames(round.id),
     );
   }
 
   /// hole number → par, from the course package this round was started on.
-  Future<Map<int, int>> _parByHoleNumber(int courseId) async {
+  ///
+  /// A paired round plays two nine-hole courses as one card: the scores call
+  /// them holes 1–18, but each course's package numbers its own holes 1–9.
+  /// Loading only [Round.courseId] left holes 10–18 with no par at all, and
+  /// the summary showed a golfer "Par 0 … +4" for a par they had just made.
+  /// Same shift as `StrokeIndexApi.forRound`: front keeps 1–9, the back
+  /// nine lands on 10–18.
+  Future<Map<int, int>> _parByHoleNumber(Round round) async {
     try {
-      final holes = await _holeRepository.findByCourseWithGeometry('$courseId');
-      return {for (final h in holes) h.holeNumber: h.par};
+      final front = await _holeRepository
+          .findByCourseWithGeometry('${round.courseId}');
+      final pars = {for (final h in front) h.holeNumber: h.par};
+      final backNineCourseId = round.backNineCourseId;
+      if (backNineCourseId == null) {
+        return pars;
+      }
+      final back =
+          await _holeRepository.findByCourseWithGeometry('$backNineCourseId');
+      return {
+        for (final e in pars.entries)
+          if (e.key <= 9) e.key: e.value,
+        for (final h in back) h.holeNumber + 9: h.par,
+      };
     } catch (_) {
       // No package on this device, or an unreadable one. The card still shows
       // strokes; it just cannot say what they were relative to.

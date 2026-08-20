@@ -20,6 +20,10 @@ class ScoreRowWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    // Par 0 is not a par — it is "this device has no card for this hole".
+    // Subtracting it would file a made par as "+4" in red, so where the par
+    // is unknown the row says nothing about it: strokes, and no verdict.
+    final parKnown = entry.par > 0;
     final diff = entry.relativeToPar;
 
     // Color coding: under par = green, over par = red, par = neutral
@@ -33,7 +37,7 @@ class ScoreRowWidget extends StatelessWidget {
       label: AppLocalizations.of(context).scoreRowSemantics(
         '${entry.holeNumber}',
         '${entry.strokes}',
-        entry.scoreNotation,
+        parKnown ? entry.scoreNotation : '${entry.strokes}',
       ),
       button: onTap != null,
       child: InkWell(
@@ -57,7 +61,9 @@ class ScoreRowWidget extends StatelessWidget {
               SizedBox(
                 width: 28,
                 child: Text(
-                  AppLocalizations.of(context).coursePar('${entry.par}'),
+                  parKnown
+                      ? AppLocalizations.of(context).coursePar('${entry.par}')
+                      : '—',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -72,25 +78,27 @@ class ScoreRowWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              // Score vs par
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: diffColor.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  diff == 0
-                      ? 'E'
-                      : diff > 0
-                      ? '+$diff'
-                      : '$diff',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: diffColor,
-                    fontWeight: FontWeight.bold,
+              // Score vs par — only when there is a par to be relative to.
+              if (parKnown)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: diffColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    diff == 0
+                        ? 'E'
+                        : diff > 0
+                        ? '+$diff'
+                        : '$diff',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: diffColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
               // Progressive fields
               if (entry.putts != null || entry.penalties != null)
                 Padding(
