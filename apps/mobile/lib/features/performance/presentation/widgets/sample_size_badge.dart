@@ -43,7 +43,10 @@ class SampleSizeBadge extends StatelessWidget {
             Icon(_iconFor(label), size: 14, color: color),
             const SizedBox(width: 4),
             Text(
-              showCount ? '$sampleSize shots' : labelText,
+              showCount
+                  ? AppLocalizations.of(context)
+                      .performanceShotsCount('$sampleSize')
+                  : labelText,
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

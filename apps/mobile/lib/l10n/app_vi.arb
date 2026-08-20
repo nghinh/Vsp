@@ -2015,5 +2015,19 @@
   "windDirNW": "Tây Bắc",
   "windDirNNW": "Bắc Tây Bắc",
   "weatherHumiditySemantics": "Độ ẩm {value} phần trăm",
-  "weatherWindSpeedSemantics": "Tốc độ gió {speed} kilômét mỗi giờ"
+  "weatherWindSpeedSemantics": "Tốc độ gió {speed} kilômét mỗi giờ",
+  "performanceBagNamedTitle": "Hiệu suất {bagName}",
+  "performanceShotsCount": "{count} cú đánh",
+  "performanceCarryAvgShort": "carry TB",
+  "performanceShotsInRegion": "{count} cú trong {label}",
+  "performanceClubMiniSemantics": "{club}: {count} cú đánh, carry {carry}",
+  "performanceClubStatsSemantics": "Hiệu suất gậy: {count} cú đánh, carry trung bình {carry}, tổng trung bình {total}, độ dao động {variability}",
+  "confidenceInsufficient": "Chưa đủ",
+  "confidenceInsufficientDetail": "Chưa đủ cú đánh để thống kê đáng tin cậy.",
+  "confidenceLow": "Thấp",
+  "confidenceLowDetail": "Dữ liệu còn ít — thống kê có thể dao động nhiều.",
+  "confidenceMedium": "Trung bình",
+  "confidenceMediumDetail": "Dữ liệu vừa phải — thống kê tương đối ổn định.",
+  "confidenceHigh": "Cao",
+  "confidenceHighDetail": "Dữ liệu dồi dào — thống kê có độ tin cậy cao."
 }

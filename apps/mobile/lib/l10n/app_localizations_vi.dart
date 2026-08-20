@@ -4874,4 +4874,65 @@ class AppLocalizationsVi extends AppLocalizations {
   String weatherWindSpeedSemantics(Object speed) {
     return 'Tốc độ gió $speed kilômét mỗi giờ';
   }
+
+  @override
+  String performanceBagNamedTitle(Object bagName) {
+    return 'Hiệu suất $bagName';
+  }
+
+  @override
+  String performanceShotsCount(Object count) {
+    return '$count cú đánh';
+  }
+
+  @override
+  String get performanceCarryAvgShort => 'carry TB';
+
+  @override
+  String performanceShotsInRegion(Object count, Object label) {
+    return '$count cú trong $label';
+  }
+
+  @override
+  String performanceClubMiniSemantics(Object club, Object count, Object carry) {
+    return '$club: $count cú đánh, carry $carry';
+  }
+
+  @override
+  String performanceClubStatsSemantics(
+    Object count,
+    Object carry,
+    Object total,
+    Object variability,
+  ) {
+    return 'Hiệu suất gậy: $count cú đánh, carry trung bình $carry, tổng trung bình $total, độ dao động $variability';
+  }
+
+  @override
+  String get confidenceInsufficient => 'Chưa đủ';
+
+  @override
+  String get confidenceInsufficientDetail =>
+      'Chưa đủ cú đánh để thống kê đáng tin cậy.';
+
+  @override
+  String get confidenceLow => 'Thấp';
+
+  @override
+  String get confidenceLowDetail =>
+      'Dữ liệu còn ít — thống kê có thể dao động nhiều.';
+
+  @override
+  String get confidenceMedium => 'Trung bình';
+
+  @override
+  String get confidenceMediumDetail =>
+      'Dữ liệu vừa phải — thống kê tương đối ổn định.';
+
+  @override
+  String get confidenceHigh => 'Cao';
+
+  @override
+  String get confidenceHighDetail =>
+      'Dữ liệu dồi dào — thống kê có độ tin cậy cao.';
 }

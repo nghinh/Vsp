@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import '../../../../domain/models/performance/club_performance_stats.dart';
 import 'sample_size_badge.dart';
 import 'package:vsp_mobile/features/measure/presentation/distance_unit_scope.dart';
+import 'package:vsp_mobile/l10n/app_localizations.dart';
 
 /// Mini card showing club performance summary for bag-level list view.
 class ClubPerformanceMiniCard extends StatelessWidget {
@@ -30,8 +31,10 @@ class ClubPerformanceMiniCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label:
-          '$clubName: ${stats.sampleSize} shots, carry ${stats.formatCarryAvg(context.distanceUnit)}',
+      label: AppLocalizations.of(context).performanceClubMiniSemantics(
+          clubName,
+          '${stats.sampleSize}',
+          stats.formatCarryAvg(context.distanceUnit)),
       button: true,
       child: InkWell(
         onTap: onTap,
@@ -83,7 +86,7 @@ class ClubPerformanceMiniCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          'carry avg',
+                          AppLocalizations.of(context).performanceCarryAvgShort,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),

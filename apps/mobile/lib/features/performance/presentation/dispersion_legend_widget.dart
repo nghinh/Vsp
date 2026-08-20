@@ -134,7 +134,8 @@ class _OutcomeLegendItem extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Semantics(
-      label: '$count shots in $label',
+      label: AppLocalizations.of(context)
+          .performanceShotsInRegion('$count', label),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(

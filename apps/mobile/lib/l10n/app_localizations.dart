@@ -8556,6 +8556,95 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wind speed {speed} kilometers per hour'**
   String weatherWindSpeedSemantics(Object speed);
+
+  /// No description provided for @performanceBagNamedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{bagName} Performance'**
+  String performanceBagNamedTitle(Object bagName);
+
+  /// No description provided for @performanceShotsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} shots'**
+  String performanceShotsCount(Object count);
+
+  /// No description provided for @performanceCarryAvgShort.
+  ///
+  /// In en, this message translates to:
+  /// **'carry avg'**
+  String get performanceCarryAvgShort;
+
+  /// No description provided for @performanceShotsInRegion.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} shots in {label}'**
+  String performanceShotsInRegion(Object count, Object label);
+
+  /// No description provided for @performanceClubMiniSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'{club}: {count} shots, carry {carry}'**
+  String performanceClubMiniSemantics(Object club, Object count, Object carry);
+
+  /// No description provided for @performanceClubStatsSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'Club performance: {count} shots, carry average {carry}, total average {total}, variability {variability}'**
+  String performanceClubStatsSemantics(
+    Object count,
+    Object carry,
+    Object total,
+    Object variability,
+  );
+
+  /// No description provided for @confidenceInsufficient.
+  ///
+  /// In en, this message translates to:
+  /// **'Insufficient'**
+  String get confidenceInsufficient;
+
+  /// No description provided for @confidenceInsufficientDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough shots to provide reliable statistics.'**
+  String get confidenceInsufficientDetail;
+
+  /// No description provided for @confidenceLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get confidenceLow;
+
+  /// No description provided for @confidenceLowDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Limited data — statistics may vary significantly.'**
+  String get confidenceLowDetail;
+
+  /// No description provided for @confidenceMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get confidenceMedium;
+
+  /// No description provided for @confidenceMediumDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate data — statistics are reasonably stable.'**
+  String get confidenceMediumDetail;
+
+  /// No description provided for @confidenceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get confidenceHigh;
+
+  /// No description provided for @confidenceHighDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Robust data — statistics are highly reliable.'**
+  String get confidenceHighDetail;
 }
 
 class _AppLocalizationsDelegate

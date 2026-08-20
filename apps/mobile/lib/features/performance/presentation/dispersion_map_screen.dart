@@ -249,7 +249,7 @@ class _ShotCountBadge extends StatelessWidget {
           Icon(Icons.scatter_plot, size: 16, color: colorScheme.primary),
           const SizedBox(width: 6),
           Text(
-            '$count shots',
+            AppLocalizations.of(context).performanceShotsCount('$count'),
             style: theme.textTheme.bodySmall?.copyWith(
               fontWeight: FontWeight.w600,
             ),

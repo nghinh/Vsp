@@ -108,7 +108,7 @@ class _BagPerformanceBody extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${bag.name} Performance'),
+        title: Text(AppLocalizations.of(context).performanceBagNamedTitle(bag.name)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),

@@ -118,32 +118,32 @@ class ConfidenceBadge extends StatelessWidget {
           Icons.warning_amber_rounded,
           Theme.of(context).colorScheme.error,
           Theme.of(context).colorScheme.error,
-          'Insufficient',
-          'Not enough shots to provide reliable statistics.',
+          AppLocalizations.of(context).confidenceInsufficient,
+          AppLocalizations.of(context).confidenceInsufficientDetail,
         );
       case ConfidenceLevel.low:
         return (
           Icons.info_outline,
           Theme.of(context).colorScheme.secondary,
           Theme.of(context).colorScheme.secondary,
-          'Low',
-          'Limited data — statistics may vary significantly.',
+          AppLocalizations.of(context).confidenceLow,
+          AppLocalizations.of(context).confidenceLowDetail,
         );
       case ConfidenceLevel.medium:
         return (
           Icons.analytics_outlined,
           isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
           isDark ? const Color(0xFF60A5FA) : const Color(0xFF3B82F6),
-          'Medium',
-          'Moderate data — statistics are reasonably stable.',
+          AppLocalizations.of(context).confidenceMedium,
+          AppLocalizations.of(context).confidenceMediumDetail,
         );
       case ConfidenceLevel.high:
         return (
           Icons.verified,
           isDark ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary,
           isDark ? const Color(0xFF34D399) : Theme.of(context).colorScheme.tertiary,
-          'High',
-          'Robust data — statistics are highly reliable.',
+          AppLocalizations.of(context).confidenceHigh,
+          AppLocalizations.of(context).confidenceHighDetail,
         );
     }
   }

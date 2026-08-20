@@ -3606,5 +3606,50 @@
     "placeholders": {
       "speed": {}
     }
-  }
+  },
+  "performanceBagNamedTitle": "{bagName} Performance",
+  "@performanceBagNamedTitle": {
+    "placeholders": {
+      "bagName": {}
+    }
+  },
+  "performanceShotsCount": "{count} shots",
+  "@performanceShotsCount": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "performanceCarryAvgShort": "carry avg",
+  "performanceShotsInRegion": "{count} shots in {label}",
+  "@performanceShotsInRegion": {
+    "placeholders": {
+      "count": {},
+      "label": {}
+    }
+  },
+  "performanceClubMiniSemantics": "{club}: {count} shots, carry {carry}",
+  "@performanceClubMiniSemantics": {
+    "placeholders": {
+      "club": {},
+      "count": {},
+      "carry": {}
+    }
+  },
+  "performanceClubStatsSemantics": "Club performance: {count} shots, carry average {carry}, total average {total}, variability {variability}",
+  "@performanceClubStatsSemantics": {
+    "placeholders": {
+      "count": {},
+      "carry": {},
+      "total": {},
+      "variability": {}
+    }
+  },
+  "confidenceInsufficient": "Insufficient",
+  "confidenceInsufficientDetail": "Not enough shots to provide reliable statistics.",
+  "confidenceLow": "Low",
+  "confidenceLowDetail": "Limited data — statistics may vary significantly.",
+  "confidenceMedium": "Medium",
+  "confidenceMediumDetail": "Moderate data — statistics are reasonably stable.",
+  "confidenceHigh": "High",
+  "confidenceHighDetail": "Robust data — statistics are highly reliable."
 }

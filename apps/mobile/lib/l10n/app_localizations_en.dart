@@ -4876,4 +4876,65 @@ class AppLocalizationsEn extends AppLocalizations {
   String weatherWindSpeedSemantics(Object speed) {
     return 'Wind speed $speed kilometers per hour';
   }
+
+  @override
+  String performanceBagNamedTitle(Object bagName) {
+    return '$bagName Performance';
+  }
+
+  @override
+  String performanceShotsCount(Object count) {
+    return '$count shots';
+  }
+
+  @override
+  String get performanceCarryAvgShort => 'carry avg';
+
+  @override
+  String performanceShotsInRegion(Object count, Object label) {
+    return '$count shots in $label';
+  }
+
+  @override
+  String performanceClubMiniSemantics(Object club, Object count, Object carry) {
+    return '$club: $count shots, carry $carry';
+  }
+
+  @override
+  String performanceClubStatsSemantics(
+    Object count,
+    Object carry,
+    Object total,
+    Object variability,
+  ) {
+    return 'Club performance: $count shots, carry average $carry, total average $total, variability $variability';
+  }
+
+  @override
+  String get confidenceInsufficient => 'Insufficient';
+
+  @override
+  String get confidenceInsufficientDetail =>
+      'Not enough shots to provide reliable statistics.';
+
+  @override
+  String get confidenceLow => 'Low';
+
+  @override
+  String get confidenceLowDetail =>
+      'Limited data — statistics may vary significantly.';
+
+  @override
+  String get confidenceMedium => 'Medium';
+
+  @override
+  String get confidenceMediumDetail =>
+      'Moderate data — statistics are reasonably stable.';
+
+  @override
+  String get confidenceHigh => 'High';
+
+  @override
+  String get confidenceHighDetail =>
+      'Robust data — statistics are highly reliable.';
 }

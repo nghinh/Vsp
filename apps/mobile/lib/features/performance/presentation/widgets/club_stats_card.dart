@@ -35,7 +35,7 @@ class ClubStatsCard extends StatelessWidget {
     final unit = context.distanceUnit;
 
     return Semantics(
-      label: _semanticLabel(unit),
+      label: _semanticLabel(context, unit),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -204,11 +204,13 @@ class ClubStatsCard extends StatelessWidget {
     return RelativeTime.format(l10n, computedAt);
   }
 
-  String _semanticLabel(DistanceUnit unit) {
-    return 'Club performance: ${stats.sampleSize} shots, '
-        'carry average ${stats.formatCarryAvg(unit)}, '
-        'total average ${stats.formatTotalAvg(unit)}, '
-        'variability ${stats.formatVariability(unit)}';
+  String _semanticLabel(BuildContext context, DistanceUnit unit) {
+    return AppLocalizations.of(context).performanceClubStatsSemantics(
+      '${stats.sampleSize}',
+      stats.formatCarryAvg(unit),
+      stats.formatTotalAvg(unit),
+      stats.formatVariability(unit),
+    );
   }
 }
 
