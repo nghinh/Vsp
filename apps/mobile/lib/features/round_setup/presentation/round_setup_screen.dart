@@ -530,20 +530,25 @@ class _RoundSetupScaffold extends StatelessWidget {
             // The fade above the bar is the cue: content dissolving into the
             // bar is a boundary, content chopped by one is a bug.
             ScrollEdgeFade(color: colorScheme.surface),
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                border: Border(
-                  top: BorderSide(color: colorScheme.outline.withOpacity(0.2)),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: _StartRoundButton(state: state),
-              ),
-            ),
           ],
+        ),
+      ),
+      // The start button lives in the bottomNavigationBar slot, not at the
+      // bottom of the body, because the Scaffold lays snackbars out ABOVE
+      // this slot. In the body, "Đã tải xong dữ liệu sân" — arriving from
+      // the download screen the golfer just left — sat exactly on top of
+      // the one button this screen exists for, for as long as it showed.
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border(
+            top: BorderSide(color: colorScheme.outline.withOpacity(0.2)),
+          ),
+        ),
+        child: SafeArea(
+          top: false,
+          child: _StartRoundButton(state: state),
         ),
       ),
     );
