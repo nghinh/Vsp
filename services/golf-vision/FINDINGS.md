@@ -388,3 +388,75 @@ recorded oddity rather than a trap: val mean IoU is 0.267 against test 0.559,
 broken harness. Model selection continues to lean on green IoU, and
 conclusions on the 163-patch test set.
 
+
+---
+
+## 11. The large-corpus retrain — 156× the data, and what it bought
+
+The night of 2026-08-19 ran unattended: `golfseg-autopilot.service` waited
+out the corpus build, trained, scored, deployed on a measured win, and
+deleted the course data behind itself — dữ liệu sân dùng xong thì xoá. Done
+by 11:30 the next morning, nobody watching.
+
+### The corpus
+
+164,446 training patches (17,558 val) from 28 states of Geofabrik extracts
+traced against NAIP — against 1,051 in the corpus of §8. Every pixel public
+domain, every mask ODbL. The lineage stamp on the pretrained weight reads
+**shippable: commercial backbone, and every pixel permits automated
+extraction** — the first weight in this project that may be sold as-is.
+
+### Pretrain, 16 epochs, 7h10m on the shared A100
+
+Best at epoch 7 (green IoU 0.687 on US val); nine further epochs never beat
+it — the loss kept falling while green went sideways, so 16 was the right
+budget, not a truncation. vLLM production served throughout, cap 0.11.
+
+### Six fine-tunes on Vietnam, and a clean split
+
+3 seeds × Lovász {0, 0.5}, each scored with TTA on the same 163-patch test
+split as every number since §9:
+
+| run | mean IoU | green | vs baseline 0.573 / 0.5554 |
+|---|---|---|---|
+| **s1-l0.5** | **0.584** | 0.563 | **deployed** |
+| s2-l0.5 | 0.581 | 0.575 | eligible, second on mean |
+| s0-l0.5 | 0.569 | 0.576 | green passed, mean short by 0.004 |
+| s2-l0 | 0.548 | 0.542 | — |
+| s0-l0 | 0.547 | 0.541 | — |
+| s1-l0 | 0.539 | 0.520 | — |
+
+Two findings, both unambiguous. **Lovász is worth ~+0.03 mean IoU here**:
+the three runs without it cluster at 0.54, the three with it at 0.57–0.58,
+across every seed. And **the big corpus beat the asking tier**: §10 bought
++0.014 with 8× compute at inference; this bought +0.011 over that, at zero
+inference cost, by pretraining on 156× the data. Both are in the served
+model now.
+
+`pick_winner.py` was corrected mid-run (before it fired): it ranked by mean
+and then gated the leader, so a run clearing both bars could be discarded
+because a sibling with a higher mean failed the green. Both gates now apply
+before the ranking, and each candidate carries `heldBackBy` in the summary.
+This time the leader passed both gates anyway — but s2-l0.5 was a second
+eligible candidate, which is exactly the situation the old ordering
+mishandles.
+
+### The caveat that outlives the win
+
+The fine-tuned weight is stamped **RESEARCH ONLY**: its 1,051 Vietnam
+patches are Esri World Imagery, which does not permit automated extraction.
+The deploy gate reads scores, not lineage — the served model has carried
+this stamp since naip-v3, so nothing regressed, but commercialisation needs
+a licensed VN imagery source and a re-fine-tune. NAIP cannot help here; it
+photographs only the United States.
+
+Green edge error is now **2.2 m mean, 5.6 m p95** on test — inside a green's
+own radius. Tee remains the hardest class (0.247 at best, 2.9× area
+inflation): sparse, small, and OSM maps it worst.
+
+### Housekeeping, verified
+
+Corpus (68 GB) and PBF extracts deleted by the autopilot; `/data` back to
+73%. Kept: `osm-us-large/` (655 MB, the corpus can be rebuilt from it), all
+checkpoints and scores (1.1 GB). The 862-hole Vietnam draft re-sweep against
+the new weight started 11:47.
