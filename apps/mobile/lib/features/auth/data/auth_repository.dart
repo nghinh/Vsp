@@ -268,7 +268,16 @@ class AuthRepository {
     // The access token lives a day, so this skips the exchange for a day at a
     // time rather than burning one every time the app is opened. A token
     // inside the margin, or one this cannot read, still goes the long way.
-    final stored = await _secureStorage.getAccessToken();
+    // A storage that will not answer is not evidence about the session, so it
+    // takes the refresh path rather than propagating: on iOS the keychain item
+    // is `first_unlock_this_device`, and a phone that rebooted in a golf bag
+    // and has not been unlocked since reads back nothing at all.
+    String? stored;
+    try {
+      stored = await _secureStorage.getAccessToken();
+    } catch (_) {
+      stored = null;
+    }
     if (stored != null && _goodForAtLeast(stored, const Duration(minutes: 10))) {
       _apiClient.setAccessToken(stored);
       return SessionRestoreOutcome.restored;

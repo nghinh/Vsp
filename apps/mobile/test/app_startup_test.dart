@@ -10,11 +10,30 @@ import 'package:vsp_mobile/features/auth/presentation/auth_bloc.dart';
 import 'package:vsp_mobile/features/auth/presentation/home_screen.dart';
 import 'package:vsp_mobile/features/auth/presentation/login_screen.dart';
 
+/// Storage that answers from memory.
+///
+/// The fake below used to be handed a real [SecureStorage], which reaches the
+/// keychain over a platform channel. Nothing answers that channel in a widget
+/// test, so the moment restore started reading the stored access token — to
+/// decide whether a refresh was worth spending — the whole file hung on its
+/// first test with no output at all. A test double that reaches the platform
+/// is not a double.
+class _NoStoredTokens implements SecureStorage {
+  @override
+  Future<String?> getAccessToken() async => null;
+
+  @override
+  Future<String?> getRefreshToken() async => null;
+
+  @override
+  noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class _StartupAuthRepository extends AuthRepository {
   _StartupAuthRepository({required this.hasSession, this.refreshDelay})
     : super(
         authService: AuthService(apiClient: ApiClient()),
-        secureStorage: SecureStorage(),
+        secureStorage: _NoStoredTokens(),
         apiClient: ApiClient(),
       );
 
