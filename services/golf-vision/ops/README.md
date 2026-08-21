@@ -52,3 +52,24 @@ vnpt-iplace fleet on the same GPU box (eight containers plus
 `/opt/litellm/config.yaml`), so rotating it is a coordination with that team,
 not a solo act. The HuggingFace token can only be reissued by its account
 owner.
+
+## Rotating the vLLM key
+
+`rotate-vllm-key.sh` does the whole turn in one pass: new key into every file
+that holds the old one, vLLM rebuilt on it, consumers restarted, old key
+checked to be dead. Install it the way this file describes above, then look
+before you leap:
+
+```bash
+bash /root/golfseg/rotate-vllm-key.sh --dry-run   # lists the files, touches nothing
+bash /root/golfseg/rotate-vllm-key.sh             # ~6 minutes of iplace LLM downtime
+```
+
+Two things this script will not do for you. It cannot avoid the outage —
+vLLM reloads a 26B model to pick up a new key, and every iplace LLM call
+fails while it does, so run it when that team can afford six minutes. And it
+finds the files by searching for the old key rather than from a list: the
+first version of it carried a hardcoded list that named
+`docker-compose.override.example.yaml` but not `docker-compose.override.yaml`,
+which is the file `up -d` actually loads. That rotation would have brought the
+fleet back up on a key that had just been retired.
