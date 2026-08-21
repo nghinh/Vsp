@@ -25,6 +25,7 @@ import '../../../../domain/models/course_search_result.dart';
 import '../../../../presentation/screens/course_download_screen.dart';
 import '../../../../domain/models/favorite_course.dart';
 import '../../../../domain/models/recent_course.dart';
+import '../../auth/presentation/auth_bloc.dart';
 import '../../course_detail/presentation/course_detail_screen.dart';
 import 'course_search_bloc.dart';
 import 'course_search_event.dart';
@@ -142,6 +143,29 @@ class _CourseSearchScreenBodyState extends State<_CourseSearchScreenBody>
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
+    return BlocListener<CourseSearchBloc, CourseSearchState>(
+      // A dead session, from whichever tab found it out.
+      //
+      // The picker used to answer a 401 with "Tìm kiếm thất bại. Vui lòng thử
+      // lại." and a Thử lại button, which retries a session that has no token
+      // left — the same wall, once per tap. The profile screen was taught this
+      // on 20/8; the picker is where the golfer actually was.
+      listenWhen: (_, current) => current is CourseSearchSessionExpired,
+      listener: (context, _) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.tr(AppMessages.authSessionExpired)),
+            backgroundColor: colorScheme.error,
+          ),
+        );
+        context.read<AuthBloc>().add(const LogoutRequested());
+      },
+      child: _buildScaffold(context, colorScheme),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context, ColorScheme colorScheme) {
     return Scaffold(
       appBar: AppBar(
         title: Text(

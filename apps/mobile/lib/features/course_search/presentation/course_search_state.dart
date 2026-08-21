@@ -191,6 +191,24 @@ class CourseSearchRecentLoaded extends CourseSearchState {
   List<Object?> get props => [...super.props, recentCourses, isLoading];
 }
 
+/// The session is over, not the request unlucky.
+///
+/// A 401 that survived [ApiClient]'s one refresh means the refresh token is
+/// spent too. Kept apart from [CourseSearchError] because the two need
+/// opposite answers: an error offers "Thử lại", and retrying a dead session
+/// walks into the same 401 for as long as the golfer keeps tapping — which is
+/// what the course picker did, on a phone, in the morning of 21/8/2026. This
+/// one signs out and lands on the login screen.
+class CourseSearchSessionExpired extends CourseSearchState {
+  const CourseSearchSessionExpired({
+    required super.activeTab,
+    super.lastQuery,
+    super.lastLatitude,
+    super.lastLongitude,
+    super.lastRadius,
+  });
+}
+
 /// Error state.
 class CourseSearchError extends CourseSearchState {
   final String message;

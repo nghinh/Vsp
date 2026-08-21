@@ -10,6 +10,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../data/api/course_search_api.dart';
 import '../../../data/repositories/course_search_repository.dart';
 import '../../../data/services/location_service_impl.dart';
@@ -129,6 +130,15 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
         ),
       );
     } catch (ex) {
+      if (_sessionIsOver(ex)) {
+        emit(
+          CourseSearchSessionExpired(
+            activeTab: SearchTab.all,
+            lastQuery: query,
+          ),
+        );
+        return;
+      }
       emit(
         CourseSearchError(
           message: AppMessages.courseSearchFailed,
@@ -138,6 +148,24 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
       );
     }
   }
+
+  /// Whether this failure means the golfer is signed out.
+  ///
+  /// A 401 alone does not mean that, and reading it that way is dangerous on
+  /// this app. [ApiClient] tries one refresh before the exception gets here,
+  /// and that refresh fails two very different ways: the server answered and
+  /// refused — the session is spent, [AuthRepository.logout] has already run
+  /// and cleared the token — or the phone could not reach the server at all,
+  /// which is the ordinary state of a golf course and leaves the stored
+  /// session intact and still good.
+  ///
+  /// The token is what tells them apart. Signing a golfer out because a
+  /// refresh could not get a bar of signal destroys a session the server would
+  /// have honoured and strands them at a login screen they cannot pass.
+  bool _sessionIsOver(Object ex) =>
+      ex is VspApiException &&
+      ex.statusCode == 401 &&
+      ApiClient.sharedAccessToken == null;
 
   // ─── Nearby Search ──────────────────────────────────────────────────────────
 
@@ -227,6 +255,17 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
         ),
       );
     } catch (ex) {
+      if (_sessionIsOver(ex)) {
+        emit(
+          CourseSearchSessionExpired(
+            activeTab: SearchTab.nearby,
+            lastLatitude: event.latitude,
+            lastLongitude: event.longitude,
+            lastRadius: event.radiusMeters,
+          ),
+        );
+        return;
+      }
       emit(
         CourseSearchError(
           message: AppMessages.nearbyLoadFailed,
@@ -274,6 +313,10 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
         ),
       );
     } catch (ex) {
+      if (_sessionIsOver(ex)) {
+        emit(const CourseSearchSessionExpired(activeTab: SearchTab.favorites));
+        return;
+      }
       emit(
         CourseSearchError(
           message: AppMessages.favoritesLoadFailed,
@@ -399,6 +442,10 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
         ),
       );
     } catch (ex) {
+      if (_sessionIsOver(ex)) {
+        emit(const CourseSearchSessionExpired(activeTab: SearchTab.recent));
+        return;
+      }
       emit(
         CourseSearchError(
           message: AppMessages.recentLoadFailed,
@@ -467,6 +514,18 @@ class CourseSearchBloc extends Bloc<CourseSearchEvent, CourseSearchState> {
         ),
       );
     } catch (ex) {
+      if (_sessionIsOver(ex)) {
+        emit(
+          CourseSearchSessionExpired(
+            activeTab: currentState.activeTab,
+            lastQuery: currentState.lastQuery,
+            lastLatitude: currentState.lastLatitude,
+            lastLongitude: currentState.lastLongitude,
+            lastRadius: currentState.lastRadius,
+          ),
+        );
+        return;
+      }
       emit(currentState.copyWith(isLoadingMore: false));
     }
   }
