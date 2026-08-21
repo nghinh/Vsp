@@ -136,13 +136,29 @@ abstract final class VspTheme {
             vertical: 12,
           ),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          side: BorderSide(color: colorScheme.primary, width: 1.5),
           textStyle: TextStyle(
             fontFamily: VspFontFamily.body,
             fontSize: VspFontSize.sm,
             height: VspLineHeight.snug,
             fontWeight: VspFontWeight.medium,
             letterSpacing: VspLetterSpacing.wide,
+          ),
+        ).copyWith(
+          // The border answers to the button's state, which `styleFrom` cannot
+          // express: it takes one BorderSide for every state at once.
+          //
+          // So a disabled outlined button kept a full-strength primary border
+          // while Material greyed its label and icon — the round summary of a
+          // round with no scores offers "Sửa điểm" and "Chia sẻ" outlined in
+          // brand orange with pale grey text inside, in both palettes. That
+          // reads as a live button with an unreadable label, and it is tapped.
+          side: WidgetStateProperty.resolveWith(
+            (states) => BorderSide(
+              color: states.contains(WidgetState.disabled)
+                  ? colorScheme.onSurface.withOpacity(VspOpacity.disabled)
+                  : colorScheme.primary,
+              width: 1.5,
+            ),
           ),
         ),
       ),
