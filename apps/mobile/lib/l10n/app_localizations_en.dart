@@ -984,6 +984,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scorecardTitle => 'Submit the club\'s scorecard';
 
   @override
+  String get scorecardScreenTitle => 'Scorecard';
+
+  @override
   String get scorecardTrackShot => 'Track Shot';
 
   @override

@@ -652,7 +652,15 @@ class _ScorecardScreenContent extends StatelessWidget {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(AppLocalizations.of(context).scorecardTitle),
+            // The screen's own name, not the photo-submission flow's.
+            //
+            // This read `scorecardTitle` — "Gửi scorecard của sân" — which
+            // belongs to the screen where a golfer photographs the club's
+            // paper card. A golfer playing hole 3 was on a screen titled
+            // "submit the club's scorecard", and the only reason nobody
+            // noticed is that eight action icons squeeze the title out of the
+            // bar on a phone. VoiceOver still read it.
+            title: Text(AppLocalizations.of(context).scorecardScreenTitle),
             centerTitle: true,
             elevation: 0,
             scrolledUnderElevation: 0,

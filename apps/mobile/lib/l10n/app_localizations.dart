@@ -1916,6 +1916,12 @@ abstract class AppLocalizations {
   /// **'Submit the club\'s scorecard'**
   String get scorecardTitle;
 
+  /// No description provided for @scorecardScreenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Scorecard'**
+  String get scorecardScreenTitle;
+
   /// No description provided for @scorecardTrackShot.
   ///
   /// In en, this message translates to:

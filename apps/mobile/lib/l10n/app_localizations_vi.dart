@@ -984,6 +984,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scorecardTitle => 'Gửi scorecard của sân';
 
   @override
+  String get scorecardScreenTitle => 'Thẻ điểm';
+
+  @override
   String get scorecardTrackShot => 'Ghi cú đánh';
 
   @override
