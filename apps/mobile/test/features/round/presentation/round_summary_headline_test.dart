@@ -46,6 +46,36 @@ PlayerScoreSummary player({
   );
 }
 
+/// The ordinary Vietnamese round: holes the package carries no geometry for,
+/// so the summary is handed par 0 for every one of them.
+PlayerScoreSummary playerWithNoParKnown({
+  required String name,
+  required int totalStrokes,
+  int count = 18,
+}) {
+  final holes = [
+    for (var i = 1; i <= count; i++)
+      ScoreEntry(
+        holeNumber: i,
+        par: 0,
+        strokes: totalStrokes ~/ count,
+        putts: 2,
+      ),
+  ];
+  return PlayerScoreSummary(
+    playerId: name,
+    playerName: name,
+    holes: holes,
+    totalStrokes: totalStrokes,
+    // What the completion bloc produces when no hole has a par: nothing summed
+    // and nothing to be relative to. The zero below is the trap — it used to
+    // be printed as "E".
+    totalPar: 0,
+    relativeScore: 0,
+    syncState: SyncState.synced,
+  );
+}
+
 Future<void> pump(WidgetTester tester, Widget child) async {
   tester.view.physicalSize = const Size(1290, 2400);
   tester.view.devicePixelRatio = 3.0;
@@ -93,6 +123,26 @@ void main() {
       );
 
       expect(find.text('E'), findsOneWidget);
+    });
+
+    testWidgets('says nothing at all when no hole has a par', (tester) async {
+      // 78 strokes and not one known par. The screen used to answer that with
+      // "78 E" — level par, stated as fact, from a round where par was never
+      // known — while the server-written recap beside it said "+6 so với par
+      // 72". Both were on the same sales screenshot, disagreeing.
+      await pump(
+        tester,
+        RoundHeadline(
+          players: [playerWithNoParKnown(name: 'Nghi', totalStrokes: 78)],
+          courseName: 'Long Biên Golf Course',
+          date: '21/8/2026',
+        ),
+      );
+
+      expect(find.text('78'), findsOneWidget, reason: 'the strokes are known');
+      expect(find.text('E'), findsNothing);
+      expect(find.text('+0'), findsNothing);
+      expect(find.text('0'), findsNothing);
     });
 
     testWidgets('and over par with a sign', (tester) async {

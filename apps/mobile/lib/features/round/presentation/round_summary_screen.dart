@@ -428,12 +428,15 @@ class _PlayerCardHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(
-          relativeScoreLabel(player.relativeScore),
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: relativeScoreColour(context, player.relativeScore),
+        // Silent when the round knows no par — see relativeScoreLabelOrNull.
+        if (relativeScoreLabelOrNull(player.relativeScore, player.totalPar)
+            case final toPar?)
+          Text(
+            toPar,
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: relativeScoreColour(context, player.relativeScore),
+            ),
           ),
-        ),
       ],
     );
   }

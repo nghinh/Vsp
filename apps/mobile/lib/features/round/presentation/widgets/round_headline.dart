@@ -68,6 +68,10 @@ class _SoloHeadline extends StatelessWidget {
     // Wrap, so at a large text size "+18" drops under the score instead of
     // pushing it off the right edge. The score is the reason the screen
     // exists; it does not shrink and it does not move.
+    final toPar = relativeScoreLabelOrNull(
+      player.relativeScore,
+      player.totalPar,
+    );
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 10,
@@ -79,13 +83,14 @@ class _SoloHeadline extends StatelessWidget {
             height: 1,
           ),
         ),
-        Text(
-          relativeScoreLabel(player.relativeScore),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: relativeScoreColour(context, player.relativeScore),
+        if (toPar != null)
+          Text(
+            toPar,
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: relativeScoreColour(context, player.relativeScore),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -120,7 +125,13 @@ class _FlightLine extends StatelessWidget {
           SizedBox(
             width: 44,
             child: Text(
-              relativeScoreLabel(player.relativeScore),
+              // Empty rather than absent: four players' scores line up in a
+              // column, and a missing cell would shuffle the row that has one.
+              relativeScoreLabelOrNull(
+                    player.relativeScore,
+                    player.totalPar,
+                  ) ??
+                  '',
               textAlign: TextAlign.right,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w600,
@@ -205,6 +216,20 @@ String relativeScoreLabel(int relative) {
   if (relative == 0) return 'E';
   return relative > 0 ? '+$relative' : '$relative';
 }
+
+/// The same label, but silent when there is no par to be relative to.
+///
+/// Par reaches the summary only for holes the package carries geometry for,
+/// and most holes in this country have none — so `relativeScore` came back 0
+/// not because the golfer went round in level par but because nothing was
+/// known. The headline printed that 0 as "E".
+///
+/// It was on a sales screenshot: "78 E" above a server-written recap saying
+/// "+6 so với par 72", the two disagreeing about the same round in the same
+/// picture. Same rule as the paired-round card — a screen must not judge a
+/// score against a par nobody knows.
+String? relativeScoreLabelOrNull(int relative, int totalPar) =>
+    totalPar > 0 ? relativeScoreLabel(relative) : null;
 
 /// Under par, over par, level — from the palette rather than from Material.
 ///
