@@ -65,7 +65,31 @@ bash /root/golfseg/rotate-vllm-key.sh --dry-run   # lists the files, touches not
 bash /root/golfseg/rotate-vllm-key.sh             # ~6 minutes of iplace LLM downtime
 ```
 
-Two things this script will not do for you. It cannot avoid the outage —
+## The HuggingFace token, and how to stop needing one
+
+Only the account owner can revoke it, so that half is not automatable from
+here. What is worth deciding first is whether the box needs a replacement at
+all. The vLLM container mounts `/data/huggingface` as its cache and the
+26B weights are already in it; the token is passed for the download, and the
+download has happened. Two ways to end this:
+
+```bash
+# A. Reissue: revoke the old token at huggingface.co → Settings → Access
+#    Tokens, create a read-only one, then, on the A100:
+sed -i 's|^HUGGING_FACE_HUB_TOKEN=.*|HUGGING_FACE_HUB_TOKEN=<new>|' /root/golfseg/.gemma.env
+
+# B. Stop carrying one: pin the container offline so it never asks HF again.
+#    Add to gemma-run.original.sh's docker run, then revoke and do not reissue:
+--env=HF_HUB_OFFLINE=1
+```
+
+B is the smaller surface — a shared box with eight other tenants stops
+holding a live HuggingFace credential — and it costs a deliberate step the
+day this model is upgraded, because an offline container cannot fetch new
+weights. Nobody has tried B on this box yet; try it on a rebuild you are
+watching, not on a Friday.
+
+Two things the rotation script will not do for you. It cannot avoid the outage —
 vLLM reloads a 26B model to pick up a new key, and every iplace LLM call
 fails while it does, so run it when that team can afford six minutes. And it
 finds the files by searching for the old key rather than from a list: the
