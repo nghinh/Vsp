@@ -3,6 +3,8 @@
 // Orchestrates auth service calls and token persistence.
 // Single source of truth for auth state from the mobile app perspective.
 
+import 'dart:convert';
+
 import '../../../core/network/api_client.dart';
 import '../../../core/storage/secure_storage.dart';
 import 'auth_dto.dart';
@@ -251,6 +253,27 @@ class AuthRepository {
     if (!await hasValidSession()) {
       return SessionRestoreOutcome.signedOut;
     }
+
+    // An access token that is still good is reason enough. Refreshing anyway
+    // is what was signing golfers out.
+    //
+    // The server rotates on refresh: presenting a refresh token revokes it and
+    // returns a new one. Do that on every launch and every launch becomes a
+    // chance to lose the session — if the reply never lands (a tunnel, a
+    // backgrounded app, a dropped connection) the server has already revoked
+    // what the phone still holds, and the next launch is met with "Session not
+    // found" and a login screen. The token was never expired; the exchange was
+    // interrupted.
+    //
+    // The access token lives a day, so this skips the exchange for a day at a
+    // time rather than burning one every time the app is opened. A token
+    // inside the margin, or one this cannot read, still goes the long way.
+    final stored = await _secureStorage.getAccessToken();
+    if (stored != null && _goodForAtLeast(stored, const Duration(minutes: 10))) {
+      _apiClient.setAccessToken(stored);
+      return SessionRestoreOutcome.restored;
+    }
+
     if (await tryRefreshToken()) {
       return SessionRestoreOutcome.restored;
     }
@@ -261,6 +284,33 @@ class AuthRepository {
       return SessionRestoreOutcome.offline;
     }
     return SessionRestoreOutcome.signedOut;
+  }
+
+  /// Whether [jwt] still has at least [margin] of life left.
+  ///
+  /// Reads `exp` out of the payload without verifying the signature, which is
+  /// all this needs: the question is "is it worth spending a refresh token on
+  /// this", and a token the phone forged for itself would be refused by the
+  /// server anyway. Anything unreadable — not a JWT, no `exp`, malformed
+  /// base64 — answers false and takes the refresh path, which is the safe way
+  /// to be wrong.
+  static bool _goodForAtLeast(String jwt, Duration margin) {
+    try {
+      final parts = jwt.split('.');
+      if (parts.length != 3) return false;
+      final payload =
+          jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))))
+              as Map<String, dynamic>;
+      final exp = payload['exp'];
+      if (exp is! int) return false;
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+        exp * 1000,
+        isUtc: true,
+      );
+      return expiresAt.isAfter(DateTime.now().toUtc().add(margin));
+    } catch (_) {
+      return false;
+    }
   }
 
   /// A refresh already in progress, so two callers share one exchange.

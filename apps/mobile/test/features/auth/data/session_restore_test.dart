@@ -11,6 +11,8 @@
 // The distinction these tests defend is between "the server said no" and "the
 // server was never reached".
 
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vsp_mobile/core/network/api_client.dart';
 import 'package:vsp_mobile/core/storage/secure_storage.dart';
@@ -70,6 +72,15 @@ class _Service implements AuthService {
 
   @override
   noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// A token shaped like the server's, carrying only the claim that matters.
+String _jwtExpiringIn(Duration left) {
+  String segment(Map<String, Object?> json) =>
+      base64Url.encode(utf8.encode(jsonEncode(json))).replaceAll('=', '');
+  final exp =
+      DateTime.now().toUtc().add(left).millisecondsSinceEpoch ~/ 1000;
+  return '${segment({'alg': 'HS512'})}.${segment({'sub': '11', 'exp': exp})}.sig';
 }
 
 void main() {
@@ -304,6 +315,72 @@ void main() {
       final repository = repositoryWith(storage, _Service(throws: 'unused'));
 
       expect(await repository.restoreSession(), SessionRestoreOutcome.signedOut);
+    });
+  });
+
+  group('an access token that is still good', () {
+    // Every launch used to spend a refresh token, and the server revokes the
+    // one it is given. So every launch was a chance to lose the session: if
+    // the reply never lands — a tunnel, a backgrounded app, a dropped
+    // connection — the server has revoked what the phone still holds, and the
+    // next launch is met with "Session not found". Nothing had expired; the
+    // exchange was interrupted. That is what "cứ bị out suốt" was, on a server
+    // whose refresh tokens last thirty days.
+
+    test('is used as it stands, without spending a refresh token', () async {
+      final service = _Service(throws: 'the server must not be called');
+      final storage = _Storage(access: _jwtExpiringIn(const Duration(hours: 20)));
+      final repository = repositoryWith(storage, service);
+
+      expect(await repository.restoreSession(), SessionRestoreOutcome.restored);
+      expect(service.presented, isEmpty, reason: 'no rotation, no risk');
+      expect(ApiClient.sharedAccessToken, storage.access);
+    });
+
+    test('but one about to expire still refreshes', () async {
+      final storage = _Storage(access: _jwtExpiringIn(const Duration(minutes: 2)));
+      final service = _Service(
+        answer: const TokenRefreshResponse(
+          accessToken: 'fresh-access',
+          refreshToken: 'rotated-refresh',
+          expiresIn: 86400,
+        ),
+      );
+      final repository = repositoryWith(storage, service);
+
+      expect(await repository.restoreSession(), SessionRestoreOutcome.restored);
+      expect(service.presented, ['stored-refresh']);
+      expect(storage.access, 'fresh-access');
+    });
+
+    test('and one already expired refreshes', () async {
+      final storage = _Storage(access: _jwtExpiringIn(const Duration(hours: -1)));
+      final service = _Service(
+        answer: const TokenRefreshResponse(
+          accessToken: 'fresh-access',
+          expiresIn: 86400,
+        ),
+      );
+      final repository = repositoryWith(storage, service);
+
+      await repository.restoreSession();
+
+      expect(service.presented, ['stored-refresh']);
+    });
+
+    test('anything that is not a readable JWT takes the long way', () async {
+      // Being wrong here must cost a refresh, never a session.
+      for (final opaque in ['stored-access', 'a.b', 'a.!!!.c', '']) {
+        final storage = _Storage(access: opaque);
+        final service = _Service(
+          answer: const TokenRefreshResponse(
+            accessToken: 'fresh-access',
+            expiresIn: 86400,
+          ),
+        );
+        await repositoryWith(storage, service).restoreSession();
+        expect(service.presented, ['stored-refresh'], reason: opaque);
+      }
     });
   });
 
