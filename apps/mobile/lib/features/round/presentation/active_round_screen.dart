@@ -486,9 +486,63 @@ class _ActiveRoundScreenState extends State<ActiveRoundScreen> {
     return _holeMapRepositoryScope(
       context,
       ProfileScope(
-        child: _holeMapBlocScope(_detectionScope(_buildScaffold(context))),
+        child: _holeMapBlocScope(
+          _detectionScope(_leaveGuard(_buildScaffold(context))),
+        ),
       ),
     );
+  }
+
+  /// Stands between a live round and the back gesture.
+  ///
+  /// The Score tab hosts the scorecard's own Scaffold, so its AppBar drew the
+  /// route's back arrow — one tap above the hole number, and the golfer was
+  /// out of the round they were playing, mid-hole, with no warning. The same
+  /// went for the iOS edge swipe: an accidental drag on hole 3 ended the
+  /// screen.
+  ///
+  /// Nothing is lost when they do leave — scores are saved per hole and the
+  /// round is resumable from the rounds tab — so this asks rather than
+  /// refuses, and says where the round will be waiting.
+  ///
+  /// [canPop] false also disables the iOS edge swipe outright, which is the
+  /// gesture nobody makes on purpose while holding a phone in a golf glove.
+  /// Finishing a round is untouched: it leaves by pushAndRemoveUntil, and an
+  /// explicit pop never reaches a PopScope.
+  Widget _leaveGuard(Widget child) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final navigator = Navigator.of(context);
+        if (await _confirmLeave()) navigator.pop();
+      },
+      child: child,
+    );
+  }
+
+  Future<bool> _confirmLeave() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.activeRoundLeaveTitle),
+        content: Text(l10n.activeRoundLeaveBody),
+        actions: [
+          TextButton(
+            key: const Key('active_round_stay'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.scorecardKeepPlaying),
+          ),
+          FilledButton(
+            key: const Key('active_round_leave'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.activeRoundLeave),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true;
   }
 
   /// Listens for the golfer walking to another hole.

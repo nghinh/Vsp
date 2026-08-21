@@ -2452,6 +2452,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get activeRoundEndRound => 'Kết thúc vòng đấu';
 
   @override
+  String get activeRoundLeaveTitle => 'Rời vòng đang chơi?';
+
+  @override
+  String get activeRoundLeaveBody =>
+      'Điểm đã nhập vẫn được lưu. Bạn có thể chơi tiếp vòng này từ mục Vòng đấu.';
+
+  @override
+  String get activeRoundLeave => 'Rời vòng';
+
+  @override
   String get activeRoundOptions => 'Tùy chọn vòng đấu';
 
   @override

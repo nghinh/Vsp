@@ -4556,6 +4556,24 @@ abstract class AppLocalizations {
   /// **'End Round'**
   String get activeRoundEndRound;
 
+  /// No description provided for @activeRoundLeaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave this round?'**
+  String get activeRoundLeaveTitle;
+
+  /// No description provided for @activeRoundLeaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The scores you have entered are saved. You can pick this round up again from Rounds.'**
+  String get activeRoundLeaveBody;
+
+  /// No description provided for @activeRoundLeave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave round'**
+  String get activeRoundLeave;
+
   /// No description provided for @activeRoundOptions.
   ///
   /// In en, this message translates to:

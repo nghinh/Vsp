@@ -2452,6 +2452,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get activeRoundEndRound => 'End Round';
 
   @override
+  String get activeRoundLeaveTitle => 'Leave this round?';
+
+  @override
+  String get activeRoundLeaveBody =>
+      'The scores you have entered are saved. You can pick this round up again from Rounds.';
+
+  @override
+  String get activeRoundLeave => 'Leave round';
+
+  @override
   String get activeRoundOptions => 'Round Options';
 
   @override
