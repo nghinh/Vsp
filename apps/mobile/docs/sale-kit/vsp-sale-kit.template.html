@@ -1,0 +1,536 @@
+<title>VSP — Hồ sơ sản phẩm</title>
+<style>
+  :root {
+    --ground: #E8ECE7;
+    --paper: #F7F9F6;
+    --band: #DFE5DD;
+    --ink: #12211B;
+    --ink-2: #3B4C44;
+    --muted: #63756B;
+    --line: #C4CFC5;
+    --accent: #A8431C;
+    --fairway: #2C6B4C;
+    --shadow: 0 18px 40px -24px rgba(18, 33, 27, .55);
+    --measure: 34rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: #0C1310;
+      --paper: #141D18;
+      --band: #101814;
+      --ink: #E4EAE3;
+      --ink-2: #C0CCC4;
+      --muted: #8FA097;
+      --line: #26332C;
+      --accent: #E07B45;
+      --fairway: #77BF97;
+      --shadow: 0 22px 46px -26px rgba(0, 0, 0, .8);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #0C1310;
+    --paper: #141D18;
+    --band: #101814;
+    --ink: #E4EAE3;
+    --ink-2: #C0CCC4;
+    --muted: #8FA097;
+    --line: #26332C;
+    --accent: #E07B45;
+    --fairway: #77BF97;
+    --shadow: 0 22px 46px -26px rgba(0, 0, 0, .8);
+  }
+  :root[data-theme="light"] {
+    --ground: #E8ECE7;
+    --paper: #F7F9F6;
+    --band: #DFE5DD;
+    --ink: #12211B;
+    --ink-2: #3B4C44;
+    --muted: #63756B;
+    --line: #C4CFC5;
+    --accent: #A8431C;
+    --fairway: #2C6B4C;
+    --shadow: 0 18px 40px -24px rgba(18, 33, 27, .55);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .serif {
+    font-family: ui-serif, "Iowan Old Style", Charter, "Times New Roman", serif;
+  }
+
+  .label {
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: .7rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .wrap { max-width: 78rem; margin: 0 auto; padding: 0 clamp(1.1rem, 4vw, 3.5rem); }
+  .col { max-width: var(--measure); }
+
+  /* ── Masthead ─────────────────────────────────────────── */
+  header.masthead {
+    border-bottom: 1px solid var(--line);
+    padding: clamp(2.5rem, 7vw, 5.5rem) 0 clamp(1.6rem, 4vw, 2.6rem);
+  }
+  .mark {
+    display: flex; align-items: baseline; gap: .7rem;
+    margin-bottom: clamp(2.2rem, 6vw, 4rem);
+  }
+  .mark b {
+    font-family: ui-serif, "Iowan Old Style", Charter, serif;
+    font-size: 1.35rem; font-weight: 600; letter-spacing: .02em;
+  }
+  .mark span { color: var(--muted); }
+
+  h1 {
+    font-family: ui-serif, "Iowan Old Style", Charter, "Times New Roman", serif;
+    font-weight: 600;
+    font-size: clamp(2.3rem, 6.4vw, 4.1rem);
+    line-height: 1.04;
+    letter-spacing: -.015em;
+    text-wrap: balance;
+    margin: .7rem 0 0;
+    max-width: 20ch;
+  }
+  h1 em { font-style: italic; color: var(--accent); }
+
+  .lede {
+    margin: 1.4rem 0 0;
+    max-width: var(--measure);
+    font-size: 1.12rem;
+    color: var(--ink-2);
+  }
+
+  /* ── Card row: reads like a scorecard ─────────────────── */
+  .card {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--paper);
+    margin: clamp(2rem, 5vw, 3.2rem) 0 0;
+    overflow: hidden;
+  }
+  .card div {
+    padding: 1rem 1.1rem 1.05rem;
+    border-right: 1px solid var(--line);
+  }
+  .card div:last-child { border-right: 0; }
+  .card b {
+    display: block;
+    font-family: ui-serif, "Iowan Old Style", Charter, serif;
+    font-size: clamp(1.5rem, 3.1vw, 2.05rem);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    margin-bottom: .3rem;
+  }
+  .card p { margin: 0; font-size: .82rem; color: var(--muted); line-height: 1.4; }
+  @media (max-width: 860px) {
+    .card { grid-template-columns: repeat(2, 1fr); }
+    .card div { border-bottom: 1px solid var(--line); }
+    .card div:nth-child(odd) { border-right: 1px solid var(--line); }
+    .card div:nth-child(even) { border-right: 0; }
+    .card div:last-child { grid-column: 1 / -1; border-bottom: 0; }
+  }
+
+  /* ── Sections ─────────────────────────────────────────── */
+  section { padding: clamp(3.4rem, 8vw, 6.5rem) 0; border-bottom: 1px solid var(--line); }
+  section.tinted { background: var(--band); }
+
+  .head { display: grid; grid-template-columns: 8.5rem 1fr; gap: 0; align-items: start; }
+  @media (max-width: 780px) { .head { grid-template-columns: 1fr; gap: .8rem; } }
+
+  h2 {
+    font-family: ui-serif, "Iowan Old Style", Charter, serif;
+    font-weight: 600;
+    font-size: clamp(1.6rem, 3.4vw, 2.35rem);
+    line-height: 1.15;
+    letter-spacing: -.01em;
+    margin: 0 0 .9rem;
+    text-wrap: balance;
+  }
+  h3 {
+    font-size: 1.02rem;
+    font-weight: 650;
+    margin: 0 0 .35rem;
+    letter-spacing: -.005em;
+  }
+  p { margin: 0 0 1.05rem; }
+  p:last-child { margin-bottom: 0; }
+  .muted { color: var(--muted); }
+  strong { font-weight: 650; }
+
+  .pull {
+    font-family: ui-serif, "Iowan Old Style", Charter, serif;
+    font-size: clamp(1.25rem, 2.6vw, 1.7rem);
+    line-height: 1.34;
+    color: var(--ink);
+    border-left: 2px solid var(--accent);
+    padding-left: 1.1rem;
+    margin: 2rem 0;
+    max-width: 32rem;
+  }
+
+  /* ── Screenshots ──────────────────────────────────────── */
+  .shots {
+    display: grid;
+    gap: clamp(1.2rem, 3vw, 2.2rem);
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    margin-top: clamp(2rem, 5vw, 3.4rem);
+  }
+  .shots.two { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-width: 62rem; }
+  figure { margin: 0; }
+  figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+    background: #101820;
+  }
+  figcaption {
+    margin-top: .7rem;
+    font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+    font-size: .72rem;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  figcaption b { color: var(--ink-2); font-weight: 600; }
+
+  .hero-shot {
+    display: grid;
+    grid-template-columns: 1fr minmax(220px, 300px);
+    gap: clamp(1.6rem, 5vw, 4rem);
+    align-items: center;
+  }
+  @media (max-width: 780px) { .hero-shot { grid-template-columns: 1fr; } }
+
+  /* ── Feature list ─────────────────────────────────────── */
+  .rows { display: grid; gap: 1.6rem; margin-top: 2rem; max-width: 46rem; }
+  .row { display: grid; grid-template-columns: 1.6rem 1fr; gap: .9rem; align-items: start; }
+  .tick {
+    width: 1.6rem; height: 1.6rem; border-radius: 50%;
+    border: 1px solid var(--accent);
+    display: grid; place-items: center;
+    font-size: .7rem; color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin-top: .12rem;
+  }
+
+  .stack { display: grid; gap: 1.7rem; margin-top: 2rem; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); }
+  .stack div p { font-size: .95rem; color: var(--ink-2); }
+
+  footer { padding: clamp(2.6rem, 6vw, 4rem) 0 clamp(3.5rem, 8vw, 5rem); }
+  footer p { font-size: .88rem; color: var(--muted); max-width: 40rem; }
+
+  a { color: var(--accent); }
+  a:focus-visible, :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    figure, .card, .pull { animation: rise .7s cubic-bezier(.2, .7, .3, 1) both; }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="mark">
+      <b>VSP</b>
+      <span class="label">Hồ sơ sản phẩm · bản dựng 21/8/2026</span>
+    </div>
+    <h1>Sân golf Việt Nam, <em>đo được</em> từ trong túi áo</h1>
+    <p class="lede">
+      VSP là ứng dụng dẫn đường và ghi điểm cho golfer Việt Nam. Nó chạy trọn vẹn khi
+      không có sóng, dựng bản đồ hố từ ảnh vệ tinh cho những sân chưa ai khảo sát, và
+      không bao giờ nói chắc về một con số mà nó chỉ đang ước lượng.
+    </p>
+
+    <div class="card">
+      <div>
+        <b>62</b>
+        <p>đường golf tra cứu được trên bản production</p>
+      </div>
+      <div>
+        <b>1.023</b>
+        <p>hố có bản đồ dựng từ ảnh vệ tinh, lượt bóc tách 21/8</p>
+      </div>
+      <div>
+        <b>86</b>
+        <p>gói dữ liệu sân tải sẵn về máy</p>
+      </div>
+      <div>
+        <b>16/16</b>
+        <p>màn hình vẫn sống khi mất hoàn toàn kết nối</p>
+      </div>
+      <div>
+        <b>2.209</b>
+        <p>kiểm thử tự động chạy trước mỗi bản phát hành</p>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="head">
+      <p class="label">Bài toán</p>
+      <div class="col">
+        <h2>Dữ liệu sân ở Việt Nam không có sẵn để mua</h2>
+        <p>
+          Các ứng dụng golf quốc tế dựng trên những thư viện hình học hố mua lại từ nhà
+          cung cấp — thứ gần như không phủ tới sân Việt Nam. Không có tệp để mua thì chỉ
+          còn hai đường: cử người ra sân đo từng hố, hoặc đọc chúng ra từ ảnh vệ tinh.
+        </p>
+        <p>
+          VSP chọn đường thứ hai và tự huấn luyện mô hình phân vùng để làm việc đó: green,
+          fairway, bunker và mặt nước được tách ra khỏi ảnh chụp từ trên cao, hố này qua hố khác.
+          Nhưng máy đọc thì máy đọc sai được — nên điều quan trọng không kém là ứng dụng
+          <strong>nói thẳng ra khi một hình dạng do máy dựng</strong>, ngay trên màn hình
+          người chơi, chứ không lặng lẽ trình bày nó như số liệu khảo sát.
+        </p>
+        <p class="pull serif">
+          Một khoảng cách sai mà trông chắc chắn còn tệ hơn một khoảng cách thiếu.
+        </p>
+      </div>
+    </div>
+
+    <div class="shots two" style="margin-top: clamp(1.6rem, 4vw, 2.6rem)">
+      <figure>
+        <img src="{{IMG:29-lop-du-lieu}}" alt="Màn lớp dữ liệu: từng lớp hình học của hố kèm nguồn gốc" />
+        <figcaption><b>Lớp dữ liệu</b> — người chơi xem được từng lớp hình học đến từ đâu, và lớp nào chưa có người kiểm chứng.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:04-courses}}" alt="Danh sách sân golf với huy hiệu trạng thái dữ liệu" />
+        <figcaption><b>Danh sách sân</b> — mỗi sân mang huy hiệu tải xuống, mức xác minh và độ mới của dữ liệu.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:05-course-detail}}" alt="Chi tiết sân golf" />
+        <figcaption><b>Chi tiết sân</b> — thông tin sân, các đường, và gói dữ liệu để tải về trước khi ra sân.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="tinted">
+    <div class="head">
+      <p class="label">Trước vòng</p>
+      <div class="col">
+        <h2>Chuẩn bị xong ở nhà, ra sân là chơi</h2>
+        <p>
+          Sóng ở sân golf Việt Nam không đáng tin — nhiều hố nằm sau đồi, sau rặng cây, hoặc
+          đơn giản là ngoài vùng phủ. Nên toàn bộ dữ liệu một vòng cần đến đều tải sẵn về máy
+          thành gói: hình học hố, chỉ số gậy, par từng hố, ảnh nền vệ tinh.
+        </p>
+        <p>
+          Thiết lập vòng nhận tới bốn người chơi, ba thể thức, hai chế độ tính điểm, và ghép
+          hai nine của hai đường khác nhau thành một vòng 18 hố — chuyện thường gặp ở các sân
+          9 hố trong nước.
+        </p>
+      </div>
+    </div>
+    <div class="shots two">
+      <figure>
+        <img src="{{IMG:07-round-setup}}" alt="Màn thiết lập vòng đấu" />
+        <figcaption><b>Thiết lập vòng</b> — người chơi, thể thức, cách tính điểm, túi gậy đang dùng.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:09-choose-the-round}}" alt="Chọn đường và vòng chơi" />
+        <figcaption><b>Chọn đường</b> — ghép hai nine thành một vòng 18 hố, mỗi nine giữ nguyên par và chỉ số gậy của nó.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <p class="label">Trong vòng</p>
+      <div class="col">
+        <h2>Bốn thứ người chơi cần, trong tầm một ngón tay cái</h2>
+        <p>
+          Vòng đấu mở ra năm thẻ: bản đồ, điểm, mục tiêu, điều kiện và tuỳ chọn. Không thẻ nào
+          cần mạng để dùng được.
+        </p>
+      </div>
+    </div>
+
+    <div class="hero-shot" style="margin-top: clamp(2rem, 5vw, 3.2rem)">
+      <div class="col">
+        <h3>Gợi ý chia gậy, vẽ thẳng lên ảnh vệ tinh</h3>
+        <p class="muted">
+          Ứng dụng dựng đường bóng gợi ý cho hố đang chơi, kèm điểm rơi và khoảng cách mang
+          bóng của từng phương án — đọc từ chính cự ly gậy mà người chơi đã ghi lại, chứ không
+          phải từ bảng cự ly trung bình của một golfer nào khác.
+        </p>
+        <p class="muted">
+          Mọi con số đều đi kèm sai số. "±26 m" ở dưới ảnh là ứng dụng đang nói rằng vị trí
+          green ở hố này là ước lượng chứ chưa được khảo sát.
+        </p>
+      </div>
+      <figure>
+        <img src="{{IMG:27-chia-gay}}" alt="Gợi ý chia gậy vẽ trên ảnh vệ tinh" />
+        <figcaption><b>Gợi ý chia gậy</b></figcaption>
+      </figure>
+    </div>
+
+    <div class="shots">
+      <figure>
+        <img src="{{IMG:13-course-map}}" alt="Bản đồ chiến thuật của hố" />
+        <figcaption><b>Bản đồ hố</b> — green, fairway, bunker và mặt nước, dựng từ ảnh vệ tinh.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:12-satellite}}" alt="Ảnh vệ tinh kèm thước đo khoảng cách" />
+        <figcaption><b>Thước đo</b> — chạm lên ảnh để đo, dùng được cả ở hố chưa có hình học.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:14-target}}" alt="Màn mục tiêu với khoảng cách trực tiếp" />
+        <figcaption><b>Mục tiêu</b> — khoảng cách tới điểm đã đặt, cập nhật theo GPS.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:15-conditions}}" alt="Màn điều kiện thời tiết" />
+        <figcaption><b>Điều kiện</b> — gió và thời tiết lấy theo toạ độ người chơi đang đứng.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:11-scorecard-hole-1}}" alt="Thẻ điểm hố 1 với huy hiệu đã lưu ngoại tuyến" />
+        <figcaption><b>Thẻ điểm</b> — ghi điểm mất mạng vẫn lưu, huy hiệu nói rõ đang chờ đồng bộ.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:30-so-chien-thuat}}" alt="Sổ chiến thuật của sân" />
+        <figcaption><b>Sổ chiến thuật</b> — cả 18 hố trong một chỗ, xem trước khi bước lên tee.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="tinted">
+    <div class="head">
+      <p class="label">Sau vòng</p>
+      <div class="col">
+        <h2>Vòng đấu kết thúc là có ngay thứ để kể lại</h2>
+        <p>
+          Kết thúc vòng, ứng dụng viết sẵn một đoạn tổng kết bằng tiếng Việt đời thường —
+          đủ để gửi thẳng vào nhóm chat của hội, không phải bảng số liệu bắt người đọc tự dịch.
+        </p>
+        <p>
+          Phía sau đó là phần dành cho người chơi nghiêm túc: phân bố điểm, tỷ lệ vào fairway,
+          lên green đúng nhịp, số gậy putt mỗi hố, và lịch sử từng hố qua các lần chơi.
+        </p>
+      </div>
+    </div>
+    <div class="shots">
+      <figure>
+        <img src="{{IMG:21-round-summary}}" alt="Tổng kết vòng đấu kèm đoạn tóm tắt" />
+        <figcaption><b>Tổng kết vòng</b> — điểm, đoạn tóm tắt để chia sẻ, thống kê vòng đấu.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:34-phan-tich}}" alt="Màn phân tích hiệu suất" />
+        <figcaption><b>Phân tích</b> — hiệu suất theo thời gian, đủ dài để thấy xu hướng.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:23-profile}}" alt="Hồ sơ golfer với thống kê" />
+        <figcaption><b>Hồ sơ</b> — thành tích tích luỹ, phân bố điểm theo eagle/birdie/par/bogey.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:32-lich-su-ho}}" alt="Lịch sử từng hố" />
+        <figcaption><b>Lịch sử hố</b> — hố này những lần trước chơi ra sao, và ghi chú của chính người chơi.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <div class="head">
+      <p class="label">Nguyên tắc</p>
+      <div class="col">
+        <h2>Ba điều ứng dụng này không đánh đổi</h2>
+      </div>
+    </div>
+    <div class="rows">
+      <div class="row">
+        <span class="tick">1</span>
+        <div>
+          <h3>Mất mạng không phải là hỏng</h3>
+          <p class="muted">
+            Toàn bộ 16 màn hình được rà lại trong điều kiện không có máy chủ: không màn nào
+            văng lỗi, điểm vẫn ghi được, và mọi thứ chờ sẵn để đồng bộ khi có sóng trở lại.
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <span class="tick">2</span>
+        <div>
+          <h3>Không biết thì nói là không biết</h3>
+          <p class="muted">
+            Hố chưa khảo sát được dán nhãn là chưa khảo sát. Khoảng cách ước lượng đi kèm sai số.
+            Vòng đấu không có dữ liệu par thì màn tổng kết hiện số gậy và im lặng về chuyện
+            hơn kém par — thay vì bịa ra một con số nghe cho tròn.
+          </p>
+        </div>
+      </div>
+      <div class="row">
+        <span class="tick">3</span>
+        <div>
+          <h3>Tiếng Việt là ngôn ngữ thứ nhất</h3>
+          <p class="muted">
+            Toàn bộ giao diện, thông báo lỗi và cả phần đọc màn hình cho người khiếm thị đều có
+            tiếng Việt — kể cả những chỗ mà phần mềm thường bỏ quên, như tên hướng gió hay
+            nhãn độ tin cậy.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="shots two" style="max-width: 44rem">
+      <figure>
+        <img src="{{IMG:33-quet-the-diem}}" alt="Quét thẻ điểm giấy bằng ảnh chụp" />
+        <figcaption><b>Quét thẻ điểm giấy</b> — chụp tấm thẻ ở clubhouse, ứng dụng đọc thành điểm số cho cả nhóm.</figcaption>
+      </figure>
+      <figure>
+        <img src="{{IMG:35-smart-target}}" alt="Mục tiêu thông minh trên bản đồ" />
+        <figcaption><b>Mục tiêu thông minh</b> — điểm ngắm gợi ý theo cự ly gậy của chính người chơi.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="tinted">
+    <div class="head">
+      <p class="label">Nền tảng</p>
+      <div class="col">
+        <h2>Những gì chạy phía sau</h2>
+      </div>
+    </div>
+    <div class="stack">
+      <div>
+        <h3>Ứng dụng</h3>
+        <p>Flutter, một mã nguồn cho cả iOS và Android. Dữ liệu sân lưu ngay trên máy; hàng đợi đồng bộ giữ lại mọi thao tác khi mất mạng.</p>
+      </div>
+      <div>
+        <h3>Máy chủ</h3>
+        <p>API Spring Boot, PostgreSQL kèm PostGIS cho truy vấn không gian, cổng quản trị riêng cho đội vận hành dữ liệu sân.</p>
+      </div>
+      <div>
+        <h3>Mô hình bản đồ hố</h3>
+        <p>Mạng U-Net nền ResNet-34, huấn luyện trên A100: tiền huấn luyện bằng 164.446 mảnh ảnh vệ tinh, rồi tinh chỉnh trên ảnh sân Việt Nam. Bản đang phục vụ đạt mIoU 0,584 và IoU riêng cho green 0,563.</p>
+      </div>
+      <div>
+        <h3>Chất lượng</h3>
+        <p>2.209 kiểm thử tự động, cộng một lượt chụp toàn bộ màn hình trên máy thật trước mỗi bản phát hành — chính là các ảnh trong tài liệu này.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Toàn bộ ảnh trong tài liệu chụp trực tiếp từ bản dựng ngày 21/8/2026, chạy trên dữ liệu
+      thật của sân Long Biên qua máy chủ production — không dựng cảnh, không ghép ảnh. Các con số
+      trên đầu trang là số đọc được tại thời điểm đó và sẽ thay đổi khi dữ liệu sân được bổ sung.
+    </p>
+  </footer>
+</div>

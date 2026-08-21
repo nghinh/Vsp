@@ -7,6 +7,19 @@ Không phải ảnh dựng. Ứng dụng thật, máy chủ thật (`vps-api.vnt
 sân thật, và golfer **đi bộ** qua đủ 18 hố: toạ độ GPS của máy ảo được dời theo
 từng hố, nên tính năng tự nhận diện hố hoạt động đúng như ngoài sân.
 
+## Bản giới thiệu để gửi đi
+
+`vsp-sale-kit.html` là hồ sơ sản phẩm dựng từ chính bộ ảnh này — một file duy
+nhất, ảnh nhúng thẳng vào trong, mở bằng trình duyệt bất kỳ và gửi qua email hay
+Zalo mà không kèm thư mục ảnh. Dựng lại sau mỗi lượt chụp:
+
+```
+scripts/build_sale_kit_doc.sh
+```
+
+Mọi con số trong đó là số đọc được tại thời điểm dựng, không phải số ước lượng —
+khi dữ liệu sân thay đổi thì phải sửa lại cho khớp.
+
 ## Vì sao là Long Biên
 
 Đường A và Đường B là hai đường duy nhất trong cơ sở dữ liệu có gói dữ liệu đủ
