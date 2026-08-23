@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { golferLabel } from '@/lib/enum-labels';
 /**
  * The whole field on one screen: one number each.
  *
@@ -242,7 +243,7 @@ const entered = computed(
         <tbody>
           <tr v-for="(p, i) in ordered" :key="p.id">
             <td class="num muted">{{ p.flightNumber ?? '—' }}</td>
-            <td class="name">{{ p.displayName }}</td>
+            <td class="name">{{ golferLabel(p) }}</td>
             <td class="muted">{{ p.divisionCode ?? '—' }}</td>
             <td class="num muted">{{ p.playingHandicap ?? '—' }}</td>
 
@@ -261,7 +262,7 @@ const entered = computed(
                 inputmode="numeric"
                 autocomplete="off"
                 :value="draft[p.id]?.total ?? ''"
-                :aria-label="`${p.displayName} tổng gậy`"
+                :aria-label="`${golferLabel(p)} tổng gậy`"
                 @keydown="onKey(i, $event)"
                 @input="setNumber(p.id, 'total', ($event.target as HTMLInputElement).value)"
                 @focus="($event.target as HTMLInputElement).select()"
@@ -283,7 +284,7 @@ const entered = computed(
                 inputmode="numeric"
                 autocomplete="off"
                 :value="draft[p.id]?.birdies ?? ''"
-                :aria-label="`${p.displayName} số birdie`"
+                :aria-label="`${golferLabel(p)} số birdie`"
                 @input="setNumber(p.id, 'birdies', ($event.target as HTMLInputElement).value)"
               />
             </td>
@@ -295,7 +296,7 @@ const entered = computed(
                 inputmode="numeric"
                 autocomplete="off"
                 :value="draft[p.id]?.eagles ?? ''"
-                :aria-label="`${p.displayName} số eagle`"
+                :aria-label="`${golferLabel(p)} số eagle`"
                 @input="setNumber(p.id, 'eagles', ($event.target as HTMLInputElement).value)"
               />
             </td>

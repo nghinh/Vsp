@@ -103,7 +103,7 @@
             />
           </div>
           <div class="date-input">
-            <label for="filter-to" class="range-label">To</label>
+            <label for="filter-to" class="range-label">Đến</label>
             <input
               id="filter-to"
               v-model="localFilters.to"
@@ -124,6 +124,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import { CORRECTION_TYPE_LABELS } from '@/lib/correction-labels';
 import type { CorrectionQueueFilters, CorrectionTypeValue, CorrectionStatusValue } from '@/types/correction';
 
 const props = defineProps<{
@@ -137,20 +138,34 @@ const emit = defineEmits<{
 
 const PAGE_SIZE = 20;
 
-const localFilters = ref<CorrectionQueueFilters>({ ...props.modelValue, pageSize: PAGE_SIZE });
+/**
+ * `type` and `status` default to `''`, not `undefined`.
+ *
+ * `v-model` on a `<select>` selects the option whose value equals the model.
+ * `undefined` equals nothing — not even the `<option value="">` placeholder —
+ * so both dropdowns opened with `selectedIndex === -1`: two empty boxes with
+ * no visible "Tất cả loại", which reads as a control that failed to load
+ * rather than one showing no filter.
+ */
+const EMPTY_FILTERS: CorrectionQueueFilters = { page: 0, pageSize: PAGE_SIZE, type: '', status: '' };
 
-const correctionTypes: { value: CorrectionTypeValue; label: string }[] = [
-  { value: 'GEOMETRY',          label: 'Hình học' },
-  { value: 'PIN_POSITION',      label: 'Vị trí cờ' },
-  { value: 'BUNKER',            label: 'Bunker' },
-  { value: 'WATER',             label: 'Chướng ngại nước' },
-  { value: 'OB',                label: 'Ngoài biên' },
-  { value: 'CART_PATH',         label: 'Đường xe điện' },
-  { value: 'LANDMARK',          label: 'Mốc định vị' },
-  { value: 'COURSE_CONDITION',  label: 'Tình trạng sân' },
-  { value: 'GREEN_SPEED',       label: 'Tốc độ green' },
-  { value: 'OTHER',             label: 'Khác' },
-];
+const localFilters = ref<CorrectionQueueFilters>({
+  ...EMPTY_FILTERS,
+  ...props.modelValue,
+  pageSize: PAGE_SIZE,
+});
+
+/**
+ * Derived from `CORRECTION_TYPE_LABELS` rather than listed again here.
+ *
+ * The hand-written copy this replaces was missing `SCORECARD` — the one
+ * correction type a reviewer most often wants to filter to, since a scorecard
+ * photo report is the only kind that arrives with an image attached. It could
+ * not be filtered for at all, and nothing said so.
+ */
+const correctionTypes: { value: CorrectionTypeValue; label: string }[] = (
+  Object.keys(CORRECTION_TYPE_LABELS) as CorrectionTypeValue[]
+).map((value) => ({ value, label: CORRECTION_TYPE_LABELS[value] }));
 
 const statuses: { value: CorrectionStatusValue; label: string }[] = [
   { value: 'PENDING',            label: 'Chờ xử lý' },
@@ -181,7 +196,7 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  localFilters.value = { page: 0, pageSize: PAGE_SIZE };
+  localFilters.value = { ...EMPTY_FILTERS };
   emit('update:modelValue', { ...localFilters.value });
   emit('apply', { ...localFilters.value });
 }
@@ -194,6 +209,7 @@ function clearFilters() {
   padding: 1.25rem 1rem;
   min-width: 220px;
   max-width: 260px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -217,7 +233,7 @@ function clearFilters() {
   background: none;
   border: none;
   font-size: 0.75rem;
-  color: #3b82f6;
+  color: var(--primary-bright);
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -263,8 +279,8 @@ function clearFilters() {
 }
 .field-input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  border-color: var(--primary-container);
+  box-shadow: 0 0 0 3px rgba(246, 96, 24, 0.15);
 }
 
 .confidence-range,
@@ -297,8 +313,8 @@ function clearFilters() {
   margin-top: 0.25rem;
   padding: 0.5rem 1rem;
   border-radius: 6px;
-  border: 1px solid #3b82f6;
-  background: #3b82f6;
+  border: 1px solid var(--primary-container);
+  background: var(--primary-container);
   color: white;
   font-size: 0.8125rem;
   font-weight: 600;
@@ -306,5 +322,9 @@ function clearFilters() {
   min-height: 40px;
   transition: background 0.15s;
 }
-.apply-btn:hover { background: var(--primary-container); }
+.apply-btn:hover { background: var(--secondary-container); }
+
+@media (max-width: 768px) {
+  .correction-queue-filters { max-width: none; border-right: 0; border-bottom: 1px solid var(--surface-container-highest); }
+}
 </style>

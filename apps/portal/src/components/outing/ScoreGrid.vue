@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { golferLabel } from '@/lib/enum-labels';
 /**
  * Typing eleven scorecards before the buffet ends.
  *
@@ -366,7 +367,7 @@ defineExpose({ save });
         <tbody>
           <tr v-for="(p, rowIndex) in flightPlayers" :key="p.id">
             <th class="col-player" scope="row">
-              {{ p.displayName }}
+              {{ golferLabel(p) }}
               <span v-if="p.divisionCode" class="division">{{ p.divisionCode }}</span>
             </th>
             <td class="col-hdc">{{ p.playingHandicap ?? '—' }}</td>
@@ -378,7 +379,7 @@ defineExpose({ save });
                 inputmode="numeric"
                 autocomplete="off"
                 :value="draft[p.id]?.holes[h - 1] ?? ''"
-                :aria-label="`${p.displayName} hố ${h}`"
+                :aria-label="`${golferLabel(p)} hố ${h}`"
                 @keydown="onDigit(p.id, rowIndex, h, $event)"
                 @focus="($event.target as HTMLInputElement).select()"
               />
@@ -391,7 +392,7 @@ defineExpose({ save });
                 inputmode="numeric"
                 autocomplete="off"
                 :value="draft[p.id]?.total ?? ''"
-                :aria-label="`${p.displayName} tổng gậy`"
+                :aria-label="`${golferLabel(p)} tổng gậy`"
                 @input="
                   draft[p.id].total =
                     ($event.target as HTMLInputElement).value === ''

@@ -121,7 +121,7 @@ async function submit() {
   padding: 0.6rem 0.75rem;
   border-radius: 0.5rem;
   border: 1px solid var(--border, #26304a);
-  background: var(--surface-2, #0f1420);
+  background: var(--surface-container-lowest);
   color: inherit;
 }
 
@@ -130,10 +130,21 @@ async function submit() {
   padding: 0.7rem 1rem;
   border: none;
   border-radius: 0.5rem;
-  background: var(--accent, #2f6fed);
+  /* `--primary`, not `--accent`.
+
+     `--accent` is the mint the portal uses for "system healthy" and for the
+     tertiary container — so the one button on the sign-in screen was green,
+     a colour that appears on no other action in the product, and read as
+     disabled even when it was not. The fallback hex beside it (#2f6fed, a
+     blue) belonged to neither palette and had never been visible. */
+  background: var(--primary);
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+}
+
+.login-card button:hover:not(:disabled) {
+  background: var(--primary-hover);
 }
 
 .login-card button:disabled {

@@ -10,10 +10,7 @@
           Quản lý cấu hình vùng lãnh thổ và dịch vụ thương mại tích hợp.
         </p>
       </div>
-      <div class="global-sync" role="status">
-        <span class="material-symbols-outlined">cloud_done</span>
-        <span>Đồng bộ toàn cục đang bật</span>
-      </div>
+      <!-- A "Đồng bộ toàn cục đang bật" pill sat here, bound to nothing. -->
     </header>
 
     <div class="market-layout">
@@ -54,6 +51,39 @@
             </span>
           </li>
         </ul>
+
+        <!--
+          Adding a territory. The list could only show markets that already
+          existed, and nothing on the page could create one — on a fresh
+          database the screen was a dead end. The API's PUT is an upsert, so
+          creating is saving a market under a new code.
+        -->
+        <form class="add-territory" @submit.prevent="addMarket">
+          <span class="add-title">Thêm vùng lãnh thổ</span>
+          <div class="add-row">
+            <input
+              v-model="newMarketId"
+              class="form-input code"
+              type="text"
+              maxlength="2"
+              placeholder="VN"
+              aria-label="Mã quốc gia (ISO 3166-1 alpha-2)"
+              required
+            />
+            <input
+              v-model="newMarketName"
+              class="form-input"
+              type="text"
+              placeholder="Tên vùng"
+              aria-label="Tên vùng lãnh thổ"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-secondary" :disabled="adding || !newMarketId.trim() || !newMarketName.trim()">
+            {{ adding ? 'Đang tạo…' : 'Tạo vùng' }}
+          </button>
+          <p v-if="addError" class="add-error" role="alert">{{ addError }}</p>
+        </form>
       </aside>
 
       <!-- ─── Detail panel ──────────────────────────────────────────────── -->
@@ -217,12 +247,14 @@
               <span>Danh mục kiểm tra trước công bố</span>
             </div>
 
+            <!--
+              Two more rows used to sit in this list — "Chính sách quyền riêng
+              tư v2.4.1" and "Hệ thống quản lý đồng ý · Đang hoạt động" — both
+              hard-coded as passed, with no check behind either. A checklist
+              that ticks itself is a worse signal than none, so only the check
+              the server actually performs remains.
+            -->
             <ul class="checklist">
-              <li class="check-row ok">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Chính sách quyền riêng tư</span>
-                <span class="check-tag">v2.4.1</span>
-              </li>
               <li class="check-row" :class="redistributionOk ? 'ok' : 'fail'">
                 <span class="material-symbols-outlined">
                   {{ redistributionOk ? 'check_circle' : 'error' }}
@@ -236,11 +268,6 @@
                   {{ validating ? 'ĐANG KIỂM TRA…' : 'SỬA NGAY' }}
                 </button>
                 <span v-else class="check-tag ok-tag">Đã kiểm tra</span>
-              </li>
-              <li class="check-row ok">
-                <span class="material-symbols-outlined">check_circle</span>
-                <span>Hệ thống quản lý đồng ý</span>
-                <span class="check-tag ok-tag">Đang hoạt động</span>
               </li>
             </ul>
 
@@ -479,6 +506,42 @@ async function loadLicenses() {
 }
 
 // ─── Save ────────────────────────────────────────────────────────────────────
+const newMarketId = ref('');
+const newMarketName = ref('');
+const adding = ref(false);
+const addError = ref<string | null>(null);
+
+async function addMarket() {
+  const code = newMarketId.value.trim().toUpperCase();
+  const name = newMarketName.value.trim();
+  if (!/^[A-Z]{2}$/.test(code)) {
+    addError.value = 'Mã vùng là 2 chữ cái theo ISO 3166-1 (ví dụ VN).';
+    return;
+  }
+  if (markets.value.some((m) => m.marketId === code)) {
+    addError.value = `Vùng ${code} đã có trong danh sách.`;
+    return;
+  }
+  adding.value = true;
+  addError.value = null;
+  try {
+    const created = await marketApi.upsertMarket(props.authToken, code, {
+      ...emptyMarket(),
+      marketId: code,
+      name,
+      active: false,
+    });
+    markets.value = [...markets.value, created];
+    newMarketId.value = '';
+    newMarketName.value = '';
+    await selectMarket(created.marketId);
+  } catch (e: unknown) {
+    addError.value = (e as { message?: string })?.message ?? 'Không tạo được vùng';
+  } finally {
+    adding.value = false;
+  }
+}
+
 async function saveMarket() {
   if (!selectedId.value) return;
   saving.value = true;
@@ -598,6 +661,7 @@ loadLicenses();
 /* Header */
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -629,14 +693,22 @@ loadLicenses();
 .global-sync .material-symbols-outlined { font-size: 1.1rem; }
 
 /* Layout */
+.header-content { flex: 1 1 260px; min-width: 0; }
 .market-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 260px minmax(0, 1fr);
   gap: 1.25rem;
   align-items: start;
 }
+.market-layout > * { min-width: 0; }
+/* A grid item's automatic minimum size is its min-content width, so a single
+   `1fr` column still widened to whatever the territory panel could not shrink
+   below — 505px inside a 366px phone screen, taking the page with it. */
+.market-layout > * { min-width: 0; }
+
 @media (max-width: 800px) {
   .market-layout { grid-template-columns: 1fr; }
+  .page-header .header-content { flex-basis: 100%; }
 }
 
 /* Territories */
@@ -657,6 +729,13 @@ loadLicenses();
   color: var(--muted);
   padding: 0.25rem 0.5rem 0.6rem;
 }
+.add-territory { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--surface-container-highest); }
+.add-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+.add-row { display: flex; gap: 0.5rem; }
+.add-row .code { width: 4.5rem; flex: 0 0 auto; text-transform: uppercase; }
+.add-row .form-input { flex: 1 1 0; width: 100%; min-width: 0; }
+.add-error { margin: 0; font-size: 0.8125rem; color: var(--error); }
+.territory-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .territory-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .territory {
   display: flex;

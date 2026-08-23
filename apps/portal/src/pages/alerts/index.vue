@@ -23,6 +23,12 @@ import {
   DELIVERY_STATUSES,
   alertApi,
 } from '@/api/admin/alerts';
+import {
+  alertPriorityLabel,
+  alertTargetLabel,
+  alertTypeLabel,
+  deliveryStatusLabel,
+} from '@/lib/enum-labels';
 import { courseAdminApi } from '@/api/admin/courses';
 import { facilityAdminApi } from '@/api/admin/facilities';
 import { holeAdminApi } from '@/api/admin/holes';
@@ -258,13 +264,13 @@ onMounted(async () => {
         <div class="field">
           <label class="label" for="al-type">Loại</label>
           <select id="al-type" v-model="form.alertType" class="input">
-            <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ alertTypeLabel(t) }}</option>
           </select>
         </div>
         <div class="field">
           <label class="label" for="al-scope">Phạm vi</label>
           <select id="al-scope" v-model="form.targetType" class="input">
-            <option v-for="t in ALERT_TARGET_TYPES" :key="t" :value="t">{{ t }}</option>
+            <option v-for="t in ALERT_TARGET_TYPES" :key="t" :value="t">{{ alertTargetLabel(t) }}</option>
           </select>
         </div>
         <div v-if="!scopeIsFreeText" class="field">
@@ -307,7 +313,7 @@ onMounted(async () => {
         <div class="field">
           <label class="label" for="al-pri">Mức ưu tiên</label>
           <select id="al-pri" v-model="form.priority" class="input">
-            <option v-for="p in ALERT_PRIORITIES" :key="p" :value="p">{{ p }}</option>
+            <option v-for="p in ALERT_PRIORITIES" :key="p" :value="p">{{ alertPriorityLabel(p) }}</option>
           </select>
         </div>
         <div class="field">
@@ -353,17 +359,18 @@ onMounted(async () => {
       <div class="filters">
         <select v-model="filters.alertType" class="input" aria-label="Lọc theo loại" @change="load">
           <option :value="undefined">Mọi loại</option>
-          <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ t }}</option>
+          <option v-for="t in ALERT_TYPES" :key="t" :value="t">{{ alertTypeLabel(t) }}</option>
         </select>
         <select v-model="filters.deliveryStatus" class="input" aria-label="Lọc theo trạng thái" @change="load">
           <option :value="undefined">Mọi trạng thái</option>
-          <option v-for="s in DELIVERY_STATUSES" :key="s" :value="s">{{ s }}</option>
+          <option v-for="s in DELIVERY_STATUSES" :key="s" :value="s">{{ deliveryStatusLabel(s) }}</option>
         </select>
       </div>
 
       <p v-if="loading" class="muted">Đang tải…</p>
       <p v-else-if="alerts.length === 0" class="muted">Chưa có cảnh báo nào.</p>
-      <table v-else class="table">
+      <div class="table-scroll" v-else>
+      <table class="table">
         <thead>
           <tr><th>Tiêu đề</th><th>Loại</th><th>Hiệu lực</th><th>Hết hạn</th><th>Trạng thái</th><th></th></tr>
         </thead>
@@ -373,14 +380,15 @@ onMounted(async () => {
               <strong>{{ a.title }}</strong>
               <p class="body-preview">{{ a.body }}</p>
             </td>
-            <td>{{ a.alertType }}</td>
+            <td>{{ alertTypeLabel(a.alertType) }}</td>
             <td>{{ fmt(a.effectiveAt) }}</td>
             <td>{{ fmt(a.expiresAt) }}</td>
-            <td><span :class="statusClass(a.deliveryStatus)">{{ a.deliveryStatus ?? '—' }}</span></td>
+            <td><span :class="statusClass(a.deliveryStatus)">{{ deliveryStatusLabel(a.deliveryStatus) }}</span></td>
             <td><button type="button" class="btn-link danger" @click="cancel(a)">Huỷ</button></td>
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
   </div>
 </template>

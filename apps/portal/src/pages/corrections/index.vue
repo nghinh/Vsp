@@ -102,7 +102,7 @@
 
           <!-- Terminal state notice -->
           <div v-else class="terminal-notice">
-            <span>Báo lỗi này đã được xử lý: <strong>{{ detail.status }}</strong></span>
+            <span>Báo lỗi này đã được xử lý: <strong>{{ correctionStatusLabel(detail.status) }}</strong></span>
           </div>
         </div>
       </div>
@@ -125,8 +125,14 @@
 </template>
 
 <script setup lang="ts">
+import { correctionStatusLabel } from '@/lib/correction-labels';
 import { ref, computed, onMounted } from 'vue';
-import type { CorrectionSummary, CorrectionQueueFilters, CorrectionDetailResponse } from '@/types/correction';
+import type {
+  CorrectionSummary,
+  CorrectionQueueFilters,
+  CorrectionDetailResponse,
+  CorrectionReviewActionValue,
+} from '@/types/correction';
 import { correctionApi } from '@/api/correction';
 import CorrectionQueueFiltersComponent from '@/components/corrections/CorrectionQueueFilters.vue';
 import CorrectionQueueTable from '@/components/corrections/CorrectionQueueTable.vue';
@@ -227,9 +233,25 @@ function closeDetail() {
 
 // ─── Review event handlers ─────────────────────────────────────────────────
 
-function onReviewed(action: string) {
+/**
+ * What to say once the review has gone through, per action.
+ *
+ * This was `Correction ${action.toLowerCase()}d successfully.` — English, and
+ * built by suffixing "d", which produces "Correction convert_to_draftd
+ * successfully" for two of the four actions. It escaped
+ * `vietnamese-ui.test.ts` because an interpolated template literal was
+ * invisible to its script scanner; that hole is closed there now.
+ */
+const REVIEW_DONE_MESSAGES: Record<CorrectionReviewActionValue, string> = {
+  APPROVE: 'Đã duyệt báo lỗi.',
+  REJECT: 'Đã từ chối báo lỗi.',
+  REQUEST_INFO: 'Đã gửi yêu cầu bổ sung thông tin cho người báo.',
+  CONVERT_TO_DRAFT: 'Đã chuyển báo lỗi thành bản nháp hình học.',
+};
+
+function onReviewed(action: CorrectionReviewActionValue) {
   closeDetail();
-  showToast(`Correction ${action.toLowerCase()}d successfully.`);
+  showToast(REVIEW_DONE_MESSAGES[action] ?? 'Đã xử lý báo lỗi.');
   // Refresh queue to reflect new status
   loadQueue(currentPage.value);
 }
@@ -458,14 +480,14 @@ onMounted(() => loadQueue(0));
   to   { transform: translateY(0); opacity: 1; }
 }
 .toast-success {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #166534;
+  background: #0f3b2a;
+  border: 1px solid var(--tertiary-container);
+  color: #b9f4d8;
 }
 .toast-error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
-  color: #991b1b;
+  background: #4a1414;
+  border: 1px solid #ef4444;
+  color: #ffd5d1;
 }
 .toast-close {
   background: none;
@@ -486,8 +508,10 @@ onMounted(() => loadQueue(0));
 
 /* Responsive */
 @media (max-width: 768px) {
-  .page-layout { flex-direction: column; }
-  .filters-panel { max-width: 100%; width: 100%; }
+  .page-layout { flex-direction: column; align-items: stretch; }
+  .filters-panel { position: static; max-width: 100%; width: 100%; }
+  .queue-main { width: 100%; }
   .detail-panel { max-width: 100%; }
+  .toast { left: 1rem; right: 1rem; bottom: 1rem; max-width: none; }
 }
 </style>

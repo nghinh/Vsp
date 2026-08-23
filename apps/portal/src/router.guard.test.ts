@@ -65,6 +65,9 @@ const OPEN_TO_ANY_OPERATOR: Record<string, string> = {
   '/login': 'public by design — it is how a session is obtained',
   '/forbidden': 'what the guard shows someone it just refused',
   '/dashboard': 'operational summary; every role that reaches the shell may see it',
+  '/:pathMatch(.*)*':
+    'the 404 page. It shows nothing but "no such page", so there is no role ' +
+    'that should be told a mistyped URL is forbidden rather than absent.',
 };
 // /map-editor was here while it was a bare redirect to /facilities. It is now
 // a real page that picks a course and opens the geometry editor, so it carries

@@ -87,8 +87,9 @@
         <div class="tee-set-header">
           <span class="tee-set-name">{{ ts.name }}</span>
           <span v-if="ts.totalPar" class="tee-set-par">Par {{ ts.totalPar }}</span>
-          <span v-if="ts.dataQuality" class="quality-badge" :class="qualityClass(ts.dataQuality)">
-            {{ ts.dataQuality.accuracyClass ?? '?' }}
+          <span v-if="ts.dataQuality" class="quality-badge" :class="qualityClass(ts.dataQuality)"
+            :title="`${accuracyClassLabel(ts.dataQuality.accuracyClass)} · ${verificationStatusLabel(ts.dataQuality.verificationStatus)}`">
+            {{ accuracyClassShort(ts.dataQuality.accuracyClass) }}
           </span>
         </div>
 
@@ -109,6 +110,7 @@ import type { TeeSetResponse, TeeSetCreateRequest } from '@/types/admin/tee-set'
 import { teeSetAdminApi } from '@/api/admin/tee-sets';
 import { courseAdminApi } from '@/api/admin/courses';
 import { formatDay as formatInstant } from '@/lib/datetime';
+import { accuracyClassLabel, accuracyClassShort, verificationStatusLabel } from '@/lib/enum-labels';
 
 const router = useRouter();
 const route = useRoute();
@@ -197,6 +199,7 @@ onMounted(() => loadTeeSets());
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -204,6 +207,7 @@ onMounted(() => loadTeeSets());
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .back-btn { align-self: center; }
 .page-title {
   font-size: 1.5rem;
@@ -373,5 +377,12 @@ onMounted(() => loadTeeSets());
   gap: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; order: -1; }
+  .tee-sets-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 </style>

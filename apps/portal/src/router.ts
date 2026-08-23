@@ -213,6 +213,12 @@ const router = createRouter({
       props: withAuth(),
       meta: { title: "Thị trường & Tích hợp", roles: SUPER_ADMIN_ONLY },
     },
+
+    {
+      path: "/:pathMatch(.*)*",
+      component: () => import("./pages/not-found/index.vue"),
+      meta: { title: "Không có trang này" },
+    },
   ],
 });
 

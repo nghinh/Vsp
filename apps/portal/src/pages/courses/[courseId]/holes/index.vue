@@ -25,6 +25,15 @@
       <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/geometry-review`">
         Duyệt hình học
       </RouterLink>
+      <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/tee-sets`">
+        Bộ tee
+      </RouterLink>
+      <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/versions`">
+        Phiên bản
+      </RouterLink>
+      <RouterLink class="btn btn-secondary" :to="`/courses/${courseId}/packages`">
+        Gói dữ liệu
+      </RouterLink>
       <button class="btn btn-primary" @click="showCreateForm = !showCreateForm">
         {{ showCreateForm ? 'Huỷ' : '+ Thêm hố' }}
       </button>
@@ -126,8 +135,9 @@
 
         <div class="hole-meta">
           <span class="meta-item">Tạo lúc {{ formatInstant(hole.createdAt) }}</span>
-          <span v-if="hole.dataQuality" class="quality-badge" :class="qualityClass(hole.dataQuality)">
-            {{ hole.dataQuality.accuracyClass ?? '?' }}
+          <span v-if="hole.dataQuality" class="quality-badge" :class="qualityClass(hole.dataQuality)"
+            :title="`${accuracyClassLabel(hole.dataQuality.accuracyClass)} · ${verificationStatusLabel(hole.dataQuality.verificationStatus)}`">
+            {{ accuracyClassShort(hole.dataQuality.accuracyClass) }}
           </span>
         </div>
       </div>
@@ -143,6 +153,7 @@ import type { HoleResponse, HoleCreateRequest } from '@/types/admin/hole';
 import { holeAdminApi } from '@/api/admin/holes';
 import { courseAdminApi } from '@/api/admin/courses';
 import { formatDay as formatInstant } from '@/lib/datetime';
+import { accuracyClassLabel, accuracyClassShort, verificationStatusLabel } from '@/lib/enum-labels';
 
 const router = useRouter();
 const route = useRoute();
@@ -231,6 +242,7 @@ onMounted(() => loadHoles());
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -239,6 +251,7 @@ onMounted(() => loadHoles());
   padding-bottom: 1rem;
 }
 .back-btn { align-self: center; }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -336,7 +349,7 @@ onMounted(() => loadHoles());
   margin-right: auto;
 }
 
-.loading-state { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.loading-state { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
 .skeleton-card {
   height: 4rem;
   border-radius: 8px;
@@ -364,7 +377,7 @@ onMounted(() => loadHoles());
 .empty-title { font-size: 1.125rem; font-weight: 600; margin: 0; }
 .empty-subtitle { font-size: 0.875rem; color: var(--muted); margin: 0; }
 
-.hole-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.hole-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
 .hole-card {
   border: 1px solid var(--surface-container-highest);
   border-radius: 10px;
@@ -418,4 +431,11 @@ onMounted(() => loadHoles());
 .badge-verified { color: #15803d; background: #dcfce7; }
 .badge-pending  { color: #92400e; background: #fef3c7; }
 .badge-unverified { color: var(--muted); background: var(--surface-container-high); }
+
+@media (max-width: 640px) {
+  .holes-page { padding: 0; }
+  .form-grid { grid-template-columns: 1fr; }
+  .page-header .btn { flex: 1 1 auto; text-align: center; }
+  .header-content { flex-basis: 100%; order: -1; }
+}
 </style>

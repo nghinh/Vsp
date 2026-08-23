@@ -250,4 +250,30 @@ function handleKeydown(event: KeyboardEvent) {
   word-break: break-word;
   max-width: 4.5rem;
 }
+
+@media (max-width: 768px) {
+  .tool-palette {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    padding: 0.5rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--surface-container-highest);
+  }
+  .palette-section {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: auto;
+  }
+  .section-label {
+    align-self: center;
+    padding-left: 0;
+  }
+  .palette-divider {
+    width: 1px;
+    height: 2.5rem;
+    margin: 0 0.25rem;
+  }
+}
+
 </style>

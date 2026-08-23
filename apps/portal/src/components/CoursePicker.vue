@@ -90,14 +90,25 @@ onMounted(loadFacilities);
 
     <div class="picker-field">
       <label class="picker-label" for="cp-course">Sân</label>
+      <!--
+        `''` rather than `null` for both the bound value and the placeholder
+        option, and both as strings.
+
+        With `:value="null"` Vue writes `el.value = ''`, and with
+        `<option :value="null">` it drops the attribute entirely so that
+        option's value becomes its own text. Nothing matched, `selectedIndex`
+        stayed -1, and the control rendered as an empty box with no visible
+        placeholder on all three greenkeeping screens — the operator could not
+        tell a picker waiting for a facility from one that had failed to load.
+      -->
       <select
         id="cp-course"
         class="picker-input"
         :disabled="loading || courses.length === 0"
-        :value="props.modelValue"
+        :value="props.modelValue === null ? '' : String(props.modelValue)"
         @change="selectCourse(Number(($event.target as HTMLSelectElement).value) || null)"
       >
-        <option :value="null">— Chọn sân —</option>
+        <option value="">— Chọn sân —</option>
         <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
       </select>
     </div>

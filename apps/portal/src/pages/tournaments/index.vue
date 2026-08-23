@@ -253,7 +253,7 @@ async function handleCreate() {
     showCreateForm.value = false;
     Object.assign(createForm, { name: '', description: '', ...defaultFlags() });
     // Navigate to the new policy's detail page
-    router.push(`/tournaments/${policy.id}`);
+    router.push(`/tournament-policies/${policy.id}`);
   } catch (err: unknown) {
     const apiErr = err as { message?: string };
     createError.value = apiErr?.message ?? 'Không tạo được thể lệ';
@@ -263,7 +263,7 @@ async function handleCreate() {
 }
 
 function navigateToPolicy(id: string) {
-  router.push(`/tournaments/${id}`);
+  router.push(`/tournament-policies/${id}`);
 }
 
 
@@ -285,6 +285,7 @@ onMounted(() => loadPolicies());
 /* Header */
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -292,6 +293,7 @@ onMounted(() => loadPolicies());
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -535,5 +537,12 @@ textarea.form-input { resize: vertical; }
   gap: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; order: -1; }
+  .tournament-policies-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 </style>

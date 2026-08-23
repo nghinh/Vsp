@@ -30,6 +30,7 @@ import { parsePoint, pointToWkt } from '@/lib/wkt';
 import type { CourseResponse } from '@/types/admin/course';
 import type { PinPosition } from '@/types/admin/operations';
 import { PIN_POSITION_TYPES } from '@/types/admin/operations';
+import { pinPositionTypeLabel } from '@/lib/enum-labels';
 
 const props = defineProps<{ authToken: string }>();
 
@@ -282,7 +283,7 @@ function isActive(pin: PinPosition): boolean {
           <div class="field">
             <label class="label" for="pp-type">Loại</label>
             <select id="pp-type" v-model="form.pinPositionType" class="input">
-              <option v-for="t in PIN_POSITION_TYPES" :key="t" :value="t">{{ t }}</option>
+              <option v-for="t in PIN_POSITION_TYPES" :key="t" :value="t">{{ pinPositionTypeLabel(t) }}</option>
             </select>
           </div>
 
@@ -324,7 +325,8 @@ function isActive(pin: PinPosition): boolean {
         <h2 class="card-title">Đã lên lịch</h2>
         <p v-if="loading" class="muted">Đang tải…</p>
         <p v-else-if="pins.length === 0" class="muted">Sân này chưa có vị trí cờ nào.</p>
-        <table v-else class="table">
+        <div class="table-scroll" v-else>
+        <table class="table">
           <thead>
             <tr>
               <th>Hố</th>
@@ -338,7 +340,7 @@ function isActive(pin: PinPosition): boolean {
           <tbody>
             <tr v-for="pin in pins" :key="pin.id">
               <td>{{ pin.holeNumber }}</td>
-              <td>{{ pin.pinPositionType ?? '—' }}</td>
+              <td>{{ pinPositionTypeLabel(pin.pinPositionType) }}</td>
               <td class="mono">{{ formatPosition(pin.position) }}</td>
               <td>{{ formatWindow(pin) }}</td>
               <td>
@@ -350,6 +352,7 @@ function isActive(pin: PinPosition): boolean {
             </tr>
           </tbody>
         </table>
+        </div>
       </section>
     </template>
   </div>

@@ -56,8 +56,8 @@
     <CorrectionApproveDialog
       v-if="showApproveDialog"
       title="Duyệt báo lỗi"
-      message="Confirm that this correction is valid and should be applied. An audit entry will be created."
-      confirm-label="Approve"
+      message="Xác nhận báo lỗi này là đúng và sẽ được áp dụng. Hệ thống sẽ ghi một mục nhật ký kiểm toán."
+      confirm-label="Duyệt"
       :loading="actionLoading"
       @confirm="handleApprove"
       @cancel="showApproveDialog = false"

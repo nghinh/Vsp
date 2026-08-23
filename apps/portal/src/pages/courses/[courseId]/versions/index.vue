@@ -68,6 +68,20 @@
 
         <!-- Actions -->
         <span class="version-actions">
+          <!--
+            Validate & publish, for a draft. The publish screen was routed and
+            linked from nowhere: a version imported as DRAFT could only be
+            published by typing its URL.
+          -->
+          <RouterLink
+            v-if="version.status === 'DRAFT'"
+            class="action-btn publish-link"
+            :to="`/courses/${courseId}/versions/${version.id}/publish`"
+            :aria-label="`Kiểm tra và công bố v${version.versionNumber}`"
+          >
+            Kiểm tra &amp; công bố
+          </RouterLink>
+
           <!-- View Impact: available for any version -->
           <button
             class="action-btn impact-btn"
@@ -250,6 +264,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { RouterLink } from 'vue-router';
 import { formatInstant } from '@/lib/datetime';
 import type { CourseVersionDto, RollbackImpactDto } from '@/types/course-version';
 import { courseVersionApi } from '@/api/course-version';
@@ -615,11 +630,21 @@ onMounted(() => loadVersions(0));
 .impact-btn:hover:not(:disabled) { background: var(--surface-container-highest); }
 
 .rollback-btn {
-  color: #b45309;
-  border-color: #fde68a;
-  background: #171f33eb;
+  color: #fbbf24;
+  border-color: #b45309;
+  background: rgba(217, 119, 6, 0.12);
 }
-.rollback-btn:hover:not(:disabled) { background: #fef3c7; }
+.rollback-btn:hover:not(:disabled) { background: rgba(217, 119, 6, 0.24); }
+
+.publish-link {
+  display: inline-flex;
+  align-items: center;
+  color: #fff;
+  text-decoration: none;
+  background: var(--primary-container);
+  border-color: var(--primary-container);
+}
+.publish-link:hover { background: var(--secondary-container); }
 
 .confirm-rollback-btn {
   background: #b45309;

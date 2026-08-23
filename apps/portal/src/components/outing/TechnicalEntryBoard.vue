@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { golferLabel } from '@/lib/enum-labels';
 /**
  * The on-course board, typed up.
  *
@@ -150,7 +151,7 @@ function save() {
             >
               <option value="">— Chọn golfer —</option>
               <option v-for="p in players" :key="p.id" :value="p.id">
-                {{ p.displayName }}<span v-if="p.flightNumber"> (FLY {{ p.flightNumber }})</span>
+                {{ golferLabel(p) }}<span v-if="p.flightNumber"> (FLY {{ p.flightNumber }})</span>
               </option>
             </select>
 

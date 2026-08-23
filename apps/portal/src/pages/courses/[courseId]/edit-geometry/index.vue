@@ -88,6 +88,7 @@ import type {
 import {
   GEOMETRY_EDIT_ROLES,
   LAYER_DEFAULT_GEOMETRY_TYPE,
+  LAYER_TYPE_LABELS,
 } from '@/types/geometry';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -353,7 +354,7 @@ function cancelDrawing() {
 function handleFeatureSelect(payload: { id: string | number; layerType: LayerType }) {
   if (activeTool.value !== 'select') return;
   selectedFeatureId.value = payload.id;
-  screenReaderAnnouncement.value = `Selected ${payload.layerType} feature. Drag a vertex to edit, or press Delete to remove.`;
+  screenReaderAnnouncement.value = `Đã chọn đối tượng lớp ${LAYER_TYPE_LABELS[payload.layerType] ?? payload.layerType}. Kéo một đỉnh để chỉnh, hoặc bấm Delete để xoá.`;
 }
 
 function handleFeatureDeselect() {
@@ -504,7 +505,7 @@ function applyFeatureModify(before: GeometryFeature, after: GeometryFeature) {
   };
 
   isDirty.value = true;
-  screenReaderAnnouncement.value = `Modified ${before.properties.layerType} feature`;
+  screenReaderAnnouncement.value = `Đã sửa một đối tượng lớp ${LAYER_TYPE_LABELS[before.properties.layerType] ?? before.properties.layerType}`;
 }
 
 // ─── Undo / Redo ─────────────────────────────────────────────────────────────
@@ -801,8 +802,17 @@ function resumePendingAction() {
 .edit-geometry-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  /* The shell's topbar (88px) and content padding (2 × 32px) sit above and
+     around this page; 100vh here made the whole shell scroll. */
+  height: calc(100dvh - 152px);
   min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .edit-geometry-page {
+    height: auto;
+    min-height: calc(100dvh - 104px);
+  }
 }
 
 /* Screen reader only (matches GeometryEditor.vue) */

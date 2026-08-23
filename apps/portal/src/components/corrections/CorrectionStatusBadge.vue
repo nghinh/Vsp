@@ -10,6 +10,7 @@
 </template>
 
 <script setup lang="ts">
+import { correctionStatusLabel } from '@/lib/correction-labels';
 import type { CorrectionStatusValue } from '@/types/correction';
 
 defineProps<{
@@ -40,17 +41,7 @@ function statusIcon(status: CorrectionStatusValue): string {
   }
 }
 
-function statusLabel(status: CorrectionStatusValue): string {
-  switch (status) {
-    case 'PENDING':           return 'Chờ xử lý';
-    case 'IN_REVIEW':        return 'Đang xem xét';
-    case 'APPROVED':         return 'Đã duyệt';
-    case 'REJECTED':         return 'Đã từ chối';
-    case 'INFO_REQUESTED':   return 'Chờ bổ sung';
-    case 'CONVERTED_TO_DRAFT': return 'Đã chuyển nháp';
-    default:                  return 'Không rõ';
-  }
-}
+const statusLabel = correctionStatusLabel;
 </script>
 
 <style scoped>

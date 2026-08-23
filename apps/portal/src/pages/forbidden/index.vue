@@ -46,4 +46,10 @@ const session = getSession();
 .roles {
   font-size: 0.85rem;
 }
+
+.forbidden a {
+  margin-top: 0.5rem;
+  color: var(--primary-bright);
+  font-weight: 600;
+}
 </style>

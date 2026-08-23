@@ -32,14 +32,16 @@ import { API_BASE } from './base';
 
 import type {
   TournamentSummary,
-  TournamentDetail,
   TournamentCreateRequest,
   TournamentUpdateRequest,
   TournamentPlayerCreateRequest,
+  TournamentPlayerResponse,
   TournamentBulkImportRequest,
   FlightCreateRequest,
+  FlightResponse,
   FlightUpdateRequest,
   TeeTimeCreateRequest,
+  TeeTimeResponse,
   TeeTimeUpdateRequest,
   LeaderboardResponse,
   TournamentResultResponse,
@@ -77,11 +79,46 @@ export class TournamentApi {
     return handleResponse<TournamentSummary[]>(res);
   }
 
-  async getTournament(token: string, tournamentId: string): Promise<TournamentDetail> {
+  /**
+   * The tournament itself — name, format, status, dates.
+   *
+   * Not its roster. `GET /tournaments/{id}` returns a `TournamentResponse`
+   * with no `players`, `flights` or `teeTimes` field, and never has; the three
+   * collections are separate resources, listed below and documented at the top
+   * of this file. The portal's `TournamentDetail` claimed otherwise and the
+   * detail page believed it, so registering a golfer returned 201 and then
+   * showed "Chưa có golfer nào đăng ký" — the roster, the flights and the tee
+   * times were unreadable from the portal in every tournament.
+   */
+  async getTournament(token: string, tournamentId: string): Promise<TournamentSummary> {
     const res = await fetch(`${this.baseUrl}/tournaments/${tournamentId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return handleResponse<TournamentDetail>(res);
+    return handleResponse<TournamentSummary>(res);
+  }
+
+  async listPlayers(
+    token: string,
+    tournamentId: string
+  ): Promise<TournamentPlayerResponse[]> {
+    const res = await fetch(`${this.baseUrl}/tournaments/${tournamentId}/players`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return handleResponse<TournamentPlayerResponse[]>(res);
+  }
+
+  async listFlights(token: string, tournamentId: string): Promise<FlightResponse[]> {
+    const res = await fetch(`${this.baseUrl}/tournaments/${tournamentId}/flights`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return handleResponse<FlightResponse[]>(res);
+  }
+
+  async listTeeTimes(token: string, tournamentId: string): Promise<TeeTimeResponse[]> {
+    const res = await fetch(`${this.baseUrl}/tournaments/${tournamentId}/tee-times`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return handleResponse<TeeTimeResponse[]>(res);
   }
 
   async createTournament(

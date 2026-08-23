@@ -88,11 +88,11 @@
         <div class="quality-row">
           <div class="quality-item">
             <span class="quality-label">Hạng độ chính xác</span>
-            <span class="quality-value">{{ facility.dataQuality.accuracyClass ?? '—' }}</span>
+            <span class="quality-value">{{ accuracyClassLabel(facility.dataQuality.accuracyClass) }}</span>
           </div>
           <div class="quality-item">
             <span class="quality-label">Xác minh</span>
-            <span class="quality-value">{{ facility.dataQuality.verificationStatus ?? '—' }}</span>
+            <span class="quality-value">{{ verificationStatusLabel(facility.dataQuality.verificationStatus) }}</span>
           </div>
           <div class="quality-item">
             <span class="quality-label">Tạo lúc</span>
@@ -125,6 +125,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { formatInstant } from '@/lib/datetime';
+import { accuracyClassLabel, verificationStatusLabel } from '@/lib/enum-labels';
 import { useRouter, useRoute } from 'vue-router';
 import type { FacilityResponse, FacilityUpdateRequest } from '@/types/admin/facility';
 import { facilityAdminApi } from '@/api/admin/facilities';
@@ -191,7 +192,10 @@ function populateForm(f: FacilityResponse) {
   editForm.address = f.address ?? undefined;
   editForm.phone = f.phone ?? undefined;
   editForm.website = f.website ?? undefined;
-  editForm.location = f.location ?? undefined;
+  // Not `location`. The API hands it back as EWKB hex, which its own validator
+  // then refuses as "not parseable as WKT" — so echoing it made every save of
+  // a facility with a pin fail. The form has no location editor; the update is
+  // partial, and a field left out keeps its stored value.
 }
 
 const props = defineProps<{ authToken: string }>();
@@ -212,6 +216,7 @@ onMounted(async () => {
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -219,6 +224,7 @@ onMounted(async () => {
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .back-btn { align-self: center; }
 .page-title {
   font-size: 1.5rem;
@@ -387,5 +393,13 @@ onMounted(async () => {
   font-size: 0.875rem;
   color: #dc2626;
   margin-top: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; order: -1; }
+  .facility-detail-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
+  .quality-row { grid-template-columns: 1fr 1fr; }
 }
 </style>

@@ -37,7 +37,7 @@
           <span class="data-label">Hạng độ chính xác</span>
           <span class="data-value">
             <span v-if="detail.accuracyClass" class="accuracy-badge">
-              {{ detail.accuracyClass }}
+              {{ accuracyClassLabel(detail.accuracyClass) }}
             </span>
             <span v-else>—</span>
           </span>
@@ -55,7 +55,7 @@
 
         <div class="data-row">
           <span class="data-label">Xác minh</span>
-          <span class="data-value">{{ detail.verificationStatus ?? '—' }}</span>
+          <span class="data-value">{{ verificationStatusLabel(detail.verificationStatus) }}</span>
         </div>
       </div>
 
@@ -80,6 +80,7 @@
 </template>
 
 <script setup lang="ts">
+import { accuracyClassLabel, verificationStatusLabel } from '@/lib/enum-labels';
 import type { CorrectionDetailResponse, CorrectionTypeValue } from '@/types/correction';
 import { formatInstant } from '@/lib/datetime';
 import { correctionTypeLabel } from '@/lib/correction-labels';

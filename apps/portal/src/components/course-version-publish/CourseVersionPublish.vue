@@ -225,7 +225,11 @@
           Phiên bản <strong>#{{ publishSuccess.newVersionId }}</strong> đã lên sóng.
         </p>
         <div class="success-meta">
-          <span>Mã audit: <code class="meta-code">{{ publishSuccess.auditId }}</code></span>
+          <!-- The server audits asynchronously and sends auditId as null; an
+               empty "Mã audit:" read like a missing record. -->
+          <span v-if="publishSuccess.auditId">
+            Mã audit: <code class="meta-code">{{ publishSuccess.auditId }}</code>
+          </span>
           <span v-if="publishSuccess.buildJobId">
             Tác vụ đóng gói: <code class="meta-code">{{ publishSuccess.buildJobId }}</code>
           </span>

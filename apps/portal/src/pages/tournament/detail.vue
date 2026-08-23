@@ -81,9 +81,9 @@
         <div class="form-field">
           <label class="form-label">Thể thức</label>
           <select v-model="editForm.format" class="form-input">
-            <option value="strokePlay">Đấu gậy</option>
-            <option value="matchPlay">Đấu đối kháng</option>
-            <option value="stableford">Stableford</option>
+            <option v-for="(text, value) in TOURNAMENT_FORMAT_LABELS" :key="value" :value="value">
+              {{ text }}
+            </option>
           </select>
         </div>
         <div class="form-field">
@@ -208,7 +208,7 @@
               <td>{{ p.playerId }}</td>
               <td>{{ p.handicap ?? '—' }}</td>
               <td>{{ p.flightId ? `Flight ${flightNumber(p.flightId)}` : '—' }}</td>
-              <td><span class="status-badge" :class="playerStatusClass(p.status)">{{ p.status }}</span></td>
+              <td><span class="status-badge" :class="playerStatusClass(p.status)">{{ playerStatusLabel(p.status) }}</span></td>
               <td>
                 <button
                   v-if="p.status !== 'WITHDRAWN'"
@@ -237,7 +237,7 @@
         <div v-for="flight in flights" :key="flight.id" class="flight-card">
           <div class="flight-header">
             <strong>Flight {{ flight.flightNumber }}</strong>
-            <span class="starting-tee-badge">{{ flight.startingTee }}</span>
+            <span class="starting-tee-badge">{{ startingTeeLabel(flight.startingTee) }}</span>
           </div>
           <div class="flight-players">
             <span v-for="pid in flight.playerIds" :key="pid" class="player-chip">
@@ -281,7 +281,7 @@
           <tbody>
             <tr v-for="tt in teeTimes" :key="tt.id">
               <td>{{ formatDateTime(tt.teeTime) }}</td>
-              <td>{{ tt.startingTee }}</td>
+              <td>{{ startingTeeLabel(tt.startingTee) }}</td>
               <td>{{ tt.flightId ? `Flight ${flightNumber(tt.flightId)}` : '—' }}</td>
               <td>
                 <select v-if="!tt.flightId" @change="e => handleAssignFlight(tt.id, (e.target as HTMLSelectElement).value)">
@@ -312,6 +312,7 @@
         <p>Chưa có dữ liệu bảng xếp hạng.</p>
       </div>
       <div v-else class="leaderboard-table">
+        <div class="table-scroll">
         <table>
           <thead>
             <tr>
@@ -333,10 +334,11 @@
               <td>{{ entry.flightId ? `Flight ${flightNumber(entry.flightId)}` : '—' }}</td>
               <td>{{ entry.score ?? '—' }}</td>
               <td>{{ entry.scoreToPar != null ? (entry.scoreToPar > 0 ? '+' : '') + entry.scoreToPar : '—' }}</td>
-              <td>{{ entry.status }}</td>
+              <td>{{ playerStatusLabel(entry.status) }}</td>
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
 
@@ -353,7 +355,7 @@
         <div v-for="flight in unconfirmedFlights" :key="flight.id" class="confirm-card">
           <div class="confirm-header">
             <strong>Flight {{ flight.flightNumber }}</strong>
-            <span class="starting-tee-badge">{{ flight.startingTee }}</span>
+            <span class="starting-tee-badge">{{ startingTeeLabel(flight.startingTee) }}</span>
           </div>
           <div class="flight-players">
             <span v-for="pid in flight.playerIds" :key="pid" class="player-chip">
@@ -376,26 +378,20 @@
       <div v-if="tournament?.status !== 'COMPLETED'" class="info-banner">
         Kết thúc giải để tạo và công bố kết quả.
       </div>
-      <div v-else-if="results.length === 0" class="empty-state">
-        <p>Chưa công bố kết quả.</p>
-        <button class="btn btn-primary" @click="handlePublishResults">Công bố kết quả</button>
-      </div>
-      <div v-else class="results-table">
-        <table>
-          <thead>
-            <tr><th>Hạng</th><th>Golfer</th><th>Điểm</th><th>So par</th><th>Phân định hoà</th></tr>
-          </thead>
-          <tbody>
-            <tr v-for="r in results" :key="r.playerId">
-              <td>{{ r.rank }}</td>
-              <td>{{ r.playerName ?? `Player ${r.playerId}` }}</td>
-              <td>{{ r.score ?? '—' }}</td>
-              <td>{{ r.scoreToPar != null ? (r.scoreToPar > 0 ? '+' : '') + r.scoreToPar : '—' }}</td>
-              <td>{{ r.tieBreakApplied ? '✓' : '—' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <!--
+        The same board the outing screen shows, with names, divisions and
+        prizes. The table that was here read the legacy result rows, whose only
+        identity is a golfer-account id — null for everyone imported from a
+        flight sheet — so it listed "Player null" three times and nothing else.
+      -->
+      <ResultsBoard
+        v-else-if="outingRules"
+        :results="outingResults"
+        :rules="outingRules"
+        :publishing="publishingResults"
+        @publish="handlePublishResults"
+      />
+      <p v-else class="muted">Đang tải kết quả…</p>
     </div>
 
   </div>
@@ -404,14 +400,23 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { formatDay, formatInstant } from '@/lib/datetime';
+import {
+  TOURNAMENT_FORMAT_LABELS,
+  playerStatusLabel,
+  startingTeeLabel,
+  tournamentFormatLabel,
+  tournamentStatusLabel,
+} from '@/lib/enum-labels';
 import { useRoute } from 'vue-router';
 import { tournamentApi } from '@/api/tournament';
+import { subscribeSse, type SseHandle } from '@/lib/sse';
+import { outingApi, type OutingResults, type OutingRules } from '@/api/outing';
+import ResultsBoard from '@/components/outing/ResultsBoard.vue';
 import type {
-  TournamentDetail,
   FlightResponse,
   TeeTimeResponse,
   TournamentPlayerResponse,
-  TournamentResultResponse,
+  TournamentSummary,
   LeaderboardEntryResponse,
   TournamentUpdateRequest,
   TournamentBulkImportRequest,
@@ -424,11 +429,13 @@ const tournamentId = route.params.id as string;
 const props = defineProps<{ authToken: string }>();
 
 // ─── State ────────────────────────────────────────────────────────────────
-const tournament = ref<TournamentDetail | null>(null);
+const tournament = ref<TournamentSummary | null>(null);
 const players = ref<TournamentPlayerResponse[]>([]);
 const flights = ref<FlightResponse[]>([]);
 const teeTimes = ref<TeeTimeResponse[]>([]);
-const results = ref<TournamentResultResponse[]>([]);
+const outingResults = ref<OutingResults | null>(null);
+const outingRules = ref<OutingRules | null>(null);
+const publishingResults = ref(false);
 const leaderboardEntries = ref<LeaderboardEntryResponse[]>([]);
 const leaderboardVersion = ref(0);
 
@@ -453,7 +460,8 @@ const importText = ref('');
 const importError = ref<string | null>(null);
 const importLoading = ref(false);
 
-let sseSource: EventSource | null = null;
+let sseSource: SseHandle | null = null;
+let sseRetry: ReturnType<typeof setTimeout> | null = null;
 
 // ─── Computed ────────────────────────────────────────────────────────────
 
@@ -493,11 +501,17 @@ async function loadTournament() {
   loading.value = true;
   error.value = null;
   try {
-    const detail = await tournamentApi.getTournament(props.authToken, tournamentId);
+    // Four requests, because they are four resources. See `getTournament`.
+    const [detail, roster, flightList, teeTimeList] = await Promise.all([
+      tournamentApi.getTournament(props.authToken, tournamentId),
+      tournamentApi.listPlayers(props.authToken, tournamentId),
+      tournamentApi.listFlights(props.authToken, tournamentId),
+      tournamentApi.listTeeTimes(props.authToken, tournamentId),
+    ]);
     tournament.value = detail;
-    players.value = detail.players ?? [];
-    flights.value = detail.flights ?? [];
-    teeTimes.value = detail.teeTimes ?? [];
+    players.value = roster ?? [];
+    flights.value = flightList ?? [];
+    teeTimes.value = teeTimeList ?? [];
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
     error.value = apiErr?.message ?? 'Không tải được giải đấu';
@@ -523,7 +537,8 @@ async function loadLeaderboard() {
 
 async function loadResults() {
   try {
-    results.value = await tournamentApi.getResults(props.authToken, tournamentId);
+    if (!outingRules.value) outingRules.value = await outingApi.getRules(tournamentId);
+    outingResults.value = await outingApi.getResults(tournamentId);
   } catch {
     // Deliberately quiet: results 404 until they are published, which is the
     // normal state for most of a tournament, not a failure to report.
@@ -535,26 +550,43 @@ async function loadResults() {
 function connectLeaderboardSSE() {
   if (sseSource) return;
   const url = tournamentApi.leaderboardSseUrl(props.authToken, tournamentId);
-  sseSource = new EventSource(url);
-  sseSource.onmessage = (event) => {
-    try {
-      const data = JSON.parse(event.data);
-      if (data.entries) {
-        leaderboardEntries.value = data.entries;
-        leaderboardVersion.value = data.version ?? leaderboardVersion.value + 1;
+  sseSource = subscribeSse(
+    url,
+    props.authToken,
+    (frame) => {
+      if (frame.event !== 'leaderboard' && frame.event !== 'message') return;
+      try {
+        const data = JSON.parse(frame.data);
+        if (data.entries) {
+          leaderboardEntries.value = data.entries;
+          leaderboardVersion.value = data.version ?? leaderboardVersion.value + 1;
+        }
+      } catch {
+        // A malformed SSE frame is not worth a banner; the next frame replaces
+        // whatever this one would have said.
       }
-    } catch {
-      // A malformed SSE frame is not worth a banner; the next frame replaces
-      // whatever this one would have said.
-    }
-  };
-  sseSource.onerror = () => {
-    sseSource?.close();
-    sseSource = null;
-  };
+    },
+    (error) => {
+      sseSource = null;
+      // A dropped stream — the server recycles emitters, the network blinks —
+      // is re-opened after a pause while the tournament is still running. A
+      // refused one (error on open) is not retried in a tight loop.
+      if (error && tournament.value?.status === 'IN_PROGRESS' && !sseRetry) {
+        sseRetry = setTimeout(() => {
+          sseRetry = null;
+          void loadLeaderboard();
+          connectLeaderboardSSE();
+        }, 15_000);
+      }
+    },
+  );
 }
 
 function disconnectLeaderboardSSE() {
+  if (sseRetry) {
+    clearTimeout(sseRetry);
+    sseRetry = null;
+  }
   sseSource?.close();
   sseSource = null;
 }
@@ -602,6 +634,12 @@ async function handleStartTournament() {
   try {
     await tournamentApi.startTournament(props.authToken, tournamentId);
     await loadTournament();
+    // The live stream only opened on mount, so starting a tournament from
+    // this screen left it on the polling fallback until a reload.
+    if (tournament.value?.status === 'IN_PROGRESS') {
+      await loadLeaderboard();
+      connectLeaderboardSSE();
+    }
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
     error.value = apiErr?.message ?? 'Không bắt đầu được giải';
@@ -712,7 +750,7 @@ async function handleCreateFlight() {
   try {
     await tournamentApi.createFlight(props.authToken, tournamentId, {
       flightNumber: nextNumber,
-      startingTee: 'front',
+      startingTee: 'FRONT',
     });
     await loadTournament();
   } catch (e: unknown) {
@@ -727,7 +765,7 @@ async function handleCreateTeeTime() {
     await tournamentApi.createTeeTime(props.authToken, tournamentId, {
       teeTime: new Date(newTeeTime.value).toISOString(),
       courseId: tournament.value?.courseId ?? 0,
-      startingTee: 'front',
+      startingTee: 'FRONT',
     });
     newTeeTime.value = '';
     showCreateTeeTime.value = false;
@@ -763,12 +801,19 @@ async function handleConfirmFlight(flightId: string) {
 }
 
 async function handlePublishResults() {
+  publishingResults.value = true;
   try {
+    // The outing publish computes the ranking from the entered cards and
+    // writes the result rows. `POST /results/publish` only stamps a publish
+    // time on rows that already exist — called first, it published nothing,
+    // and this button did nothing an operator could see.
+    outingResults.value = await outingApi.publish(tournamentId);
     await tournamentApi.publishResults(props.authToken, tournamentId);
-    await loadResults();
   } catch (e: unknown) {
     const apiErr = e as { message?: string };
     error.value = apiErr?.message ?? 'Không công bố được kết quả';
+  } finally {
+    publishingResults.value = false;
   }
 }
 
@@ -776,17 +821,6 @@ async function handlePublishResults() {
 
 function flightNumber(flightId: string): number | string {
   return flights.value.find(f => f.id === flightId)?.flightNumber ?? '?';
-}
-
-function statusLabel(status?: string): string {
-  const labels: Record<string, string> = {
-    DRAFT: 'Bản nháp',
-    REGISTRATION_OPEN: 'Đang mở đăng ký',
-    IN_PROGRESS: 'Đang diễn ra',
-    COMPLETED: 'Đã kết thúc',
-    CANCELLED: 'Đã huỷ',
-  };
-  return labels[status ?? ''] ?? status ?? '';
 }
 
 function statusClass(status?: string): string {
@@ -800,14 +834,9 @@ function statusClass(status?: string): string {
   return classes[status ?? ''] ?? '';
 }
 
-function formatLabel(format?: string): string {
-  const labels: Record<string, string> = {
-    strokePlay: 'Stroke Play',
-    matchPlay: 'Match Play',
-    stableford: 'Stableford',
-  };
-  return labels[format ?? ''] ?? format ?? '';
-}
+/** Shared with the list page — see `lib/enum-labels.ts`. */
+const formatLabel = tournamentFormatLabel;
+const statusLabel = tournamentStatusLabel;
 
 function formatDate(iso?: string): string {
   if (!iso) return '—';
@@ -837,6 +866,7 @@ function playerStatusClass(status?: string): string {
 /* Header */
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -844,7 +874,7 @@ function playerStatusClass(status?: string): string {
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
-.header-left { display: flex; align-items: flex-start; gap: 0.75rem; }
+.header-left { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem; min-width: 0; }
 .btn-back {
   background: none;
   border: none;
@@ -856,7 +886,7 @@ function playerStatusClass(status?: string): string {
 }
 .page-title { font-size: 1.375rem; font-weight: 700; color: var(--on-surface); margin: 0; }
 .page-subtitle { font-size: 0.875rem; color: var(--muted); margin: 0.25rem 0 0; display: flex; align-items: center; gap: 0.4rem; }
-.header-actions { display: flex; gap: 0.5rem; }
+.header-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .status-badge {
   font-size: 0.6875rem;
   font-weight: 600;

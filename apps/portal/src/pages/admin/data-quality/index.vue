@@ -203,7 +203,7 @@
             <tr v-for="record in staleRecords" :key="`${record.recordType}-${record.recordId}`">
               <td>
                 <span class="record-type-badge" :class="`badge-${record.recordType.toLowerCase()}`">
-                  {{ record.recordType.replace('_', ' ') }}
+                  {{ recordTypeLabel(record.recordType) }}
                 </span>
               </td>
               <td>{{ record.facilityName }}</td>
@@ -212,7 +212,7 @@
               <td>{{ formatInstant(record.expiredAt) }}</td>
               <td>
                 <span class="severity-badge" :class="`severity-${record.severity.toLowerCase()}`">
-                  {{ record.severity }}
+                  {{ severityLabel(record.severity) }}
                 </span>
               </td>
             </tr>
@@ -225,6 +225,7 @@
 </template>
 
 <script setup lang="ts">
+import { recordTypeLabel, severityLabel } from '@/lib/enum-labels';
 import { ref, reactive, computed, onMounted } from 'vue';
 import { formatInstant } from '@/lib/datetime';
 import type { DataQualityMetrics, StaleRecord, FacilityOption, CourseOption } from '@/types/admin/data-quality';
@@ -448,7 +449,7 @@ onMounted(async () => {
 }
 .filter-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr auto;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 0.75rem;
   align-items: end;
 }
@@ -487,6 +488,7 @@ onMounted(async () => {
   display: flex;
   gap: 0.5rem;
 }
+.filter-actions .btn { flex: 1 1 auto; }
 
 /* ─── Buttons ────────────────────────────────────────────────────────────────── */
 .btn {
@@ -573,10 +575,13 @@ onMounted(async () => {
   margin-top: 0.125rem;
 }
 
-/* Card status colors — meet 4.5:1 contrast on white background */
-.metric-card--good    { border-color: #15803d; background: #f0fdf4; }
-.metric-card--warn    { border-color: #b45309; background: #171f33eb; }
-.metric-card--bad     { border-color: #dc2626; background: #fef2f2; }
+/* Card status colours. These were light-theme fills (#f0fdf4, #fef2f2) left
+   over from before the dark palette, which put the card's light text on a
+   near-white background: the KPI numbers were unreadable. A tint of the status
+   colour over the dark surface keeps the signal and the contrast. */
+.metric-card--good    { border-color: var(--tertiary-container); background: rgba(37, 164, 117, 0.14); }
+.metric-card--warn    { border-color: #d97706; background: rgba(217, 119, 6, 0.14); }
+.metric-card--bad     { border-color: #ef4444; background: rgba(239, 68, 68, 0.14); }
 .metric-card--neutral { border-color: var(--surface-container-highest); }
 
 /* ─── Actions Row ─────────────────────────────────────────────────────────────── */

@@ -285,22 +285,35 @@ const draftIndicatorClass = computed(() =>
 );
 
 
+/**
+ * The four drawing tools, named as the palette names them.
+ *
+ * The announcement used to read the raw tool id — "Tool changed to polygon" —
+ * to an operator whose whole screen is otherwise in Vietnamese.
+ */
+const TOOL_LABELS: Record<string, string> = {
+  select: 'Chọn',
+  point: 'Điểm',
+  line: 'Đường',
+  polygon: 'Vùng',
+};
+
 const screenReaderAnnouncement = ref('');
 
 // ─── Handlers ──────────────────────────────────────────────────────────────
 
 function handleToolChange(tool: EditorTool) {
-  screenReaderAnnouncement.value = `Tool changed to ${tool}`;
+  screenReaderAnnouncement.value = `Đã chuyển sang công cụ ${TOOL_LABELS[tool] ?? tool}`;
   emit('tool-change', tool);
 }
 
 function handleVisibilityToggle(layerType: LayerType) {
-  screenReaderAnnouncement.value = `Layer ${LAYER_TYPE_LABELS[layerType]} visibility toggled`;
+  screenReaderAnnouncement.value = `Đã bật/tắt hiển thị lớp ${LAYER_TYPE_LABELS[layerType]}`;
   emit('layer-visibility-toggle', layerType);
 }
 
 function handleLayerSelect(layerType: LayerType) {
-  screenReaderAnnouncement.value = `Selected layer ${LAYER_TYPE_LABELS[layerType]}`;
+  screenReaderAnnouncement.value = `Đã chọn lớp ${LAYER_TYPE_LABELS[layerType]}`;
   emit('layer-select', layerType);
 }
 
@@ -309,7 +322,7 @@ function handleMapReady() {
 }
 
 function handleFeatureClick(feature: GeometryFeature) {
-  screenReaderAnnouncement.value = `Feature selected on ${LAYER_TYPE_LABELS[feature.properties.layerType]} layer`;
+  screenReaderAnnouncement.value = `Đã chọn một đối tượng trên lớp ${LAYER_TYPE_LABELS[feature.properties.layerType]}`;
 }
 </script>
 
@@ -650,4 +663,21 @@ function handleFeatureClick(feature: GeometryFeature) {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* ─── Narrow screens: panels stack above the map instead of beside it ─────── */
+@media (max-width: 768px) {
+  .editor-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .editor-body {
+    flex-direction: column;
+    overflow: visible;
+  }
+  .map-canvas {
+    flex: 1 1 auto;
+    min-height: 55vh;
+  }
+}
+
 </style>

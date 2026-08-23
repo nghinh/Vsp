@@ -113,8 +113,9 @@
           >
             Ngừng phục vụ
           </span>
-          <span v-if="course.dataQuality" class="quality-badge" :class="qualityClass(course.dataQuality)">
-            {{ course.dataQuality.accuracyClass ?? '?' }}
+          <span v-if="course.dataQuality" class="quality-badge" :class="qualityClass(course.dataQuality)"
+            :title="`${accuracyClassLabel(course.dataQuality.accuracyClass)} · ${verificationStatusLabel(course.dataQuality.verificationStatus)}`">
+            {{ accuracyClassShort(course.dataQuality.accuracyClass) }}
           </span>
         </div>
 
@@ -139,6 +140,7 @@ import { useRouter, useRoute } from 'vue-router';
 import type { CourseResponse, CourseCreateRequest } from '@/types/admin/course';
 import { courseAdminApi } from '@/api/admin/courses';
 import { facilityAdminApi } from '@/api/admin/facilities';
+import { accuracyClassLabel, accuracyClassShort, verificationStatusLabel } from '@/lib/enum-labels';
 
 const router = useRouter();
 const route = useRoute();
@@ -251,6 +253,7 @@ onMounted(() => loadCourses());
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -258,6 +261,7 @@ onMounted(() => loadCourses());
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .back-btn { align-self: center; }
 .page-title {
   font-size: 1.5rem;
@@ -439,5 +443,12 @@ onMounted(() => loadCourses());
   gap: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; order: -1; }
+  .courses-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 </style>

@@ -34,24 +34,22 @@
           <div class="form-field">
             <label class="form-label" for="t-format">Thể thức <span class="required">*</span></label>
             <select id="t-format" v-model="form.format" class="form-input" required>
-              <option value="strokePlay">Đấu gậy</option>
-              <option value="matchPlay">Đấu đối kháng</option>
-              <option value="stableford">Stableford</option>
+              <option v-for="(text, value) in TOURNAMENT_FORMAT_LABELS" :key="value" :value="value">
+                {{ text }}
+              </option>
             </select>
           </div>
+        </div>
 
-          <div class="form-field">
-            <label class="form-label" for="t-course">Mã sân <span class="required">*</span></label>
-            <input
-              id="t-course"
-              v-model.number="form.courseId"
-              class="form-input"
-              type="number"
-              placeholder="ví dụ 1"
-              required
-            />
-            <span v-if="errors.courseId" class="field-error">{{ errors.courseId }}</span>
-          </div>
+        <!--
+          A number box labelled "Mã sân" used to sit here, defaulting to 0. A
+          tournament director does not know that Sky Lake Championship is
+          course 2, and the form gave them nothing to look it up with.
+        -->
+        <CoursePicker v-model="courseId" :auth-token="authToken" />
+        <span v-if="errors.courseId" class="field-error">{{ errors.courseId }}</span>
+
+        <div class="form-grid">
 
           <div class="form-field">
             <label class="form-label" for="t-max">Số golfer tối đa</label>
@@ -153,19 +151,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
+import CoursePicker from '@/components/CoursePicker.vue';
 import { tournamentApi } from '@/api/tournament';
+import { TOURNAMENT_FORMAT_LABELS } from '@/lib/enum-labels';
 import type { TournamentCreateRequest } from '@/types/tournament';
 import type { TournamentPolicyResponse } from '@/types/tournament-policy';
 
 const router = useRouter();
 const props = defineProps<{ authToken: string }>();
 
-const form = reactive<TournamentCreateRequest & { registrationDeadline?: string }>({
+/** Held apart from `form` because the picker's "nothing chosen" is null. */
+const courseId = ref<number | null>(null);
+
+const form = reactive<Omit<TournamentCreateRequest, 'courseId'> & { registrationDeadline?: string }>({
   name: '',
-  format: 'strokePlay',
-  courseId: 0,
+  format: 'STROKE_PLAY',
   startDate: '',
   endDate: '',
   tournamentPolicyId: '',
@@ -189,19 +191,47 @@ const submitError = ref<string | null>(null);
 // The picker now says so. Restore the list when the endpoint exists.
 const policies = ref<TournamentPolicyResponse[]>([]);
 
+/** Field ids in the order they appear, so "the first error" means the top one. */
+const FIELD_ORDER: Record<string, string> = {
+  name: 't-name',
+  courseId: 'cp-facility',
+  startDate: 't-start',
+  endDate: 't-end',
+};
+
 function validate(): boolean {
   Object.keys(errors).forEach(k => delete errors[k]);
 
   if (!form.name.trim()) errors.name = 'Phải nhập tên giải đấu';
-  if (!form.courseId || form.courseId <= 0) errors.courseId = 'Phải nhập mã sân hợp lệ';
+  if (!courseId.value || courseId.value <= 0) errors.courseId = 'Phải chọn sân thi đấu';
   if (!form.startDate) errors.startDate = 'Phải nhập ngày bắt đầu';
   if (!form.endDate) errors.endDate = 'Phải nhập ngày kết thúc';
 
   return Object.keys(errors).length === 0;
 }
 
+/**
+ * Take the operator to the first thing that is wrong.
+ *
+ * The submit button is at the bottom of a form two screens tall and every
+ * error message sits beside its field, so pressing it with the top of the form
+ * empty looked exactly like pressing a dead button: nothing moved, nothing
+ * appeared, no request went out.
+ */
+async function focusFirstError() {
+  await nextTick();
+  const first = Object.keys(FIELD_ORDER).find((key) => errors[key]);
+  if (!first) return;
+  const el = document.getElementById(FIELD_ORDER[first]);
+  el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  (el as HTMLElement | null)?.focus?.();
+}
+
 async function handleSubmit() {
-  if (!validate()) return;
+  if (!validate()) {
+    await focusFirstError();
+    return;
+  }
 
   submitting.value = true;
   submitError.value = null;
@@ -210,7 +240,7 @@ async function handleSubmit() {
     const request: TournamentCreateRequest = {
       name: form.name.trim(),
       format: form.format,
-      courseId: form.courseId,
+      courseId: courseId.value as number,
       startDate: new Date(form.startDate).toISOString(),
       endDate: new Date(form.endDate).toISOString(),
       tournamentPolicyId: form.tournamentPolicyId || undefined,
@@ -309,4 +339,10 @@ textarea.form-input { resize: vertical; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-secondary { background: var(--surface-container); color: #c5cde8; border-color: var(--surface-container-highest); }
 .btn-secondary:hover { background: var(--surface-container); }
+
+@media (max-width: 640px) {
+  .create-tournament-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
+}
 </style>

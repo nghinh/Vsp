@@ -121,6 +121,10 @@ function formatDate(iso: string): string {
 }
 
 .table-scroll {
+  /* See the same rule in styles.css: `position: relative` keeps the `.sr-only`
+     span in the last header cell from escaping this scroller and widening the
+     page. Repeated here because this scoped rule is the one that wins. */
+  position: relative;
   overflow-x: auto;
 }
 .table-scroll .data-table {

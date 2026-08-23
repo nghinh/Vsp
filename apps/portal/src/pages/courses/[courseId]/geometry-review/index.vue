@@ -18,6 +18,7 @@
  */
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { verificationStatusLabel } from '@/lib/enum-labels';
 import {
   correctPar,
   fetchGeometryReview,
@@ -237,6 +238,7 @@ onMounted(load);
         </template>
       </div>
 
+      <div class="table-scroll">
       <table class="holes">
         <thead>
           <tr>
@@ -281,12 +283,13 @@ onMounted(load);
             <td>{{ hole.teeBoxes }}</td>
             <td>
               <span class="status" :class="hole.verificationStatus?.toLowerCase()">
-                {{ hole.verificationStatus ?? '—' }}
+                {{ verificationStatusLabel(hole.verificationStatus) }}
               </span>
             </td>
           </tr>
         </tbody>
       </table>
+      </div>
 
       <form class="confirm" @submit.prevent="submit">
         <label for="review-note">
@@ -472,5 +475,21 @@ onMounted(load);
 .warn-mark { margin-right: 2px; }
 .suggest { color: #6b7280; font-weight: 400; font-size: 0.85em; white-space: nowrap; }
 .par-banner { border-left: 3px solid #b45309; }
-.btn-apply-par { margin-left: 8px; }
+/* The only styling this button had was `margin-left`, so it rendered as the
+   browser's default control: a white box with a grey border, inside an amber
+   warning banner on a dark page. It is the one action in that banner. */
+.btn-apply-par {
+  margin-left: 8px;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background: var(--primary);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-apply-par:hover:not(:disabled) { background: var(--primary-hover); }
+.btn-apply-par:disabled { opacity: 0.6; cursor: not-allowed; }
 </style>

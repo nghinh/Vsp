@@ -109,8 +109,17 @@
       >
         <div class="facility-header">
           <span class="facility-name">{{ facility.name }}</span>
-          <span v-if="facility.dataQuality" class="quality-badge" :class="qualityClass(facility.dataQuality)">
-            {{ facility.dataQuality.accuracyClass ?? '?' }}
+          <!-- The grade letter, with the full class and the verification state
+               on hover: the badge showed `D_UNVERIFIED_COMMUNITY` in full, which
+               is the database's spelling of "hạng D" and about four times too
+               wide for the card it sits in. -->
+          <span
+            v-if="facility.dataQuality"
+            class="quality-badge"
+            :class="qualityClass(facility.dataQuality)"
+            :title="`${accuracyClassLabel(facility.dataQuality.accuracyClass)} · ${verificationStatusLabel(facility.dataQuality.verificationStatus)}`"
+          >
+            {{ accuracyClassShort(facility.dataQuality.accuracyClass) }}
           </span>
         </div>
 
@@ -133,6 +142,7 @@ import { useRouter } from 'vue-router';
 import type { FacilityResponse, FacilityCreateRequest } from '@/types/admin/facility';
 import { facilityAdminApi } from '@/api/admin/facilities';
 import { formatDay as formatInstant } from '@/lib/datetime';
+import { accuracyClassLabel, accuracyClassShort, verificationStatusLabel } from '@/lib/enum-labels';
 
 const router = useRouter();
 
@@ -183,7 +193,16 @@ async function handleCreate() {
   creating.value = true;
   createError.value = null;
   try {
-    const facility = await facilityAdminApi.createFacility(createForm, props.authToken);
+    // Optional fields go out only when filled. The server validates `location`
+    // as WKT and rejects '' as "geometry is blank" — so with the form's empty
+    // default, every create failed. Null is a facility without a pin; '' is a
+    // broken pin.
+    const payload: FacilityCreateRequest = { name: createForm.name.trim() };
+    for (const key of ['address', 'phone', 'website', 'location'] as const) {
+      const value = createForm[key]?.trim();
+      if (value) payload[key] = value;
+    }
+    const facility = await facilityAdminApi.createFacility(payload, props.authToken);
     showCreateForm.value = false;
     Object.assign(createForm, { name: '', address: '', phone: '', website: '', location: '' });
     router.push(`/facilities/${facility.id}`);
@@ -221,6 +240,7 @@ onMounted(() => loadFacilities());
 
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -228,6 +248,7 @@ onMounted(() => loadFacilities());
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
+.header-content { flex: 1 1 200px; min-width: 0; }
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
@@ -400,5 +421,12 @@ onMounted(() => loadFacilities());
   gap: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; order: -1; }
+  .facilities-page { padding: 0; }
+  .page-header > .btn, .page-header > a.btn, .page-header > button { flex: 1 1 auto; text-align: center; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 </style>

@@ -7,7 +7,17 @@
 
 // ─── Enums ─────────────────────────────────────────────────────────────────
 
-export type TournamentFormatValue = 'strokePlay' | 'matchPlay' | 'stableford';
+/**
+ * The wire values, as `packages/contracts/schemas/tournament.yaml` and the
+ * server's `TournamentFormat` spell them.
+ *
+ * These were `strokePlay | matchPlay | stableford`. Nothing in the portal
+ * checked, because nothing in the portal compares a format — it only sends one
+ * and prints one back — so the mismatch surfaced exactly once, at the end of
+ * the create form, as `Invalid value 'strokePlay' for 'format'`. Creating a
+ * tournament from the portal was impossible in every branch of the form.
+ */
+export type TournamentFormatValue = 'STROKE_PLAY' | 'MATCH_PLAY' | 'STABLEFORD';
 export type TournamentStatusValue =
     | 'DRAFT'
     | 'REGISTRATION_OPEN'
@@ -22,13 +32,18 @@ export type TournamentPlayerStatusValue =
     | 'DISQUALIFIED';
 
 export type TieBreakRuleTypeValue =
-    | 'scorecardPlayoff'
-    | 'exactHandicap'
-    | 'lowestRound'
-    | 'mostBirdies'
-    | 'draw';
+    | 'SCORECARD_PLAYOFF'
+    | 'EXACT_HANDICAP'
+    | 'LOWEST_ROUND'
+    | 'MOST_BIRDIES'
+    | 'DRAW';
 
-export type StartingTeeValue = 'front' | 'back' | 'both';
+/**
+ * `FRONT | BACK`, and no third value: a shotgun start is expressed by which
+ * tee each flight goes off, not by a flight that goes off both. The portal
+ * offered `both`, which the server's `StartingTee` has never had.
+ */
+export type StartingTeeValue = 'FRONT' | 'BACK';
 
 // ─── Tournament ─────────────────────────────────────────────────────────────
 
@@ -51,12 +66,22 @@ export interface TournamentSummary {
   leaderboardVersion: number;
 }
 
-export interface TournamentDetail extends TournamentSummary {
-  players: TournamentPlayerResponse[];
-  flights: FlightResponse[];
-  teeTimes: TeeTimeResponse[];
-  tieBreakRules: TieBreakRuleResponse[];
-}
+/*
+ * There is no `TournamentDetail`.
+ *
+ * One used to be declared here — `TournamentSummary` plus `players`,
+ * `flights`, `teeTimes` and `tieBreakRules` — and `getTournament` was typed to
+ * return it. No endpoint has ever returned that shape:
+ * `GET /tournaments/{id}` answers with the tournament and nothing else, and
+ * the four collections are listed from their own paths. Because the fields
+ * were declared optional in effect (`detail.players ?? []`), the mismatch
+ * produced no error anywhere — just three permanently empty tabs behind
+ * requests that had returned 201.
+ *
+ * If a combined response is ever added, put the type back with the endpoint
+ * that serves it. Until then a type that describes nothing is worse than no
+ * type, because the compiler will vouch for it.
+ */
 
 export interface TournamentCreateRequest {
   name: string;

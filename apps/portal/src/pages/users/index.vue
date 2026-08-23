@@ -18,6 +18,7 @@
 import { computed, onMounted, ref } from 'vue';
 
 import { ROLE_NAMES, userAdminApi } from '@/api/admin/users';
+import { roleLabel } from '@/lib/enum-labels';
 import type { AdminAccount, MfaEnrolment, RoleName } from '@/api/admin/users';
 
 const props = defineProps<{ authToken: string }>();
@@ -62,7 +63,7 @@ async function grant(account: AdminAccount) {
   error.value = null;
   try {
     await userAdminApi.grantRole(props.authToken, account.golferAccountId, role);
-    notice.value = `Đã cấp quyền ${role}.`;
+    notice.value = `Đã cấp quyền ${roleLabel(role)}.`;
     delete grantRole.value[account.golferAccountId];
     await load();
   } catch (e: unknown) {
@@ -70,6 +71,38 @@ async function grant(account: AdminAccount) {
     error.value = apiErr?.message ?? 'Không cấp được quyền';
   } finally {
     busyAccountId.value = null;
+  }
+}
+
+/**
+ * Onboarding. The table lists accounts that already hold a role, and the grant
+ * control lives in its rows — so the first role for a new operator could not
+ * be given from this screen at all. The API never had that restriction; the
+ * page did.
+ */
+const newAccountId = ref('');
+const newRole = ref<RoleName | ''>('');
+const onboarding = ref(false);
+
+async function grantToNewAccount() {
+  const id = Number(newAccountId.value);
+  if (!Number.isInteger(id) || id <= 0 || !newRole.value) return;
+  onboarding.value = true;
+  error.value = null;
+  try {
+    await userAdminApi.grantRole(props.authToken, id, newRole.value);
+    notice.value = `Đã cấp quyền ${roleLabel(newRole.value)} cho tài khoản #${id}.`;
+    newAccountId.value = '';
+    newRole.value = '';
+    await load();
+  } catch (e: unknown) {
+    const apiErr = e as { message?: string; code?: string };
+    error.value =
+      apiErr?.code === 'VSP-ERR-AUTH-004' || /not found/i.test(apiErr?.message ?? '')
+        ? `Không có tài khoản golfer #${id}.`
+        : (apiErr?.message ?? 'Không cấp được quyền');
+  } finally {
+    onboarding.value = false;
   }
 }
 
@@ -82,7 +115,7 @@ async function revoke() {
   error.value = null;
   try {
     await userAdminApi.revokeRole(props.authToken, target.accountId, target.role);
-    notice.value = `Đã thu hồi quyền ${target.role}.`;
+    notice.value = `Đã thu hồi quyền ${roleLabel(target.role)}.`;
     confirmRevoke.value = null;
     await load();
   } catch (e: unknown) {
@@ -176,10 +209,38 @@ onMounted(load);
       <button type="button" class="btn-link" @click="load">Thử lại</button>
     </p>
 
+    <section class="card onboard">
+      <h2 class="card-title">Thêm người vận hành</h2>
+      <p class="muted small">
+        Nhập mã tài khoản golfer (số trong cột "Tài khoản") và quyền đầu tiên.
+        Tài khoản phải đăng ký trong ứng dụng trước.
+      </p>
+      <form class="onboard-row" @submit.prevent="grantToNewAccount">
+        <input
+          v-model="newAccountId"
+          class="input"
+          type="number"
+          min="1"
+          inputmode="numeric"
+          placeholder="Mã tài khoản"
+          aria-label="Mã tài khoản golfer"
+          required
+        />
+        <select v-model="newRole" class="input" aria-label="Quyền cấp cho tài khoản mới" required>
+          <option value="">— Chọn quyền —</option>
+          <option v-for="r in ROLE_NAMES" :key="r" :value="r">{{ roleLabel(r) }}</option>
+        </select>
+        <button type="submit" class="btn-primary" :disabled="onboarding || !newAccountId || !newRole">
+          {{ onboarding ? 'Đang cấp…' : 'Cấp quyền' }}
+        </button>
+      </form>
+    </section>
+
     <section class="card">
       <p v-if="loading" class="muted">Đang tải…</p>
       <p v-else-if="accounts.length === 0" class="muted">Chưa có tài khoản vận hành nào.</p>
-      <table v-else class="table">
+      <div class="table-scroll" v-else>
+      <table class="table">
         <thead>
           <tr>
             <th>Tài khoản</th>
@@ -197,10 +258,10 @@ onMounted(load);
 
             <td>
               <span v-if="!a.roles?.length" class="muted">—</span>
-              <span v-for="r in a.roles" :key="r" class="role-chip">
-                {{ r }}
+              <span v-for="r in a.roles" :key="r" class="role-chip" :title="r">
+                {{ roleLabel(r) }}
                 <button
-                  type="button" class="chip-x" :title="`Thu hồi ${r}`"
+                  type="button" class="chip-x" :title="`Thu hồi ${roleLabel(r)}`"
                   :disabled="busyAccountId === a.golferAccountId"
                   @click="confirmRevoke = { accountId: a.golferAccountId, role: r }"
                 >×</button>
@@ -229,7 +290,7 @@ onMounted(load);
               <div class="grant-row">
                 <select v-model="grantRole[a.golferAccountId]" class="input" :aria-label="`Quyền cấp cho tài khoản ${a.golferAccountId}`">
                   <option :value="undefined">— Chọn quyền —</option>
-                  <option v-for="r in availableRoles(a)" :key="r" :value="r">{{ r }}</option>
+                  <option v-for="r in availableRoles(a)" :key="r" :value="r">{{ roleLabel(r) }}</option>
                 </select>
                 <button
                   type="button" class="btn-primary small"
@@ -241,12 +302,13 @@ onMounted(load);
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
 
     <!-- ─── Revoke confirmation ──────────────────────────────────────────── -->
     <div v-if="confirmRevoke" class="modal-backdrop">
       <div class="modal" role="dialog" aria-modal="true">
-        <h2 class="modal-title">Thu hồi quyền {{ confirmRevoke.role }}?</h2>
+        <h2 class="modal-title">Thu hồi quyền {{ roleLabel(confirmRevoke.role) }}?</h2>
         <p class="modal-body">
           Tài khoản #{{ confirmRevoke.accountId }} sẽ mất quyền này ngay lập tức.
         </p>
@@ -306,6 +368,9 @@ onMounted(load);
 .role-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface-container-high); border-radius: 4px; padding: 2px 6px; margin: 0 4px 4px 0; font-size: 12px; }
 .chip-x { border: none; background: none; color: var(--error); cursor: pointer; font-size: 14px; line-height: 1; padding: 0 2px; }
 .grant-row { display: flex; gap: 6px; }
+.card-title { margin: 0 0 4px; font-size: 15px; }
+.onboard-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.onboard-row .input { flex: 1 1 160px; }
 .input { padding: 8px 10px; border: 1px solid var(--outline-variant); border-radius: 6px; font-size: 14px; font-family: inherit; background: var(--surface-container-lowest); color: var(--on-surface); color-scheme: dark; }
 .input option { background: var(--surface-container); color: var(--on-surface); }
 .label { font-size: 12px; font-weight: 600; color: var(--muted); display: block; margin-top: 8px; }

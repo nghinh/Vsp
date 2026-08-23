@@ -127,7 +127,14 @@ public class RoleServiceImpl implements RoleService {
         assignment.setAdminAccount(adminAccount);
         assignment.setRoleName(roleName);
         assignment.setAssignedAt(Instant.now());
-        assignment.setAssignedBy(callerAccountId);
+        // `assigned_by` references admin_accounts(id), not golfer_accounts(id).
+        // This stored the caller's golfer-account id, which only satisfies the
+        // foreign key when the two sequences happen to agree — so on any
+        // database where they had drifted, every grant failed with a 500.
+        assignment.setAssignedBy(
+                adminAccountRepository.findByGolferAccountId(callerAccountId)
+                        .map(AdminAccount::getId)
+                        .orElse(null));
         roleAssignmentRepository.save(assignment);
 
         // Audit log

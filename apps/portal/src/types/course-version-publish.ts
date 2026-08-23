@@ -70,7 +70,8 @@ export interface PublishRequest {
 export interface PublishResponse {
   newVersionId: number;
   status: 'PUBLISHED';
-  auditId: string;
+  /** Null: the audit record is written asynchronously and has no id yet. */
+  auditId: string | null;
   /// Null when the package build could not be queued: the version is
   /// published and no package will be built from it.
   buildJobId: string | null;

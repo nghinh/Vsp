@@ -78,7 +78,7 @@ const gpsCoordinates = computed<string | null>(() => {
   if (!props.detail.reporterGpsLocation) return null;
   const coord = parseWktPoint(props.detail.reporterGpsLocation);
   if (!coord) return props.detail.reporterGpsLocation;
-  return `${coord.coordinates[1].toFixed(6)}, ${coord.coordinates[0].toFixed(6)} (lat, lon)`;
+  return `${coord.coordinates[1].toFixed(6)}, ${coord.coordinates[0].toFixed(6)} (vĩ độ, kinh độ)`;
 });
 
 const reporterLocation = computed<GeoCoordinate | null>(() => {
@@ -166,22 +166,16 @@ async function initMap() {
         },
       });
 
-      // Add label
-      (map as InstanceType<typeof Map>).addLayer({
-        id: 'reporter-label',
-        type: 'symbol',
-        source: 'reporter',
-        layout: {
-          'text-field': 'Người báo',
-          'text-size': 12,
-          'text-offset': [0, -1.5],
-        },
-        paint: {
-          'text-color': '#3b82f6',
-          'text-halo-color': '#ffffff',
-          'text-halo-width': 1.5,
-        },
-      });
+      // The label is a DOM marker, not a symbol layer. A symbol layer's
+      // text-field needs a `glyphs` endpoint in the style, which the raster
+      // imagery style does not carry — so the layer threw on every open and
+      // the label never rendered. Same reasoning as PinMapPicker.
+      const label = document.createElement('div');
+      label.className = 'reporter-label';
+      label.textContent = 'Người báo';
+      new maplibreModule!.Marker({ element: label, anchor: 'bottom', offset: [0, -12] })
+        .setLngLat(reporterLocation.value!.coordinates)
+        .addTo(map as InstanceType<typeof Map>);
 
       // If official geometry is available from map context, add it
       if (props.mapContext.officialGeometry) {
@@ -331,5 +325,16 @@ onUnmounted(() => {
   color: var(--muted);
   font-style: italic;
   margin: 0;
+}
+
+:deep(.reporter-label) {
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #1d4ed8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
 }
 </style>

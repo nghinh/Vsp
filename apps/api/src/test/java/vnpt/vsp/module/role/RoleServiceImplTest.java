@@ -113,11 +113,12 @@ class RoleServiceImplTest {
         Long targetId = 42L;
         RoleName role = RoleName.COURSE_ADMIN;
 
-        // Caller is SUPER_ADMIN
-        AdminAccount callerAdminAccount = createAdminAccount(1L, callerId, false);
+        // Caller is SUPER_ADMIN. Admin-account id 7 on golfer-account id 1: the
+        // two must differ for the assigned_by assertion below to mean anything.
+        AdminAccount callerAdminAccount = createAdminAccount(7L, callerId, false);
         callerAdminAccount.getRoleAssignments().add(createAssignment(callerAdminAccount, RoleName.SUPER_ADMIN));
         when(adminAccountRepository.findByGolferAccountId(callerId)).thenReturn(Optional.of(callerAdminAccount));
-        when(roleAssignmentRepository.existsByAdminAccountIdAndRoleName(1L, RoleName.SUPER_ADMIN)).thenReturn(true);
+        when(roleAssignmentRepository.existsByAdminAccountIdAndRoleName(7L, RoleName.SUPER_ADMIN)).thenReturn(true);
 
         // Target admin account
         AdminAccount adminAccount = createAdminAccount(10L, targetId, false);
@@ -133,7 +134,12 @@ class RoleServiceImplTest {
         AdminAccountResponse result = roleService.assignRole(callerId, targetId, role);
 
         // Then
-        verify(roleAssignmentRepository).save(any(AdminRoleAssignment.class));
+        org.mockito.ArgumentCaptor<AdminRoleAssignment> saved =
+                org.mockito.ArgumentCaptor.forClass(AdminRoleAssignment.class);
+        verify(roleAssignmentRepository).save(saved.capture());
+        // assigned_by references admin_accounts(id) — the caller's admin-account
+        // id, not their golfer-account id, which is what used to be stored.
+        assertEquals(7L, saved.getValue().getAssignedBy());
         verify(auditService).log(
                 eq(vnpt.vsp.module.audit.AuditAction.ROLE_ASSIGN),
                 eq("AdminRoleAssignment"),

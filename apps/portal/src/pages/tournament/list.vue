@@ -6,6 +6,14 @@
         <h1 class="page-title">Giải đấu</h1>
         <p class="page-subtitle">Cấu hình và quản lý các giải đấu.</p>
       </div>
+      <!--
+        The policy screens were routed and linked from nowhere: the only way to
+        /tournament-policies was the address bar, and the create form's
+        "Chính sách giải" dropdown offered a list nobody could add to.
+      -->
+      <button class="btn btn-secondary" @click="$router.push('/tournament-policies')">
+        Thể lệ &amp; chính sách
+      </button>
       <button class="btn btn-primary" @click="$router.push('/tournament/create')">
         + Tạo giải đấu
       </button>
@@ -103,6 +111,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { formatDay } from '@/lib/datetime';
+import { tournamentFormatLabel, tournamentStatusLabel } from '@/lib/enum-labels';
 import { tournamentApi } from '@/api/tournament';
 import type { TournamentSummary } from '@/types/tournament';
 
@@ -130,17 +139,6 @@ async function loadTournaments() {
   }
 }
 
-function statusLabel(status: string): string {
-  const labels: Record<string, string> = {
-    DRAFT: 'Bản nháp',
-    REGISTRATION_OPEN: 'Đang mở đăng ký',
-    IN_PROGRESS: 'Đang diễn ra',
-    COMPLETED: 'Đã kết thúc',
-    CANCELLED: 'Đã huỷ',
-  };
-  return labels[status] ?? status;
-}
-
 function statusClass(status: string): string {
   const classes: Record<string, string> = {
     DRAFT: 'badge-draft',
@@ -152,14 +150,13 @@ function statusClass(status: string): string {
   return classes[status] ?? '';
 }
 
-function formatLabel(format: string): string {
-  const labels: Record<string, string> = {
-    strokePlay: 'Stroke Play',
-    matchPlay: 'Match Play',
-    stableford: 'Stableford',
-  };
-  return labels[format] ?? format;
-}
+/**
+ * Was a local map keyed `strokePlay | matchPlay | stableford`. The server has
+ * always sent `STROKE_PLAY`, so every card in this list printed the raw
+ * constant — the map matched nothing it was ever given.
+ */
+const formatLabel = tournamentFormatLabel;
+const statusLabel = tournamentStatusLabel;
 
 function formatDate(iso: string): string {
   return formatDay(iso);
@@ -194,6 +191,7 @@ onMounted(() => loadTournaments());
 /* Header */
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -347,5 +345,9 @@ onMounted(() => loadTournaments());
   gap: 1rem;
   font-size: 0.75rem;
   color: var(--muted);
+}
+.header-content { flex: 1 1 200px; min-width: 0; }
+@media (max-width: 640px) {
+  .header-content { flex-basis: 100%; }
 }
 </style>

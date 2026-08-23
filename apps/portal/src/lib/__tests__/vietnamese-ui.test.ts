@@ -67,6 +67,14 @@ const ALLOWED = new Set([
   // Not prose: a key name, a sample URL, an attribution glyph, a CSV header
   'Enter', 'https://example.com', 'contributors ©', 'playerId,handicap',
   'VN, TH', 'CURRENCY', 'TIMEZONE', 'Active', 'Valid', 'Website', 'Add',
+  // The geometry editor's client-side audit entries. `edit-geometry`'s
+  // `appendAudit` pushes them into an in-memory array and nothing reads it —
+  // the real trail is written server-side into `audit_entries`, and the
+  // comment there says so. Nobody is ever shown these strings.
+  'Loaded draft feature(s)', 'Saved change(s)', 'Added feature',
+  'Updated feature', 'Deleted feature', 'Checked feature(s) —',
+  // A download filename.
+  'data-quality- -to- .csv',
 ]);
 
 const DIACRITIC =
@@ -129,7 +137,22 @@ function templateStrings(source: string): string[] {
   if (!body) return [];
 
   const out: string[] = [];
-  const READ_ATTR = new Set(['aria-label', 'title', 'placeholder', 'alt', 'aria-description']);
+
+  /**
+   * Attribute names that never hold prose, whatever their value looks like.
+   *
+   * A deny-list rather than an allow-list, and a short one. `class="btn
+   * btn-secondary back-btn"` has spaces in it and would otherwise read as a
+   * sentence; so would `autocomplete="new-password"`. Everything not named
+   * here is read and judged, so a prop invented next week is covered without
+   * anyone remembering to add it.
+   */
+  const NEVER_PROSE = new Set([
+    'class', 'id', 'for', 'name', 'type', 'role', 'style', 'href', 'src', 'to',
+    'target', 'rel', 'key', 'ref', 'value', 'step', 'min', 'max', 'rows',
+    'cols', 'maxlength', 'minlength', 'pattern', 'autocomplete', 'accept',
+    'aria-controls', 'aria-labelledby', 'aria-describedby', 'data-testid',
+  ]);
 
   const walk = (node: any): void => {
     if (!node || typeof node.type !== 'string') return;
@@ -137,11 +160,23 @@ function templateStrings(source: string): string[] {
     if (node.type === 'VText' && typeof node.value === 'string') out.push(node.value);
 
     if (node.type === 'VAttribute') {
-      const name = node.key?.name;
-      const plain = typeof name === 'string' ? name : name?.name;
-      // Static attribute: value is a literal. Bound ones hold expressions and
-      // are covered below, where the literals inside them are read.
-      if (READ_ATTR.has(String(plain)) && node.value?.type === 'VLiteral') {
+      // Every static attribute, judged by `isProse` — not an allow-list of
+      // attribute names.
+      //
+      // The list used to be aria-label / title / placeholder / alt /
+      // aria-description, which is the set of attributes HTML shows to a user.
+      // It has no entry for a *prop*, and a prop is how one component hands
+      // another its copy: `<CorrectionApproveDialog message="Confirm that this
+      // correction is valid…" confirm-label="Approve">` was the whole approve
+      // dialog, in English, in front of every reviewer, and the guard read
+      // neither attribute because neither is called `title`.
+      //
+      // Reading all of them and letting the prose test decide costs nothing:
+      // `class="btn"`, `type="datetime-local"` and `id="t-name"` are not prose
+      // and never reach the judgement.
+      const rawName = node.key?.name;
+      const attr = String(typeof rawName === 'string' ? rawName : (rawName?.name ?? ''));
+      if (node.value?.type === 'VLiteral' && !NEVER_PROSE.has(attr)) {
         out.push(String(node.value.value));
       }
     }
@@ -192,6 +227,24 @@ function scriptStrings(source: string): string[] {
   const out: string[] = [];
   for (const x of body.matchAll(/'([^'\\\n]{2,140})'|"([^"\\\n]{2,140})"|`([^`$\\\n]{2,140})`/g)) {
     out.push(x[1] ?? x[2] ?? x[3]);
+  }
+
+  // Template literals that interpolate.
+  //
+  // The pattern above excludes `$` inside backticks, so a message assembled at
+  // runtime was invisible to this guard entirely. That is where the last one
+  // was hiding: `Correction ${action.toLowerCase()}d successfully.`, the toast
+  // shown after every correction review, in English, in a screen whose every
+  // other string had been translated twice over.
+  //
+  // The interpolations are replaced by a space rather than dropped, so that
+  // "Correction " + "d successfully." is judged as the sentence a reviewer
+  // reads and not as two fragments that each fail the prose test alone.
+  for (const x of body.matchAll(/`((?:[^`\\]|\\.)*)`/g)) {
+    const raw = x[1];
+    if (!raw.includes('${')) continue;
+    const flattened = raw.replace(/\$\{[^}]*\}/g, ' ').replace(/\s+/g, ' ').trim();
+    if (flattened.length >= 2) out.push(flattened);
   }
   return out;
 }

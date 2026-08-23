@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { golferLabel } from '@/lib/enum-labels';
 /**
  * Running one club outing, start to finish.
  *
@@ -342,7 +343,7 @@ const entered = computed(() => players.value.filter((p) => p.hasScore).length);
             <tbody>
               <tr v-for="(e, i) in parsed.entries" :key="i">
                 <td class="num">{{ e.flightNumber ?? '—' }}</td>
-                <td>{{ e.displayName }}</td>
+                <td>{{ golferLabel(e) }}</td>
                 <td class="num">{{ e.handicap ?? '—' }}</td>
                 <td>{{ e.divisionCode ?? '(theo dải HDC)' }}</td>
                 <td>{{ e.vgaCode ?? '—' }}</td>
@@ -379,7 +380,7 @@ const entered = computed(() => players.value.filter((p) => p.hasScore).length);
           <tbody>
             <tr v-for="p in players" :key="p.id">
               <td class="num">{{ p.flightNumber ?? '—' }}</td>
-              <td>{{ p.displayName }}</td>
+              <td>{{ golferLabel(p) }}</td>
               <td class="num">{{ p.playingHandicap ?? '—' }}</td>
               <td>{{ p.divisionCode ?? '—' }}</td>
               <td>{{ p.vgaCode ?? '—' }}</td>

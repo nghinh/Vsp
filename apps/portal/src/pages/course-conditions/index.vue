@@ -23,6 +23,12 @@ import { operationsApi } from '@/api/admin/operations';
 import CoursePicker from '@/components/CoursePicker.vue';
 import type { CourseResponse } from '@/types/admin/course';
 import type { CourseCondition, GreenCondition } from '@/types/admin/operations';
+import {
+  conditionTypeLabel,
+  firmnessLabel,
+  moistureLabel,
+  severityLabel,
+} from '@/lib/enum-labels';
 import { hoursFromNowLocalInput, nowLocalInput, toLocalInput } from '@/lib/datetime';
 import {
   CONDITION_TYPES,
@@ -265,13 +271,13 @@ function fmt(iso?: string): string {
             <div class="field">
               <label class="label" for="cc-type">Loại</label>
               <select id="cc-type" v-model="cForm.conditionType" class="input">
-                <option v-for="t in CONDITION_TYPES" :key="t" :value="t">{{ t }}</option>
+                <option v-for="t in CONDITION_TYPES" :key="t" :value="t">{{ conditionTypeLabel(t) }}</option>
               </select>
             </div>
             <div class="field">
               <label class="label" for="cc-sev">Mức độ</label>
               <select id="cc-sev" v-model="cForm.severity" class="input">
-                <option v-for="s in SEVERITIES" :key="s" :value="s">{{ s }}</option>
+                <option v-for="s in SEVERITIES" :key="s" :value="s">{{ severityLabel(s) }}</option>
               </select>
             </div>
             <div class="field">
@@ -300,14 +306,15 @@ function fmt(iso?: string): string {
           <h2 class="card-title">Đã công bố</h2>
           <p v-if="loading" class="muted">Đang tải…</p>
           <p v-else-if="conditions.length === 0" class="muted">Chưa có tình trạng nào được công bố.</p>
-          <table v-else class="table">
+          <div class="table-scroll" v-else>
+          <table class="table">
             <thead>
               <tr><th>Loại</th><th>Mức độ</th><th>Mô tả</th><th>Khoảng hiệu lực</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
               <tr v-for="c in conditions" :key="c.id">
-                <td>{{ c.conditionType }}</td>
-                <td>{{ c.severity }}</td>
+                <td>{{ conditionTypeLabel(c.conditionType) }}</td>
+                <td>{{ severityLabel(c.severity) }}</td>
                 <td>{{ c.description ?? '—' }}</td>
                 <td>{{ fmt(c.effectiveFrom) }} → {{ fmt(c.expiresAt) }}</td>
                 <td>
@@ -319,6 +326,7 @@ function fmt(iso?: string): string {
               </tr>
             </tbody>
           </table>
+          </div>
         </section>
       </template>
 
@@ -342,13 +350,13 @@ function fmt(iso?: string): string {
             <div class="field">
               <label class="label" for="gc-firm">Độ cứng</label>
               <select id="gc-firm" v-model="gForm.firmness" class="input">
-                <option v-for="f in FIRMNESS" :key="f" :value="f">{{ f }}</option>
+                <option v-for="f in FIRMNESS" :key="f" :value="f">{{ firmnessLabel(f) }}</option>
               </select>
             </div>
             <div class="field">
               <label class="label" for="gc-moist">Độ ẩm</label>
               <select id="gc-moist" v-model="gForm.moisture" class="input">
-                <option v-for="m in MOISTURE" :key="m" :value="m">{{ m }}</option>
+                <option v-for="m in MOISTURE" :key="m" :value="m">{{ moistureLabel(m) }}</option>
               </select>
             </div>
             <div class="field">
@@ -373,7 +381,8 @@ function fmt(iso?: string): string {
           <h2 class="card-title">Số đo đã ghi</h2>
           <p v-if="loading" class="muted">Đang tải…</p>
           <p v-else-if="greens.length === 0" class="muted">Chưa có số đo green nào.</p>
-          <table v-else class="table">
+          <div class="table-scroll" v-else>
+          <table class="table">
             <thead>
               <tr><th>Hố</th><th>Stimpmeter</th><th>Độ cứng</th><th>Độ ẩm</th><th>Khoảng hiệu lực</th><th>Trạng thái</th><th></th></tr>
             </thead>
@@ -381,8 +390,8 @@ function fmt(iso?: string): string {
               <tr v-for="g in greens" :key="g.id">
                 <td>{{ g.holeNumber }}</td>
                 <td>{{ g.stimpmeterReading ?? '—' }}</td>
-                <td>{{ g.firmness ?? '—' }}</td>
-                <td>{{ g.moisture ?? '—' }}</td>
+                <td>{{ firmnessLabel(g.firmness) }}</td>
+                <td>{{ moistureLabel(g.moisture) }}</td>
                 <td>{{ fmt(g.effectiveFrom) }} → {{ fmt(g.expiresAt) }}</td>
                 <td>
                   <span :class="isLive(g.effectiveFrom, g.expiresAt) ? 'badge-active' : 'badge-idle'">
@@ -393,6 +402,7 @@ function fmt(iso?: string): string {
               </tr>
             </tbody>
           </table>
+          </div>
         </section>
       </template>
     </template>

@@ -52,17 +52,20 @@
       </h3>
       <ul class="warning-list" role="list">
         <li
-          v-for="(warn, idx) in warnings"
+          v-for="(warn, idx) in warningGroups"
           :key="`warn-${idx}`"
           class="warning-item"
         >
           <div class="warning-main">
             <span class="entity-badge" aria-label="Loại đối tượng">{{ warn.entity }}</span>
             <span class="warning-message" aria-label="Nội dung cảnh báo">{{ warn.message }}</span>
+            <span v-if="warn.ids.length > 1" class="warning-count">×{{ warn.ids.length }}</span>
           </div>
           <div class="warning-meta">
             <span class="field-ref" aria-label="Trường">Trường: {{ warn.field }}</span>
-            <span v-if="warn.entityId" class="entity-id-ref" aria-label="Mã đối tượng">#{{ warn.entityId }}</span>
+            <span v-if="warn.ids.length" class="entity-id-ref" aria-label="Mã đối tượng">
+              #{{ warn.ids.slice(0, 8).join(', #') }}<template v-if="warn.ids.length > 8"> … (+{{ warn.ids.length - 8 }})</template>
+            </span>
           </div>
         </li>
       </ul>
@@ -119,10 +122,33 @@ const badgeClass = computed(() => {
   return 'badge-unknown';
 });
 
+// Real characters, not HTML entities: this is interpolated with `{{ }}`,
+// which escapes, so '&#10060;' rendered as the literal text "&#10060;".
 const resultIcon = computed(() => {
-  if (hasBlockingErrors.value) return '&#10060;';
-  if (isValid.value) return '&#9989;';
-  return '&#9888;';
+  if (hasBlockingErrors.value) return '❌';
+  if (isValid.value) return '✅';
+  return '⚠';
+});
+
+/**
+ * Warnings grouped by entity type and message. The validator reports one
+ * warning per feature, so a course whose 40 fairway segments all carry
+ * accuracy class D produced 40 identical cards — a page-long wall that hid
+ * the one error above it. One card per distinct message, with the count and
+ * the ids it applies to.
+ */
+const warningGroups = computed(() => {
+  const groups = new Map<string, { entity: string; message: string; field: string; ids: string[] }>();
+  for (const w of warnings.value) {
+    const key = `${w.entity}|${w.field}|${w.message}`;
+    const g = groups.get(key);
+    if (g) {
+      if (w.entityId) g.ids.push(String(w.entityId));
+    } else {
+      groups.set(key, { entity: w.entity, message: w.message, field: w.field, ids: w.entityId ? [String(w.entityId)] : [] });
+    }
+  }
+  return [...groups.values()];
 });
 </script>
 
@@ -297,5 +323,11 @@ const resultIcon = computed(() => {
   color: var(--vsp-color-secondary, #F97316);
   background: color-mix(in srgb, var(--vsp-color-secondary, #F97316) 8%, transparent);
   border-color: color-mix(in srgb, var(--vsp-color-secondary, #F97316) 20%, transparent);
+}
+.warning-count {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fbbf24;
 }
 </style>

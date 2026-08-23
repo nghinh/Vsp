@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getSession, hasAnyRole, signOut } from './auth';
+import { roleLabel } from './lib/enum-labels';
 import {
   COURSE_ROLES,
   GREENKEEPING_ROLES,
@@ -53,7 +54,9 @@ const session = computed(() => {
  * template, whoever was looking at it.
  */
 const operatorName = computed(() => session.value?.displayName ?? '');
-const operatorRoles = computed(() => session.value?.roles.join(' · ') ?? '');
+const operatorRoles = computed(
+  () => session.value?.roles.map(roleLabel).join(' · ') ?? '',
+);
 const operatorInitials = computed(() =>
   operatorName.value
     .split(/\s+/)
@@ -65,6 +68,14 @@ const operatorInitials = computed(() =>
 
 const isSignedIn = computed(() => session.value !== null);
 
+/**
+ * Below 900px the sidebar becomes a drawer behind a menu button. It used to
+ * shrink to a strip of unlabeled icons, then to a row of them above the page —
+ * with the operator block, and with it the only sign-out button, hidden.
+ */
+const drawerOpen = ref(false);
+watch(() => route.fullPath, () => { drawerOpen.value = false; });
+
 async function onSignOut() {
   signOut();
   await router.replace('/login');
@@ -75,11 +86,15 @@ async function onSignOut() {
   <!-- The sign-in screen is not part of the operations shell: there is no
        operator, no navigation to filter and nothing to show in the sidebar. -->
   <RouterView v-if="!isSignedIn" />
-  <div v-else class="app-shell">
-    <aside class="sidebar">
+  <div v-else class="app-shell" :class="{ 'drawer-open': drawerOpen }">
+    <div class="drawer-backdrop" aria-hidden="true" @click="drawerOpen = false"></div>
+    <aside id="portal-sidebar" class="sidebar">
       <div class="brand-block">
         <span class="material-symbols-outlined brand-icon">sports_golf</span>
         <div><strong>GolfOps Portal</strong><small>Course Operations</small></div>
+        <button class="drawer-close" type="button" aria-label="Đóng menu" @click="drawerOpen = false">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
       <nav aria-label="Điều hướng chính">
         <RouterLink v-for="item in visibleNavigation" :key="item.to" :to="item.to">
@@ -100,7 +115,17 @@ async function onSignOut() {
     </aside>
     <section class="workspace">
       <header class="topbar">
-        <div><p>Vietnam Smart Golf</p><h1>{{ pageTitle }}</h1></div>
+        <button
+          class="menu-button"
+          type="button"
+          aria-label="Mở menu"
+          aria-controls="portal-sidebar"
+          :aria-expanded="drawerOpen"
+          @click="drawerOpen = true"
+        >
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="topbar-title"><p>Vietnam Smart Golf</p><h1>{{ pageTitle }}</h1></div>
         <!--
           A search button, a notifications button carrying an unread dot, and a
           "Đồng bộ" pill used to sit here. None of them had a @click handler:
@@ -121,6 +146,21 @@ async function onSignOut() {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  min-width: 0;
+}
+
+.operator > div {
+  min-width: 0;
+}
+
+.operator small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.operator .avatar {
+  flex-shrink: 0;
 }
 
 .sign-out {
@@ -136,7 +176,57 @@ async function onSignOut() {
   cursor: pointer;
 }
 
+.sign-out {
+  flex-shrink: 0;
+}
+
 .sign-out:hover {
   opacity: 1;
+}
+
+.menu-button,
+.drawer-close {
+  display: none;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.drawer-close {
+  margin-left: auto;
+}
+
+.drawer-backdrop {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .menu-button {
+    display: grid;
+  }
+  .drawer-open .drawer-close {
+    display: grid;
+  }
+  .drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 19;
+    display: block;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .drawer-open .drawer-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 </style>

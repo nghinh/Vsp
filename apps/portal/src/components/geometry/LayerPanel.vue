@@ -271,4 +271,23 @@ function geometryTypeLabel(type: LayerType): string {
   width: 1rem;
   text-align: center;
 }
+
+@media (max-width: 768px) {
+  .layer-panel {
+    width: 100%;
+    max-height: 11rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--surface-container-highest);
+  }
+  .layer-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    padding: 0.5rem;
+  }
+  .layer-item {
+    margin: 0;
+  }
+}
+
 </style>

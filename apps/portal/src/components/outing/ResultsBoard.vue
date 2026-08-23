@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { golferLabel } from '@/lib/enum-labels';
 /**
  * The prize table, as it will be read out.
  *
@@ -71,7 +72,7 @@ function holesWithoutWinner(code: string): number[] {
       <p v-if="unresolvedTies.length > 0" class="check check-warn">
         <strong>{{ unresolvedTies.length }}</strong> golfer bằng nhau ở vị trí
         có giải và mọi tiêu chí đếm ngược đều hoà:
-        {{ unresolvedTies.map((t) => t.displayName).join(', ') }}. BTC quyết
+        {{ unresolvedTies.map(golferLabel).join(', ') }}. BTC quyết
         định.
       </p>
 
@@ -92,6 +93,7 @@ function holesWithoutWinner(code: string): number[] {
         <span class="range">HDC {{ division.minHandicap }}–{{ division.maxHandicap }}</span>
       </h3>
 
+      <div class="table-scroll">
       <table class="table">
         <thead>
           <tr>
@@ -111,7 +113,7 @@ function holesWithoutWinner(code: string): number[] {
           <tr v-for="e in entries" :key="e.tournamentPlayerId" :class="{ 'has-prize': e.prizeTitle }">
             <td class="num">{{ e.rank }}</td>
             <td>
-              {{ e.displayName }}
+              {{ golferLabel(e) }}
               <span v-if="e.tiedAndUnresolved" class="flag" title="Hoà, mọi tiêu chí đếm ngược đều bằng">
                 hoà
               </span>
@@ -136,6 +138,7 @@ function holesWithoutWinner(code: string): number[] {
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
 
     <!-- ─── Technical prizes ───────────────────────────────────────── -->
@@ -145,6 +148,7 @@ function holesWithoutWinner(code: string): number[] {
         <span class="range">{{ spec.holes.length }} hố · toàn CLB</span>
       </h3>
 
+      <div class="table-scroll">
       <table class="table">
         <thead>
           <tr>
@@ -156,7 +160,7 @@ function holesWithoutWinner(code: string): number[] {
         <tbody>
           <tr v-for="a in awardsFor(spec.code)" :key="`${a.prizeCode}-${a.holeNumber}`">
             <td class="num">{{ a.holeNumber }}</td>
-            <td>{{ a.displayName }}</td>
+            <td>{{ golferLabel(a) }}</td>
             <td class="num">{{ a.measurement }} {{ a.unit }}</td>
           </tr>
           <tr v-for="h in holesWithoutWinner(spec.code)" :key="`empty-${spec.code}-${h}`" class="unawarded">
@@ -168,6 +172,7 @@ function holesWithoutWinner(code: string): number[] {
           </tr>
         </tbody>
       </table>
+      </div>
     </section>
 
     <div class="actions">

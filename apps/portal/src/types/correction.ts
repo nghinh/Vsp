@@ -177,8 +177,9 @@ export type GeoJSONGeometry =
 export interface CorrectionQueueFilters {
   courseId?: number;
   holeNumber?: number;
-  type?: CorrectionTypeValue;
-  status?: CorrectionStatusValue;
+  /** `''` is the "all" option in the dropdown, and is not sent to the server. */
+  type?: CorrectionTypeValue | '';
+  status?: CorrectionStatusValue | '';
   confidenceMin?: number;
   confidenceMax?: number;
   from?: string; // ISO 8601 date

@@ -45,8 +45,11 @@ function handleBack() {
 }
 
 function handlePublished(response: PublishResponse) {
-  // Navigate to the version detail / audit screen after successful publish
-  router.push(`/courses/${courseId.value}/versions/${response.newVersionId}`);
+  // Back to the version history, where the new version now heads the list.
+  // This went to `/versions/${newVersionId}`, a route that does not exist, so
+  // a successful publish ended on a blank page.
+  void response;
+  router.push(`/courses/${courseId.value}/versions`);
 }
 </script>
 

@@ -43,7 +43,7 @@
         <span
           class="job-status-badge"
           :class="badgeClass(job.status)"
-          :aria-label="`Status: ${job.status}`"
+          :aria-label="`Trạng thái: ${statusLabel(job.status)}`"
         >
           <span aria-hidden="true">{{ statusIcon(job.status) }}</span>
           <span>{{ statusLabel(job.status) }}</span>
@@ -520,4 +520,15 @@ onMounted(() => loadJobs(0));
 }
 .action-btn:hover:not(:disabled) { background: var(--surface-container-highest); }
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+@media (max-width: 640px) {
+  .job-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.5rem 0.75rem;
+  }
+  .job-row > :nth-child(n + 3) {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
 </style>

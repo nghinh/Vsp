@@ -169,6 +169,7 @@ function save() {
     <!-- ─── Divisions ──────────────────────────────────────────────── -->
     <section class="card">
       <h3 class="card-title">Chia nhóm &amp; giải nhóm</h3>
+      <div class="table-scroll">
       <table class="table">
         <thead>
           <tr>
@@ -199,6 +200,7 @@ function save() {
           </tr>
         </tbody>
       </table>
+      </div>
       <button type="button" class="btn-link" @click="addDivision">+ Thêm nhóm</button>
     </section>
 
@@ -252,6 +254,7 @@ function save() {
     <!-- ─── Daily CAP ──────────────────────────────────────────────── -->
     <section class="card">
       <h3 class="card-title">CAP ngày</h3>
+      <div class="table-scroll">
       <table class="table">
         <thead>
           <tr>
@@ -290,6 +293,7 @@ function save() {
           </tr>
         </tbody>
       </table>
+      </div>
       <button
         type="button"
         class="btn-link"
@@ -303,6 +307,7 @@ function save() {
     <!-- ─── Technical prizes ───────────────────────────────────────── -->
     <section class="card">
       <h3 class="card-title">Giải kỹ thuật</h3>
+      <div class="table-scroll">
       <table class="table">
         <thead>
           <tr>
@@ -338,6 +343,7 @@ function save() {
           </tr>
         </tbody>
       </table>
+      </div>
       <button
         type="button"
         class="btn-link"

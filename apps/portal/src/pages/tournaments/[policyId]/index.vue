@@ -4,7 +4,7 @@
     <!-- ─── Header ──────────────────────────────────────────────────────────── -->
     <header class="page-header">
       <div class="header-left">
-        <button class="back-btn" @click="router.push('/tournaments')" aria-label="Về danh sách chính sách">
+        <button class="back-btn" @click="router.push('/tournament-policies')" aria-label="Về danh sách chính sách">
           ← Quay lại
         </button>
         <div>
@@ -371,6 +371,7 @@ onMounted(() => {
 /* Header */
 .page-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
@@ -378,7 +379,7 @@ onMounted(() => {
   border-bottom: 1px solid var(--surface-container-highest);
   padding-bottom: 1rem;
 }
-.header-left { display: flex; align-items: flex-start; gap: 0.75rem; }
+.header-left { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.75rem; min-width: 0; }
 .back-btn {
   background: none;
   border: none;
