@@ -203,13 +203,30 @@ Future<void> _startOnTheFirst(WidgetTester tester) async {
     await tapIfPresent(tester, find.widgetWithText(FilledButton, 'Xác nhận'));
     await tester.pumpAndSettle(const Duration(seconds: 2));
 
-    if (find.text('Hố 1').evaluate().isNotEmpty) return;
+    if (_showsTheFirst()) return;
   }
 
-  if (find.text('Hố 1').evaluate().isEmpty) {
+  if (!_showsTheFirst()) {
     _missed.add('the round would not start on the 1st');
   }
 }
+
+/// The form saying the round starts on the 1st.
+///
+/// Two chips can say it. "Hố 1" is the golfer's own choice. "Gợi ý: Hố 1" is
+/// the morning form, where the clock's suggestion *is* the 1st and picking it
+/// leaves the chip in its suggestion dress — `HolePicker` shows the suggestion
+/// chip whenever `selectedHole == suggestedHole`. A kit shot in the morning
+/// therefore starts on the 1st while the exact text "Hố 1" never appears,
+/// which is how this run of the kit reported a miss on a round that opened on
+/// the 1st and walked to the 18th.
+///
+/// Both are exact matches on purpose: `textContaining('Hố 1')` also matches
+/// "Hố 10", which is precisely the confusion that let a failed attempt report
+/// success once before.
+bool _showsTheFirst() =>
+    find.text('Hố 1').evaluate().isNotEmpty ||
+    find.text('Gợi ý: Hố 1').evaluate().isNotEmpty;
 
 /// The four screens a golfer lives in, on the opening hole.
 Future<void> _theScreensOfAHole(WidgetTester tester) async {
