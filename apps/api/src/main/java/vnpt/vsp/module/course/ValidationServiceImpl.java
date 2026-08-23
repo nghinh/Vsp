@@ -12,6 +12,7 @@ import vnpt.vsp.module.course.repository.*;
 import vnpt.vsp.module.geospatial.GeospatialService;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation of {@link ValidationService}.
@@ -23,6 +24,22 @@ import java.util.List;
 public class ValidationServiceImpl implements ValidationService {
 
     private static final Logger log = LoggerFactory.getLogger(ValidationServiceImpl.class);
+
+    /**
+     * The geometry tables {@link #checkGeometryValidity} is allowed to name.
+     * That method interpolates its table and column arguments straight into a
+     * native query — safe only while both come from this fixed set. Every
+     * caller today passes a literal from here; the allowlist is what keeps that
+     * true if a future caller ever wires a request value in by mistake. A value
+     * outside the set is a programming error, not user input, so it fails the
+     * validation loudly rather than reaching the database.
+     */
+    private static final Set<String> ALLOWED_GEOMETRY_TABLES = Set.of(
+            "greens", "fairway_segments", "tee_boxes", "bunkers", "water_hazards",
+            "penalty_areas", "out_of_bounds", "cart_paths", "landmarks");
+
+    /** The only geometry column any of those tables exposes. */
+    private static final String GEOMETRY_COLUMN = "location";
 
     private final DataVersionRepository dataVersionRepository;
     private final HoleRepository holeRepository;
@@ -181,6 +198,16 @@ public class ValidationServiceImpl implements ValidationService {
     private void checkGeometryValidity(String tableName, String geometryColumn,
                                      List<Long> holeIds, ValidationResponse response) {
         if (holeIds == null || holeIds.isEmpty()) return;
+
+        // The identifiers below are interpolated into the SQL text, not bound as
+        // parameters, so they must never be anything but a name from the
+        // allowlist. All callers pass one; this refuses a stray value before it
+        // can reach the database.
+        if (!ALLOWED_GEOMETRY_TABLES.contains(tableName) || !GEOMETRY_COLUMN.equals(geometryColumn)) {
+            throw new IllegalArgumentException(
+                    "Refusing to build a geometry query for unrecognised identifiers: table="
+                            + tableName + ", column=" + geometryColumn);
+        }
 
         try {
             String sql = String.format("""

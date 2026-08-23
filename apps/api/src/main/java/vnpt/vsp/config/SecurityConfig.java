@@ -84,8 +84,14 @@ public class SecurityConfig {
                                 "/auth/apple"
                         ).permitAll()
 
-                        // Actuator endpoints
-                        .requestMatchers("/actuator/**").permitAll()
+                        // Actuator: only the health probe is public. The
+                        // wildcard /actuator/** was broader than the one
+                        // endpoint the load balancer needs — harmless while
+                        // Boot's default exposure is health-only, but it would
+                        // silently publish env/beans/heapdump the moment
+                        // management.endpoints.web.exposure.include is widened.
+                        // Anything beyond health now requires authentication.
+                        .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**").permitAll()
 
                         // Course package files. These are immutable, public
                         // course data served in place of a CDN where none is
